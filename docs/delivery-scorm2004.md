@@ -1,6 +1,6 @@
 # Delivery: SCORM 2004
 
-SCORM 2004 is the second edition of SCORM that LMSs still take. It reports completion and success apart, a scaled score, and keeps 64,000 characters of suspend data (SCORM 1.2: 4,096). Elabora builds the 4th edition, or the 3rd for an LMS that stops there, as one SCO without sequencing beyond the simplest. [Delivery formats](delivery.md) says when Elabora picks it.
+SCORM 2004 is the second edition of SCORM that LMSs still take. It reports completion and success separately, with a scaled score, and keeps 64,000 characters of suspend data (SCORM 1.2: 4,096). Elabora builds the 4th edition, or the 3rd for an LMS that stops there, as one SCO without sequencing beyond the simplest. [Delivery formats](delivery.md) says when Elabora picks it.
 
 ## Package
 
@@ -58,7 +58,7 @@ elabora test --package course-scorm2004.zip --profile docebo
 
 ## Beyond the emulator
 
-The emulator plays documented behaviour. Before a delivery: a smoke test in SCORM Cloud (it shows completion and success apart), then a test learner in the client's LMS. Watch:
+The emulator plays documented behaviour. Before a delivery: a smoke test in SCORM Cloud (it shows completion and success separately), then a test learner in the client's LMS. Watch:
 
 - **SAP SuccessFactors**: the 4,000 characters of suspend data it documents for SCORM 2004; the 2nd and 4th editions are documented, the 3rd only within the 2nd's features.
 - **Cornerstone**: the 4th edition runtime arrived with release 26.2 (September 2026); the package declares the 3rd.

@@ -1,13 +1,13 @@
 # Getting started
 
-Clone the core, check and build a sample course, then open it in your browser. Then start a course of your own and hand it to an agent.
+Clone the core, validate and build a sample course, then open it in your browser. After that, start a course of your own and hand it to an agent.
 
 ## Requirements
 
 - **Node 24** or later.
 - **pnpm 11**: `npm install -g pnpm`.
-- **A browser** for looks, layout checks and LMS tests. Elabora uses the Elabora desktop app's own engine once the app has been opened, else Chrome, Edge or Playwright's Chromium ([Browsers](#browsers)).
-- **ffmpeg and ffprobe** on the `PATH` for media: imports, narration and quality presets. Validation and builds only need them for new media.
+- **A browser** for looks, layout checks and LMS tests. Elabora uses the desktop app's own engine once the app has been opened, and otherwise Chrome, Edge or Playwright's Chromium ([Browsers](#browsers)).
+- **ffmpeg and ffprobe** on the `PATH` for media: imports, narration and quality presets. Validation and builds need them only for new media.
 
 ## Install
 
@@ -37,7 +37,7 @@ node bin/elabora.js build examples/canal-locks --profile moodle,successfactors
 
 The build writes three files to the course's `dist/` folder:
 
-- `canal-locks-0.1.0-scorm12.zip`, the package for your LMS, in SCORM 1.2: the course names no LMS, and every LMS takes SCORM 1.2 ([Delivery formats](delivery.md): with `delivery.lms` set, Elabora picks the best format for that LMS);
+- `canal-locks-0.1.0-scorm12.zip`, the package for your LMS. It is SCORM 1.2, which every LMS takes, because the course names no LMS (with `delivery.lms` set, Elabora picks the best format for that LMS: see [Delivery formats](delivery.md));
 - `canal-locks-0.1.0-scorm12.report.json`, the build report for tools;
 - `canal-locks-0.1.0-scorm12.proof.md`, the proof dossier: plan coverage screen by screen, tracking, accessibility and the checks left to a person.
 

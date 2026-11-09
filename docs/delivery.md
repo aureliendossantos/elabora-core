@@ -5,7 +5,7 @@ A module for an LMS ships in one format. Most authors do not know these standard
 | Format | What it is | Read |
 |---|---|---|
 | `scorm12` | SCORM 1.2, one SCO. Every LMS takes it: the safest. | [SCORM 1.2 and the LMS emulator](delivery-scorm12.md) |
-| `scorm2004` | SCORM 2004, 4th edition (3rd for an LMS that stops there), one SCO without sequencing. Completion and success apart, a scaled score, 64,000 characters of suspend data. | [SCORM 2004](delivery-scorm2004.md) |
+| `scorm2004` | SCORM 2004, 4th edition (3rd for an LMS that stops there), one SCO without sequencing. Completion and success are separate, with a scaled score and 64,000 characters of suspend data. | [SCORM 2004](delivery-scorm2004.md) |
 | `cmi5` | xAPI with an LMS's rules: `cmi5.xml`, the LMS's launch and its LRS. The most recent; few LMSs import it. | [cmi5](delivery-cmi5.md) |
 | `xapi` | xAPI alone (Tin Can): `tincan.xml`. **It needs an LRS**: the LMS's, or one set for a module outside an LMS. | [xAPI](delivery-xapi.md) |
 

@@ -30,7 +30,7 @@ As in cmi5 ([cmi5](delivery-cmi5.md#runtime-behaviour)), without cmi5's rules: `
 
 ## Emulator (`elabora test`)
 
-The emulator's LRS (`packages/node/src/emulator/lrs.ts`) plays an LMS that launches Tin Can packages, with the checks of cmi5 that xAPI shares (the key of the launch, `X-Experience-API-Version`, statements with an actor, a verb and an object, an xAPI 1.0.3 agent), launches with an actor in xAPI 0.95's form as SCORM Cloud does,, and the scenario of every format.
+The emulator's LRS (`packages/node/src/emulator/lrs.ts`) plays an LMS that launches Tin Can packages, with the checks of cmi5 that xAPI shares (the key of the launch, `X-Experience-API-Version`, statements with an actor, a verb and an object, an xAPI 1.0.3 agent), launches with an actor in xAPI 0.95's form as SCORM Cloud does, and the scenario of every format.
 
 ```bash
 elabora test examples/diagnostic-reseau --format xapi --profile scorm-cloud

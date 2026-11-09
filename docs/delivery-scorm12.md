@@ -35,7 +35,7 @@ The last column gives the line of the [LMS checklist](diagnostics.md#rules) (LMS
 | State | Compact keyed JSON. The build checks its worst case against the strictest target profile. | 3, 7 |
 | Language | A package of several languages (D59, D71) reads `cmi.student_preference.language` once at start, and opens in it when the package holds it (`fr_FR` opens `fr`), after the learner's own choice and `?lang=`, before the author's `delivery.defaultLanguage`. Most LMSs leave it empty (Moodle among them). A package of one language reads nothing. The emulator fills it with `&learnerLanguage=fr` on `/lms/launch.html`. | — |
 
-Other formats: [Delivery formats](delivery.md) (SCORM 2004, and how Elabora picks a format). `cmi.objectives` (SuccessFactors requires ids created beforehand), LTI and dispatch or proxy mode come later.
+Other formats: [Delivery formats](delivery.md) (SCORM 2004, and how Elabora picks a format). Coming later: `cmi.objectives` (SuccessFactors requires ids created beforehand), LTI, and dispatch or proxy mode.
 
 ## LMS profiles
 
