@@ -86,10 +86,10 @@
                     "id": "neil-no-need",
                     "speaker": "neil",
                     "expression": "pressing",
-                    "text": "[a little too quickly] No need to call, you've got me right here. It takes two minutes."
+                    "text": "[a little too quickly] No need to call, you've got me right here. It takes 2 minutes."
                   }
                 ],
-                "feedback": "A change of bank details is checked by calling the supplier back on the number already on file, never a number from the email or the call."
+                "feedback": "Check a change of bank details by calling the supplier back on the number already on file, never on a number from the email or the call."
               },
               {
                 "id": "b",
@@ -100,7 +100,7 @@
                     "id": "neil-letter",
                     "speaker": "neil",
                     "expression": "smiling",
-                    "text": "Of course. You'll have it in five minutes."
+                    "text": "Of course. You'll have it in 5 minutes."
                   }
                 ],
                 "feedback": "A letterhead is as easy to fake as an email. Only a call back on the number on file reaches the real Harlow."
@@ -175,7 +175,7 @@
                     "text": "Perfect, it's my direct line. I'll wait for your call."
                   }
                 ],
-                "feedback": "Asking is good, but calling him back reaches him again. Only the number already on file reaches the real Harlow."
+                "feedback": "Asking your manager is good, but calling this number back reaches Neil again. Only the number already on file reaches the real Harlow."
               },
               {
                 "id": "c",
@@ -225,7 +225,7 @@
                     "text": "The real Harlow has never heard of Neil. Eleven minutes later, the desk blocks the sender in every inbox."
                   }
                 ],
-                "feedback": "Report sends it to the desk, who block it for all 1,200 inboxes; the call back on file proves the change was fake."
+                "feedback": "Report sends it to the desk, who block it in all 1,200 inboxes. The call back on the number on file proves the change was fake."
               },
               {
                 "id": "b",
@@ -274,7 +274,7 @@
           {
             "id": "close-call",
             "title": "Close call",
-            "text": "Nothing was paid, but one answer left a door open. Go back to the fair choice to hear the safer one.",
+            "text": "Nothing was paid, but one answer left a door open. Go back to that choice and try the safer answer.",
             "if": [
               {
                 "score": {

@@ -32,7 +32,7 @@
           "y": 0.5
         },
         "title": "Meet Rosa",
-        "markdown": "Rosa grows arabica at 1,700 m in the Andes with her family, on four hectares of steep slope. She picks by hand, dries her naturals on raised beds and sells them to us through her cooperative. She is a persona, drawn from the producers our roasters visit."
+        "markdown": "Rosa grows arabica at 1,700 m in the Andes with her family, on 4 hectares of steep slope. She picks by hand, dries her naturals on raised beds and sells them to us through her cooperative. She is a persona, drawn from the producers our roasters visit."
       }
     },
     {
@@ -44,7 +44,7 @@
         "role": "Producer, Andes (a persona)",
         "portrait": "images/producer.svg",
         "align": "start",
-        "markdown": "When a customer tastes the fruit in this coffee, they are tasting three weeks of my family turning the cherries in the sun."
+        "markdown": "When a customer tastes the fruit in this coffee, they are tasting 3 weeks of my family turning the cherries in the sun."
       }
     },
     {
@@ -104,7 +104,7 @@
           }
         ],
         "feedback": {
-          "correct": "Each answer names the cause in a few words: a customer remembers a reason, not a lecture.",
+          "correct": "Each answer gives the cause in a few words. A customer remembers a reason more easily than a lecture.",
           "incorrect": "Look for the cause each answer gives: the process, the roast, the extraction or freshness. Which question is it the cause of?"
         }
       }
@@ -129,7 +129,7 @@
           },
           {
             "id": "dry",
-            "text": "Dry to about 11 % moisture"
+            "text": "Dry to about 11% moisture"
           },
           {
             "id": "hull",
@@ -170,7 +170,7 @@
           "oil"
         ],
         "feedback": {
-          "correct": "You can tell the whole story in four sentences: that is all most customers want.",
+          "correct": "You can tell the whole story in 4 sentences: that is all most customers want.",
           "incorrect": "Go back over the lessons in order: what part of the cherry the bean is, which species grows high, which process keeps the fruit, and what the roast barely changes."
         }
       }
@@ -192,7 +192,7 @@
         "objective": "OBJ-1",
         "maxLength": 500,
         "download": true,
-        "prompt": "A customer asks why Rosa's natural costs more than our house blend. What would you tell them, in two or three sentences?",
+        "prompt": "A customer asks why Rosa's natural costs more than our house blend. What would you tell them, in 2 or 3 sentences?",
         "model": "It is picked by hand, only the ripe cherries, and dried in its fruit for weeks, turned every day: that is a lot of work for one small farm. It tastes of berries you will not find in a blend, and more of the price goes back to the family who grew it."
       }
     },

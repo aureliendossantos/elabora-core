@@ -233,7 +233,7 @@
       </notes>
       <segment state="translated">
         <source>Numéro qui identifie un appareil sur le réseau. Sans adresse valide, le poste ne peut joindre aucun serveur.</source>
-        <target>Number that identifies a device on the network. Without a valid address, a computer can reach no server.</target>
+        <target>Number that identifies a device on the network. Without a valid address, a computer cannot reach any server.</target>
       </segment>
     </unit>
     <unit id="course.glossary.adresse-ip.variant.1">
@@ -269,7 +269,7 @@
       </notes>
       <segment state="translated">
         <source>Petit morceau de données qui voyage sur le réseau. Une demande d'impression part en plusieurs paquets.</source>
-        <target>Small piece of data that travels on the network. A print job leaves as many packets.</target>
+        <target>Small piece of data that travels on the network. A print job travels as several packets.</target>
       </segment>
     </unit>
     <unit id="course.glossary.paquet.variant.1">
@@ -340,8 +340,8 @@
         <note category="max-length">300</note>
       </notes>
       <segment state="translated">
-        <source>Les cinq équipements à vérifier, dans l'ordre, et qui appeler.</source>
-        <target>The five devices to check, in order, and whom to call.</target>
+        <source>Les 5 équipements à vérifier, dans l'ordre, et qui appeler.</source>
+        <target>The 5 devices to check, in order, and whom to call.</target>
       </segment>
     </unit>
     <unit id="course.resource.equipements.title">
@@ -2446,8 +2446,8 @@
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
-        <source>Je vérifie d'abord le commutateur de votre étage : deux minutes.</source>
-        <target>I'll check your floor's switch first: two minutes.</target>
+        <source>Je vérifie d'abord le commutateur de votre étage : 2 minutes.</source>
+        <target>I'll check your floor's switch first: 2 minutes.</target>
       </segment>
     </unit>
     <unit id="block.appel-marc.nodes.pression.options.a.reply.marc-patiente.text">
@@ -2506,8 +2506,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>Donc ce n'est pas lui ? On a perdu cinq minutes, là.</source>
-        <target>So it's not the server? That's five minutes gone.</target>
+        <source>Donc ce n'est pas lui ? On a perdu 5 minutes, là.</source>
+        <target>So it's not the server? That's 5 minutes gone.</target>
       </segment>
     </unit>
     <unit id="block.appel-marc.nodes.pression.options.b.feedback">
@@ -2518,8 +2518,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Le serveur répond : cinq minutes passées sur la dernière étape du chemin, et la panne reste à trouver.</source>
-        <target>The server responds: five minutes spent on the last step of the path, and the failure is still to be found.</target>
+        <source>Le serveur répond : 5 minutes passées sur la dernière étape du chemin, et la panne reste à trouver.</source>
+        <target>The server responds: 5 minutes spent on the last step of the path, and you still have to find the failure.</target>
       </segment>
     </unit>
     <unit id="block.appel-marc.nodes.pression.options.c.text">
@@ -2554,8 +2554,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Le redémarrage coupe les impressions de tout le bâtiment pendant cinq minutes, et la panne de Marc reste : quatre étapes sautées.</source>
-        <target>The restart cuts printing for the whole building for five minutes, and Marc's failure remains: four steps skipped.</target>
+        <source>Le redémarrage coupe les impressions de tout le bâtiment pendant 5 minutes, et la panne de Marc reste : 4 étapes sautées.</source>
+        <target>The restart cuts printing for the whole building for 5 minutes, and Marc's failure remains: 4 steps skipped.</target>
       </segment>
     </unit>
     <unit id="block.appel-marc.nodes.commutateur.lines.commutateur-port.text">

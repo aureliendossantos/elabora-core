@@ -172,8 +172,8 @@
         <note category="max-length">600</note>
       </notes>
       <segment state="translated">
-        <source>The pairs of heavy wooden doors that close each end of the chamber. They only open when the water is at the same level on both sides: until then, the higher water presses them shut.</source>
-        <target>Les paires de lourdes portes en bois qui ferment chaque extrémité du sas. Elles ne s’ouvrent que lorsque l’eau est au même niveau des deux côtés : jusque-là, l’eau du côté le plus haut les maintient fermées.</target>
+        <source>The pairs of heavy wooden doors that close each end of the chamber. They open only when the water is at the same level on both sides. Until then, the higher water presses them shut.</source>
+        <target>Les paires de lourdes portes en bois qui ferment chaque extrémité du sas. Elles s’ouvrent seulement quand l’eau est au même niveau des deux côtés. Jusque-là, l’eau du côté le plus haut les maintient fermées.</target>
       </segment>
     </unit>
     <unit id="course.glossary.gates.variant.1">
@@ -575,7 +575,7 @@
       </notes>
       <segment state="translated">
         <source>Canals are flat, but the land is not. Up ahead, the water is higher, and this little barge needs to reach it. How will it get up there?</source>
-        <target>Un canal est plat, mais la terre ne l’est pas. Un peu plus loin, l’eau est plus haute, et cette petite péniche doit la rejoindre. Comment va-t-elle monter ?</target>
+        <target>Un canal est plat, mais la terre ne l’est pas. Un peu plus loin, l’eau est plus haute, et cette petite péniche doit la rejoindre. Comment va-t-elle monter ?</target>
       </segment>
     </unit>
     <unit id="plan.item.ITEM-2.title">
@@ -713,8 +713,8 @@
         <note category="context">Locked text of the plan, shown as it is</note>
       </notes>
       <segment state="translated">
-        <source>A lock doesn't lift the boat. It moves water, and the boat simply floats along. Up or down, the water level changes, so the boat changes level too.</source>
-        <target>Une écluse ne soulève pas le bateau. Elle fait circuler l’eau, et le bateau flotte tout simplement à sa surface. En montée comme en descente, le niveau de l’eau change, et le bateau suit.</target>
+        <source>A lock doesn't lift the boat. It moves water, and the boat floats on it. Up or down, the water level changes, so the boat changes level too.</source>
+        <target>Une écluse ne soulève pas le bateau. Elle déplace de l’eau, et le bateau flotte dessus. En montée comme en descente, le niveau de l’eau change, et le bateau change de niveau avec lui.</target>
       </segment>
     </unit>
     <unit id="screen.intro.title">
@@ -820,8 +820,8 @@
         <note category="max-length">220</note>
       </notes>
       <segment state="translated">
-        <source>With the lower gates shut, the chamber becomes a closed basin: its water can no longer run away downstream.</source>
-        <target>Une fois les portes aval fermées, le sas devient un bassin clos : son eau ne peut plus s’échapper vers l’aval.</target>
+        <source>With the lower gates shut, the chamber becomes a closed basin: its water stays inside.</source>
+        <target>Une fois les portes aval fermées, le sas devient un bassin clos : son eau reste à l’intérieur.</target>
       </segment>
     </unit>
     <unit id="block.intro-scene.props.phases.2.title">
@@ -868,7 +868,7 @@
         <note category="max-length">220</note>
       </notes>
       <segment state="translated">
-        <source>As the chamber fills, its surface rises, and the barge floats up with it. Nothing pushes it but the water beneath.</source>
+        <source>As the chamber fills, its surface rises, and the barge floats up with it. Only the water beneath pushes it.</source>
         <target>À mesure que le sas se remplit, sa surface monte, et la péniche monte avec elle en flottant. Seule l’eau sous sa coque la pousse vers le haut.</target>
       </segment>
     </unit>
@@ -1633,8 +1633,8 @@
         <note category="context">Canal lock diorama: Hint 1: the gate principle (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>A pair of gates only opens when the water is at the same level on both sides.</source>
-        <target>Une paire de portes ne s’ouvre que lorsque l’eau est au même niveau des deux côtés.</target>
+        <source>A pair of gates opens only when the water is level on both sides.</source>
+        <target>Une paire de portes s’ouvre seulement quand l’eau est au même niveau des deux côtés.</target>
       </segment>
     </unit>
     <unit id="block.intro-scene.strings.nudgeEnter">
@@ -1655,8 +1655,8 @@
         <note category="context">Canal lock diorama: Hint 1: close the chamber (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>To change the level in the chamber, it must be closed off at both ends.</source>
-        <target>Pour changer le niveau dans le sas, il faut le fermer aux deux extrémités.</target>
+        <source>To change the water level, close the chamber off at both ends.</source>
+        <target>Pour changer le niveau de l’eau, il faut fermer le sas à ses deux extrémités.</target>
       </segment>
     </unit>
     <unit id="block.intro-scene.strings.nudgeWater">
@@ -1666,8 +1666,8 @@
         <note category="context">Canal lock diorama: Hint 1: where water comes from (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Water only flows downhill. Where can the chamber get water from, or send it to?</source>
-        <target>L’eau ne fait que descendre. D’où peut venir l’eau qui remplit le sas, ou vers où peut-elle s’écouler ?</target>
+        <source>Water always flows downhill. Where can the chamber get water from, or send it to?</source>
+        <target>L’eau coule toujours vers le bas. D’où peut venir l’eau qui remplit le sas, ou vers où peut-elle s’écouler ?</target>
       </segment>
     </unit>
     <unit id="block.intro-scene.strings.nudgeWait">
@@ -2409,24 +2409,24 @@ At the start, your barge is in the lower canal. The lower gates are open and the
 
 The lock follows four rules:
 
-- A pair of gates only opens when the water is at the same level on both sides.
-- Water only flows downhill: through the upper paddles, from the upper canal into the chamber; through the lower paddles, from the chamber into the lower canal.
-- The chamber only fills while its lower gates and lower paddles are closed.
+- A pair of gates opens only when the water is level on both sides.
+- Water always flows downhill: through the upper paddles, from the upper canal into the chamber; through the lower paddles, from the chamber into the lower canal.
+- To fill, the chamber needs its lower gates and lower paddles closed.
 - The boat floats: it rises and falls with the water of the chamber.
 
 Write down the manoeuvres that take the barge up to the upper canal, then compare with this order: sail into the chamber; close the lower gates; open the upper paddles and wait until the chamber is level with the upper canal; open the upper gates; sail out.</source>
-        <target>**Version textuelle de la simulation.** L’écluse est un sas en pierre entre deux canaux, fermé à chaque extrémité par une paire de portes. Le canal supérieur est 3 m plus haut que le canal inférieur. Chaque paire de portes possède des **vannes** : de petites ouvertures que l’on dégage pour laisser passer l’eau.
+        <target>**Version textuelle de la simulation.** L’écluse est un sas en pierre entre deux canaux, fermé à chaque extrémité par une paire de portes. Le canal supérieur est 3 m plus haut que le canal inférieur. Chaque paire de portes possède des **vannes** : de petites ouvertures que l’on dégage pour laisser passer l’eau.
 
 Au départ, votre péniche est dans le canal inférieur. Les portes aval sont ouvertes et le sas est au niveau du canal inférieur ; les portes amont et toutes les vannes sont fermées.
 
-L’écluse suit quatre règles :
+L’écluse suit quatre règles :
 
-- Une paire de portes ne s’ouvre que lorsque l’eau est au même niveau des deux côtés.
-- L’eau ne fait que descendre : par les vannes amont, du canal supérieur vers le sas ; par les vannes aval, du sas vers le canal inférieur.
-- Le sas ne se remplit que si ses portes aval et ses vannes aval sont fermées.
-- Le bateau flotte : il monte et descend avec l’eau du sas.
+- Une paire de portes s’ouvre seulement quand l’eau est au même niveau des deux côtés.
+- L’eau coule toujours vers le bas : par les vannes amont, du canal supérieur vers le sas ; par les vannes aval, du sas vers le canal inférieur.
+- Pour se remplir, le sas doit avoir ses portes aval et ses vannes aval fermées.
+- Le bateau flotte : il monte et descend avec l’eau du sas.
 
-Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis comparez avec cet ordre : entrer dans le sas ; fermer les portes aval ; ouvrir les vannes amont et attendre que le sas soit au niveau du canal supérieur ; ouvrir les portes amont ; sortir.</target>
+Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis comparez avec cet ordre : entrer dans le sas ; fermer les portes aval ; ouvrir les vannes amont et attendre que le sas soit au niveau du canal supérieur ; ouvrir les portes amont ; sortir.</target>
       </segment>
     </unit>
     <unit id="block.lock-lab-sim.props.phases.0.title">
@@ -2473,8 +2473,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">220</note>
       </notes>
       <segment state="translated">
-        <source>With the lower gates shut, the chamber becomes a closed basin: its water can no longer run away downstream.</source>
-        <target>Une fois les portes aval fermées, le sas devient un bassin clos : son eau ne peut plus s’échapper vers l’aval.</target>
+        <source>With the lower gates shut, the chamber becomes a closed basin: its water stays inside.</source>
+        <target>Une fois les portes aval fermées, le sas devient un bassin clos : son eau reste à l’intérieur.</target>
       </segment>
     </unit>
     <unit id="block.lock-lab-sim.props.phases.2.title">
@@ -2521,7 +2521,7 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">220</note>
       </notes>
       <segment state="translated">
-        <source>As the chamber fills, its surface rises, and the barge floats up with it. Nothing pushes it but the water beneath.</source>
+        <source>As the chamber fills, its surface rises, and the barge floats up with it. Only the water beneath pushes it.</source>
         <target>À mesure que le sas se remplit, sa surface monte, et la péniche monte avec elle en flottant. Seule l’eau sous sa coque la pousse vers le haut.</target>
       </segment>
     </unit>
@@ -3297,8 +3297,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="context">Canal lock diorama: Hint 1: the gate principle (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>A pair of gates only opens when the water is at the same level on both sides.</source>
-        <target>Une paire de portes ne s’ouvre que lorsque l’eau est au même niveau des deux côtés.</target>
+        <source>A pair of gates opens only when the water is level on both sides.</source>
+        <target>Une paire de portes s’ouvre seulement quand l’eau est au même niveau des deux côtés.</target>
       </segment>
     </unit>
     <unit id="block.lock-lab-sim.strings.nudgeEnter">
@@ -3319,8 +3319,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="context">Canal lock diorama: Hint 1: close the chamber (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>To change the level in the chamber, it must be closed off at both ends.</source>
-        <target>Pour changer le niveau dans le sas, il faut le fermer aux deux extrémités.</target>
+        <source>To change the water level, close the chamber off at both ends.</source>
+        <target>Pour changer le niveau de l’eau, il faut fermer le sas à ses deux extrémités.</target>
       </segment>
     </unit>
     <unit id="block.lock-lab-sim.strings.nudgeWater">
@@ -3330,8 +3330,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="context">Canal lock diorama: Hint 1: where water comes from (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Water only flows downhill. Where can the chamber get water from, or send it to?</source>
-        <target>L’eau ne fait que descendre. D’où peut venir l’eau qui remplit le sas, ou vers où peut-elle s’écouler ?</target>
+        <source>Water always flows downhill. Where can the chamber get water from, or send it to?</source>
+        <target>L’eau coule toujours vers le bas. D’où peut venir l’eau qui remplit le sas, ou vers où peut-elle s’écouler ?</target>
       </segment>
     </unit>
     <unit id="block.lock-lab-sim.strings.nudgeWait">
@@ -4072,17 +4072,17 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
 1. **The barge sails in.** The chamber is at the level of the lower canal, so its lower gates stand open and the barge glides in.
 2. **The gates close behind it.** With the lower gates shut, the chamber is a closed basin.
 3. **Water flows in from above.** The paddles of the upper gates open. Water runs downhill, from the upper canal into the chamber.
-4. **The boat floats up.** The chamber fills and its surface rises; the barge floats on it and rises too. Nothing pushes it up but the water beneath it.
+4. **The boat floats up.** The chamber fills and its surface rises; the barge floats on it and rises too. Only the water beneath it pushes it up.
 5. **Level water, open gates.** When the chamber is level with the upper canal, the water pushes equally on both sides of the upper gates, so they swing open.
 6. **On its way.** The barge sails out into the upper canal, 3 m higher than it started.</source>
-        <target>**Version textuelle de l’explication.** L’écluse est coupée dans le sens du canal : le canal inférieur à gauche, le sas au milieu, le canal supérieur à droite, 3 m plus haut.
+        <target>**Version textuelle de l’explication.** L’écluse est coupée dans le sens du canal : le canal inférieur à gauche, le sas au milieu, le canal supérieur à droite, 3 m plus haut.
 
-1. **La péniche entre.** Le sas est au niveau du canal inférieur : ses portes aval sont donc ouvertes et la péniche y entre.
+1. **La péniche entre.** Le sas est au niveau du canal inférieur : ses portes aval sont donc ouvertes et la péniche y entre.
 2. **Les portes se ferment derrière elle.** Une fois les portes aval fermées, le sas devient un bassin clos.
 3. **L’eau arrive d’en haut.** Les vannes des portes amont s’ouvrent. L’eau descend du canal supérieur vers le sas.
 4. **Le bateau monte en flottant.** Le sas se remplit et sa surface monte ; la péniche flotte à sa surface et monte aussi. Seule l’eau sous sa coque la pousse vers le haut.
 5. **Niveaux égaux, portes ouvertes.** Lorsque le sas est au niveau du canal supérieur, l’eau pousse aussi fort des deux côtés des portes amont, qui s’ouvrent alors.
-6. **En route.** La péniche rejoint le canal supérieur, 3 m plus haut qu’au départ.</target>
+6. **En route.** La péniche rejoint le canal supérieur, 3 m plus haut qu’au départ.</target>
       </segment>
     </unit>
     <unit id="block.inside-the-lock-section.props.phases.0.title">
@@ -4129,8 +4129,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">220</note>
       </notes>
       <segment state="translated">
-        <source>With the lower gates shut, the chamber becomes a closed basin: its water can no longer run away downstream.</source>
-        <target>Une fois les portes aval fermées, le sas devient un bassin clos : son eau ne peut plus s’échapper vers l’aval.</target>
+        <source>With the lower gates shut, the chamber becomes a closed basin: its water stays inside.</source>
+        <target>Une fois les portes aval fermées, le sas devient un bassin clos : son eau reste à l’intérieur.</target>
       </segment>
     </unit>
     <unit id="block.inside-the-lock-section.props.phases.2.title">
@@ -4177,7 +4177,7 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">220</note>
       </notes>
       <segment state="translated">
-        <source>As the chamber fills, its surface rises, and the barge floats up with it. Nothing pushes it but the water beneath.</source>
+        <source>As the chamber fills, its surface rises, and the barge floats up with it. Only the water beneath pushes it.</source>
         <target>À mesure que le sas se remplit, sa surface monte, et la péniche monte avec elle en flottant. Seule l’eau sous sa coque la pousse vers le haut.</target>
       </segment>
     </unit>
@@ -4953,8 +4953,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="context">Canal lock diorama: Hint 1: the gate principle (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>A pair of gates only opens when the water is at the same level on both sides.</source>
-        <target>Une paire de portes ne s’ouvre que lorsque l’eau est au même niveau des deux côtés.</target>
+        <source>A pair of gates opens only when the water is level on both sides.</source>
+        <target>Une paire de portes s’ouvre seulement quand l’eau est au même niveau des deux côtés.</target>
       </segment>
     </unit>
     <unit id="block.inside-the-lock-section.strings.nudgeEnter">
@@ -4975,8 +4975,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="context">Canal lock diorama: Hint 1: close the chamber (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>To change the level in the chamber, it must be closed off at both ends.</source>
-        <target>Pour changer le niveau dans le sas, il faut le fermer aux deux extrémités.</target>
+        <source>To change the water level, close the chamber off at both ends.</source>
+        <target>Pour changer le niveau de l’eau, il faut fermer le sas à ses deux extrémités.</target>
       </segment>
     </unit>
     <unit id="block.inside-the-lock-section.strings.nudgeWater">
@@ -4986,8 +4986,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="context">Canal lock diorama: Hint 1: where water comes from (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Water only flows downhill. Where can the chamber get water from, or send it to?</source>
-        <target>L’eau ne fait que descendre. D’où peut venir l’eau qui remplit le sas, ou vers où peut-elle s’écouler ?</target>
+        <source>Water always flows downhill. Where can the chamber get water from, or send it to?</source>
+        <target>L’eau coule toujours vers le bas. D’où peut venir l’eau qui remplit le sas, ou vers où peut-elle s’écouler ?</target>
       </segment>
     </unit>
     <unit id="block.inside-the-lock-section.strings.nudgeWait">
@@ -5723,8 +5723,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>The skipper has been heaving on the lower gates for five minutes. They won't move an inch.</source>
-        <target>Le batelier pousse sur les portes aval depuis cinq minutes. Elles ne bougent pas d’un pouce.</target>
+        <source>The skipper has been heaving on the lower gates for 5 minutes. They won't move an inch.</source>
+        <target>Le batelier pousse sur les portes aval depuis 5 minutes. Elles ne bougent pas d’un pouce.</target>
       </segment>
     </unit>
     <unit id="block.downhill-talk.nodes.arrival.prompt">
@@ -5808,7 +5808,7 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
       </notes>
       <segment state="translated">
         <source>Open both paddles</source>
-        <target>Ouvrir les deux vannes</target>
+        <target>Ouvrir les vannes amont et aval</target>
       </segment>
     </unit>
     <unit id="block.downhill-talk.nodes.arrival.options.b.text">
@@ -5879,7 +5879,7 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
-        <source>Let's both push on the balance beams. The gates must be stuck.</source>
+        <source>Let's push on the balance beams together. The gates must be stuck.</source>
         <target>Poussons ensemble sur les bras de manœuvre. Les portes doivent être coincées.</target>
       </segment>
     </unit>
@@ -6035,8 +6035,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>We can wait. But it won't get any more level than this.</source>
-        <target>On peut attendre. Mais les niveaux ne seront pas plus égaux qu’ils ne le sont déjà.</target>
+        <source>We can wait. It's already as level as it gets.</source>
+        <target>On peut attendre. Les niveaux sont déjà aussi égaux qu’ils peuvent l’être.</target>
       </segment>
     </unit>
     <unit id="block.downhill-talk.nodes.level.options.b.feedback">
@@ -6047,8 +6047,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>No harm done, but no need: once the levels match, the gates can open straight away.</source>
-        <target>Cela ne fait pas de mal, mais c’est inutile : dès que les niveaux sont égaux, les portes peuvent s’ouvrir.</target>
+        <source>Waiting is harmless, but the gates can open as soon as the levels match.</source>
+        <target>Attendre est sans danger, mais les portes peuvent s’ouvrir dès que les niveaux sont égaux.</target>
       </segment>
     </unit>
     <unit id="block.downhill-talk.nodes.level.options.c.label">
@@ -6083,8 +6083,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>Not a chance! The upper canal is three metres above us now.</source>
-        <target>Impossible ! Le canal supérieur est maintenant trois mètres au-dessus de nous.</target>
+        <source>Not a chance! The upper canal is 3 metres above us now.</source>
+        <target>Impossible ! Le canal supérieur est maintenant 3 mètres au-dessus de nous.</target>
       </segment>
     </unit>
     <unit id="block.downhill-talk.nodes.level.options.c.feedback">
@@ -6095,8 +6095,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Now the upper canal holds the higher water, and it presses the upper gates shut. A pair of gates only opens between equal levels.</source>
-        <target>C’est maintenant dans le canal supérieur que l’eau est la plus haute, et elle maintient les portes amont fermées. Une paire de portes ne s’ouvre qu’entre deux niveaux égaux.</target>
+        <source>Now the upper canal holds the higher water, and it presses the upper gates shut. A pair of gates opens only between equal levels.</source>
+        <target>Maintenant, le canal supérieur contient l’eau la plus haute, et elle maintient les portes amont fermées. Une paire de portes s’ouvre seulement entre deux niveaux égaux.</target>
       </segment>
     </unit>
     <unit id="block.downhill-talk.nodes.farewell.lines.nell10.text">
@@ -6152,15 +6152,15 @@ What each choice does to the lock:
 - **Push on the gates:** the lower gates strain but stay shut, held by the higher water in the chamber.
 - **Open the lower gates,** once the chamber is level with the lower canal: they swing open and the barge sails out.
 - **Open the upper gates** at that point: they stay shut, held by the higher water of the upper canal.</source>
-        <target>**Version textuelle de la scène.** La péniche flotte dans le sas de l’écluse, qui est rempli : son eau est au niveau du canal supérieur, 3 m au-dessus du canal inférieur. Les deux paires de portes sont fermées.
+        <target>**Version textuelle de la scène.** La péniche flotte dans le sas de l’écluse, qui est rempli : son eau est au niveau du canal supérieur, 3 m au-dessus du canal inférieur. Les deux paires de portes sont fermées.
 
-L’effet de chaque choix sur l’écluse :
+L’effet de chaque choix sur l’écluse :
 
-- **Ouvrir les vannes aval :** l’eau s’écoule du sas vers le canal inférieur ; le sas se vide et la péniche descend avec l’eau.
-- **Ouvrir les deux vannes :** l’eau entre en amont aussi vite qu’elle sort en aval ; le niveau s’arrête à mi-hauteur.
-- **Pousser sur les portes :** les portes aval résistent et restent fermées, maintenues par l’eau plus haute dans le sas.
-- **Ouvrir les portes aval,** une fois le sas au niveau du canal inférieur : elles s’ouvrent et la péniche sort.
-- **Ouvrir les portes amont** à ce moment-là : elles restent fermées, maintenues par l’eau plus haute du canal supérieur.</target>
+- **Ouvrir les vannes aval :** l’eau s’écoule du sas vers le canal inférieur ; le sas se vide et la péniche descend avec l’eau.
+- **Ouvrir les vannes amont et aval :** l’eau entre en amont aussi vite qu’elle sort en aval ; le niveau s’arrête à mi-hauteur.
+- **Pousser sur les portes :** les portes aval résistent et restent fermées, maintenues par l’eau plus haute dans le sas.
+- **Ouvrir les portes aval,** une fois le sas au niveau du canal inférieur : elles s’ouvrent et la péniche sort.
+- **Ouvrir les portes amont** à ce moment-là : elles restent fermées, maintenues par l’eau plus haute du canal supérieur.</target>
       </segment>
     </unit>
     <unit id="block.downhill-lock.props.phases.0.title">
@@ -6207,8 +6207,8 @@ L’effet de chaque choix sur l’écluse :
         <note category="max-length">220</note>
       </notes>
       <segment state="translated">
-        <source>With the lower gates shut, the chamber becomes a closed basin: its water can no longer run away downstream.</source>
-        <target>Une fois les portes aval fermées, le sas devient un bassin clos : son eau ne peut plus s’échapper vers l’aval.</target>
+        <source>With the lower gates shut, the chamber becomes a closed basin: its water stays inside.</source>
+        <target>Une fois les portes aval fermées, le sas devient un bassin clos : son eau reste à l’intérieur.</target>
       </segment>
     </unit>
     <unit id="block.downhill-lock.props.phases.2.title">
@@ -6255,7 +6255,7 @@ L’effet de chaque choix sur l’écluse :
         <note category="max-length">220</note>
       </notes>
       <segment state="translated">
-        <source>As the chamber fills, its surface rises, and the barge floats up with it. Nothing pushes it but the water beneath.</source>
+        <source>As the chamber fills, its surface rises, and the barge floats up with it. Only the water beneath pushes it.</source>
         <target>À mesure que le sas se remplit, sa surface monte, et la péniche monte avec elle en flottant. Seule l’eau sous sa coque la pousse vers le haut.</target>
       </segment>
     </unit>
@@ -7020,8 +7020,8 @@ L’effet de chaque choix sur l’écluse :
         <note category="context">Canal lock diorama: Hint 1: the gate principle (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>A pair of gates only opens when the water is at the same level on both sides.</source>
-        <target>Une paire de portes ne s’ouvre que lorsque l’eau est au même niveau des deux côtés.</target>
+        <source>A pair of gates opens only when the water is level on both sides.</source>
+        <target>Une paire de portes s’ouvre seulement quand l’eau est au même niveau des deux côtés.</target>
       </segment>
     </unit>
     <unit id="block.downhill-lock.strings.nudgeEnter">
@@ -7042,8 +7042,8 @@ L’effet de chaque choix sur l’écluse :
         <note category="context">Canal lock diorama: Hint 1: close the chamber (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>To change the level in the chamber, it must be closed off at both ends.</source>
-        <target>Pour changer le niveau dans le sas, il faut le fermer aux deux extrémités.</target>
+        <source>To change the water level, close the chamber off at both ends.</source>
+        <target>Pour changer le niveau de l’eau, il faut fermer le sas à ses deux extrémités.</target>
       </segment>
     </unit>
     <unit id="block.downhill-lock.strings.nudgeWater">
@@ -7053,8 +7053,8 @@ L’effet de chaque choix sur l’écluse :
         <note category="context">Canal lock diorama: Hint 1: where water comes from (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Water only flows downhill. Where can the chamber get water from, or send it to?</source>
-        <target>L’eau ne fait que descendre. D’où peut venir l’eau qui remplit le sas, ou vers où peut-elle s’écouler ?</target>
+        <source>Water always flows downhill. Where can the chamber get water from, or send it to?</source>
+        <target>L’eau coule toujours vers le bas. D’où peut venir l’eau qui remplit le sas, ou vers où peut-elle s’écouler ?</target>
       </segment>
     </unit>
     <unit id="block.downhill-lock.strings.nudgeWait">

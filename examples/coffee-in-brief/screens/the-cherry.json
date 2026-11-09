@@ -164,7 +164,7 @@
       "props": {
         "presentation": "image",
         "image": "images/cherry-section.svg",
-        "alt": "The same coffee cherry cut in half, with four numbered zones on its layers.",
+        "alt": "The same coffee cherry cut in half, with 4 numbered zones on its layers.",
         "stem": "On this cherry, find the layer that the dry mill removes just before the coffee ships.",
         "mode": "single",
         "scored": false,

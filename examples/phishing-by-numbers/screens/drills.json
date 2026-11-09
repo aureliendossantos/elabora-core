@@ -61,7 +61,7 @@
           "from": "May",
           "hint": "Draw the line on to November",
           "button": "Show me",
-          "close": "Well seen: you said {guess}, and it fell to {actual}.",
+          "close": "Good call: you said {guess}, and it fell to {actual}.",
           "far": "You said {guess}; it fell to {actual}. Practice on safe fakes works, and fast."
         }
       }
@@ -138,12 +138,12 @@
       {
         "id": "l1",
         "speaker": "guide",
-        "text": "In January, one in three clicked our drill. By May, after monthly drills, one in five."
+        "text": "In January, 1 in 3 clicked our drill. By May, after monthly drills, it was 1 in 5."
       },
       {
         "id": "l2",
         "speaker": "guide",
-        "text": "Where were clicks by November, do you think? Draw the rest of the line."
+        "text": "Where do you think clicks were by November? Draw the rest of the line."
       },
       {
         "id": "l3",
@@ -154,13 +154,13 @@
       {
         "id": "l4",
         "speaker": "guide",
-        "text": "Finance, sales and HR fell to 3 or 4 percent. IT started low.",
+        "text": "Finance, sales and HR fell to 3 or 4%. IT started low.",
         "step": 2
       },
       {
         "id": "l5",
         "speaker": "guide",
-        "text": "The warehouse started highest, at 41 percent, and still clicks most.",
+        "text": "The warehouse started highest, at 41%, and still clicks most.",
         "step": 2
       }
     ]

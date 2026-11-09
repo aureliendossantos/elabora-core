@@ -2,7 +2,7 @@
   "object": "phasing-lab",
   "version": "4.0.0",
   "elabora": "0.1.0",
-  "at": "2026-11-05T11:56:29.645Z",
+  "at": "2026-11-09T21:10:16.300Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,18 +23,18 @@
     "maxTextureSize": 8192,
     "webglContexts": 1,
     "contextLost": false,
-    "bootMs": 96,
+    "bootMs": 216,
     "bootSamples": [
-      92,
-      96,
-      95,
-      112,
-      100,
-      95,
-      95,
-      125,
-      122,
-      99
+      170,
+      164,
+      216,
+      246,
+      206,
+      225,
+      334,
+      234,
+      238,
+      148
     ]
   },
   "tests": [
@@ -75,5 +75,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:48d468ce4e5c63927cb00b10edb74b77514282d80bbc983e66c8288d6e27e1c9"
+  "fingerprint": "sha256:a88f68bffa9e09eadbd470c0b0859e08b0d0811ef9e05b90b5b68545a2826f91"
 }

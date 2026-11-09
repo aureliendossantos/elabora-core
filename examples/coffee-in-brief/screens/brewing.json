@@ -34,7 +34,7 @@
             "id": "a",
             "text": "Use a darker roast",
             "correct": false,
-            "feedback": "A darker roast changes the coffee, not the brew: the same mistake would make it sour too. The lesson shows what to change."
+            "feedback": "A darker roast changes the coffee, and the same brewing mistake would still make it sour. The lesson shows what to change."
           },
           {
             "id": "b",
@@ -87,7 +87,7 @@
             "x": 0.81,
             "y": 0.47,
             "title": "Pour in circles",
-            "markdown": "Pour slowly in circles up to 320 g of water, at about 94 °C. The water should drain in about three minutes; then serve."
+            "markdown": "Pour slowly in circles up to 320 g of water, at about 94 °C. The water should drain in about 3 minutes; then serve."
           }
         ]
       }
@@ -123,7 +123,7 @@
           {
             "id": "bitter",
             "title": "Bitter and dry",
-            "markdown": "Over-extracted: the grind is too fine or the brew too long. Grind coarser, so that the water drains in about three minutes."
+            "markdown": "Over-extracted: the grind is too fine or the brew too long. Grind coarser, so that the water drains in about 3 minutes."
           },
           {
             "id": "weak",
@@ -149,7 +149,7 @@
         "answer": 320,
         "unit": "g",
         "feedback": {
-          "correct": "Yes: 20 × 16 = 320 g. That is why we brew on a scale: you pour by weight, not by eye.",
+          "correct": "Yes: 20 × 16 = 320 g. That is why we brew on a scale and pour by weight.",
           "incorrect": "Each gram of coffee takes 16 grams of water: multiply the coffee by 16."
         },
         "misconceptions": [
@@ -302,7 +302,7 @@
           {
             "id": "drawdown",
             "title": "Drawdown",
-            "markdown": "The time the water takes to drain through the bed of coffee. About three minutes for our pour-over."
+            "markdown": "The time the water takes to drain through the bed of coffee. About 3 minutes for our pour-over."
           }
         ]
       }

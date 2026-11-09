@@ -72,7 +72,7 @@
             "label": "Password reset",
             "x": 0.6,
             "y": 0.66,
-            "text": "Looks like IT, and asks for the one thing it must not",
+            "text": "Looks like IT, and asks for your password: IT never does",
             "at": {
               "line": "l3",
               "word": "Password"
@@ -98,7 +98,7 @@
       {
         "id": "l1",
         "speaker": "guide",
-        "text": "Now place each lure: how often it comes, and how often people click."
+        "text": "Now place each lure: how often it arrives, and how often people click."
       },
       {
         "id": "l2",
@@ -108,7 +108,7 @@
       {
         "id": "l3",
         "speaker": "guide",
-        "text": "Payroll messages are rare but convincing. Password resets and invoices are both."
+        "text": "Payroll messages are rare but convincing. Password resets and invoices are common and convincing."
       }
     ]
   }

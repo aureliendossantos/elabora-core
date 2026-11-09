@@ -3,128 +3,128 @@
   "line": "chemin-poste",
   "language": "fr",
   "textHash": "sha256:f117af060b01966324eb538c788b62cb3f91823fdbf11085b0d43dfd853377d0",
-  "duration": 5.102,
-  "provider": "pocket-tts",
-  "voice": "claire",
+  "duration": 5.5,
+  "provider": "elevenlabs",
+  "voice": "WeAAwKYcS06VmXw086yZ",
   "generated": true,
-  "audioHash": "sha256:a8cf7c57f2af8b0675faefcd9f3762a2c34eaadbb2b08ce3878492173187215d",
-  "createdAt": "2026-11-05T11:43:30Z",
+  "audioHash": "sha256:7bc02b51fdff242c192aeb00ae7d257bf9506f1447d82a2a5eec495309bedb50",
+  "createdAt": "2026-11-09T21:07:36Z",
   "take": 1,
   "spokenHash": "sha256:f117af060b01966324eb538c788b62cb3f91823fdbf11085b0d43dfd853377d0",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
-  "model": "pocket-tts/french_24l@d29db79",
+  "credit": "Voix de synthèse : Victoria (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
   "text": "Quand Marc lance une impression, sa demande part de son poste. Le commutateur de l'étage la relaie.",
-  "mouth": "ccccccccoowwoocwwwwccssoowwwwcccoowwwccoossssssoossccsssssswwwcwwoosscwwwwwooccooocccsssscccccccccccccccwwssssscccwwwcwwooooooooccwwwoooocssoooooooosscccc",
+  "mouth": "cooooooocoosscccoowwwssscooooocccoooossssssccccccccccccwwsswwwcoooosscccwwwwwwoossssssccssssssscsscccccccccccccwwwcwwwwcccwwwwcwwwoooooooooccwwwwwooooooooooooossccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Quand",
-      "start": 0.241,
-      "end": 0.436,
+      "start": 0.02,
+      "end": 0.215,
       "score": 1
     },
     {
       "text": "Marc",
-      "start": 0.462,
-      "end": 0.737,
-      "score": 0.997
-    },
-    {
-      "text": "lance",
-      "start": 0.804,
-      "end": 1.059,
-      "score": 0.992
-    },
-    {
-      "text": "une",
-      "start": 1.065,
-      "end": 1.165,
+      "start": 0.241,
+      "end": 0.516,
       "score": 1
     },
     {
+      "text": "lance",
+      "start": 0.562,
+      "end": 0.817,
+      "score": 1
+    },
+    {
+      "text": "une",
+      "start": 0.823,
+      "end": 0.944,
+      "score": 0.931
+    },
+    {
       "text": "impression",
-      "start": 1.165,
-      "end": 1.621,
-      "score": 0.993
+      "start": 0.944,
+      "end": 1.439,
+      "score": 0.996
     },
     {
       "text": "sa",
-      "start": 1.788,
-      "end": 1.902,
+      "start": 1.787,
+      "end": 1.901,
       "score": 1
     },
     {
       "text": "demande",
-      "start": 1.949,
-      "end": 2.284,
-      "score": 0.997
+      "start": 1.947,
+      "end": 2.322,
+      "score": 0.996
     },
     {
       "text": "part",
-      "start": 2.31,
-      "end": 2.491,
-      "score": 0.969
+      "start": 2.369,
+      "end": 2.583,
+      "score": 1
     },
     {
       "text": "de",
-      "start": 2.491,
-      "end": 2.605,
-      "score": 0.988
+      "start": 2.59,
+      "end": 2.684,
+      "score": 1
     },
     {
       "text": "son",
-      "start": 2.612,
-      "end": 2.746,
+      "start": 2.71,
+      "end": 2.864,
       "score": 1
     },
     {
       "text": "poste",
-      "start": 2.772,
-      "end": 3.087,
+      "start": 2.891,
+      "end": 3.266,
       "score": 1
     },
     {
       "text": "Le",
-      "start": 3.455,
-      "end": 3.57,
-      "score": 0.939
+      "start": 3.714,
+      "end": 3.808,
+      "score": 0.999
     },
     {
       "text": "commutateur",
-      "start": 3.596,
-      "end": 4.092,
-      "score": 0.994
+      "start": 3.854,
+      "end": 4.43,
+      "score": 0.997
     },
     {
       "text": "de",
-      "start": 4.098,
-      "end": 4.178,
-      "score": 0.996
+      "start": 4.436,
+      "end": 4.517,
+      "score": 0.999
     },
     {
       "text": "l'",
-      "start": 4.178,
-      "end": 4.239,
-      "score": 0.693
+      "start": 4.517,
+      "end": 4.597,
+      "score": 0.867
     },
     {
       "text": "étage",
-      "start": 4.239,
-      "end": 4.634,
-      "score": 0.731
+      "start": 4.597,
+      "end": 4.992,
+      "score": 0.993
     },
     {
       "text": "la",
-      "start": 4.64,
-      "end": 4.755,
-      "score": 0.879
+      "start": 4.998,
+      "end": 5.113,
+      "score": 1
     },
     {
       "text": "relaie",
-      "start": 4.761,
-      "end": 5.056,
-      "score": 0.869
+      "start": 5.139,
+      "end": 5.474,
+      "score": 0.837
     }
   ]
 }

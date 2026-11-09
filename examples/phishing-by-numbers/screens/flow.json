@@ -12,7 +12,7 @@
       "type": "diagram",
       "width": "wide",
       "props": {
-        "takeaway": "When in doubt, report: it is never the wrong move",
+        "takeaway": "When in doubt, report: it is always the right move",
         "source": "Information security policy, Quillon Freight (internal policy, fictional)",
         "mermaid": "flowchart LR\n  A[An unexpected email] --> B{Wants a password, money or a file?}\n  B -- Yes --> R[Report it]\n  B -- No --> C{Sender and link look right?}\n  C -- No --> R\n  C -- Yes --> D[Carry on]\n  R --> E{Clicked or typed anything?}\n  E -- Yes --> F[Call 4444 now]\n  E -- No --> G[Done: the desk takes over]",
         "highlight": "R",

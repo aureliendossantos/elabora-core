@@ -11,7 +11,7 @@
       "id": "answer-text",
       "type": "text",
       "props": {
-        "markdown": "The gear of 10 teeth drives the gear of 30, which turns 3 times slower. On the same axle, the gear of 8 drives the gear of 32, which turns 4 times slower. Together, 3 × 4 = 12.\n\nEach pair reverses the direction: after both, the hour hand turns clockwise, like the minute hand."
+        "markdown": "The gear of 10 teeth drives the gear of 30, which turns 3 times slower. On the same axle, the gear of 8 drives the gear of 32, which turns 4 times slower. Together, 3 × 4 = 12.\n\nEach pair reverses the direction: after both pairs, the hour hand turns clockwise, like the minute hand."
       }
     },
     {

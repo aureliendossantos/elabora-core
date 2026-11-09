@@ -66,7 +66,7 @@
             {
               "phase": "close",
               "title": "The gates close behind it",
-              "caption": "With the lower gates shut, the chamber becomes a closed basin: its water can no longer run away downstream."
+              "caption": "With the lower gates shut, the chamber becomes a closed basin: its water stays inside."
             },
             {
               "phase": "flow",
@@ -76,7 +76,7 @@
             {
               "phase": "level",
               "title": "The boat floats up",
-              "caption": "As the chamber fills, its surface rises, and the barge floats up with it. Nothing pushes it but the water beneath."
+              "caption": "As the chamber fills, its surface rises, and the barge floats up with it. Only the water beneath pushes it."
             },
             {
               "phase": "open",
@@ -90,7 +90,7 @@
             }
           ]
         },
-        "textAlternative": "**Text version of the explanation.** The lock is shown cut along the canal: the lower canal on the left, the chamber in the middle, the upper canal on the right, 3 m higher.\n\n1. **The barge sails in.** The chamber is at the level of the lower canal, so its lower gates stand open and the barge glides in.\n2. **The gates close behind it.** With the lower gates shut, the chamber is a closed basin.\n3. **Water flows in from above.** The paddles of the upper gates open. Water runs downhill, from the upper canal into the chamber.\n4. **The boat floats up.** The chamber fills and its surface rises; the barge floats on it and rises too. Nothing pushes it up but the water beneath it.\n5. **Level water, open gates.** When the chamber is level with the upper canal, the water pushes equally on both sides of the upper gates, so they swing open.\n6. **On its way.** The barge sails out into the upper canal, 3 m higher than it started."
+        "textAlternative": "**Text version of the explanation.** The lock is shown cut along the canal: the lower canal on the left, the chamber in the middle, the upper canal on the right, 3 m higher.\n\n1. **The barge sails in.** The chamber is at the level of the lower canal, so its lower gates stand open and the barge glides in.\n2. **The gates close behind it.** With the lower gates shut, the chamber is a closed basin.\n3. **Water flows in from above.** The paddles of the upper gates open. Water runs downhill, from the upper canal into the chamber.\n4. **The boat floats up.** The chamber fills and its surface rises; the barge floats on it and rises too. Only the water beneath it pushes it up.\n5. **Level water, open gates.** When the chamber is level with the upper canal, the water pushes equally on both sides of the upper gates, so they swing open.\n6. **On its way.** The barge sails out into the upper canal, 3 m higher than it started."
       }
     }
   ],

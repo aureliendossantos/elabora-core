@@ -8,22 +8,22 @@
   "blocks": [
     {
       "id": "orbits-earth", "type": "image", "slot": "figure", "style": "bare",
-      "props": { "asset": "images/orbits-earth.svg", "alt": "The Earth, drawn to the same scale as the three orbits around it.", "caption": "To scale. Each trail is one hour of flight." }
+      "props": { "asset": "images/orbits-earth.svg", "alt": "The Earth, drawn to the same scale as the three orbits around it.", "caption": "To scale. Each trail is 1 hour of flight." }
     },
     { "id": "orbits-hot-1", "type": "hotspot", "slot": "figure", "props": { "marker": "1", "label": "Orbit 1: Space Station", "x": 62.2, "y": 46.1, "accent": "color.servicer" } },
     {
       "id": "orbits-flight-1", "type": "orbit-flight", "slot": "figure", "step": 2,
-      "props": { "craft": "images/orbit-1-craft.svg", "trail": "images/orbit-1-trail.svg", "at": 32, "sweep": 232.3, "alt": "Orbit 1, the Space Station, hugs the Earth. In one hour it flies almost two thirds of a lap, and its speed arrow is the longest." }
+      "props": { "craft": "images/orbit-1-craft.svg", "trail": "images/orbit-1-trail.svg", "at": 32, "sweep": 232.3, "alt": "Orbit 1, the Space Station, hugs the Earth. In 1 hour it flies almost two thirds of a lap, and its speed arrow is the longest." }
     },
     { "id": "orbits-hot-2", "type": "hotspot", "slot": "figure", "step": 2, "props": { "marker": "2", "label": "Orbit 2: GPS", "x": 23.2, "y": 33.2, "accent": "color.orbit" } },
     {
       "id": "orbits-flight-2", "type": "orbit-flight", "slot": "figure", "step": 3,
-      "props": { "craft": "images/orbit-2-craft.svg", "trail": "images/orbit-2-trail.svg", "at": 148, "sweep": 30.1, "alt": "Orbit 2, GPS, lies far out. In one hour it covers only a twelfth of a lap, with a short speed arrow." }
+      "props": { "craft": "images/orbit-2-craft.svg", "trail": "images/orbit-2-trail.svg", "at": 148, "sweep": 30.1, "alt": "Orbit 2, GPS, lies far out. In 1 hour it covers a twelfth of a lap, with a short speed arrow." }
     },
     { "id": "orbits-hot-3", "type": "hotspot", "slot": "figure", "step": 3, "props": { "marker": "3", "label": "Orbit 3: geostationary", "x": 79.4, "y": 87.6, "accent": "color.client" } },
     {
       "id": "orbits-flight-3", "type": "orbit-flight", "slot": "figure", "step": 4,
-      "props": { "craft": "images/orbit-3-craft.svg", "trail": "images/orbit-3-trail.svg", "at": -52, "sweep": 15, "alt": "Orbit 3, geostationary, is the farthest. In one hour it covers a twenty-fourth of a lap, with the shortest speed arrow." }
+      "props": { "craft": "images/orbit-3-craft.svg", "trail": "images/orbit-3-trail.svg", "at": -52, "sweep": 15, "alt": "Orbit 3, geostationary, is the farthest. In 1 hour it covers a twenty-fourth of a lap, with the shortest speed arrow." }
     },
     { "id": "orbits-ask", "type": "text", "slot": "body", "style": "lead", "props": { "markdown": "Three orbits, three heights. Which one goes round fastest? Select 1, 2, then 3." } },
     { "id": "orbits-iss", "type": "stat-line", "slot": "body", "step": 2, "props": { "marker": "1", "value": "1 h 33", "unit": "per lap", "label": "The Space Station, 420 km up", "accent": "color.servicer" } },

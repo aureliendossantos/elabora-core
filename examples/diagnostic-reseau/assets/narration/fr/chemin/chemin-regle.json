@@ -3,140 +3,140 @@
   "line": "chemin-regle",
   "language": "fr",
   "textHash": "sha256:3f227965ede548f8d4d6ba4847059179ed9745904f4d1874df80faf6854c119f",
-  "duration": 5.854,
-  "provider": "pocket-tts",
-  "voice": "claire",
+  "duration": 7.73,
+  "provider": "elevenlabs",
+  "voice": "WeAAwKYcS06VmXw086yZ",
   "generated": true,
-  "audioHash": "sha256:dcff2b2825ad9fcb4298a5a3ea209584710b997951e794f5489abeb460c5342f",
-  "createdAt": "2026-11-05T11:43:38Z",
+  "audioHash": "sha256:e066c5560a4dd1cc94066d9be531d717f543adc3022a51a0fb59efeffe8d248c",
+  "createdAt": "2026-11-09T21:08:17Z",
   "take": 1,
   "spokenHash": "sha256:b3f164ae9a055e09a70d9c7ae724b182ca558876883aabc0c874d61ab132aa84",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
-  "model": "pocket-tts/french_24l@d29db79",
+  "credit": "Voix de synthèse : Victoria (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
   "text": "Une panne peut se cacher à chacune de ces étapes. Pour la trouver, la procédure SUP-NET-04 a une règle simple.",
-  "mouth": "cccoooocccwwwooocwwwcoocwwwsssswwoooooccwwoooosssooooccwwwwcccccccccccccwwwwwsssooooooocccccccccccccwwwccoossooooossssssccccwwwssswwooocwwwwccccccoooooowwwwwwwsssssoocccccccccc",
+  "mouth": "ccwwooocccwwwoooooccwwwsssscwwwoooooowwoooooooooocccssswwwoooooooooooooccsssccccssscccccccccccccccwwwwwwssssssooowwooccccccccccccwwwsscwwwsswwwooooooocssssoocccwwcooccsssssssssssscoooooocssscccccccwwwoooooooooooooooossssoocccccccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Une",
-      "start": 0.1,
-      "end": 0.255,
-      "score": 0.999
+      "start": 0.06,
+      "end": 0.234,
+      "score": 0.985
     },
     {
       "text": "panne",
-      "start": 0.281,
-      "end": 0.521,
-      "score": 0.952
+      "start": 0.28,
+      "end": 0.595,
+      "score": 0.979
     },
     {
       "text": "peut",
-      "start": 0.521,
-      "end": 0.662,
-      "score": 0.999
+      "start": 0.621,
+      "end": 0.795,
+      "score": 1
     },
     {
       "text": "se",
-      "start": 0.662,
-      "end": 0.776,
+      "start": 0.801,
+      "end": 0.915,
       "score": 1
     },
     {
       "text": "cacher",
-      "start": 0.802,
-      "end": 1.063,
-      "score": 0.998
-    },
-    {
-      "text": "à",
-      "start": 1.063,
-      "end": 1.137,
+      "start": 0.941,
+      "end": 1.296,
       "score": 0.999
     },
     {
+      "text": "à",
+      "start": 1.322,
+      "end": 1.396,
+      "score": 0.997
+    },
+    {
       "text": "chacune",
-      "start": 1.143,
-      "end": 1.464,
-      "score": 0.992
+      "start": 1.482,
+      "end": 1.977,
+      "score": 1
     },
     {
       "text": "de",
-      "start": 1.464,
-      "end": 1.558,
+      "start": 1.983,
+      "end": 2.077,
       "score": 1
     },
     {
       "text": "ces",
-      "start": 1.584,
-      "end": 1.718,
-      "score": 0.974
+      "start": 2.103,
+      "end": 2.277,
+      "score": 0.932
     },
     {
       "text": "étapes",
-      "start": 1.744,
-      "end": 2.139,
-      "score": 0.999
+      "start": 2.323,
+      "end": 2.758,
+      "score": 1
     },
     {
       "text": "Pour",
-      "start": 2.346,
-      "end": 2.486,
-      "score": 0.991
+      "start": 3.224,
+      "end": 3.378,
+      "score": 0.996
     },
     {
       "text": "la",
-      "start": 2.486,
-      "end": 2.58,
+      "start": 3.384,
+      "end": 3.499,
       "score": 1
     },
     {
       "text": "trouver",
-      "start": 2.586,
-      "end": 2.901,
-      "score": 0.98
+      "start": 3.525,
+      "end": 3.899,
+      "score": 1
     },
     {
       "text": "la",
-      "start": 3.348,
-      "end": 3.442,
-      "score": 0.999
+      "start": 4.306,
+      "end": 4.42,
+      "score": 1
     },
     {
       "text": "procédure",
-      "start": 3.448,
-      "end": 3.883,
-      "score": 0.965
+      "start": 4.446,
+      "end": 5.041,
+      "score": 1
     },
     {
       "text": "SUP-NET-04",
-      "start": 3.89,
-      "end": 4.806,
-      "score": 0.87
+      "start": 5.107,
+      "end": 6.362,
+      "score": 0.969
     },
     {
       "text": "a",
-      "start": 4.832,
-      "end": 4.906,
-      "score": 0.941
+      "start": 6.569,
+      "end": 6.643,
+      "score": 0.84
     },
     {
       "text": "une",
-      "start": 4.932,
-      "end": 5.052,
-      "score": 0.999
+      "start": 6.689,
+      "end": 6.843,
+      "score": 0.92
     },
     {
       "text": "règle",
-      "start": 5.052,
-      "end": 5.307,
+      "start": 6.849,
+      "end": 7.143,
       "score": 1
     },
     {
       "text": "simple",
-      "start": 5.393,
-      "end": 5.768,
-      "score": 0.999
+      "start": 7.249,
+      "end": 7.664,
+      "score": 0.988
     }
   ]
 }

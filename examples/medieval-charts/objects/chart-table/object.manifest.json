@@ -908,7 +908,7 @@
     "webglContexts": 1
   },
   "a11y": {
-    "description": "A medieval sea chart of the Mediterranean and the Black Sea on a calfskin, seen from above at an angle on the page. It unrolls as you scroll to it, then its black, green and red rhumb lines spread from sixteen points round a hidden circle and its coasts and red and black harbour names are inked in. For each voyage, the two harbours are ringed; the ruler is laid from the first along the wind you choose, the dividers open beside it, and the ship sails along the ruler for that distance, leaving a dotted wake. Under the distance slider, a strip copies the chart's scale of miles and marks the span of the dividers on it.",
+    "description": "A medieval sea chart of the Mediterranean and the Black Sea on a calfskin, seen from above at an angle on the page. It unrolls as you scroll to it, then its black, green and red rhumb lines spread from 16 points round a hidden circle and its coasts and red and black harbour names are inked in. For each voyage, the two harbours are ringed; the ruler is laid from the first along the wind you choose, the dividers open beside it, and the ship sails along the ruler for that distance, leaving a dotted wake. Under the distance slider, a strip copies the chart's scale of miles and marks the span of the dividers on it.",
     "keyboard": "Tab reaches the panel: the wind buttons (arrow keys move round them), the distance slider (arrow keys, 10 miles a step), Set sail and Next voyage. Shortcuts: 1 to 8 choose the winds from north clockwise, + and − change the distance by 10 miles, ] and [ by 50, S sets sail, N opens the next voyage.",
     "dragAlternative": "Nothing needs dragging: every action is a button or the slider.",
     "motion": {

@@ -62,7 +62,7 @@
       "width": "half",
       "step": 2,
       "props": {
-        "takeaway": "Only one in seven told us",
+        "takeaway": "Only 1 in 7 told us",
         "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
         "of": 28,
         "part": 4,
@@ -86,12 +86,12 @@
       {
         "id": "l2",
         "speaker": "guide",
-        "text": "Two in three opened it, one in three clicked, and one in twelve typed a password."
+        "text": "Then 2 in 3 opened it, 1 in 3 clicked, and 1 in 12 typed a password."
       },
       {
         "id": "l3",
         "speaker": "guide",
-        "text": "And only one in seven told the security desk.",
+        "text": "Only 1 in 7 told the security desk.",
         "step": 2
       }
     ]

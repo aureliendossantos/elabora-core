@@ -82,7 +82,7 @@
             "text": "Down, towards the Earth",
             "correct": false,
             "figure": "images/burn-radial.svg",
-            "feedback": "Your lap stays as long: one lap later, you are still 50 km behind."
+            "feedback": "Your lap stays the same length: a lap later, you are still 50 km behind."
           }
         ]
       }

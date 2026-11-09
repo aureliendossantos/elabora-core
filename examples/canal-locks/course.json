@@ -225,7 +225,7 @@
     {
       "id": "gates",
       "term": "Lock gates",
-      "definition": "The pairs of heavy wooden doors that close each end of the chamber. They only open when the water is at the same level on both sides: until then, the higher water presses them shut.",
+      "definition": "The pairs of heavy wooden doors that close each end of the chamber. They open only when the water is at the same level on both sides. Until then, the higher water presses them shut.",
       "variants": [
         "gates",
         "gate"

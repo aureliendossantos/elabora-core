@@ -3,110 +3,110 @@
   "line": "chemin-poste",
   "language": "en",
   "textHash": "sha256:de2e299b986bade185c57459a1b243d9c2c9551574bfe056341fd6406cae0191",
-  "duration": 5.979,
-  "provider": "pocket-tts",
-  "voice": "nora",
+  "duration": 5.51,
+  "provider": "elevenlabs",
+  "voice": "WZlYpi1yf6zJhNWXih74",
   "generated": true,
-  "audioHash": "sha256:bcb1a88eaa82a1591d96e2ec4dac78f40d42230598edabe29d410cb5c04b23f2",
-  "createdAt": "2026-11-05T12:02:56Z",
+  "audioHash": "sha256:a3f7a79d76893a77334aa4078d74518d1b371735ab49561fd6bcb64c343ee5c4",
+  "createdAt": "2026-11-09T21:10:39Z",
   "take": 1,
   "spokenHash": "sha256:de2e299b986bade185c57459a1b243d9c2c9551574bfe056341fd6406cae0191",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Nora” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices.",
-  "model": "pocket-tts/english_2026-04",
+  "credit": "Synthetic voice: Hope (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
   "text": "When Marc prints something, the job leaves his computer. The floor switch passes it on.",
-  "mouth": "cccwwwwwwcwwwwccccccwwwssoooooccccooooooocccccccccccccoocoowwwwwwccwwwwwwwwooocooooocccssssssssccccccccccccccccccccccccccccccccccccoocccwwwwwssscooocsscccooosssssssssoooosssssccccc",
+  "mouth": "coowwwwwcwwwwccccccccwwwwwccccwwwccccoooooooocccccccccwwwwoowwwwwwwcooooooossssoossswwwccccwwoosssccccccccccccccooocccoowwwwssscoooocssscccoooooccoossooowwooosssscccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "When",
-      "start": 0.08,
+      "start": 0.04,
       "end": 0.261,
-      "score": 0.952
+      "score": 0.982
     },
     {
       "text": "Marc",
       "start": 0.261,
-      "end": 0.573,
-      "score": 0.736
+      "end": 0.553,
+      "score": 0.749
     },
     {
       "text": "prints",
-      "start": 0.582,
-      "end": 0.863,
-      "score": 0.95
+      "start": 0.641,
+      "end": 0.982,
+      "score": 0.996
     },
     {
       "text": "something",
-      "start": 0.863,
-      "end": 1.376,
-      "score": 0.967
+      "start": 0.982,
+      "end": 1.495,
+      "score": 0.999
     },
     {
       "text": "the",
-      "start": 1.766,
-      "end": 1.906,
-      "score": 0.998
-    },
-    {
-      "text": "job",
-      "start": 1.906,
-      "end": 2.227,
-      "score": 0.999
-    },
-    {
-      "text": "leaves",
-      "start": 2.227,
-      "end": 2.488,
-      "score": 0.991
-    },
-    {
-      "text": "his",
-      "start": 2.488,
-      "end": 2.628,
-      "score": 0.952
-    },
-    {
-      "text": "computer",
-      "start": 2.628,
-      "end": 3.202,
-      "score": 0.976
-    },
-    {
-      "text": "The",
-      "start": 4.334,
-      "end": 4.494,
-      "score": 0.991
-    },
-    {
-      "text": "floor",
-      "start": 4.494,
-      "end": 4.775,
-      "score": 0.581
-    },
-    {
-      "text": "switch",
-      "start": 4.775,
-      "end": 5.076,
+      "start": 1.783,
+      "end": 1.944,
       "score": 0.997
     },
     {
-      "text": "passes",
-      "start": 5.076,
-      "end": 5.477,
-      "score": 0.986
+      "text": "job",
+      "start": 1.944,
+      "end": 2.296,
+      "score": 0.993
     },
     {
-      "text": "it",
-      "start": 5.477,
-      "end": 5.649,
+      "text": "leaves",
+      "start": 2.324,
+      "end": 2.605,
+      "score": 0.973
+    },
+    {
+      "text": "his",
+      "start": 2.605,
+      "end": 2.765,
+      "score": 0.979
+    },
+    {
+      "text": "computer",
+      "start": 2.765,
+      "end": 3.318,
+      "score": 0.973
+    },
+    {
+      "text": "The",
+      "start": 3.727,
+      "end": 3.867,
       "score": 0.999
     },
     {
+      "text": "floor",
+      "start": 3.867,
+      "end": 4.188,
+      "score": 0.765
+    },
+    {
+      "text": "switch",
+      "start": 4.188,
+      "end": 4.588,
+      "score": 0.985
+    },
+    {
+      "text": "passes",
+      "start": 4.588,
+      "end": 5.029,
+      "score": 0.855
+    },
+    {
+      "text": "it",
+      "start": 5.029,
+      "end": 5.221,
+      "score": 0.926
+    },
+    {
       "text": "on",
-      "start": 5.678,
-      "end": 5.85,
-      "score": 0.971
+      "start": 5.23,
+      "end": 5.402,
+      "score": 1
     }
   ]
 }

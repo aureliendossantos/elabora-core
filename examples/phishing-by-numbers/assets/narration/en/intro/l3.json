@@ -2,122 +2,117 @@
   "screen": "intro",
   "line": "l3",
   "language": "en",
-  "textHash": "sha256:d3e7822e9efce68b5b8b197fd49e3f59e939955b600b9d8702531f474eb506c7",
-  "duration": 6.03,
+  "textHash": "sha256:8401e29cc82014fc04e42bbc210842aecb82ff454b13f5886c589e42274cc21d",
+  "duration": 5.95,
   "provider": "elevenlabs",
   "voice": "CvD6hF1BJzAFN428j1cO",
   "generated": true,
-  "audioHash": "sha256:1ad85b1d06ebdcb7488196f5a8453c65a3159e2637b666c3299975cfedad6d26",
-  "createdAt": "2026-10-23T12:17:42Z",
+  "audioHash": "sha256:ee2eed2a47e7a0e60518148b37dbf780962c2f94b108d81af2eedbac4b270c5e",
+  "createdAt": "2026-11-09T20:57:52Z",
   "take": 1,
-  "spokenHash": "sha256:d3e7822e9efce68b5b8b197fd49e3f59e939955b600b9d8702531f474eb506c7",
+  "spokenHash": "sha256:8401e29cc82014fc04e42bbc210842aecb82ff454b13f5886c589e42274cc21d",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Synthetic voice: Kristen (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "And thanks to your reports, we now block a phish in 11 minutes, down from four hours.",
+  "text": "Thanks to your reports, we now block a phish in 11 minutes, down from 4 hours.",
+  "mouth": "ccwwwsssssssoooowwoooocccccwwwwwsscsssssccccoooowwwwwoooooccwwwwwcoooccccwwwwssssccwwwooooooowwwssooooocooooossscsssscccccccccoowwwwwoooosssswwwcccccoooooooocsssssoooosssssssscccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
-      "text": "And",
+      "text": "Thanks",
       "start": 0.02,
-      "end": 0.22,
-      "score": 0.998
-    },
-    {
-      "text": "thanks",
-      "start": 0.22,
-      "end": 0.521,
-      "score": 0.978
+      "end": 0.321,
+      "score": 0.982
     },
     {
       "text": "to",
-      "start": 0.521,
-      "end": 0.661,
+      "start": 0.321,
+      "end": 0.441,
       "score": 1
     },
     {
       "text": "your",
-      "start": 0.661,
-      "end": 0.861,
-      "score": 0.992
+      "start": 0.441,
+      "end": 0.641,
+      "score": 0.989
     },
     {
       "text": "reports",
-      "start": 0.861,
-      "end": 1.494,
-      "score": 0.994
+      "start": 0.641,
+      "end": 1.294,
+      "score": 0.975
     },
     {
       "text": "we",
-      "start": 1.683,
-      "end": 1.883,
+      "start": 1.503,
+      "end": 1.683,
       "score": 1
     },
     {
       "text": "now",
-      "start": 1.883,
-      "end": 2.144,
-      "score": 0.932
-    },
-    {
-      "text": "block",
-      "start": 2.144,
-      "end": 2.444,
+      "start": 1.683,
+      "end": 1.943,
       "score": 0.999
     },
     {
+      "text": "block",
+      "start": 1.943,
+      "end": 2.264,
+      "score": 0.998
+    },
+    {
       "text": "a",
-      "start": 2.444,
-      "end": 2.564,
-      "score": 0.003
+      "start": 2.264,
+      "end": 2.364,
+      "score": 0.69
     },
     {
       "text": "phish",
-      "start": 2.564,
-      "end": 2.937,
-      "score": 0.584
+      "start": 2.364,
+      "end": 2.736,
+      "score": 0.599
     },
     {
       "text": "in",
-      "start": 2.945,
-      "end": 3.085,
+      "start": 2.765,
+      "end": 2.925,
       "score": 0.999
     },
     {
       "text": "11",
-      "start": 3.085,
-      "end": 3.606,
-      "score": 0.989
+      "start": 2.925,
+      "end": 3.426,
+      "score": 0.992
     },
     {
       "text": "minutes",
-      "start": 3.606,
-      "end": 4.059,
-      "score": 0.996
+      "start": 3.426,
+      "end": 3.898,
+      "score": 0.984
     },
     {
       "text": "down",
-      "start": 4.347,
-      "end": 4.668,
-      "score": 0.963
+      "start": 4.207,
+      "end": 4.58,
+      "score": 1
     },
     {
       "text": "from",
-      "start": 4.668,
-      "end": 4.9,
-      "score": 0.925
+      "start": 4.608,
+      "end": 4.84,
+      "score": 0.825
     },
     {
-      "text": "four",
-      "start": 4.988,
-      "end": 5.309,
-      "score": 0.999
+      "text": "4",
+      "start": 4.908,
+      "end": 5.269,
+      "score": 0.969
     },
     {
       "text": "hours",
-      "start": 5.309,
-      "end": 5.882,
-      "score": 0.964
+      "start": 5.269,
+      "end": 5.842,
+      "score": 0.999
     }
   ]
 }

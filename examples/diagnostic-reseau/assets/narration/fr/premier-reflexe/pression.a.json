@@ -2,87 +2,87 @@
   "screen": "premier-reflexe",
   "line": "pression.a",
   "language": "fr",
-  "textHash": "sha256:7e6a59601ed4443c3682ed54ca6f73ed7f1c9e46219cd29adde8fd81849b997e",
-  "duration": 3.21,
+  "textHash": "sha256:e4ddf85477ca77784a71b9de4bc5bdeeb2b7caa9bb368f5caf75abd25bf1b066",
+  "duration": 3.14,
   "provider": "elevenlabs",
   "voice": "YxrwjAKoUKULGd0g8K9Y",
   "generated": true,
-  "audioHash": "sha256:5553b71752bcbf2b010e7a6b0dc8f9ada7858af36fb1ef06463b501ae058e111",
-  "createdAt": "2026-11-05T15:12:14Z",
+  "audioHash": "sha256:4400a9bb45530e39aa4eeb010a058f7c92cecf26bf45966267ee419326d4f7bd",
+  "createdAt": "2026-11-09T21:16:06Z",
   "take": 1,
-  "spokenHash": "sha256:7e6a59601ed4443c3682ed54ca6f73ed7f1c9e46219cd29adde8fd81849b997e",
+  "spokenHash": "sha256:e4ddf85477ca77784a71b9de4bc5bdeeb2b7caa9bb368f5caf75abd25bf1b066",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Voix de synthèse : Lucie (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "Je vérifie d'abord le commutateur de votre étage : deux minutes.",
-  "mouth": "ccsssoowwwwwcoooowwwcwwwooooccoocccssssscwwoooossooocsssccooosssscccccccccccccsswwwcssssccccssccc",
+  "text": "Je vérifie d'abord le commutateur de votre étage : 2 minutes.",
+  "mouth": "cooooowwooossssswwwcwwoooooccooccssoooocwwwwwssssccsssccoooosssscccccccccccccoowwwcsssscccccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Je",
-      "start": 0.06,
-      "end": 0.174,
-      "score": 1
+      "start": 0.02,
+      "end": 0.135,
+      "score": 0.999
     },
     {
       "text": "vérifie",
-      "start": 0.201,
-      "end": 0.542,
-      "score": 0.979
+      "start": 0.141,
+      "end": 0.537,
+      "score": 0.937
     },
     {
       "text": "d'",
-      "start": 0.542,
-      "end": 0.602,
-      "score": 0.514
+      "start": 0.544,
+      "end": 0.584,
+      "score": 0.549
     },
     {
       "text": "abord",
-      "start": 0.602,
-      "end": 0.843,
-      "score": 0.942
+      "start": 0.584,
+      "end": 0.805,
+      "score": 1
     },
     {
       "text": "le",
-      "start": 0.843,
-      "end": 0.957,
-      "score": 0.879
+      "start": 0.805,
+      "end": 0.92,
+      "score": 0.994
     },
     {
       "text": "commutateur",
-      "start": 0.963,
-      "end": 1.519,
-      "score": 0.99
+      "start": 0.926,
+      "end": 1.463,
+      "score": 0.999
     },
     {
       "text": "de",
-      "start": 1.525,
-      "end": 1.619,
+      "start": 1.47,
+      "end": 1.55,
       "score": 0.999
     },
     {
       "text": "votre",
-      "start": 1.625,
-      "end": 1.826,
-      "score": 0.988
+      "start": 1.55,
+      "end": 1.765,
+      "score": 0.943
     },
     {
       "text": "étage",
-      "start": 1.826,
-      "end": 2.181,
+      "start": 1.771,
+      "end": 2.148,
+      "score": 0.999
+    },
+    {
+      "text": "2",
+      "start": 2.577,
+      "end": 2.738,
       "score": 1
     },
     {
-      "text": "deux",
-      "start": 2.608,
-      "end": 2.769,
-      "score": 0.993
-    },
-    {
       "text": "minutes",
-      "start": 2.769,
-      "end": 3.144,
-      "score": 0.981
+      "start": 2.738,
+      "end": 3.094,
+      "score": 1
     }
   ]
 }

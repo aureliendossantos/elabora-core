@@ -56,11 +56,11 @@
       "id": "ITEM-3",
       "kind": "demonstration",
       "part": "Understand",
-      "title": "The secret is water, not lifting",
       "objectives": [
         "OBJ-1"
       ],
-      "description": "The same lock seen in cross-section replays the ascent in short steps the learner goes through with Previous and Next, each in a bubble pointing at what moves, with a Replay button: the barge sails in; the gates close behind it; water flows down from the upper canal into the chamber; the boat floats and rises with the surface; once the levels are equal, the gates open; the barge sails out. Once the last step has played, a button leads on to the case."
+      "description": "The same lock seen in cross-section replays the ascent in short steps the learner goes through with Previous and Next, each in a bubble pointing at what moves, with a Replay button: the barge sails in; the gates close behind it; water flows down from the upper canal into the chamber; the boat floats and rises with the surface; once the levels are equal, the gates open; the barge sails out. Once the last step has played, a button leads on to the case.",
+      "title": "The secret is water, not lifting"
     },
     {
       "id": "ITEM-4",
@@ -85,7 +85,7 @@
       "lockedTexts": [
         {
           "id": "TXT-2",
-          "text": "A lock doesn't lift the boat. It moves water, and the boat simply floats along. Up or down, the water level changes, so the boat changes level too."
+          "text": "A lock doesn't lift the boat. It moves water, and the boat floats on it. Up or down, the water level changes, so the boat changes level too."
         }
       ]
     }

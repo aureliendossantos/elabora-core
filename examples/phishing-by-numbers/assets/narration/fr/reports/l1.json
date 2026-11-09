@@ -2,75 +2,75 @@
   "screen": "reports",
   "line": "l1",
   "language": "fr",
-  "textHash": "sha256:2711915f4b2a42bd5742702f3e01e512d3a85b3530b4ac05a9be9838d9637198",
-  "duration": 4.09,
+  "textHash": "sha256:b9b980fadb78cc2594a41af29379d165ece98bdf3e31e78aa1fc8be282d8e7e1",
+  "duration": 4.02,
   "provider": "elevenlabs",
   "voice": "CvD6hF1BJzAFN428j1cO",
   "generated": true,
-  "audioHash": "sha256:2ba53d3051e783df804f2e58ca72791dbc4f7f3ac460a234ddd823f878f73e23",
-  "createdAt": "2026-11-04T22:19:20Z",
+  "audioHash": "sha256:e21928b5f7a3dfdc5c6dce2390200bb0be52b7e296db22c25d2ede56a1d00dd9",
+  "createdAt": "2026-11-09T21:23:11Z",
   "take": 1,
-  "spokenHash": "sha256:2711915f4b2a42bd5742702f3e01e512d3a85b3530b4ac05a9be9838d9637198",
+  "spokenHash": "sha256:b9b980fadb78cc2594a41af29379d165ece98bdf3e31e78aa1fc8be282d8e7e1",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Voix de synthèse : Kristen (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "Avant 2023, nous recevions environ neuf signalements par mois.",
-  "mouth": "ccwwwwooosssoowwwoooooooooccccwwwwsssccccwwwooooosssssscssswwooooooooosssssccccccccooooccccccssoooooocwwoooccoocooocoossscc",
+  "text": "Avant 2023, nous recevions environ 9 signalements par mois.",
+  "mouth": "ccwwoooooosssoowwoooooooooocccwwwwwcccccccccwwooooossscssssssoosswwwssoossooooowwoooocccccccoooowwwcwwooocccccsscoooosscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Avant",
-      "start": 0.08,
-      "end": 0.335,
-      "score": 0.914
+      "start": 0.081,
+      "end": 0.356,
+      "score": 0.985
     },
     {
       "text": "2023",
-      "start": 0.341,
-      "end": 1.157,
-      "score": 0.954
+      "start": 0.382,
+      "end": 1.18,
+      "score": 0.975
     },
     {
       "text": "nous",
-      "start": 1.383,
-      "end": 1.558,
-      "score": 0.965
+      "start": 1.467,
+      "end": 1.628,
+      "score": 0.99
     },
     {
       "text": "recevions",
-      "start": 1.564,
-      "end": 2.079,
-      "score": 0.993
+      "start": 1.628,
+      "end": 2.165,
+      "score": 0.977
     },
     {
       "text": "environ",
-      "start": 2.105,
-      "end": 2.5,
-      "score": 0.964
+      "start": 2.191,
+      "end": 2.547,
+      "score": 0.993
     },
     {
-      "text": "neuf",
-      "start": 2.767,
-      "end": 3.001,
-      "score": 1
+      "text": "9",
+      "start": 2.714,
+      "end": 2.949,
+      "score": 0.949
     },
     {
       "text": "signalements",
-      "start": 3.068,
-      "end": 3.589,
-      "score": 0.96
+      "start": 2.995,
+      "end": 3.531,
+      "score": 0.953
     },
     {
       "text": "par",
-      "start": 3.589,
-      "end": 3.763,
-      "score": 1
+      "start": 3.538,
+      "end": 3.712,
+      "score": 0.997
     },
     {
       "text": "mois",
-      "start": 3.809,
-      "end": 4.024,
-      "score": 0.999
+      "start": 3.739,
+      "end": 3.954,
+      "score": 0.98
     }
   ]
 }

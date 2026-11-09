@@ -299,7 +299,7 @@
             "id": "c",
             "text": "It was drawn for the pilgrims sailing east towards the Holy Land",
             "correct": false,
-            "feedback": "Pilgrims could not steer by it: it shows the meaning of the world, not its distances."
+            "feedback": "Pilgrims could not steer by it, because it shows what the world means and gives no distances."
           }
         ]
       }
@@ -308,7 +308,7 @@
       "id": "world-hereford",
       "type": "text",
       "props": {
-        "markdown": "The great world maps of the thirteenth century fill the T-O with everything a learned Christian knew. On the **Hereford map**, drawn around 1300, **Jerusalem** sits at the centre and Paradise at the top, among cities and rivers, scenes from the Bible and the animals and peoples of distant lands. It is a book in one picture, made to be read and meditated, not a guide to any road.",
+        "markdown": "The great world maps of the thirteenth century fill the T-O with everything a learned Christian knew. On the **Hereford map**, drawn around 1300, **Jerusalem** sits at the centre and Paradise at the top, among cities and rivers, scenes from the Bible and the animals and peoples of distant lands. It is a book in one picture, made to be read and meditated on.",
         "aside": "Hereford Cathedral, England. Its Mediterranean is a narrow ribbon: the map shows *what* the world holds, not *where*."
       }
     },
@@ -375,7 +375,7 @@
           "type": "text",
           "slot": "first",
           "props": {
-            "markdown": "**Purpose**: to show the world's history and what it means.\n\n**At the top**: the east, and Paradise.\n\n**Made from**: books: the Bible, Roman geographers, travellers' tales.\n\n**Used**: in churches and libraries, to read and to meditate."
+            "markdown": "**Purpose**: to show the world's history and what it means.\n\n**At the top**: the east, and Paradise.\n\n**Made from**: books such as the Bible, Roman geographers and travellers' tales.\n\n**Used**: in churches and libraries, to read and to meditate."
           }
         },
         {
@@ -401,7 +401,7 @@
           "type": "text",
           "slot": "second",
           "props": {
-            "markdown": "**Purpose**: to sail from one harbour to the next.\n\n**At the top**: nothing: you turn the chart.\n\n**Made from**: compass bearings and the miles between harbours.\n\n**Used**: on board, at the chart table, with a ruler and dividers."
+            "markdown": "**Purpose**: to sail from one harbour to the next.\n\n**At the top**: nothing. You turn the chart.\n\n**Made from**: compass bearings and the miles between harbours.\n\n**Used**: on board, at the chart table, with a ruler and dividers."
           }
         }
       ]
@@ -421,7 +421,7 @@
       "type": "callout",
       "style": "rubric",
       "props": {
-        "title": "Two jobs, not old and new",
+        "title": "Two jobs",
         "markdown": "The two kinds of map were made in the same centuries, for different readers. Neither is a clumsy draft of the other: the Catalan Atlas above sets a sea chart and a world of kings and marvels side by side."
       }
     }

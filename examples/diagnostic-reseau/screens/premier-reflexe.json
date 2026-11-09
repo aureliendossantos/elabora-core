@@ -117,7 +117,7 @@
             "options": [
               {
                 "id": "a",
-                "text": "Je vérifie d'abord le commutateur de votre étage : deux minutes.",
+                "text": "Je vérifie d'abord le commutateur de votre étage : 2 minutes.",
                 "quality": "good",
                 "reply": [
                   {
@@ -149,10 +149,10 @@
                     "id": "marc-temps",
                     "speaker": "marc",
                     "expression": "agace",
-                    "text": "Donc ce n'est pas lui ? On a perdu cinq minutes, là."
+                    "text": "Donc ce n'est pas lui ? On a perdu 5 minutes, là."
                   }
                 ],
-                "feedback": "Le serveur répond : cinq minutes passées sur la dernière étape du chemin, et la panne reste à trouver."
+                "feedback": "Le serveur répond : 5 minutes passées sur la dernière étape du chemin, et la panne reste à trouver."
               },
               {
                 "id": "c",
@@ -166,7 +166,7 @@
                     "text": "[inquiet] Attendez… plus personne n'imprime à l'étage, maintenant."
                   }
                 ],
-                "feedback": "Le redémarrage coupe les impressions de tout le bâtiment pendant cinq minutes, et la panne de Marc reste : quatre étapes sautées.",
+                "feedback": "Le redémarrage coupe les impressions de tout le bâtiment pendant 5 minutes, et la panne de Marc reste : 4 étapes sautées.",
                 "retry": true
               }
             ],

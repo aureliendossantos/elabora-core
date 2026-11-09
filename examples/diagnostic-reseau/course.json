@@ -175,7 +175,7 @@
     {
       "id": "fiche-reflexe",
       "title": "Fiche réflexe : panne d'impression réseau",
-      "description": "Les cinq équipements à vérifier, dans l'ordre, et qui appeler.",
+      "description": "Les 5 équipements à vérifier, dans l'ordre, et qui appeler.",
       "asset": "resources/fiche-reflexe-impression.pdf"
     },
     {
@@ -255,12 +255,14 @@
       "name": "Claire, votre guide",
       "voices": {
         "fr": {
-          "provider": "pocket-tts",
-          "voice": "claire"
+          "provider": "elevenlabs",
+          "voice": "WeAAwKYcS06VmXw086yZ",
+          "name": "Victoria - Warm and calm"
         },
         "en": {
-          "provider": "pocket-tts",
-          "voice": "nora"
+          "provider": "elevenlabs",
+          "voice": "WZlYpi1yf6zJhNWXih74",
+          "name": "Hope - Professional, Clear and Natural"
         }
       }
     },

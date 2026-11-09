@@ -361,8 +361,8 @@
         <note category="context">Validated question</note>
       </notes>
       <segment state="translated">
-        <source>The satellite is **85 km ahead**, 500 km up. You take **two laps** to catch it. How hard do you brake, in m/s?</source>
-        <target>Le satellite est **85 km devant**, à 500 km d’altitude. Vous prenez **deux tours** pour le rattraper. De combien freinez-vous, en m/s ?</target>
+        <source>The satellite is **85 km ahead**, 500 km up. You take **2 laps** to catch it. How hard do you brake, in m/s?</source>
+        <target>Le satellite est **85 km devant**, à 500 km d’altitude. Vous prenez **2 tours** pour le rattraper. De combien freinez-vous, en m/s ?</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-1.unit">
@@ -402,8 +402,8 @@
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>That catches 85 km in one lap. Over two laps, half the burn is enough.</source>
-        <target>Cela rattrape 85 km en un seul tour. Sur deux tours, la moitié suffit.</target>
+        <source>That catches 85 km in 1 lap. Over 2 laps, half the burn is enough.</source>
+        <target>Cela rattrape 85 km en 1 tour. Sur 2 tours, la moitié suffit.</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-1.misconception.per-lap.feedback">
@@ -463,8 +463,8 @@
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>Your laps are still shorter: one lap later, you would be about 40 km ahead.</source>
-        <target>Vos tours restent plus courts : un tour plus tard, vous seriez environ 40 km devant.</target>
+        <source>Your laps are still shorter: a lap later, you would be about 40 km ahead.</source>
+        <target>Vos tours restent plus courts : un tour plus tard, vous seriez environ 40 km devant.</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-2.option.c.text">
@@ -571,8 +571,8 @@
         <note category="max-length">300</note>
       </notes>
       <segment state="translated">
-        <source>To scale. Each trail is one hour of flight.</source>
-        <target>À l’échelle. Chaque trace est une heure de vol.</target>
+        <source>To scale. Each trail is 1 hour of flight.</source>
+        <target>À l’échelle. Chaque trace représente 1 heure de vol.</target>
       </segment>
     </unit>
     <unit id="block.orbits-hot-1.label">
@@ -595,8 +595,8 @@
         <note category="max-length">250</note>
       </notes>
       <segment state="translated">
-        <source>Orbit 1, the Space Station, hugs the Earth. In one hour it flies almost two thirds of a lap, and its speed arrow is the longest.</source>
-        <target>Orbite 1, la Station spatiale, frôle la Terre. En une heure, elle parcourt près des deux tiers d’un tour, et sa flèche de vitesse est la plus longue.</target>
+        <source>Orbit 1, the Space Station, hugs the Earth. In 1 hour it flies almost two thirds of a lap, and its speed arrow is the longest.</source>
+        <target>Orbite 1, la Station spatiale, frôle la Terre. En 1 heure, elle parcourt près des deux tiers d’un tour, et sa flèche de vitesse est la plus longue.</target>
       </segment>
     </unit>
     <unit id="block.orbits-hot-2.label">
@@ -619,8 +619,8 @@
         <note category="max-length">250</note>
       </notes>
       <segment state="translated">
-        <source>Orbit 2, GPS, lies far out. In one hour it covers only a twelfth of a lap, with a short speed arrow.</source>
-        <target>Orbite 2, le GPS, est loin. En une heure, il ne parcourt qu’un douzième de tour, avec une courte flèche de vitesse.</target>
+        <source>Orbit 2, GPS, lies far out. In 1 hour it covers a twelfth of a lap, with a short speed arrow.</source>
+        <target>Orbite 2, le GPS, est loin. En 1 heure, il parcourt un douzième de tour, avec une courte flèche de vitesse.</target>
       </segment>
     </unit>
     <unit id="block.orbits-hot-3.label">
@@ -643,8 +643,8 @@
         <note category="max-length">250</note>
       </notes>
       <segment state="translated">
-        <source>Orbit 3, geostationary, is the farthest. In one hour it covers a twenty-fourth of a lap, with the shortest speed arrow.</source>
-        <target>Orbite 3, géostationnaire, est la plus lointaine. En une heure, elle parcourt un vingt-quatrième de tour, avec la flèche de vitesse la plus courte.</target>
+        <source>Orbit 3, geostationary, is the farthest. In 1 hour it covers a twenty-fourth of a lap, with the shortest speed arrow.</source>
+        <target>Orbite 3, géostationnaire, est la plus lointaine. En 1 heure, elle parcourt un vingt-quatrième de tour, avec la flèche de vitesse la plus courte.</target>
       </segment>
     </unit>
     <unit id="block.orbits-ask.markdown">
@@ -894,8 +894,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Your lap stays as long: one lap later, you are still 50 km behind.</source>
-        <target>Votre tour garde la même durée : un tour plus tard, vous êtes toujours 50 km derrière.</target>
+        <source>Your lap stays the same length: a lap later, you are still 50 km behind.</source>
+        <target>Votre tour garde la même durée : un tour plus tard, vous êtes toujours 50 km derrière.</target>
       </segment>
     </unit>
     <unit id="screen.lab.title">
@@ -942,14 +942,14 @@
       <segment state="translated">
         <source>**Text version of the lab.** Your spacecraft and a satellite fly the same circular orbit, 500 km up. For each rendezvous you choose a burn, from braking 5 m/s to speeding up 5 m/s in steps of 0.5 m/s, and, when the rendezvous allows it, a number of laps. Your spacecraft burns, flies its laps, then burns the same amount the other way at the same point: both burns use fuel. The rendezvous is caught when the satellite is within 2 km at the end. At 500 km, each m/s of braking gains about 17 km per lap.
 
-1. The satellite is 51 km ahead. Catch it in one lap.
-2. Same gap, with 2.5 m/s of fuel for both burns. Take up to three laps.
-3. Now the satellite is 34 km behind you. Let it catch up within two laps, with 2.5 m/s of fuel.</source>
-        <target>**Version texte du laboratoire.** Votre engin et un satellite volent sur la même orbite circulaire, à 500 km d’altitude. Pour chaque rendez-vous, vous choisissez une poussée, de freiner de 5 m/s à accélérer de 5 m/s par pas de 0,5 m/s, et, quand le rendez-vous le permet, un nombre de tours. Votre engin pousse, vole ses tours, puis pousse d’autant dans l’autre sens au même point : les deux poussées consomment du carburant. Le rendez-vous est réussi quand le satellite est à moins de 2 km à la fin. À 500 km, chaque m/s de freinage fait gagner environ 17 km par tour.
+1. The satellite is 51 km ahead. Catch it in 1 lap.
+2. Same gap, with 2.5 m/s of fuel for both burns. Take up to 3 laps.
+3. Now the satellite is 34 km behind you. Let it catch up within 2 laps, with 2.5 m/s of fuel.</source>
+        <target>**Version texte du laboratoire.** Votre engin et un satellite volent sur la même orbite circulaire, à 500 km d’altitude. Pour chaque rendez-vous, vous choisissez une poussée, de freiner de 5 m/s à accélérer de 5 m/s par pas de 0,5 m/s, et, quand le rendez-vous le permet, un nombre de tours. Votre engin pousse, vole ses tours, puis pousse d’autant dans l’autre sens au même point : les deux poussées consomment du carburant. Le rendez-vous est réussi quand le satellite est à moins de 2 km à la fin. À 500 km, chaque m/s de freinage fait gagner environ 17 km par tour.
 
-1. Le satellite est 51 km devant. Rattrapez-le en un tour.
-2. Même écart, avec 2,5 m/s de carburant pour les deux poussées. Prenez jusqu’à trois tours.
-3. Cette fois, le satellite est 34 km derrière vous. Laissez-le vous rattraper en deux tours au plus, avec 2,5 m/s de carburant.</target>
+1. Le satellite est 51 km devant. Rattrapez-le en 1 tour.
+2. Même écart, avec 2,5 m/s de carburant pour les deux poussées. Prenez jusqu’à 3 tours.
+3. Cette fois, le satellite est 34 km derrière vous. Laissez-le vous rattraper en 2 tours au plus, avec 2,5 m/s de carburant.</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.props.requirements.0.instruction">
@@ -960,8 +960,8 @@
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
-        <source>The satellite is 51 km ahead. Catch it in one lap.</source>
-        <target>Le satellite est 51 km devant. Rattrapez-le en un tour.</target>
+        <source>The satellite is 51 km ahead. Catch it in 1 lap.</source>
+        <target>Le satellite est 51 km devant. Rattrapez-le en 1 tour.</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.props.requirements.1.instruction">
@@ -972,8 +972,8 @@
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
-        <source>Same gap, with 2.5 m/s of fuel for both burns. Take up to three laps.</source>
-        <target>Même écart, avec 2,5 m/s de carburant pour les deux poussées. Prenez jusqu’à trois tours.</target>
+        <source>Same gap, with 2.5 m/s of fuel for both burns. Take up to 3 laps.</source>
+        <target>Même écart, avec 2,5 m/s de carburant pour les deux poussées. Prenez jusqu’à 3 tours.</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.props.requirements.2.instruction">
@@ -984,8 +984,8 @@
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
-        <source>Now the satellite is 34 km behind you. Let it catch up within two laps.</source>
-        <target>Cette fois, le satellite est 34 km derrière vous. Laissez-le vous rattraper en deux tours au plus.</target>
+        <source>Now the satellite is 34 km behind you. Let it catch up within 2 laps.</source>
+        <target>Cette fois, le satellite est 34 km derrière vous. Laissez-le vous rattraper en 2 tours au plus.</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.a11y.description">
@@ -1017,8 +1017,8 @@
         <note category="context">Phasing lab: Instruction of a rendezvous without its own, the satellite ahead (gap: a formatted number) (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>The satellite is {gap} km ahead. Catch it {orbits, plural, one {in one lap} other {within # laps}}.</source>
-        <target>Le satellite est {gap} km devant. Rattrapez-le {orbits, plural, one {en un tour} other {en # tours au plus}}.</target>
+        <source>The satellite is {gap} km ahead. Catch it {orbits, plural, one {in 1 lap} other {within # laps}}.</source>
+        <target>Le satellite est {gap} km devant. Rattrapez-le {orbits, plural, one {en 1 tour} other {en # tours au plus}}.</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.strings.taskBehind">
@@ -1028,8 +1028,8 @@
         <note category="context">Phasing lab: Instruction of a rendezvous without its own, the satellite behind (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>The satellite is {gap} km behind you. Let it catch up {orbits, plural, one {in one lap} other {within # laps}}.</source>
-        <target>Le satellite est {gap} km derrière vous. Laissez-le vous rattraper {orbits, plural, one {en un tour} other {en # tours au plus}}.</target>
+        <source>The satellite is {gap} km behind you. Let it catch up {orbits, plural, one {in 1 lap} other {within # laps}}.</source>
+        <target>Le satellite est {gap} km derrière vous. Laissez-le vous rattraper {orbits, plural, one {en 1 tour} other {en # tours au plus}}.</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.strings.taskFuel">
@@ -1431,8 +1431,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>The same 51 km took 6 m/s of fuel in one lap, and 2 m/s in three. That is why real rendezvous take their time: hours, sometimes days.</source>
-        <target>Les mêmes 51 km ont demandé 6 m/s de carburant en un tour, et 2 m/s en trois. C’est pourquoi les vrais rendez-vous prennent leur temps : des heures, parfois des jours.</target>
+        <source>The same 51 km took 6 m/s of fuel in 1 lap, and 2 m/s in 3. That is why real rendezvous take their time: hours, sometimes days.</source>
+        <target>Les mêmes 51 km ont demandé 6 m/s de carburant en 1 tour, et 2 m/s en 3. C’est pourquoi les vrais rendez-vous prennent leur temps : des heures, parfois des jours.</target>
       </segment>
     </unit>
     <unit id="screen.assessment.title">

@@ -12,7 +12,7 @@
       "id": "two-steps-text",
       "type": "text",
       "props": {
-        "markdown": "So clocks slow down in stages. A small gear of 8 teeth is fixed on the gear of 30 and turns with it. It drives a last gear.\n\nThe slowdowns multiply. The first pair already turns 3 times slower; the last gear slows it down again."
+        "markdown": "So clocks slow down in stages. A small gear of 8 teeth is fixed on the gear of 30 and turns with it. It drives a last gear.\n\nThe slowdowns multiply. The first pair already turns 3 times slower; the last gear slows the motion down again."
       }
     },
     {

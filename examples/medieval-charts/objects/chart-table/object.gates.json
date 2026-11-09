@@ -2,7 +2,7 @@
   "object": "chart-table",
   "version": "2.2.0",
   "elabora": "0.1.0",
-  "at": "2026-10-29T02:21:50.051Z",
+  "at": "2026-11-09T21:37:39.975Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,19 +23,19 @@
     "maxTextureSize": 8192,
     "webglContexts": 1,
     "contextLost": false,
-    "bootMs": 2463,
+    "bootMs": 6137,
     "bootSamples": [
-      1868,
-      2014,
-      2225,
-      2085,
-      2463,
-      2069,
-      2609,
-      2704,
-      2652,
-      2681,
-      3212
+      6118,
+      4676,
+      4630,
+      6291,
+      4065,
+      4222,
+      6430,
+      6137,
+      9565,
+      29555,
+      14548
     ]
   },
   "tests": [
@@ -80,5 +80,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:50054dbbc10857df537de1f7b1d31ade9f528c11cda541c5f2adb016d8fb458b"
+  "fingerprint": "sha256:11daec12418ceb2f12a2e31de97e2afb7abb579e727b7eb09f559945bb6fcbcc"
 }

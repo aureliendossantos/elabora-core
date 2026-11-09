@@ -2,116 +2,129 @@
   "screen": "drills",
   "line": "l1",
   "language": "en",
-  "textHash": "sha256:a5aa2f3efb5e3e0e835aba8e5c789f0dd402a868360f42979219a9b050c5d9e3",
-  "duration": 6.9,
+  "textHash": "sha256:a49ec52ea71fac1c42d630b74c8ae420666d0271af80e805274c348739ee3573",
+  "duration": 7.07,
   "provider": "elevenlabs",
   "voice": "CvD6hF1BJzAFN428j1cO",
   "generated": true,
-  "audioHash": "sha256:78fed410b0625d89ed5d816af62c2f790e073574e81a6f66bd1838e1f13388c8",
-  "createdAt": "2026-10-23T12:19:32Z",
-  "take": 2,
-  "spokenHash": "sha256:a5aa2f3efb5e3e0e835aba8e5c789f0dd402a868360f42979219a9b050c5d9e3",
+  "audioHash": "sha256:187acc6e19db7af9806e6848c33bbf2b71b17675dc2bc29c8d5bfbf9d6253120",
+  "createdAt": "2026-11-09T20:50:03Z",
+  "take": 1,
+  "spokenHash": "sha256:a49ec52ea71fac1c42d630b74c8ae420666d0271af80e805274c348739ee3573",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Synthetic voice: Kristen (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "In January, one in three clicked our drill. By May, after monthly drills, one in five.",
+  "text": "In January, 1 in 3 clicked our drill. By May, after monthly drills, it was 1 in 5.",
+  "mouth": "ccwwwwwwwwwoossssoooooooooooooccccccccccooossssssccccsssoowwwssccccoooccwwwoossssoowwwssscccccccccccccccccccooooowwcoowwwssssccccccccccccccooowwcwwwcccoooosssoooooossssssccccccwwssooossswwwwwwwwwcccwwoooossscccccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "In",
       "start": 0.08,
-      "end": 0.221,
+      "end": 0.24,
       "score": 1
     },
     {
       "text": "January",
-      "start": 0.221,
-      "end": 0.954,
-      "score": 0.972
+      "start": 0.24,
+      "end": 0.993,
+      "score": 0.985
     },
     {
-      "text": "one",
-      "start": 1.304,
-      "end": 1.464,
-      "score": 0.925
+      "text": "1",
+      "start": 1.322,
+      "end": 1.482,
+      "score": 0.995
     },
     {
       "text": "in",
-      "start": 1.464,
-      "end": 1.656,
-      "score": 0.737
+      "start": 1.482,
+      "end": 1.654,
+      "score": 0.53
     },
     {
-      "text": "three",
-      "start": 1.745,
-      "end": 2.118,
-      "score": 0.999
+      "text": "3",
+      "start": 1.763,
+      "end": 2.135,
+      "score": 0.995
     },
     {
       "text": "clicked",
-      "start": 2.166,
-      "end": 2.487,
-      "score": 0.999
+      "start": 2.163,
+      "end": 2.464,
+      "score": 0.984
     },
     {
       "text": "our",
-      "start": 2.487,
-      "end": 2.628,
-      "score": 0.999
+      "start": 2.464,
+      "end": 2.624,
+      "score": 0.997
     },
     {
       "text": "drill",
-      "start": 2.628,
-      "end": 3.041,
-      "score": 0.958
+      "start": 2.624,
+      "end": 3.016,
+      "score": 1
     },
     {
       "text": "By",
-      "start": 3.57,
-      "end": 3.811,
-      "score": 0.996
+      "start": 3.525,
+      "end": 3.777,
+      "score": 0.999
     },
     {
       "text": "May",
-      "start": 3.811,
-      "end": 4.164,
-      "score": 0.941
+      "start": 3.785,
+      "end": 4.158,
+      "score": 1
     },
     {
       "text": "after",
-      "start": 4.493,
-      "end": 4.794,
-      "score": 0.968
+      "start": 4.486,
+      "end": 4.787,
+      "score": 0.999
     },
     {
       "text": "monthly",
-      "start": 4.794,
-      "end": 5.195,
-      "score": 0.865
+      "start": 4.787,
+      "end": 5.187,
+      "score": 0.917
     },
     {
       "text": "drills",
-      "start": 5.195,
-      "end": 5.648,
-      "score": 0.979
+      "start": 5.187,
+      "end": 5.64,
+      "score": 1
     },
     {
-      "text": "one",
-      "start": 6.058,
-      "end": 6.198,
-      "score": 0.936
+      "text": "it",
+      "start": 5.888,
+      "end": 5.989,
+      "score": 0.968
+    },
+    {
+      "text": "was",
+      "start": 5.989,
+      "end": 6.221,
+      "score": 0.976
+    },
+    {
+      "text": "1",
+      "start": 6.229,
+      "end": 6.369,
+      "score": 0.999
     },
     {
       "text": "in",
-      "start": 6.198,
-      "end": 6.37,
-      "score": 0.935
+      "start": 6.369,
+      "end": 6.541,
+      "score": 0.659
     },
     {
-      "text": "five",
-      "start": 6.419,
-      "end": 6.852,
-      "score": 1
+      "text": "5",
+      "start": 6.569,
+      "end": 7.002,
+      "score": 0.983
     }
   ]
 }

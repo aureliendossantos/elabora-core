@@ -75,7 +75,7 @@
       "lockedTexts": [
         {
           "id": "TXT-1",
-          "text": "On the opening night of the gallery, a visitor stops in front of a chart drawn in Majorca around 1375 and frowns: “There is no north on this map, the names run in every direction, and Italy is lying down. Did they get it wrong?” They did not. Medieval Europe drew the world in two very different ways, for two very different readers, and the chart on the wall is a working tool, made for sailors and accurate enough to steer by."
+          "text": "On the opening night of the gallery, a visitor stops in front of a chart drawn in Majorca around 1375 and frowns: “There is no north on this map, the names run in every direction, and Italy is lying down. Did they get it wrong?” They did not. Medieval Europe drew the world in two ways, for two kinds of readers, and the chart on the wall is a working tool, made for sailors and accurate enough to steer by."
         }
       ],
       "description": "Hook: a visitor's question in front of a chart from Majorca. The chart is shown at once, redrawn so it can be read, with the visitor's three puzzles in speech bubbles (no north, names in every direction, Italy lying down), then the two ways medieval Europe drew the world."
@@ -211,13 +211,13 @@
               "id": "b",
               "text": "The skin shrank unevenly while it dried in the chart-maker's workshop",
               "correct": false,
-              "feedback": "Skins do shrink a little, but unevenly, not by turning a whole sea by the same angle."
+              "feedback": "Skins shrink a little, but unevenly: that cannot turn a whole sea by one angle."
             },
             {
               "id": "d",
               "text": "They copied Ptolemy's coordinates, which put every coast too far north",
               "correct": false,
-              "feedback": "The charts use no coordinates at all; Ptolemy's Geography reached Latin Europe only around 1400."
+              "feedback": "The charts have no coordinates at all. Ptolemy's Geography reached Latin Europe only around 1400."
             },
             {
               "id": "a",
@@ -229,7 +229,7 @@
               "id": "c",
               "text": "Chart-makers lifted the east, towards Jerusalem and the Garden of Eden",
               "correct": false,
-              "feedback": "That is the logic of a mappa mundi, not of a chart for pilots."
+              "feedback": "That is the logic of a mappa mundi. A chart for pilots follows the compass."
             }
           ]
         },
@@ -264,7 +264,7 @@
               "id": "d",
               "text": "Because the scribes of the chart workshops wrote from bottom to top",
               "correct": false,
-              "feedback": "They wrote left to right, as we do: the names simply follow the coast round."
+              "feedback": "They wrote left to right, as we do. The names follow the coast round."
             }
           ]
         },
@@ -282,8 +282,8 @@
           },
           "unit": "miles",
           "feedback": {
-            "correct": "Right: three and a half divisions, 3.5 × 50 = 175 miles.",
-            "incorrect": "Multiply the number of divisions by the miles in each: 3.5 × 50."
+            "incorrect": "Multiply the number of divisions by the miles in each: 3.5 × 50.",
+            "correct": "Right: 3.5 divisions × 50 miles = 175 miles."
           },
           "misconceptions": [
             {
@@ -300,7 +300,7 @@
               "tolerance": {
                 "absolute": 0
               },
-              "feedback": "You counted three divisions. The dividers span half a division more: 25 miles."
+              "feedback": "You counted 3 divisions. The dividers span half a division more: 25 miles."
             },
             {
               "id": "hundreds",

@@ -166,7 +166,6 @@
             "OBJ-2"
           ],
           "bloom": "apply",
-          "stem": "The satellite is **85 km ahead**, 500 km up. You take **two laps** to catch it. How hard do you brake, in m/s?",
           "answer": 2.5,
           "tolerance": {
             "percent": 5
@@ -183,7 +182,7 @@
               "tolerance": {
                 "absolute": 0.1
               },
-              "feedback": "That catches 85 km in one lap. Over two laps, half the burn is enough."
+              "feedback": "That catches 85 km in 1 lap. Over 2 laps, half the burn is enough."
             },
             {
               "id": "per-lap",
@@ -193,7 +192,8 @@
               },
               "feedback": "That is the distance to gain on each lap, in km. Divide it by 17 to get m/s."
             }
-          ]
+          ],
+          "stem": "The satellite is **85 km ahead**, 500 km up. You take **2 laps** to catch it. How hard do you brake, in m/s?"
         },
         {
           "id": "Q-2",
@@ -214,7 +214,7 @@
               "id": "b",
               "text": "Nothing: you are almost there",
               "correct": false,
-              "feedback": "Your laps are still shorter: one lap later, you would be about 40 km ahead."
+              "feedback": "Your laps are still shorter: a lap later, you would be about 40 km ahead."
             },
             {
               "id": "c",

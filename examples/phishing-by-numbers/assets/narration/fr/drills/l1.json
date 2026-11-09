@@ -2,153 +2,153 @@
   "screen": "drills",
   "line": "l1",
   "language": "fr",
-  "textHash": "sha256:bde7ff7d29aac6a268aefc14cfea0e08783b7e7cd5a85f2b2e7cfbfbae2415c3",
-  "duration": 8.74,
+  "textHash": "sha256:c79c0137c843c0dc0ff5103790a3bf7ab211567d38f9cad3c929aa8771997e3d",
+  "duration": 8.69,
   "provider": "elevenlabs",
   "voice": "CvD6hF1BJzAFN428j1cO",
   "generated": true,
-  "audioHash": "sha256:18e937644f822a39ab029b9767318f21df4156a9cc0718b2b928f86a89e89101",
-  "createdAt": "2026-11-04T22:19:04Z",
+  "audioHash": "sha256:56d8a665dc49786a0122dcf8c575fcd29cbdf75fdfd3c0d7718fbb424310d5c4",
+  "createdAt": "2026-11-09T21:08:56Z",
   "take": 1,
-  "spokenHash": "sha256:bde7ff7d29aac6a268aefc14cfea0e08783b7e7cd5a85f2b2e7cfbfbae2415c3",
+  "spokenHash": "sha256:c79c0137c843c0dc0ff5103790a3bf7ab211567d38f9cad3c929aa8771997e3d",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Voix de synthèse : Kristen (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "En janvier, une personne sur trois a cliqué pendant l’exercice. En mai, après plusieurs exercices mensuels, c’était une sur cinq.",
-  "mouth": "ccwwwwoowwwoooooooccccccccccccccwwwwccwwssssssssssooooccccsswwwwwcoooccssooooccooooccoooooooooossooocssssoooooocccccccccccccccccccccwwwwcwwwwwccccccccccccooccsswwwcccoooooowwwssooooooooccccoossscooossscwwwwwwsssscccccsssooccwwwwccccooooosssooooosssssssssssccccccc",
+  "text": "En janvier, 1 personne sur 3 a cliqué pendant l’exercice. En mai, après plusieurs exercices mensuels, c’était 1 sur 5.",
+  "mouth": "ccwwwwoowwwwwooooocccccccccccwwwwwccwwssssssssoooooccsssswwwwwwcoooccssooocccwwwccooooooooooooooosssssoossssccccccccccccccccccccccwwwooocwwwccccccccccccccccsscssssscccooooooowwwssoooooooosssooooocoooooooowwwwsssscccccccccooocwwwccccooooosssssoosssssoooosscccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "En",
       "start": 0.06,
-      "end": 0.174,
+      "end": 0.154,
       "score": 1
     },
     {
       "text": "janvier",
-      "start": 0.201,
+      "start": 0.2,
       "end": 0.615,
-      "score": 0.987
+      "score": 1
     },
     {
-      "text": "une",
-      "start": 1.062,
-      "end": 1.217,
-      "score": 1
+      "text": "1",
+      "start": 0.981,
+      "end": 1.115,
+      "score": 0.999
     },
     {
       "text": "personne",
-      "start": 1.223,
-      "end": 1.638,
-      "score": 0.981
+      "start": 1.161,
+      "end": 1.556,
+      "score": 0.985
     },
     {
       "text": "sur",
-      "start": 1.664,
-      "end": 1.838,
+      "start": 1.562,
+      "end": 1.736,
       "score": 1
     },
     {
-      "text": "trois",
-      "start": 1.864,
-      "end": 2.159,
-      "score": 0.96
+      "text": "3",
+      "start": 1.762,
+      "end": 2.056,
+      "score": 0.967
     },
     {
       "text": "a",
-      "start": 2.205,
-      "end": 2.279,
-      "score": 0.66
+      "start": 2.122,
+      "end": 2.197,
+      "score": 0.899
     },
     {
       "text": "cliqué",
-      "start": 2.365,
-      "end": 2.72,
-      "score": 0.98
+      "start": 2.283,
+      "end": 2.617,
+      "score": 0.992
     },
     {
       "text": "pendant",
-      "start": 2.786,
-      "end": 3.047,
-      "score": 1
+      "start": 2.683,
+      "end": 2.943,
+      "score": 0.95
     },
     {
       "text": "l’",
-      "start": 3.047,
-      "end": 3.127,
-      "score": 0.768
+      "start": 2.943,
+      "end": 3.024,
+      "score": 0.827
     },
     {
       "text": "exercice",
-      "start": 3.127,
-      "end": 3.702,
-      "score": 1
+      "start": 3.024,
+      "end": 3.598,
+      "score": 0.999
     },
     {
       "text": "En",
-      "start": 4.39,
-      "end": 4.484,
+      "start": 4.345,
+      "end": 4.439,
       "score": 1
     },
     {
       "text": "mai",
-      "start": 4.53,
-      "end": 4.725,
+      "start": 4.505,
+      "end": 4.679,
       "score": 1
     },
     {
       "text": "après",
-      "start": 5.132,
-      "end": 5.446,
-      "score": 1
+      "start": 5.186,
+      "end": 5.48,
+      "score": 0.998
     },
     {
       "text": "plusieurs",
-      "start": 5.473,
-      "end": 5.928,
-      "score": 0.984
+      "start": 5.506,
+      "end": 5.961,
+      "score": 1
     },
     {
       "text": "exercices",
-      "start": 5.954,
-      "end": 6.455,
-      "score": 0.777
+      "start": 6.007,
+      "end": 6.468,
+      "score": 0.666
     },
     {
       "text": "mensuels",
-      "start": 6.455,
-      "end": 7.07,
-      "score": 1
+      "start": 6.468,
+      "end": 7.082,
+      "score": 0.999
     },
     {
       "text": "c’",
-      "start": 7.257,
-      "end": 7.337,
-      "score": 0.821
+      "start": 7.308,
+      "end": 7.389,
+      "score": 0.846
     },
     {
       "text": "était",
-      "start": 7.337,
-      "end": 7.631,
-      "score": 0.993
+      "start": 7.389,
+      "end": 7.663,
+      "score": 0.998
     },
     {
-      "text": "une",
-      "start": 7.778,
-      "end": 7.992,
-      "score": 0.92
-    },
-    {
-      "text": "sur",
-      "start": 8.038,
-      "end": 8.253,
+      "text": "1",
+      "start": 7.769,
+      "end": 7.923,
       "score": 1
     },
     {
-      "text": "cinq",
-      "start": 8.299,
-      "end": 8.614,
-      "score": 0.936
+      "text": "sur",
+      "start": 8.009,
+      "end": 8.203,
+      "score": 1
+    },
+    {
+      "text": "5",
+      "start": 8.25,
+      "end": 8.584,
+      "score": 0.971
     }
   ]
 }

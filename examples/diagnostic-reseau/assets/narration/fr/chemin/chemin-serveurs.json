@@ -3,199 +3,199 @@
   "line": "chemin-serveurs",
   "language": "fr",
   "textHash": "sha256:e2ba0bfc52b9aa410d2af326adaf72f0385a16d54d52ed1f4951eb3f390b9aed",
-  "duration": 7.905,
-  "provider": "pocket-tts",
-  "voice": "claire",
+  "duration": 9.04,
+  "provider": "elevenlabs",
+  "voice": "WeAAwKYcS06VmXw086yZ",
   "generated": true,
-  "audioHash": "sha256:606cec5ce8b19741c874d60f5e9bae612a44f55d6a38272c85cf97ef133bc076",
-  "createdAt": "2026-11-05T11:43:35Z",
+  "audioHash": "sha256:b1ac3103ccb061b5a93808fc9892b2eaa5f605f99cdeaae7133258bc877126c2",
+  "createdAt": "2026-11-09T21:08:02Z",
   "take": 1,
   "spokenHash": "sha256:e2ba0bfc52b9aa410d2af326adaf72f0385a16d54d52ed1f4951eb3f390b9aed",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
-  "model": "pocket-tts/french_24l@d29db79",
+  "credit": "Voix de synthèse : Victoria (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
   "text": "Le routeur la fait passer dans le réseau des serveurs. Le pare-feu vérifie qu'elle a le droit d'entrer. Le serveur d'impression l'envoie enfin à l'imprimante.",
-  "mouth": "ccccccccccwwwwwwwcwwwwwwwccooccoosssoooooooooooowwwoosssoooooooooccccccccccccccwwwccsscccwwooowwwoooccsscwwwwoooooooooooocccssccccccccccccccccccccccccccccccccwwsssswwooowwwwwwwccoosssssooossccooooossswwwwccoooocccwwooooossccssoocssccccccc",
+  "mouth": "cwwwwsssssccwwwwwwoooooocwwwcccoossssoooowwoooooooooooooooosscoosssssoosscccccccccccccccccccwwwwccoosssccccwwwoossssoowwooossscoooccwwooooooossoooowwwwoossscccssscccccccccccccccoosscwwoooowwwwwwoocccooooossooooocooowwwoooooooccccwwwsscccwwooocccwwwwwooocccoooocsscccoooccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Le",
-      "start": 0.321,
-      "end": 0.435,
+      "start": 0.04,
+      "end": 0.154,
       "score": 0.999
     },
     {
       "text": "routeur",
-      "start": 0.441,
-      "end": 0.742,
-      "score": 0.979
+      "start": 0.2,
+      "end": 0.655,
+      "score": 1
     },
     {
       "text": "la",
-      "start": 0.742,
-      "end": 0.857,
+      "start": 0.682,
+      "end": 0.816,
       "score": 1
     },
     {
       "text": "fait",
-      "start": 0.863,
-      "end": 1.003,
-      "score": 1
+      "start": 0.822,
+      "end": 0.982,
+      "score": 0.985
     },
     {
       "text": "passer",
-      "start": 1.003,
-      "end": 1.264,
+      "start": 0.982,
+      "end": 1.317,
       "score": 1
     },
     {
       "text": "dans",
-      "start": 1.264,
-      "end": 1.364,
-      "score": 0.999
+      "start": 1.323,
+      "end": 1.443,
+      "score": 0.996
     },
     {
       "text": "le",
-      "start": 1.364,
-      "end": 1.458,
+      "start": 1.443,
+      "end": 1.557,
       "score": 1
     },
     {
       "text": "réseau",
-      "start": 1.465,
-      "end": 1.685,
+      "start": 1.584,
+      "end": 1.878,
       "score": 1
     },
     {
       "text": "des",
-      "start": 1.685,
-      "end": 1.806,
-      "score": 1
+      "start": 1.884,
+      "end": 2.018,
+      "score": 0.999
     },
     {
       "text": "serveurs",
-      "start": 1.806,
-      "end": 2.261,
-      "score": 0.974
+      "start": 2.025,
+      "end": 2.6,
+      "score": 0.992
     },
     {
       "text": "Le",
-      "start": 2.628,
-      "end": 2.742,
+      "start": 3.067,
+      "end": 3.181,
       "score": 0.999
     },
     {
       "text": "pare-feu",
-      "start": 2.749,
-      "end": 3.084,
-      "score": 0.918
+      "start": 3.227,
+      "end": 3.682,
+      "score": 0.96
     },
     {
       "text": "vérifie",
-      "start": 3.11,
-      "end": 3.431,
-      "score": 0.983
+      "start": 3.869,
+      "end": 4.33,
+      "score": 0.993
     },
     {
       "text": "qu'",
-      "start": 3.431,
-      "end": 3.511,
-      "score": 0.894
+      "start": 4.33,
+      "end": 4.41,
+      "score": 0.954
     },
     {
       "text": "elle",
-      "start": 3.511,
-      "end": 3.631,
-      "score": 0.95
+      "start": 4.41,
+      "end": 4.57,
+      "score": 0.988
     },
     {
       "text": "a",
-      "start": 3.631,
-      "end": 3.672,
-      "score": 0.713
+      "start": 4.57,
+      "end": 4.63,
+      "score": 0.995
     },
     {
       "text": "le",
-      "start": 3.672,
-      "end": 3.732,
-      "score": 0.999
+      "start": 4.63,
+      "end": 4.744,
+      "score": 1
     },
     {
       "text": "droit",
-      "start": 3.732,
-      "end": 3.892,
+      "start": 4.751,
+      "end": 4.991,
       "score": 1
     },
     {
       "text": "d'",
-      "start": 3.892,
-      "end": 3.952,
-      "score": 0.882
+      "start": 4.991,
+      "end": 5.091,
+      "score": 0.942
     },
     {
       "text": "entrer",
-      "start": 3.952,
-      "end": 4.247,
-      "score": 0.948
+      "start": 5.091,
+      "end": 5.426,
+      "score": 0.999
     },
     {
       "text": "Le",
-      "start": 5.257,
-      "end": 5.371,
-      "score": 0.999
+      "start": 5.893,
+      "end": 6.007,
+      "score": 0.893
     },
     {
       "text": "serveur",
-      "start": 5.417,
-      "end": 5.758,
-      "score": 1
+      "start": 6.033,
+      "end": 6.394,
+      "score": 0.999
     },
     {
       "text": "d'",
-      "start": 5.758,
-      "end": 5.818,
-      "score": 0.975
+      "start": 6.394,
+      "end": 6.474,
+      "score": 0.851
     },
     {
       "text": "impression",
-      "start": 5.818,
-      "end": 6.274,
-      "score": 0.999
+      "start": 6.474,
+      "end": 6.969,
+      "score": 1
     },
     {
       "text": "l'",
-      "start": 6.44,
-      "end": 6.52,
-      "score": 0.945
+      "start": 7.136,
+      "end": 7.236,
+      "score": 0.974
     },
     {
       "text": "envoie",
-      "start": 6.52,
-      "end": 6.815,
-      "score": 0.999
+      "start": 7.236,
+      "end": 7.531,
+      "score": 1
     },
     {
       "text": "enfin",
-      "start": 6.922,
-      "end": 7.196,
-      "score": 0.992
+      "start": 7.697,
+      "end": 8.032,
+      "score": 1
     },
     {
       "text": "à",
-      "start": 7.203,
-      "end": 7.263,
+      "start": 8.178,
+      "end": 8.252,
       "score": 0.999
     },
     {
       "text": "l'",
-      "start": 7.263,
-      "end": 7.323,
-      "score": 0.976
+      "start": 8.278,
+      "end": 8.359,
+      "score": 0.967
     },
     {
       "text": "imprimante",
-      "start": 7.323,
-      "end": 7.838,
+      "start": 8.359,
+      "end": 8.974,
       "score": 1
     }
   ]

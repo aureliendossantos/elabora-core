@@ -2,7 +2,7 @@
   "object": "clockwork",
   "version": "1.0.1",
   "elabora": "0.1.0",
-  "at": "2026-11-05T14:44:08.454Z",
+  "at": "2026-11-09T21:23:18.102Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,18 +23,18 @@
     "maxTextureSize": 8192,
     "webglContexts": 1,
     "contextLost": false,
-    "bootMs": 195,
+    "bootMs": 252,
     "bootSamples": [
-      403,
-      195,
-      171,
-      171,
-      148,
-      199,
-      274,
-      497,
-      1188,
-      195
+      1023,
+      1824,
+      2331,
+      1336,
+      570,
+      244,
+      201,
+      220,
+      225,
+      252
     ]
   },
   "tests": [
@@ -75,5 +75,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:a2a31c078ea20dbb6e51e9b2ac8a162eecea010e01a2974f82e0e6b8e68f2a5b"
+  "fingerprint": "sha256:fc28e544587fe5fc39e3933300cbac1a49c189f7c554522ae0dddfe22502db4e"
 }

@@ -19,7 +19,7 @@
         <note category="context">Course description (catalogue)</note>
       </notes>
       <segment state="translated">
-        <source>A 10-minute narrated module for the employees of Quillon Freight (a fictional company): spotting and reporting phishing, told through the company's own numbers, in twelve charts that follow the voice.</source>
+        <source>A 10-minute narrated module for the employees of Quillon Freight, a fictional company: how to spot and report phishing, told through the company's own numbers in 12 charts that follow the voice.</source>
         <target>Dix minutes pour apprendre à repérer et à signaler les e-mails d’hameçonnage chez Quillon Freight, une entreprise fictive. Douze graphiques prennent vie au fil du récit de Dana, du service sécurité.</target>
       </segment>
     </unit>
@@ -453,7 +453,7 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source><mrk id="w-email" type="elabora:anchor">Email</mrk> is where 62 percent of our incidents began.</source>
+        <source><mrk id="w-email" type="elabora:anchor">Email</mrk> is where 62% of our incidents began.</source>
         <target>Tout commence par un <mrk id="w-email" type="elabora:anchor">e-mail</mrk> dans 62 % de nos incidents de sécurité.</target>
       </segment>
     </unit>
@@ -465,8 +465,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>And thanks to your reports, we now <mrk id="w-block" type="elabora:anchor">block</mrk> a phish in 11 minutes, down from four hours.</source>
-        <target>Grâce à vos signalements, nous <mrk id="w-block" type="elabora:anchor">bloquons</mrk> ces e-mails en onze minutes, contre quatre heures auparavant.</target>
+        <source>Thanks to your reports, we now <mrk id="w-block" type="elabora:anchor">block</mrk> a phish in 11 minutes, down from 4 hours.</source>
+        <target>Grâce à vos signalements, nous <mrk id="w-block" type="elabora:anchor">bloquons</mrk> ces e-mails en 11 minutes, contre 4 heures auparavant.</target>
       </segment>
     </unit>
     <unit id="block.intro-figures.takeaway">
@@ -513,7 +513,7 @@
         <note category="max-length">140</note>
       </notes>
       <segment state="translated">
-        <source>phishing emails reported by you</source>
+        <source>phishing emails you reported</source>
         <target>e-mails d’hameçonnage que vous avez signalés</target>
       </segment>
     </unit>
@@ -751,8 +751,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>And what do these emails look like? Like our everyday work.</source>
-        <target>À quoi ressemblent ces e-mails ? Aux messages que vous recevez tous les jours au travail.</target>
+        <source>These emails look like our everyday work.</source>
+        <target>Ces e-mails ressemblent aux messages que vous recevez tous les jours au travail.</target>
       </segment>
     </unit>
     <unit id="screen.lures.narration.l2.text">
@@ -894,8 +894,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>Two in three <mrk id="w-opened" type="elabora:anchor">opened</mrk> it, one in three <mrk id="w-clicked" type="elabora:anchor">clicked</mrk>, and one in twelve typed a <mrk id="w-password" type="elabora:anchor">password</mrk>.</source>
-        <target>Deux personnes sur trois ont <mrk id="w-opened" type="elabora:anchor">ouvert</mrk> le message, une sur trois a <mrk id="w-clicked" type="elabora:anchor">cliqué</mrk> et une sur douze a saisi un <mrk id="w-password" type="elabora:anchor">mot de passe</mrk>.</target>
+        <source>Then 2 in 3 <mrk id="w-opened" type="elabora:anchor">opened</mrk> it, 1 in 3 <mrk id="w-clicked" type="elabora:anchor">clicked</mrk>, and 1 in 12 typed a <mrk id="w-password" type="elabora:anchor">password</mrk>.</source>
+        <target>Puis 2 personnes sur 3 ont <mrk id="w-opened" type="elabora:anchor">ouvert</mrk> le message, 1 sur 3 a <mrk id="w-clicked" type="elabora:anchor">cliqué</mrk> et 1 sur 12 a saisi un <mrk id="w-password" type="elabora:anchor">mot de passe</mrk>.</target>
       </segment>
     </unit>
     <unit id="screen.funnel.narration.l3.text">
@@ -906,8 +906,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>And only one in seven <mrk id="w-told" type="elabora:anchor">told</mrk> the security desk.</source>
-        <target>Une personne sur sept seulement a <mrk id="w-told" type="elabora:anchor">prévenu</mrk> le service sécurité.</target>
+        <source>Only 1 in 7 <mrk id="w-told" type="elabora:anchor">told</mrk> the security desk.</source>
+        <target>Seulement 1 personne sur 7 a <mrk id="w-told" type="elabora:anchor">prévenu</mrk> le service sécurité.</target>
       </segment>
     </unit>
     <unit id="block.funnel-levels.takeaway">
@@ -990,8 +990,8 @@
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
-        <source>Only one in seven told us</source>
-        <target>Une personne sur sept seulement nous a prévenus</target>
+        <source>Only 1 in 7 told us</source>
+        <target>Seulement 1 personne sur 7 nous a prévenus</target>
       </segment>
     </unit>
     <unit id="block.funnel-reported.source">
@@ -1049,7 +1049,7 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>Now place each lure: how often it comes, and how often people click.</source>
+        <source>Now place each lure: how often it arrives, and how often people click.</source>
         <target>Pour chaque prétexte, regardez deux choses : est-il fréquent ? Et fait-il souvent cliquer ?</target>
       </segment>
     </unit>
@@ -1073,7 +1073,7 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source><mrk id="w-payroll" type="elabora:anchor">Payroll</mrk> messages are rare but convincing. <mrk id="w-password" type="elabora:anchor">Password</mrk> resets and <mrk id="w-invoices" type="elabora:anchor">invoices</mrk> are both.</source>
+        <source><mrk id="w-payroll" type="elabora:anchor">Payroll</mrk> messages are rare but convincing. <mrk id="w-password" type="elabora:anchor">Password</mrk> resets and <mrk id="w-invoices" type="elabora:anchor">invoices</mrk> are common and convincing.</source>
         <target>Les messages du service <mrk id="w-payroll" type="elabora:anchor">paie</mrk> sont rares, mais convaincants. Les réinitialisations de <mrk id="w-password" type="elabora:anchor">mot de passe</mrk> et les <mrk id="w-invoices" type="elabora:anchor">factures</mrk> sont à la fois fréquentes et convaincantes.</target>
       </segment>
     </unit>
@@ -1313,8 +1313,8 @@
         <note category="max-length">120</note>
       </notes>
       <segment state="translated">
-        <source>Looks like IT, and asks for the one thing it must not</source>
-        <target>Le message imite le service informatique et demande ce qu’il ne devrait jamais demander : votre mot de passe</target>
+        <source>Looks like IT, and asks for your password: IT never does</source>
+        <target>Le message imite le service informatique et demande votre mot de passe, ce que l’informatique ne fait jamais</target>
       </segment>
     </unit>
     <unit id="block.lure-map-matrix.items.invoice.label">
@@ -1360,8 +1360,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>In <mrk id="w-january" type="elabora:anchor">January</mrk>, one in three clicked our drill. By <mrk id="w-may" type="elabora:anchor">May</mrk>, after monthly drills, one in five.</source>
-        <target>En <mrk id="w-january" type="elabora:anchor">janvier</mrk>, une personne sur trois a cliqué pendant l’exercice. En <mrk id="w-may" type="elabora:anchor">mai</mrk>, après plusieurs exercices mensuels, c’était une sur cinq.</target>
+        <source>In <mrk id="w-january" type="elabora:anchor">January</mrk>, 1 in 3 clicked our drill. By <mrk id="w-may" type="elabora:anchor">May</mrk>, after monthly drills, it was 1 in 5.</source>
+        <target>En <mrk id="w-january" type="elabora:anchor">janvier</mrk>, 1 personne sur 3 a cliqué pendant l’exercice. En <mrk id="w-may" type="elabora:anchor">mai</mrk>, après plusieurs exercices mensuels, c’était 1 sur 5.</target>
       </segment>
     </unit>
     <unit id="screen.drills.narration.l2.text">
@@ -1372,7 +1372,7 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>Where were clicks by November, do you think? Draw the rest of the line.</source>
+        <source>Where do you think clicks were by November? Draw the rest of the line.</source>
         <target>À votre avis, où en était-on en novembre ? Prolongez la courbe.</target>
       </segment>
     </unit>
@@ -1396,8 +1396,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source><mrk id="w-finance" type="elabora:anchor">Finance</mrk>, <mrk id="w-sales" type="elabora:anchor">sales</mrk> and <mrk id="w-hr" type="elabora:anchor">HR</mrk> fell to 3 or 4 percent. <mrk id="w-it" type="elabora:anchor">IT</mrk> started low.</source>
-        <target>Aux <mrk id="w-finance" type="elabora:anchor">finances</mrk>, au service <mrk id="w-sales" type="elabora:anchor">commercial</mrk> et aux <mrk id="w-hr" type="elabora:anchor">ressources humaines</mrk>, le taux est descendu à 3 ou 4 %. En <mrk id="w-it" type="elabora:anchor">informatique</mrk>, il était déjà bas.</target>
+        <source><mrk id="w-finance" type="elabora:anchor">Finance</mrk>, <mrk id="w-sales" type="elabora:anchor">sales</mrk> and <mrk id="w-hr" type="elabora:anchor">HR</mrk> fell to 3 or 4%. <mrk id="w-it" type="elabora:anchor">IT</mrk> started low.</source>
+        <target>Aux <mrk id="w-finance" type="elabora:anchor">finances</mrk>, au service <mrk id="w-sales" type="elabora:anchor">commercial</mrk> et aux <mrk id="w-hr" type="elabora:anchor">ressources humaines</mrk>, le taux est descendu à 3 ou 4 %. En <mrk id="w-it" type="elabora:anchor">informatique</mrk>, il était déjà bas.</target>
       </segment>
     </unit>
     <unit id="screen.drills.narration.l5.text">
@@ -1408,7 +1408,7 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>The <mrk id="w-warehouse" type="elabora:anchor">warehouse</mrk> started highest, at 41 percent, and still clicks most.</source>
+        <source>The <mrk id="w-warehouse" type="elabora:anchor">warehouse</mrk> started highest, at 41%, and still clicks most.</source>
         <target>À l’<mrk id="w-warehouse" type="elabora:anchor">entrepôt</mrk>, le taux de départ était le plus élevé : 41 %. C’est encore là qu’on clique le plus.</target>
       </segment>
     </unit>
@@ -1534,7 +1534,7 @@
         <note category="max-length">240</note>
       </notes>
       <segment state="translated">
-        <source>Well seen: you said {guess}, and it fell to {actual}.</source>
+        <source>Good call: you said {guess}, and it fell to {actual}.</source>
         <target>Bien vu ! Votre estimation : {guess}. Le taux est descendu à {actual}.</target>
       </segment>
     </unit>
@@ -1678,7 +1678,7 @@
       </notes>
       <segment state="translated">
         <source><mrk id="w-before" type="elabora:anchor">Before</mrk> 2023, we got about 9 reports a <mrk id="w-month" type="elabora:anchor">month</mrk>.</source>
-        <target><mrk id="w-before" type="elabora:anchor">Avant</mrk> 2023, nous recevions environ neuf signalements par <mrk id="w-month" type="elabora:anchor">mois</mrk>.</target>
+        <target><mrk id="w-before" type="elabora:anchor">Avant</mrk> 2023, nous recevions environ 9 signalements par <mrk id="w-month" type="elabora:anchor">mois</mrk>.</target>
       </segment>
     </unit>
     <unit id="screen.reports.narration.l2.text">
@@ -2214,7 +2214,7 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Report is right before a click. After one, the desk needs to know at once that your password is out: call 4444.</source>
+        <source>Before a click, Report is the right move. After one, the desk needs to know at once that your password is out: call 4444.</source>
         <target>Avant de cliquer sur le lien, signaler est le bon réflexe. Après le clic, le service sécurité doit savoir tout de suite que votre mot de passe est compromis. Appelez le 4444.</target>
       </segment>
     </unit>
@@ -2370,7 +2370,7 @@
       </notes>
       <segment state="translated">
         <source>Its sender and links are blocked in every inbox, typically 11 minutes after the first report.</source>
-        <target>L’expéditeur et les liens sont bloqués dans toutes les boîtes mail, en général onze minutes après le premier signalement.</target>
+        <target>L’expéditeur et les liens sont bloqués dans toutes les boîtes mail, en général 11 minutes après le premier signalement.</target>
       </segment>
     </unit>
     <unit id="block.after-report-cycle.items.warn.title">
@@ -2476,7 +2476,7 @@
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
-        <source>When in doubt, report: it is never the wrong move</source>
+        <source>When in doubt, report: it is always the right move</source>
         <target>Dans le doute, signaler est toujours le bon réflexe</target>
       </segment>
     </unit>
@@ -2762,8 +2762,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source><mrk id="d1" type="elabora:direction">[a little too quickly]</mrk> No need to call, you've got me right here. It takes two minutes.</source>
-        <target><mrk id="d1" type="elabora:direction">[un peu trop vite]</mrk> Inutile de rappeler, vous m’avez en ligne. Ça prend deux minutes.</target>
+        <source><mrk id="d1" type="elabora:direction">[a little too quickly]</mrk> No need to call, you've got me right here. It takes 2 minutes.</source>
+        <target><mrk id="d1" type="elabora:direction">[un peu trop vite]</mrk> Inutile de rappeler, vous m’avez en ligne. Ça prend 2 minutes.</target>
       </segment>
     </unit>
     <unit id="block.bank-call.nodes.call.options.a.feedback">
@@ -2774,7 +2774,7 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>A change of bank details is checked by calling the supplier back on the number already on file, never a number from the email or the call.</source>
+        <source>Check a change of bank details by calling the supplier back on the number already on file, never on a number from the email or the call.</source>
         <target>Pour vérifier un changement de coordonnées bancaires, rappelez le fournisseur au numéro déjà enregistré. N’utilisez jamais celui du message ou celui que l’on vous donne au téléphone.</target>
       </segment>
     </unit>
@@ -2798,8 +2798,8 @@
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>Of course. You'll have it in five minutes.</source>
-        <target>Bien sûr. Vous l’aurez dans cinq minutes.</target>
+        <source>Of course. You'll have it in 5 minutes.</source>
+        <target>Bien sûr. Vous l’aurez dans 5 minutes.</target>
       </segment>
     </unit>
     <unit id="block.bank-call.nodes.call.options.b.feedback">
@@ -2954,7 +2954,7 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Asking is good, but calling him back reaches him again. Only the number already on file reaches the real Harlow.</source>
+        <source>Asking your manager is good, but calling this number back reaches Neil again. Only the number already on file reaches the real Harlow.</source>
         <target>Demander conseil est un bon réflexe, mais en rappelant ce numéro, vous retombez sur le même interlocuteur. Pour joindre Harlow, utilisez le numéro déjà enregistré.</target>
       </segment>
     </unit>
@@ -3050,8 +3050,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Report sends it to the desk, who block it for all 1,200 inboxes; the call back on file proves the change was fake.</source>
-        <target>Le bouton « Signaler » transmet le message au service sécurité, qui le bloque dans les 1 200 boîtes mail. Le rappel au numéro enregistré confirme la fraude.</target>
+        <source>Report sends it to the desk, who block it in all 1,200 inboxes. The call back on the number on file proves the change was fake.</source>
+        <target>Le bouton « Signaler » transmet le message au service sécurité, qui le bloque dans les 1 200 boîtes mail. Le rappel au numéro enregistré confirme la fraude.</target>
       </segment>
     </unit>
     <unit id="block.bank-call.nodes.inbox.options.b.text">
@@ -3170,7 +3170,7 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Nothing was paid, but one answer left a door open. Go back to the fair choice to hear the safer one.</source>
+        <source>Nothing was paid, but one answer left a door open. Go back to that choice and try the safer answer.</source>
         <target>Aucun virement n’a été effectué, mais l’une de vos réponses laissait une ouverture au fraudeur. Revenez à cette décision et essayez une réponse plus sûre.</target>
       </segment>
     </unit>

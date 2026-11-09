@@ -2,99 +2,99 @@
   "screen": "practice",
   "line": "neil-no-need",
   "language": "en",
-  "textHash": "sha256:50aa303cc98839ecdeb238e7b0b419f6223e3476576c2aac252f8fadb73b224f",
-  "duration": 3.07,
+  "textHash": "sha256:868da2363e5d483952d8fe4bab44e7e9f052c93f093c21b85d6e8893046d75cb",
+  "duration": 2.94,
   "provider": "elevenlabs",
   "voice": "nXIYu9FT5meibkBbZFT7",
   "generated": true,
-  "audioHash": "sha256:570e4230f22a53cb0138386a0b49a87dc7f8a9681388956e214b201ee959146d",
-  "createdAt": "2026-10-24T02:41:47Z",
+  "audioHash": "sha256:760ea6dfe101d743491165a0cde97728dea61375408dce8865ae98f1b706169b",
+  "createdAt": "2026-11-09T20:45:06Z",
   "take": 1,
-  "spokenHash": "sha256:50aa303cc98839ecdeb238e7b0b419f6223e3476576c2aac252f8fadb73b224f",
+  "spokenHash": "sha256:868da2363e5d483952d8fe4bab44e7e9f052c93f093c21b85d6e8893046d75cb",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Synthetic voice: James (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "[a little too quickly] No need to call, you've got me right here. It takes two minutes.",
-  "mouth": "ccwwwwwwwsssccoowwoooosscccoooosswwwwcoosswwwwoooooooooccccccccoocwwwssscssswwoocsssssccssscc",
+  "text": "[a little too quickly] No need to call, you've got me right here. It takes 2 minutes.",
+  "mouth": "ccwwwwwoosssscooooooossccooosssssscooowwwoooowwwwwsscccccccsscwwwsssccssssooocoooocccsscc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "No",
-      "start": 0.06,
+      "start": 0.061,
       "end": 0.181,
-      "score": 0.917
+      "score": 0.932
     },
     {
       "text": "need",
       "start": 0.181,
-      "end": 0.341,
-      "score": 0.751
+      "end": 0.342,
+      "score": 0.996
     },
     {
       "text": "to",
-      "start": 0.341,
-      "end": 0.442,
-      "score": 0.996
+      "start": 0.342,
+      "end": 0.463,
+      "score": 0.999
     },
     {
       "text": "call",
-      "start": 0.442,
-      "end": 0.774,
-      "score": 0.923
+      "start": 0.463,
+      "end": 0.777,
+      "score": 0.936
     },
     {
       "text": "you've",
-      "start": 0.883,
-      "end": 1.084,
-      "score": 0.937
+      "start": 0.826,
+      "end": 1.007,
+      "score": 0.948
     },
     {
       "text": "got",
-      "start": 1.084,
-      "end": 1.204,
-      "score": 0.995
+      "start": 1.007,
+      "end": 1.128,
+      "score": 0.923
     },
     {
       "text": "me",
-      "start": 1.204,
-      "end": 1.365,
-      "score": 0.914
+      "start": 1.128,
+      "end": 1.249,
+      "score": 0.956
     },
     {
       "text": "right",
-      "start": 1.365,
-      "end": 1.625,
-      "score": 0.996
+      "start": 1.249,
+      "end": 1.47,
+      "score": 0.981
     },
     {
       "text": "here",
-      "start": 1.625,
-      "end": 1.918,
-      "score": 0.994
+      "start": 1.47,
+      "end": 1.763,
+      "score": 0.998
     },
     {
       "text": "It",
-      "start": 2.107,
-      "end": 2.207,
+      "start": 1.974,
+      "end": 2.074,
       "score": 0.994
     },
     {
       "text": "takes",
-      "start": 2.207,
-      "end": 2.448,
-      "score": 0.993
+      "start": 2.074,
+      "end": 2.336,
+      "score": 0.998
     },
     {
-      "text": "two",
-      "start": 2.448,
-      "end": 2.669,
-      "score": 1
+      "text": "2",
+      "start": 2.336,
+      "end": 2.558,
+      "score": 0.999
     },
     {
       "text": "minutes",
-      "start": 2.669,
-      "end": 3.062,
-      "score": 0.94
+      "start": 2.558,
+      "end": 2.911,
+      "score": 0.897
     }
   ]
 }
