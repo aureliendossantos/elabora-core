@@ -23,7 +23,7 @@ import type { NarrationPeaks, ImportedFile, LineFromAudioFileArgs, TextFromAudio
 import type { AddSoundArgs, GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
 import type { CourseSound } from '@elabora/core/sounds/sounds';
 import type {
-  CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, PlaceBlockArgs, ArrangeScreenArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
+  Expectation, CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, PlaceBlockArgs, ArrangeScreenArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
   CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
   WriteComponentFileArgs, MigrateComponentsArgs, AddLibraryComponentArgs, CommandDiagnostic, AddFontArgs, FontRequest, SettleImportReportArgs, AddResourceRequest,
   SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, RenameArgs, DuplicateScreenArgs,
@@ -496,7 +496,10 @@ export interface RenderScreenParams {
 
 type NoParams = Record<string, never>;
 
-export type RunParams = { [Name in CommandName]: { command: Name; args: CommandArgs[Name]; author?: Author } }[CommandName];
+// expect: the values the change was decided on (an AI's answer for an empty field, the image it
+// describes): checked in the engine's write queue just before the command; one changed meanwhile refuses
+// the change (refused, code E_EXPECTED) and nothing is written.
+export type RunParams = { [Name in CommandName]: { command: Name; args: CommandArgs[Name]; author?: Author; expect?: Expectation[] } }[CommandName];
 
 export interface Requests {
   summary: { params: NoParams; result: ProjectSummary };

@@ -1,6 +1,7 @@
 // Commands: the vocabulary of the CLI and the MCP server as pure functions over a files snapshot.
 export { CommandError, Draft, commandContext, findBlock, type CommandContext, type CommandOutput, type CommandDiagnostic, type Placement, type BlockTarget, type BlockPlace } from './context.ts';
 export { createScreen, updateScreen, deleteScreen, moveScreen, duplicateScreen, SCREEN_FIELDS, type CreateScreenArgs, type UpdateScreenArgs, type MoveScreenArgs, type DuplicateScreenArgs } from './screens.ts';
+export { unmetExpectation, type Expectation } from './expect.ts';
 export { addBlock, updateBlock, removeBlock, moveBlock, duplicateBlock, detachBlock, type AddBlockArgs, type UpdateBlockArgs, type MoveBlockArgs, type DuplicateBlockArgs } from './blocks.ts';
 export { placeBlock, arrangeScreen, type PlaceBlockArgs, type ArrangeScreenArgs } from './placement.ts';
 export { upsertLayer, removeLayer, upsertEvent, removeEvent, upsertVariable, removeVariable } from './layers-events-variables.ts';

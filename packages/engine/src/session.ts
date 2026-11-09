@@ -70,7 +70,7 @@ import { WriteQueue } from './queue.ts';
 import { MediaSupervisor, jobInfo } from './media.ts';
 import type { MediaOptions } from './media.ts';
 import { replaceMediaReferences } from '@elabora/core/commands/media';
-import { commandContext, planVoiceover } from '@elabora/core/commands/index';
+import { commandContext, planVoiceover, unmetExpectation, type Expectation } from '@elabora/core/commands/index';
 import { binaryFile } from '@elabora/core/project/files';
 import type { FileMedia } from '@elabora/core/media/conformance';
 import { isMediaAsset, mediaStatus, probeAssets } from '@elabora/node/store/media';
@@ -417,7 +417,7 @@ export class Session {
       case 'buildTranslation': return this.buildTranslation(request.params);
       case 'run': {
         if (typeof request.params.command !== 'string' || !isCommandName(request.params.command)) throw new EngineError('bad-request', `Unknown command "${String(params.command)}" (commands: ${Object.keys(COMMANDS).join(', ')})`);
-        return this.run(request.params.command, request.params.args, request.params.author);
+        return this.run(request.params.command, request.params.args, request.params.author, request.params.expect);
       }
       case 'undo': return this.undo(request.params.seq);
       case 'undoBatch': return this.undoBatch(request.params.batch);
@@ -936,12 +936,17 @@ export class Session {
 
   // Runs a command as a change. author: the app's by default; an agent's command run through the
   // engine (a future in-app assistant) says so.
-  async run<Name extends CommandName>(name: Name, args: CommandArgs[Name], author: Author = this.author): Promise<RunResult> {
+  // expect: the values the change was decided on (Expectation), checked here, in the write queue and
+  // under the lock, after the folder was read again: one changed meanwhile refuses it, nothing written.
+  async run<Name extends CommandName>(name: Name, args: CommandArgs[Name], author: Author = this.author, expect?: readonly Expectation[]): Promise<RunResult> {
     this.#assertOpen();
     if (!isCommandName(name)) throw new EngineError('bad-request', `Unknown command "${String(name)}"`);
+    if (expect !== undefined && !Array.isArray(expect)) throw new EngineError('bad-request', 'expect: a list of expected values');
     return this.#change(author, async () => {
       // An outdated course is migrated first, by its own change after a migration version.
       await this.#migrateFormat();
+      const unmet = expect?.length ? unmetExpectation(this.#state.project, expect) : null;
+      if (unmet) throw new EngineError('refused', `${unmet}: nothing written.`, { code: 'E_EXPECTED' });
       const result = await runNamedCommand(name, this.root, args, this.#editOptions(author));
       return this.#committed(result);
     }).then(({ result, change }) => this.#runResult(result.op ?? name, result, change));
