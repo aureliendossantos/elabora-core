@@ -13,8 +13,8 @@ elabora build . --target web --review-origin https://revue.elabora.studio --revi
 
 - `--review-origin` is repeatable (or comma-separated): the production page and the development pages. An origin is `https://host[:port]`; `http://` only for this computer (`localhost`, `127.0.0.1`, `[::1]`, `*.localhost`). No path, query, credentials or wildcard: `E_WEB_REVIEW_ORIGIN` otherwise.
 - MCP: `elabora_build { target: "web", web: { review: { origins: ["https://revue.elabora.studio"] } } }`. Engine: the build request's `web.review`. Node: `build(dir, { target: 'web', web: { review: { origins } } })`.
-- A review build's defaults are a review's: `progress none` (nothing kept), `navigation free` (go to any screen, nothing locked), `noindex`. Each can still be given (`--progress local` to resume a reviewer where they left).
-- What changes in the module: `elabora/review.js`, a `<script src="elabora/review.js">` after the player's in `index.html`, and `delivery.review { origins, languages }` in the compiled course (its build id with it). The player's files are the same bytes as in any build, and **a build without `--review-origin` keeps exactly the same bytes** (`test/unit/review-bridge.test.ts`).
+- A review build's defaults are a review's: `progress none` (nothing kept), `navigation free` (go to any screen, nothing locked), `noindex`. Each can be set explicitly (`--progress local` to resume a reviewer where they left).
+- What changes in the module: `elabora/review.js`, a `<script src="elabora/review.js">` after the player's in `index.html`, and `delivery.review { origins, languages }` in the compiled course (its build id with it). The player's files are byte-identical to those of any other build, and **a build without `--review-origin` keeps exactly the same bytes** (`test/unit/review-bridge.test.ts`).
 - The build report says `web.review { origins }`; the proof dossier names the origins.
 
 ## Security
@@ -38,7 +38,7 @@ Every message is a plain object with `protocol: "elabora-review/1"` and a `type`
   "language": "fr", "languages": ["fr", "en"], "presentation": "slides",
   "screens": [{ "key": "0", "id": "accueil", "title": "Le ticket de Marc", "section": "decouvrir" }, …] }
 ```
-`key` is the screen's permanent key (D4, `elabora.lock.json`): anchors name it, so a comment survives a renamed screen. `languages`: the course's own, then its translations (`translations/<lang>.xlf`); each is a build of its own.
+`key` is the screen's permanent key (D4, `elabora.lock.json`): anchors refer to it, so a comment survives a renamed screen. `languages`: the course's own, then its translations (`translations/<lang>.xlf`); each is a build of its own.
 
 **`layout`**: after `ready`, on every resize, screen change and `layout` request.
 ```json
@@ -51,9 +51,9 @@ Every message is a plain object with `protocol: "elabora-review/1"` and a `type`
 - `fontSize`: the root text size the module takes in its frame. It follows the **frame**, not the window: `baseFontSize` (16 px, the browser's) times the scale of the last rule of `sizes` that matches (a rule matches when the frame is at most `maxWidth` wide, at most `maxHeight` high, or in portrait at most `portraitMaxWidth` wide). These are player.css's media queries (a unit test keeps them equal). `textScale(frame)` computes it.
 - `column`: the screen shown, its column's width, the cap of the course's columns at this text size (`presentation.wideWidth`, 68.75 rem by default), whether the screen is full bleed (no column). `widest`: the widest column the module can have in this frame, the cap or the room the frame leaves.
 - `inset`: the margin the page keeps (see `layout` below) and whether the column moved into the room left.
-- `chrome`: the heights of the module's header and footer, its navigation. A floating panel sits between them.
+- `chrome`: the heights of the module's header and footer, its navigation. A floating panel goes between them.
 
-**`location`**: whenever the screen, the step, the open layer, the narration's line or word, or its playing state changes (the time alone does not make a message while the narration plays; it does when it is still, after a seek).
+**`location`**: whenever the screen, the step, the open layer, the narration's line or word, or its playing state changes (the time alone sends no message while the narration plays; it does when the narration is still, after a seek).
 ```json
 { "protocol": "elabora-review/1", "type": "location",
   "screen": "0", "index": 0, "step": 1, "steps": [1, 2], "layer": null,
@@ -82,7 +82,7 @@ Every message is a plain object with `protocol: "elabora-review/1"` and a `type`
 
 **`measured`**: the answer to `measure`: `{ "type": "measured", "re": "m1", "frame": { "width": 1150, "height": 789 }, "fontSize": 14, "widest": 962.5 }`.
 
-**`key`**: `{ "type": "key", "key": "c" }`. The reviewer pressed C while the focus was inside the module: keys pressed there stay in the module's frame and never reach the page, whose shortcut for « Commenter » is C. Not sent for a key typed in a text field, with Ctrl, ⌘ or Alt, held down, or taken by the module (`preventDefault`). The page treats it as its own C.
+**`key`**: `{ "type": "key", "key": "c" }`. The reviewer pressed C while the focus was inside the module: keys pressed there stay in the module's frame and never reach the page, whose shortcut for « Commenter » is C. Not sent for a key typed in a text field, pressed with Ctrl, ⌘ or Alt, held down, or taken by the module (`preventDefault`). The page treats it as its own C.
 
 **`error`**: a message of the protocol the module could not take: `{ "type": "error", "re": 7, "message": "…" }`.
 
@@ -97,11 +97,19 @@ Post to the iframe's window with the module's origin as the target: `frame.conte
 { "protocol": "elabora-review/1", "type": "go", "id": "g1", "highlight": true,
   "anchor": { "screen": "0", "step": 2, "line": "l2", "word": "imprimante", "block": "accueil-illustration" } }
 ```
-The module goes to the screen, reveals the step named (or the block's, when the block is not shown yet), places a timed screen at the word (its start), else at the line's start, else at the time, still (nothing plays, no cue fires); opens the layer (and closes the others: they would hide the screen); a line of a layer's narration opens that layer and places its own timeline at the word or the line; a line of a dialogue scrolls to the dialogue's block (and the player shows the line when it can); scrolls the block into view and outlines it twice (still under reduced motion; `highlight: false` to skip). The page makes its pin ping too.
+The module:
+- goes to the screen;
+- reveals the step named (or the block's, when the block is not shown yet);
+- places a timed screen at the word (its start), else at the line's start, else at the time, still (nothing plays, no cue fires);
+- opens the layer and closes the others, which would hide the screen; a line of a layer's narration opens that layer and places its own timeline at the word or the line;
+- scrolls to the dialogue's block for a line of a dialogue (and the player shows the line when it can);
+- scrolls the block into view and outlines it twice (still under reduced motion; `highlight: false` to skip).
+
+The page makes its pin ping too.
 
 **`pause`** and **`resume`**: comment mode pauses the narration; while it holds it, a screen that starts playing (`go`, the reviewer's Next) is paused at once. `resume` plays it again only if it was playing when held (or a screen tried to start meanwhile).
 
-**`layout`**: the margin the page keeps on the right, for a floating panel: `{ "type": "layout", "id": "l1", "inset": { "right": 352 } }` (CSS px of the module's frame; `0` gives it back). The module centres its column in the room left **without changing its size** when it fits there (the column and the screen's side padding within `frame.width - right`), and does not move otherwise (`inset.shifted` in the `layout` answer says which). Header, footer, backdrop and full-bleed screens do not move. It holds on every screen until changed.
+**`layout`**: the margin the page keeps on the right, for a floating panel: `{ "type": "layout", "id": "l1", "inset": { "right": 352 } }` (CSS px of the module's frame; `0` gives it back). The module centres its column in the room left **without changing its size** when it fits there (the column and the screen's side padding within `frame.width - right`), and does not move otherwise (`inset.shifted` in the `layout` answer says which). Header, footer, backdrop and full-bleed screens do not move. The inset stays on every screen until changed.
 
 **`measure`**: what a frame of another size would give: `{ "type": "measure", "id": "m1", "frame": { "width": 1150, "height": 789 } }` → `measured`. For the docking rule (below). The page can also compute it from `layout` (`widestColumn` in review-protocol.ts) without a message; `measure` reads the course's own cap and padding.
 
@@ -129,7 +137,7 @@ The contract with the comments API of Elabora's hosting. The page builds it with
 - **`layout`**: the docking rule (decided on 14 October 2026): **dock** the panel when docking changes neither the text size nor the widest column (`measure` the docked frame, or compute it, and compare `fontSize` and `widest`); **else float**, and send `layout { inset: { right: <panel width + gap> } }` so the module moves its column into the free margin; **if it does not move** (`inset.shifted: false`), the panel floats over the edge, folded at first. Place a floating panel between `chrome.top` and `frame.height - chrome.bottom`. Apply the rule to the window (on resize), not screen by screen.
 - **`location`**: the panel follows (« Cet écran »), the counter, and the composer's « À 0:10, quand Marc dit « … » » on a narrated screen. Keep the last one to build the anchor.
 - **`key`**: what the page's own C does (comment mode), when no menu or dialog of the page is open.
-- **`blocks`**: in comment mode, an overlay over the iframe takes the pointer: on each move, `blockAt(blocks, point)` gives the block under it (no message), outlined with its `name`; a click builds the anchor (`anchorFor`) and opens the composer; « Sur » offers the block, its `parent`, « Écran entier ». Tab goes through the visible blocks by `order`. Pins: at `rect` + `point` of each comment's block on this screen, layer and step (or on the screen's edge with « retiré dans la version 3 » when the block is gone); they follow the blocks as new `blocks` messages come (scrolling). In scroll presentation, comments above or below the view are those whose block's `rect` is out of the frame.
+- **`blocks`**: in comment mode, an overlay over the iframe takes the pointer: on each move, `blockAt(blocks, point)` gives the block under it (no message), outlined with its `name`; a click builds the anchor (`anchorFor`) and opens the composer; « Sur » offers the block, its `parent`, « Écran entier ». Tab goes through the visible blocks by `order`. Pins go at `rect` + `point` of each comment's block on this screen, layer and step (or on the screen's edge with « retiré dans la version 3 » when the block is gone); they follow the blocks as new `blocks` messages come (scrolling). In scroll presentation, comments above or below the view are those whose block's `rect` is out of the frame.
 - **`went`**: a pin to ping; `missing` to say what moved (a block removed, a word no longer said).
 
 ## A minimal host page
