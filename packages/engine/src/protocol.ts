@@ -496,6 +496,8 @@ export interface RenderScreenParams {
 
 type NoParams = Record<string, never>;
 
+export type { Expectation };
+
 // expect: the values the change was decided on (an AI's answer for an empty field, the image it
 // describes): checked in the engine's write queue just before the command; one changed meanwhile refuses
 // the change (refused, code E_EXPECTED) and nothing is written.
