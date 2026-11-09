@@ -60,7 +60,13 @@ interface Store {
 }
 ```
 
-`@elabora/node` provides `FsStore` (`store/`: asynchronous reads, atomic writes by temp file and rename with retries on Windows sharing violations, hashes through the snapshot's hash cache, recursive watching that leaves tool folders and temporary files out and says when it is live: on macOS from a worker thread of its own, whose FSEvents stream no other watcher of the process rebuilds (about 20 ms to start and 10 MB per folder watched), and by a probe file in `.elabora/` that its watcher must report, 2 s at most; inotify and ReadDirectoryChangesW watch from the call) and `readSnapshot(store)`, which gives the same snapshot as the CLI's synchronous reader, media verdicts and `MediaStatus` included. The CLI may use synchronous helpers for convenience; the engine uses the async interface.
+`@elabora/node` provides `FsStore` (`store/`) and `readSnapshot(store)`.
+
+- **Reads and writes.** Reads are asynchronous. Writes are atomic, by temp file and rename, with retries on Windows sharing violations. Hashes go through the snapshot's hash cache.
+- **Watching.** The watch is recursive and leaves tool folders and temporary files out. It also says when it is live. On macOS it runs in a worker thread of its own, whose FSEvents stream no other watcher of the process rebuilds (about 20 ms to start and 10 MB per folder watched), and a probe file in `.elabora/` that the watcher must report, 2 s at most, shows that it is live. inotify and ReadDirectoryChangesW watch from the call.
+- **Snapshot.** `readSnapshot(store)` gives the same snapshot as the CLI's synchronous reader, media verdicts and `MediaStatus` included.
+
+The CLI may use synchronous helpers for convenience; the engine uses the async interface.
 
 ## Subsystems
 
