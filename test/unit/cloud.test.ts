@@ -8,7 +8,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { narrationWords } from '@elabora/core/narration/words';
 import { cloudUrl, scrubSecrets, resolveCredential, verifySignIn, chooseHandle, publishCourse, createReview, resolveComments, defaultDevice, CloudError, accountStatus, readSession, setSessionStore, signOut,
-  accountSessions, revokeSession, updateAccount, requestDeletionCode, deleteAccount, unpublish, renameReview, handleAvailable, revokeAiKey, setReviewNote } from '@elabora/node/cloud/index';
+  accountSessions, revokeSession, updateAccount, requestDeletionCode, deleteAccount, unpublish, renameReview, handleAvailable, revokeAiKey, setReviewNote, readRecords, screenHashes } from '@elabora/node/cloud/index';
+import { loadProjectFromDir } from '@elabora/node/project-reader';
 import type { CloudReview, CommentsAnswer, ResolvedComments, SessionRecord } from '@elabora/node/cloud/index';
 import { guard } from '@elabora/node/cloud/account';
 import { updateSessionHandle } from '@elabora/node/cloud/credentials';
@@ -643,6 +644,28 @@ test('the handle changes once in 30 days (protocol 7): the command line asks for
   await assert.rejects(chooseHandle('rename-third'), (error: CloudError) => error.code === 'handle-change-too-soon');
   const status = await elabora(['account', 'status']);
   assert.match(status.stdout, /may change again from \d{4}-\d{2}-\d{2}/);
+});
+
+test('publish: the record and the publication describe what was built, even when the author edits while it is sent (I06)', async () => {
+  await signIn('built-author');
+  const dir = copy(path.join(ROOT, 'examples/medieval-charts'));
+  const built = screenHashes(loadProjectFromDir(dir));
+  const course = readJSON(dir, 'course.json');
+  // Built, then edited while the files are hashed and sent: a screen and the course's title.
+  const published = await publishCourse(dir, { onProgress: ({ phase }) => {
+    if (phase !== 'hash') return;
+    const screen = readJSON(dir, 'screens/workshop.json');
+    writeJSON(dir, 'screens/workshop.json', { ...screen, title: `${screen.title} (pendant l'envoi)` });
+    writeJSON(dir, 'course.json', { ...readJSON(dir, 'course.json'), title: 'Un autre titre', version: '9.9.9' });
+  } });
+  const [record] = readRecords(dir).filter((candidate) => candidate.name === published.name);
+  const last = record!.versions.at(-1)!;
+  assert.deepEqual(last.screens, built, 'the screens as they were built');
+  assert.equal(last.course, course.version);
+  const now = screenHashes(loadProjectFromDir(dir));
+  assert.deepEqual(Object.keys(now).filter((key) => now[key] !== last.screens[key]).length, 1, 'the screen edited since is said changed');
+  const meta = fake.publications.get('built-author')!.get(published.name)!.manifest.meta;
+  assert.deepEqual([meta.title, meta.course], [course.title, { id: course.id, version: course.version }]);
 });
 
 test('unpublish (« Retirer du web ») and a review\'s title', async () => {

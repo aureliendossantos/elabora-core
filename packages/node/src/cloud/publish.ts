@@ -7,6 +7,7 @@ import { build } from '../build.ts';
 import type { BuildReport } from '../build.ts';
 import type { WebNavigation, WebProgress } from '../build-types.ts';
 import { loadProjectFromDir } from '../project-reader.ts';
+import type { Project } from '@elabora/core/project/model';
 import { CloudError, REVIEW_PAGE_ORIGIN, cloudUrl, publicationUrl, segment } from './client.ts';
 import { connect, guard } from './account.ts';
 import type { Connection } from './account.ts';
@@ -188,7 +189,10 @@ export interface PublishCourseOptions {
 interface CourseFacts { id: string; title: string; description: string; language: string; version: string }
 
 function courseFacts(courseDir: string): CourseFacts {
-  const project = loadProjectFromDir(courseDir);
+  return factsOf(loadProjectFromDir(courseDir), courseDir);
+}
+
+function factsOf(project: Project, courseDir: string): CourseFacts {
   const course = project.course;
   if (!course) throw new CloudError(0, 'E_CLOUD_NOT_A_COURSE', `${path.resolve(courseDir)} is not an Elabora course (no course.json).`);
   return { id: course.id, title: course.title, description: course.description ?? '', language: course.language, version: course.version };
@@ -205,8 +209,7 @@ function courseFacts(courseDir: string): CourseFacts {
 export async function publishCourse(courseDir: string, options: PublishCourseOptions = {}): Promise<PublishResult & { report: BuildReport; checks: PublishCheck[] }> {
   const visibility = options.visibility ?? 'public';
   const api = options.api ?? cloudUrl();
-  const facts = courseFacts(courseDir);
-  const name = options.name ?? defaultPublicationName(facts.id, visibility);
+  const name = options.name ?? defaultPublicationName(courseFacts(courseDir).id, visibility);
   if (!isPublicationName(name)) throw new CloudError(0, 'E_CLOUD_NAME', `${JSON.stringify(name)} is not a publication name: lowercase letters, digits and hyphens, 1 to 64 characters.`);
   if (visibility === 'private' && options.image) throw new CloudError(0, 'E_CLOUD_PRIVATE_IMAGE', 'A private publication has no address of its own, so no sharing image.');
   if (visibility === 'private' && options.languages) throw new CloudError(0, 'E_CLOUD_PRIVATE_LANGUAGES', 'A review shows one language per build (D42): publish the review without languages; the package of every language is for the public publication.');
@@ -224,10 +227,12 @@ export async function publishCourse(courseDir: string, options: PublishCourseOpt
       const errors = built.diagnostics.filter((d) => d.severity === 'error' && !d.waived);
       throw new CloudError(0, 'E_CLOUD_BUILD', `The course does not build for the web (${errors.length} error(s)): ${errors.slice(0, 3).map((d) => `${d.code} ${d.message}`).join('; ')}${errors.length > 3 ? '…' : ''}. elabora validate lists them.`, { diagnostics: errors });
     }
+    // The course as it was built: an edit while the files are sent is for the next version (I06).
+    const facts = factsOf(built.project, courseDir);
     const meta: PublicationMeta = { title: facts.title, description: facts.description, languages: built.report.languages ?? [facts.language], image: visibility === 'public' ? built.report.web?.image ?? null : null, course: { id: facts.id, version: facts.version } };
     const published = await publishFolder(connection, built.dirPath, { name, visibility, noindex: visibility === 'private' ? true : noindex, meta, onProgress });
     // The screens as they were built: a comment on this version is compared with them later.
-    recordPublished(courseDir, { api, space: connection.space, name, visibility }, { version: published.version, course: facts.version, publishedAt: new Date().toISOString(), screens: screenHashes(loadProjectFromDir(courseDir)) });
+    recordPublished(courseDir, { api, space: connection.space, name, visibility }, { version: published.version, course: facts.version, publishedAt: new Date().toISOString(), screens: screenHashes(built.project, built.keys) });
     const reviews = visibility === 'private' ? await sendToOpenReviews(connection, name) : [];
     const checks: PublishCheck[] = built.diagnostics.filter((d) => d.severity === 'error' && !d.waived && d.rule)
       .map((d) => ({ code: d.code, message: d.message, rule: d.rule ?? null, target: d.target ?? d.file ?? null }));

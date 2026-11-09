@@ -45,9 +45,9 @@ export function readRecords(courseDir: string): PublicationRecord[] {
   } catch { return []; }
 }
 
-// The screens' hashes by permanent key, as the course's sources hold them now.
-export function screenHashes(project: Pick<Project, 'files' | 'screens'>): Record<string, string> {
-  const keys = readLock(project).keys;
+// The screens' hashes by permanent key, as the course's sources hold them now (or as a build read
+// them, with the keys it gave).
+export function screenHashes(project: Pick<Project, 'files' | 'screens'>, keys: Record<string, string> = readLock(project).keys): Record<string, string> {
   const hashes: Record<string, string> = {};
   for (const [id, entry] of project.screens) {
     const key = keys[`screen:${id}`];

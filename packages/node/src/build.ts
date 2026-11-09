@@ -18,7 +18,7 @@ import type { Reporter, Summary } from '@elabora/core/diagnostics/index';
 import { canonicalJSON, stringifyJSON } from '@elabora/core/util/json';
 import { escapeHtml } from '@elabora/core/util/html';
 import { readLock, assignKeys, buildStateModel, syncComponentVersions } from '@elabora/core/compile/state-model';
-import type { StateLock } from '@elabora/core/compile/state-model';
+import type { StateKeys, StateLock } from '@elabora/core/compile/state-model';
 import { worstCaseLength } from '@elabora/player/state-codec';
 import { compileCourseData } from '@elabora/core/compile/course-data';
 import { packageManifests, structureFingerprint } from '@elabora/core/compile/manifests';
@@ -181,6 +181,10 @@ export interface BuildSuccess {
   zipPath?: string; // emit zip or both
   dirPath?: string; // emit dir or both
   reportPath: string;
+  // What was built: the project as the build read it, and its screens' state keys. What describes
+  // the package afterwards (a publication's record, I06) comes from here, never from a new read.
+  project: Project;
+  keys: StateKeys;
 }
 
 export type BuildResult = BuildFailure | BuildSuccess;
@@ -512,7 +516,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   const diagnostics = sortDiagnostics(applyIgnored(applyWaivers(reporter.items, plan.waivers || []), ignoredOf(project.course)));
   return {
     ok: true, diagnostics, summary: summarize(diagnostics), report, files, media,
-    ...(zipPath !== undefined ? { zipPath } : {}), ...(dirPath !== undefined ? { dirPath } : {}), reportPath
+    ...(zipPath !== undefined ? { zipPath } : {}), ...(dirPath !== undefined ? { dirPath } : {}), reportPath, project, keys
   };
 }
 
