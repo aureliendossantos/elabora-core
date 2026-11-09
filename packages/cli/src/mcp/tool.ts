@@ -64,6 +64,9 @@ export function objectSchema<const Properties extends { readonly [name: string]:
 
 // Shared property schemas.
 export const SLUG = { type: 'string', pattern: '^[a-z][a-z0-9-]{0,47}$' } as const;
+// A voiced line's id: a line's (narration.lines[].id, a dialogue's line) or an answer the learner's voice says,
+// "<node>.<option>" (optionLineId), as elabora_voice_estimate lists them.
+export const LINE_ID = { type: 'string', pattern: '^[a-z][a-z0-9-]{0,47}(\\.[a-z][a-z0-9-]{0,47})?$' } as const;
 export const PLAN_ID = { type: 'string', pattern: '^[A-Z][A-Z0-9_-]{0,31}$' } as const;
 export const LANGUAGE = { type: 'string', pattern: '^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$', description: 'A BCP 47 tag: en, de, pt-BR.' } as const;
 export const PROFILES = { type: 'array', items: { type: 'string' }, description: 'LMS profile ids (elabora_list_profiles). Default: course.json delivery.lms, else ["unknown"]: no LMS chosen, the strictest values, and package limits only warn.' } as const;

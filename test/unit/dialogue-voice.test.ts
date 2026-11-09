@@ -374,3 +374,30 @@ test('review comments on a line find it in a layer or a dialogue, voiced or not'
   assert.equal(voiced!.place!.line!.word!.text, 'étage');
   assert.equal(silent!.place!.line!.text, 'Leïla ouvre un ticket pendant que Marc patiente.');
 });
+
+test('an agent generates one answer the learner\'s voice says by the id elabora_voice_estimate lists ("<node>.<option>"), and the other line tools take that id too', { skip: NO_FFMPEG }, () => {
+  const dialogue = structuredClone(MARC_DIALOGUE);
+  (dialogue.props as Record<string, unknown>).learnerVoice = true;
+  const dir = courseWithDialogue(dialogue);
+  const env = { ...process.env, ELABORA_VOICE_TONES: '1' };
+  const elabora = (...args: string[]) => execFileSync(process.execPath, [path.join(ROOT, 'bin/elabora.js'), ...args], { cwd: dir, env, encoding: 'utf8' });
+  const call = (tool: string, args: Record<string, unknown>) => JSON.parse(elabora('tools', 'call', tool, '.', '--args', JSON.stringify(args)));
+  elabora('voice', 'set', 'marc', 'tone-b');
+  elabora('voice', 'set', 'leila', 'tone-a');
+  const estimate = call('elabora_voice_estimate', { screen: 'appel' });
+  assert.ok(estimate.lines.some((line: { line: string }) => line.line === 'premiere-question.a'), JSON.stringify(estimate.lines.map((line: { line: string }) => line.line)));
+  const one = call('elabora_voice_estimate', { screen: 'appel', lines: ['premiere-question.a'] });
+  assert.deepEqual(one.lines.map((line: { line: string }) => line.line), ['premiere-question.a']);
+  const generated = call('elabora_voice_generate', { screen: 'appel', lines: ['premiere-question.a'] });
+  assert.equal(generated.error, undefined, JSON.stringify(generated));
+  assert.ok(fs.existsSync(path.join(dir, 'assets/narration/fr/appel/premiere-question.a.m4a')), 'that answer is said');
+  assert.ok(!fs.existsSync(path.join(dir, 'assets/narration/fr/appel/m1.m4a')), 'and only that one: nothing else is paid for');
+  const takes = call('elabora_voice_takes', { screen: 'appel', line: 'premiere-question.a' });
+  assert.equal(takes.error, undefined, JSON.stringify(takes));
+  assert.equal(takes.takes.length, 1);
+  for (const [tool, args] of [['elabora_align_narration', { screen: 'appel', lines: ['premiere-question.a'] }], ['elabora_import_narration', { screen: 'appel', line: 'premiere-question.a', file: path.join(dir, 'missing.wav') }]] as const) {
+    let answer: { error?: string };
+    try { answer = call(tool, args); } catch (error) { answer = JSON.parse(String((error as { stdout?: string }).stdout)); }
+    assert.notEqual(answer.error, 'Invalid arguments', `${tool}: ${JSON.stringify(answer)}`);
+  }
+});
