@@ -85,12 +85,13 @@ test('the protocol carries expect', async () => {
 test('delivery changed field by field: both settings stay, null removes one', async () => {
   const session = await open();
   // The window read delivery once, then changes the quality, then the LMS, before it hears of the first.
-  await session.run('update_course', { deliveryPatch: { mediaQuality: 'low' } });
-  await session.run('update_course', { deliveryPatch: { lms: ['moodle'] } });
+  await session.run('update_course', { patch: { delivery: { mediaQuality: 'low' } } });
+  await session.run('update_course', { patch: { delivery: { lms: ['moodle'] } } });
   const both = session.project.course!.delivery as Record<string, unknown>;
   assert.equal(both.mediaQuality, 'low');
   assert.deepEqual(both.lms, ['moodle']);
-  await session.run('update_course', { deliveryPatch: { lms: null } });
+  await session.run('update_course', { patch: { delivery: { lms: null }, navigation: { mode: 'free' } } });
+  assert.equal((session.project.course!.navigation as Record<string, unknown>).mode, 'free');
   const delivery = session.project.course!.delivery as Record<string, unknown>;
   assert.equal(delivery.mediaQuality, 'low');
   assert.equal('lms' in delivery, false);
