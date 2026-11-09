@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { localDataRoot } from '../../data-dir.ts';
@@ -53,9 +54,17 @@ export const maskKey = (key: string): string => `${key.slice(0, 3)}…${key.slic
 // Writes the key for the command line and agents, readable by the author only.
 export function writeKeyFile(key: string): string {
   const file = keyFile();
+  const text = `${checkedKey(key)}\n`;
   fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
-  fs.writeFileSync(file, `${checkedKey(key)}\n`, { mode: 0o600 });
-  fs.chmodSync(file, 0o600);
+  // Written whole beside it, then moved into place: a crash or a full disk leaves the key kept before.
+  const temporary = `${file}.${crypto.randomBytes(6).toString('hex')}.tmp`;
+  try {
+    fs.writeFileSync(temporary, text, { mode: 0o600, flag: 'wx' });
+    fs.chmodSync(temporary, 0o600);
+    fs.renameSync(temporary, file);
+  } finally {
+    fs.rmSync(temporary, { force: true });
+  }
   return file;
 }
 

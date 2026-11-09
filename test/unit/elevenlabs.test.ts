@@ -531,6 +531,19 @@ test('elevenlabs: a soft sigh before a line\'s first word stays with that line; 
   assert.ok(laugh[1].start >= 1.35, `the second line starts after it: ${laugh[1].start}`);
 });
 
+test('elevenlabs: a key written while the disk fails leaves the key kept before (I21)', async () => {
+  const { writeKeyFile } = await import('@elabora/node/voice/elevenlabs/key');
+  writeKeyFile('sk_kept_before_0123456789');
+  const real = fs.writeFileSync;
+  fs.writeFileSync = ((target: fs.PathOrFileDescriptor, data: string | NodeJS.ArrayBufferView) => {
+    real(target, String(data).slice(0, 4));
+    throw Object.assign(new Error('no space left on device'), { code: 'ENOSPC' });
+  }) as typeof fs.writeFileSync;
+  try { assert.throws(() => writeKeyFile('sk_new_one_9876543210')); } finally { fs.writeFileSync = real; }
+  assert.equal(fs.readFileSync(process.env.ELABORA_ELEVENLABS_KEY_FILE!, 'utf8').trim(), 'sk_kept_before_0123456789');
+  assert.deepEqual(fs.readdirSync(path.dirname(process.env.ELABORA_ELEVENLABS_KEY_FILE!)), ['key']);
+});
+
 test('quota: costs said as a share of the month, one threshold, an approval that covers its rounded figure', () => {
   assert.equal(APPROVAL_SHARE, 0.01);
   assert.deepEqual([0.000213, 0.0018, 0.0095, 0.0149, 0.026, 0.126, 0].map(quotaPercent), [0.02, 0.2, 1, 1, 3, 13, 0]);
