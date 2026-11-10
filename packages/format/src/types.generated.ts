@@ -3658,8 +3658,11 @@ export type PropSchema = {
   'x-group'?: string;
   /** @default 'author' */
   'x-editable-by'?: 'author' | 'developer';
-  /** Editor control. list: a prop of type array, edited as rows (one per item, one field per item field). range: two numbers (a low and a high value) between the items' minimum and maximum, edited with a two-handle slider. vec2, vec3: two or three numbers (x, y and z) edited on one row. */
+  /** Editor control. list: a prop of type array, edited as rows (one per item, one field per item field). slider: one number on a scale (minimum and maximum); a number whose scale holds at most 200 steps (its multipleOf, else 1 for an integer; without a step, a scale of 10 at most) is a slider by default, number keeps a field. range: two numbers, a low and a high value, edited with a two-handle slider when the items' minimum and maximum make such a scale, else as two fields, Min and Max. vec2, vec3: two or three numbers edited on one row (x-axes). */
   'x-control'?: 'text' | 'textarea' | 'slider' | 'range' | 'number' | 'toggle' | 'select' | 'color' | 'vec2' | 'vec3' | 'vec3-gizmo' | 'asset' | 'list';
+  'x-unit'?: Unit;
+  /** Names of the numbers of a vec2 or vec3 in the editor: xyz (X, Y, Z: a point, the default) or size (width, height, depth: W, H, D in English, L, H, P in French). */
+  'x-axes'?: 'xyz' | 'size';
   /** Theme token the value comes from by default: a charter token (color.accent) or a custom token of theme.custom (color.blueprint). Colours that carry the course identity bind to one; a material colour (brass, wood) keeps a literal default instead. */
   'x-token'?: string;
   /** For a colour the object draws text in: the colour that text is read on, another colour prop of this manifest (paper) or a theme token (color.surface). They must reach 4.5:1 (WCAG AA) with the defaults and with the values of each block. */
@@ -3672,6 +3675,9 @@ export type PropSchema = {
   /** Plan locked text id whose wording this prop must keep. */
   'x-plan-locked'?: string;
 };
+
+/** Unit of a number, written after it in the editor (m, s, px, ×). % on a scale up to 1 shows a fraction as a percentage (0.25 reads 25 %); on a larger scale the number is already in percent. */
+export type Unit = string;
 
 /** Items of a list prop (type array): a simple value, or an object (type object) whose fields are simple values. The editor shows a list as rows; a block's values are checked against the items. */
 export type ListItem = {
@@ -3689,6 +3695,7 @@ export type ListItem = {
   pattern?: string;
   format?: 'color';
   'x-control'?: 'text' | 'textarea' | 'slider' | 'number' | 'toggle' | 'select' | 'color' | 'asset';
+  'x-unit'?: Unit;
   /** Text shown to learners: extracted for translation. */
   'x-translatable'?: boolean;
   [key: string]: unknown;
@@ -3722,6 +3729,7 @@ export type ListField = {
   pattern?: string;
   format?: 'color';
   'x-control'?: 'text' | 'textarea' | 'slider' | 'number' | 'toggle' | 'select' | 'color' | 'asset';
+  'x-unit'?: Unit;
   'x-asset-type'?: string;
   /** Text shown to learners: extracted for translation. */
   'x-translatable'?: boolean;

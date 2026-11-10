@@ -62,7 +62,8 @@ export function objectPropErrors(manifest: ObjectManifest, values: unknown): { p
 
 // ── Editor controls ──────────────────────────────────────────────────
 // The types each control edits. A list (type array, items) is rows of fields; range is a low and a
-// high number on one scale; vec2, vec3 and vec3-gizmo are a point of two or three numbers.
+// high number (on a slider when their items have a scale, else Min and Max); vec2, vec3 and
+// vec3-gizmo are a point or a size of two or three numbers, their names given by x-axes.
 const CONTROL_TYPES: Readonly<Record<string, readonly string[]>> = {
   text: ['string'], textarea: ['string'], asset: ['string'], color: ['string'], select: ['string', 'number', 'integer'],
   slider: ['number', 'integer'], number: ['number', 'integer'], toggle: ['boolean'], list: ['array'],
@@ -73,24 +74,27 @@ const NUMBERS: Readonly<Record<string, number>> = { range: 2, vec2: 2, vec3: 3, 
 const WORDS = ['', 'one', 'two', 'three'];
 
 // What does not fit between the x-control of a prop (or of the items and fields of a list) and its
-// type: path under the prop schema, and why.
-export function controlProblems(prop: unknown): { path: string; message: string }[] {
-  const problems: { path: string; message: string }[] = [];
+// type, and the keywords that name or count its numbers (x-axes, x-unit): path under the prop schema,
+// the keyword, and why.
+export function controlProblems(prop: unknown): { path: string; key: 'x-control' | 'x-axes' | 'x-unit'; message: string }[] {
+  const problems: { path: string; key: 'x-control' | 'x-axes' | 'x-unit'; message: string }[] = [];
   const check = (schema: Record<string, unknown>, path: string): void => {
     const { type } = schema;
     const control = schema['x-control'];
+    if (schema['x-axes'] !== undefined && !(typeof control === 'string' && control.startsWith('vec'))) problems.push({ path, key: 'x-axes', message: 'x-axes names the numbers of a vec2 or a vec3' });
+    const numbers = type === 'number' || type === 'integer' || (type === 'array' && ['number', 'integer'].includes(fieldsOf(schema.items).type as string));
+    if (schema['x-unit'] !== undefined && !numbers) problems.push({ path, key: 'x-unit', message: 'x-unit is the unit of a number (or of the numbers of a range)' });
     if (typeof control !== 'string' || typeof type !== 'string' || !CONTROL_TYPES[control]) return;
-    if (!CONTROL_TYPES[control].includes(type)) problems.push({ path, message: `x-control "${control}" edits ${CONTROL_TYPES[control].join(' or ')} values, not ${/^[aeiou]/.test(type) ? 'an' : 'a'} ${type}` });
-    else if (control === 'select' && !Array.isArray(schema.enum) && !(type === 'integer' && typeof schema.minimum === 'number' && typeof schema.maximum === 'number')) problems.push({ path, message: 'x-control "select" needs its choices: an enum, or an integer between a minimum and a maximum' });
-    else if (control === 'slider' && (typeof schema.minimum !== 'number' || typeof schema.maximum !== 'number')) problems.push({ path, message: 'x-control "slider" needs a minimum and a maximum' });
-    else if (control === 'color' && schema.format !== 'color') problems.push({ path, message: 'x-control "color" needs format "color" (#RRGGBB values)' });
+    if (!CONTROL_TYPES[control].includes(type)) problems.push({ path, key: 'x-control', message: `x-control "${control}" edits ${CONTROL_TYPES[control].join(' or ')} values, not ${/^[aeiou]/.test(type) ? 'an' : 'a'} ${type}` });
+    else if (control === 'select' && !Array.isArray(schema.enum) && !(type === 'integer' && typeof schema.minimum === 'number' && typeof schema.maximum === 'number')) problems.push({ path, key: 'x-control', message: 'x-control "select" needs its choices: an enum, or an integer between a minimum and a maximum' });
+    else if (control === 'slider' && (typeof schema.minimum !== 'number' || typeof schema.maximum !== 'number')) problems.push({ path, key: 'x-control', message: 'x-control "slider" needs a minimum and a maximum' });
+    else if (control === 'color' && schema.format !== 'color') problems.push({ path, key: 'x-control', message: 'x-control "color" needs format "color" (#RRGGBB values)' });
     else if (NUMBERS[control]) {
       const items = fieldsOf(schema.items);
       const count = NUMBERS[control];
-      if ((items.type !== 'number' && items.type !== 'integer') || schema.minItems !== count || schema.maxItems !== count) problems.push({ path, message: `x-control "${control}" edits ${WORDS[count]} numbers: items of type number, minItems and maxItems ${count}` });
-      else if (control === 'range' && (typeof items.minimum !== 'number' || typeof items.maximum !== 'number')) problems.push({ path, message: 'x-control "range" needs its scale: items with a minimum and a maximum' });
-      else if (control === 'range' && Array.isArray(schema.default) && typeof schema.default[0] === 'number' && typeof schema.default[1] === 'number' && schema.default[0] > schema.default[1]) problems.push({ path, message: 'x-control "range" edits a low then a high value, and the default puts the high one first' });
-    } else if (control === 'list' && !isRecord(schema.items)) problems.push({ path, message: 'x-control "list" needs items (a simple type, or an object with fields)' });
+      if ((items.type !== 'number' && items.type !== 'integer') || schema.minItems !== count || schema.maxItems !== count) problems.push({ path, key: 'x-control', message: `x-control "${control}" edits ${WORDS[count]} numbers: items of type number, minItems and maxItems ${count}` });
+      else if (control === 'range' && Array.isArray(schema.default) && typeof schema.default[0] === 'number' && typeof schema.default[1] === 'number' && schema.default[0] > schema.default[1]) problems.push({ path, key: 'x-control', message: 'x-control "range" edits a low then a high value, and the default puts the high one first' });
+    } else if (control === 'list' && !isRecord(schema.items)) problems.push({ path, key: 'x-control', message: 'x-control "list" needs items (a simple type, or an object with fields)' });
   };
   const schema = fieldsOf(prop);
   check(schema, '');

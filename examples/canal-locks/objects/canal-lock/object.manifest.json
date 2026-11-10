@@ -63,7 +63,8 @@
         "maximum": 4.5,
         "multipleOf": 0.5,
         "default": 3,
-        "title": "Rise (m)",
+        "title": "Rise",
+        "x-unit": "m",
         "description": "Height between the lower and the upper canal, in metres. The chamber fills and empties in proportion.",
         "x-group": "Behaviour",
         "x-control": "slider"

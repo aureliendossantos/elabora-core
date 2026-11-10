@@ -61,7 +61,7 @@ export function checkObjects(ctx: CourseCheckContext): void {
       }
       for (const problem of controlProblems(propSchema)) {
         const where = problem.path === '/items' ? ', its items' : problem.path ? `, field "${problem.path.split('/').pop()}"` : '';
-        reporter.emit('W_OBJECT_PROP_CONTROL', { file: manifestFile, path: `${path}${problem.path}/x-control`, target: object.id, message: `Prop "${name}"${where}: ${problem.message}.` });
+        reporter.emit('W_OBJECT_PROP_CONTROL', { file: manifestFile, path: `${path}${problem.path}/${problem.key}`, target: object.id, message: `Prop "${name}"${where}: ${problem.message}.` });
       }
       for (const problem of enumLabelProblems(name, propSchema)) reporter.emit('E_OBJECT_ENUM_LABELS', { file: manifestFile, path: `${path}${problem.path}`, target: object.id, message: `${problem.message[0].toUpperCase()}${problem.message.slice(1)}.` });
       const annotations = fieldsOf(propSchema);

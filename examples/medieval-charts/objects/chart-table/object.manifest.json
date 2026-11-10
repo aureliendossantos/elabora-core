@@ -156,7 +156,8 @@
       },
       "tolerance": {
         "type": "integer",
-        "title": "Tolerance (%)",
+        "title": "Tolerance",
+        "x-unit": "%",
         "minimum": 5,
         "maximum": 20,
         "default": 10,

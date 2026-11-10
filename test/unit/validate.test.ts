@@ -302,7 +302,7 @@ test('editor controls fit their props (W_OBJECT_PROP_CONTROL)', () => {
   assert.ok(!after.includes('W_OBJECT_PROP_CONTROL') && !after.includes('E_OBJECT_TOKEN'), after.join(', '));
 });
 
-test('range, vec2 and vec3 edit two or three numbers, a range on a scale, low first (W_OBJECT_PROP_CONTROL)', () => {
+test('range, vec2 and vec3 edit two or three numbers, a range low first, on a scale or not; x-axes names a vector\'s numbers, x-unit a number\'s unit (W_OBJECT_PROP_CONTROL)', () => {
   const dir = copyExample();
   const mf = 'objects/diagnostic-reseau/object.manifest.json';
   const m = readJSON(dir, mf);
@@ -310,19 +310,24 @@ test('range, vec2 and vec3 edit two or three numbers, a range on a scale, low fi
   m.props.properties.window = { ...numbers(2, { minimum: 0, maximum: 24, multipleOf: 0.5 }), default: [8, 18], description: 'Heures d’ouverture', 'x-control': 'range' };
   m.props.properties.anchor = { ...numbers(2), default: [0.5, 0.25], description: 'Point d’ancrage', 'x-control': 'vec2' };
   m.props.properties.routerPosition['x-control'] = 'vec3';
+  m.props.properties.heights = { ...numbers(2), default: [1, 4], description: 'Hauteurs', 'x-control': 'range', 'x-unit': 'm' };
+  m.props.properties.frame = { ...numbers(2), default: [16, 9], description: 'Cadre', 'x-control': 'vec2', 'x-axes': 'size' };
+  m.props.properties.fog = { type: 'number', minimum: 0, maximum: 1, default: 0.25, description: 'Brume', 'x-unit': '%' };
   writeJSON(dir, mf, m);
-  assert.ok(!codes(validateDir(dir).diagnostics).includes('W_OBJECT_PROP_CONTROL'));
+  assert.ok(!codes(validateDir(dir).diagnostics).some((code) => code === 'W_OBJECT_PROP_CONTROL' || code === 'E_SCHEMA'), codes(validateDir(dir).diagnostics).join(', '));
 
-  m.props.properties.window = { ...numbers(2), default: [18, 8], description: 'Heures d’ouverture', 'x-control': 'range' };
+  m.props.properties.window = { ...numbers(2), default: [8, 18], description: 'Heures d’ouverture', 'x-control': 'range', 'x-axes': 'size' };
+  m.props.properties.fog = { type: 'boolean', default: true, description: 'Brume', 'x-unit': '%' };
   m.props.properties.anchor = { ...numbers(3), default: [0, 0, 0], description: 'Point d’ancrage', 'x-control': 'vec2' };
   m.props.properties.routerPosition.maxItems = 4;
   m.props.properties.instruction['x-control'] = 'range';
   m.props.properties.late = { ...numbers(2, { minimum: 0, maximum: 24 }), default: [18, 8], description: 'Heures du soir', 'x-control': 'range' };
   writeJSON(dir, mf, m);
   const d = validateDir(dir).diagnostics.filter((x) => x.code === 'W_OBJECT_PROP_CONTROL');
-  const message = (prop: string) => d.find((x) => x.path === `/props/properties/${prop}/x-control`)?.message ?? '';
-  assert.deepEqual(d.map((x) => x.path).sort(), ['anchor', 'instruction', 'late', 'routerPosition', 'window'].map((prop) => `/props/properties/${prop}/x-control`));
-  assert.match(message('window'), /needs its scale: items with a minimum and a maximum/);
+  const message = (prop: string, key = 'x-control') => d.find((x) => x.path === `/props/properties/${prop}/${key}`)?.message ?? '';
+  assert.deepEqual(d.map((x) => x.path).sort(), ['anchor/x-control', 'fog/x-unit', 'instruction/x-control', 'late/x-control', 'routerPosition/x-control', 'window/x-axes'].map((at) => `/props/properties/${at}`));
+  assert.match(message('window', 'x-axes'), /x-axes names the numbers of a vec2 or a vec3/);
+  assert.match(message('fog', 'x-unit'), /x-unit is the unit of a number/);
   assert.match(message('late'), /low then a high value/);
   assert.match(message('anchor'), /"vec2" edits two numbers/);
   assert.match(message('routerPosition'), /"vec3" edits three numbers/);
