@@ -60,8 +60,10 @@ export interface Placement {
   // The places of the flow, slot by slot (without the blocks placed or lifted).
   anchors(): FlowAnchors[];
   // The editor's drag: the block shown at that box of the viewport, out of the flow (null: back where
-  // its data puts it). A preview of a place in the frame (shares) works the same way.
-  lift(id: string, at: PlacementRect | { place: PlaceData } | null): void;
+  // its data puts it). A preview of a place in the frame (shares) works the same way. Returns whether
+  // the blocks were placed again (and reported): a block held at a box moving on, same width, is only
+  // moved there.
+  lift(id: string, at: PlacementRect | { place: PlaceData } | null): boolean;
   lifted(): string[];
   // Where a block lifted from the flow was: its place kept while it is dragged, in px of the viewport.
   homeOf(id: string): PlacementRect | null;
@@ -91,6 +93,11 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
   // A block lifted from the flow leaves a stand-in of its size where it was (.t-lift-trace): nothing
   // around it moves while it is dragged; the flow changes once it is let go.
   const traces = new Map<string, HTMLElement>();
+  // Where the last placing put each block held at a box, in the document's px: a drag's next frames move
+  // it from there by a transform, nothing measured nor written that lays the page out again (the
+  // founder, 10 Nov 2026: each frame of a drag was a layout of the page, its CSS variables recomputed for
+  // all of the block's content, and a report of it all).
+  const heldAt = new Map<string, { x: number; y: number; width: number }>();
   let on = false;
   let frameBox: PlacementRect | null = null;
 
@@ -148,7 +155,7 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
     node.removeAttribute('data-t-lifted');
     node.removeAttribute('data-t-dragged');
     node.removeAttribute('data-t-place-height');
-    for (const name of ['--t-place-left', '--t-place-top', '--t-place-width', '--t-place-height', '--t-place-z']) node.style.removeProperty(name);
+    for (const name of ['--t-place-left', '--t-place-top', '--t-place-width', '--t-place-height', '--t-place-z', 'transform']) node.style.removeProperty(name);
   }
 
   // Where an element is in the document, from its offsets: what moves it for a moment (a step fading
@@ -241,6 +248,9 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
       }
       node.style.setProperty('--t-place-left', `${round(x - origin.x)}px`);
       node.style.setProperty('--t-place-top', `${round(y - origin.y)}px`);
+      node.style.removeProperty('transform');
+      const id = node.dataset.block ?? '';
+      if (lifted) heldAt.set(id, { x, y, width: lifted.width }); else heldAt.delete(id);
     }
     changed?.();
   }
@@ -299,11 +309,20 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
     anchorOf, anchors,
     lift(id, at) {
       const node = nodeOf(id);
+      const was = heldAt.get(id);
+      const held = lifts.get(id);
+      if (node && was && at && !('place' in at) && held && !('place' in held) && node.hasAttribute('data-t-lifted') && Math.abs(at.width - was.width) < 0.5) {
+        lifts.set(id, at);
+        node.style.setProperty('transform', `translate(${round(at.x + scrollX - was.x)}px, ${round(at.y + scrollY - was.y)}px)`);
+        return false;
+      }
       if (at && node && own(node)) trace(id, node);
       if (at) lifts.set(id, at); else lifts.delete(id);
+      if (!at) heldAt.delete(id);
       keepTraces();
       if (!at && node && !places.has(id)) unmark(node);
       layout();
+      return true;
     },
     lifted: () => [...lifts.keys()],
     homeOf(id) {

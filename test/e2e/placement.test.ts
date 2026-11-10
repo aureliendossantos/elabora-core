@@ -183,6 +183,11 @@ test('the editor canvas: placed at any width but a phone\'s, the frame and the f
     near(shown.blocks.find((block) => block.id === 'sketch-more')!.rect.y, before.y, 'the next block stays');
     near(lifted.home!.y, was.y, 'its home where it was');
     near(lifted.home!.height, was.height, 'its room kept');
+    // Held on at another box of the same width (a drag's next frame): moved there, its room still kept.
+    await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.receive({ type: 'elabora/lift', block: 'sketch-intro', at: { x: 740, y: 330, width: 500, height: 0 } }));
+    const movedOn = (await layout()).blocks.find((block) => block.id === 'sketch-intro')!;
+    near(movedOn.rect.x, 740, 'moved on at x');
+    near(movedOn.rect.y, 330, 'moved on at y');
     // Dragged (held at a box): seen through (data-t-dragged, player.css).
     assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.t-block[data-block="sketch-intro"]')!).opacity), '0.6');
     // Sized by hand from the flow (a place lift, a handle with the key): its room kept too, not seen
@@ -219,7 +224,7 @@ test('the editor canvas: placed at any width but a phone\'s, the frame and the f
     host.push(renderScreen(placed, 'sketch', {}, createRenderContext(placed, { fields: true })), { id: 3 });
     await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas.layout().id === 3);
     near((await layout()).glide!.from['sketch-intro']!.x, 300, 'its glide begins where it was let go');
-    await page.waitForTimeout(400);
+    await page.waitForFunction(() => !(window as CanvasWindow).__elaboraCanvas.layout().glide);
     // Let go where it rests, at its place: it fades back to opaque and nothing glides; the layout reports
     // no glide, not the start of the one before (the founder, 10 Nov 2026: its outline went back there).
     await lift({ x: landed.rect.x, y: landed.rect.y, width: landed.rect.width, height: 0 });

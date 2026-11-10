@@ -237,13 +237,18 @@ function liftBlock(blockId: string | null, at: LayoutRect | { place: PlaceData }
     const ids = new Set(blockId === null ? placement.lifted() : [blockId]);
     if (releasing) { clearTimeout(releasing.timer); for (const id of releasing.ids) ids.add(id); }
     releasing = { ids, timer: setTimeout(() => { releaseLifts(); playMotion(); }, 1500) };
+    // The host learns at once where it was let go: a drag's frames report nothing.
+    scheduleLayout();
     return;
   }
+  // A block held at a box moving on (a drag's next frame) is only moved: the host knows where it put it,
+  // nothing else changed, nothing is reported until it is let go or something else moves.
+  let placed = true;
   if (blockId === null) { for (const id of placement.lifted()) placement.lift(id, null); }
   else if (!document.querySelector(`[data-block="${CSS.escape(blockId)}"]`)) { post({ type: 'elabora/error', id: null, message: `elabora/lift: no block "${blockId}" on the screen shown.` }); return; }
-  else placement.lift(blockId, at);
+  else placed = placement.lift(blockId, at);
   playMotion();
-  scheduleLayout();
+  if (placed) scheduleLayout();
 }
 // The boxes before a change the host announced (elabora/motion), until the next render or lift: what
 // moved glides from there (FLIP, the player's --t-ease-in-out), what changed size grows to it; the

@@ -120,7 +120,13 @@ dialog .t-block[data-t-concealed] { display: none; } /* layers scroll inside: no
 /* Placed by hand (D72): out of the flow, in the placement frame where placement.ts puts it (custom
    properties in px of its containing block), drawn over the flow. Its place in the page stays its
    anchor: what it is read after, where the focus goes, where it reads on phones. A slot that holds
-   only placed blocks says so ([data-t-placed-only]): a layout may fold it. */
+   only placed blocks says so ([data-t-placed-only]): a layout may fold it. Its properties are its own,
+   not inherited: setting them restyles the block alone, not all it holds. */
+@property --t-place-left { syntax: '*'; inherits: false; }
+@property --t-place-top { syntax: '*'; inherits: false; }
+@property --t-place-width { syntax: '*'; inherits: false; }
+@property --t-place-height { syntax: '*'; inherits: false; }
+@property --t-place-z { syntax: '*'; inherits: false; }
 .t-block[data-t-place] {
   position: absolute !important; z-index: calc(2 + var(--t-place-z, 0)); left: var(--t-place-left, 0px); top: var(--t-place-top, 0px);
   width: var(--t-place-width, auto) !important; max-width: none !important; margin: 0 !important; justify-self: auto !important; grid-column: auto !important;
