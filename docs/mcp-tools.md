@@ -789,7 +789,7 @@ A recorded human voice for one narration line: the file (an absolute path; any a
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `screen` | string | yes |  |
-| `line` | string | yes | The line (narration.lines[].id). |
+| `line` | string | yes | The line (narration.lines[].id, or &lt;node&gt;.&lt;option&gt; for an answer the learner's voice says). |
 | `file` | string | yes | Absolute path of the recording. |
 | `language` | string |  | A language of the course or of one of its translations (default: the course language). |
 | `keepSilence` | boolean |  | Keep the silence at both ends (default: trimmed to 0.1 s; pauses between lines come from pauseBefore). |
@@ -819,7 +819,7 @@ A recorded line whose recording says something else than its text (the actor cha
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `screen` | string | yes |  |
-| `line` | string | yes | The line (narration.lines[].id). |
+| `line` | string | yes | The line (narration.lines[].id, or &lt;node&gt;.&lt;option&gt; for an answer the learner's voice says). |
 | `preview` | boolean |  | Say what the recording says, beside the text now, without writing. |
 | `text` | string |  | The text to write (what the recording says, checked). |
 | `language` | string |  | A language of the course or of one of its translations (default: the course language). |
@@ -844,7 +844,7 @@ When each word of the voiced lines is said (forced alignment, run on this comput
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `screen` | string |  | A narrated screen (default: every narrated screen). |
-| `lines` | string[] |  | Line ids of the screen (narration.lines[].id). |
+| `lines` | string[] |  | Line ids of the screen, as elabora_voice_estimate lists them. |
 | `language` | string |  | A language of the course or of one of its translations (default: the course language). |
 | `force` | boolean |  | Time lines already timed by the same aligner again. |
 
@@ -898,7 +898,7 @@ Generates the narration lines of a screen with their speaker's voice (course.jso
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `screen` | string | yes |  |
-| `lines` | string[] |  | Line ids (narration.lines[].id). Default: those missing or out of date. |
+| `lines` | string[] |  | Line ids, as elabora_voice_estimate lists them (narration.lines[].id, a dialogue's line, &lt;node&gt;.&lt;option&gt; for an answer the learner's voice says). Default: those missing or out of date. |
 | `all` | boolean |  | Every line of the screen, a new take each. |
 | `voice` | string |  | Set this voice (elabora_voice_list) for the speaker of the lines first. |
 | `language` | string |  | A language of the course or of one of its translations (default: the course language). |
