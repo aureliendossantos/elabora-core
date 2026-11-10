@@ -207,6 +207,25 @@ test('the editor canvas: placed at any width but a phone\'s, the frame and the f
     assert.equal(landed.lifted, undefined);
     assert.equal(landed.placed, true);
     near(landed.rect.x, 700, 'placed where it was let go');
+    // Let go away from its place (moving still, the host's spring behind the pointer): it glides from there,
+    // and the layout says where the glide began.
+    const lift = (at: { x: number; y: number; width: number; height: number }) => page.evaluate((box) => {
+      const canvas = (window as CanvasWindow).__elaboraCanvas;
+      canvas.receive({ type: 'elabora/lift', block: 'sketch-intro', at: box });
+      canvas.receive({ type: 'elabora/motion' });
+      canvas.receive({ type: 'elabora/lift', block: 'sketch-intro', at: null, release: 'render' });
+    }, at);
+    await lift({ x: 300, y: landed.rect.y, width: landed.rect.width, height: 0 });
+    host.push(renderScreen(placed, 'sketch', {}, createRenderContext(placed, { fields: true })), { id: 3 });
+    await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas.layout().id === 3);
+    near((await layout()).glide!.from['sketch-intro']!.x, 300, 'its glide begins where it was let go');
+    await page.waitForTimeout(400);
+    // Let go where it rests, at its place: it fades back to opaque and nothing glides; the layout reports
+    // no glide, not the start of the one before (the founder, 10 Nov 2026: its outline went back there).
+    await lift({ x: landed.rect.x, y: landed.rect.y, width: landed.rect.width, height: 0 });
+    host.push(renderScreen(placed, 'sketch', {}, createRenderContext(placed, { fields: true })), { id: 4 });
+    await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas.layout().id === 4);
+    assert.equal((await layout()).glide, undefined, 'let go where it rests: no glide');
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

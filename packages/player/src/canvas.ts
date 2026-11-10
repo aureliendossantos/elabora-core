@@ -250,8 +250,11 @@ function liftBlock(blockId: string | null, at: LayoutRect | { place: PlaceData }
 // screen's title too, which a slide centred in its height moves with its blocks.
 // The blocks dragged when it was armed come back opaque on the same curve (data-t-dragged, player.css).
 let motion: { boxes: Map<Element, DOMRect>; dragged: Set<Element>; until: number } | null = null;
-// Where each glide started: the host's marks run the same glide (LayoutMessage.glide).
-const starts = new WeakMap<Element, DOMRect>();
+// Where each glide started, kept with its animation: the host's marks run the same glide
+// (LayoutMessage.glide). A start belongs to its glide: a block's later animation, or a glide of the
+// page's own (D65), never reports the start of an earlier one (the founder, 10 Nov 2026: let go where it
+// rested, a block's outline went back to where its previous glide began, then came again).
+const starts = new WeakMap<Animation, DOMRect>();
 const MOTION_MS = 240;
 function armMotion() {
   const boxes = new Map<Element, DOMRect>();
@@ -274,17 +277,17 @@ function playMotion() {
   }
   const seen = (node: Element) => (armed.dragged.has(node) && !node.hasAttribute('data-t-dragged') ? [{ opacity: 0.6 }, { opacity: 1 }] : [{}, {}]);
   for (const { node, from, to } of moves) {
-    starts.set(node, from);
     const sx = from.width / to.width;
     const sy = from.height / to.height;
     const [fromSeen, toSeen] = seen(node);
-    node.animate([
+    starts.set(node.animate([
       { transformOrigin: 'top left', transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${sx}, ${sy})`, ...fromSeen },
       { transformOrigin: 'top left', transform: 'none', ...toSeen }
-    ], { duration: MOTION_MS, easing: 'cubic-bezier(.23, 1, .32, 1)', id: GLIDE });
+    ], { duration: MOTION_MS, easing: 'cubic-bezier(.23, 1, .32, 1)', id: GLIDE }), from);
   }
-  // Let go where it was: nothing glides, it comes back opaque.
-  for (const node of armed.dragged) if (node.isConnected && !node.hasAttribute('data-t-dragged') && !moves.some((move) => move.node === node)) node.animate(seen(node), { duration: MOTION_MS, easing: 'ease', id: GLIDE });
+  // Let go where it was: nothing glides, it comes back opaque (a fade, not a glide: the layout reports
+  // no glide for it).
+  for (const node of armed.dragged) if (node.isConnected && !node.hasAttribute('data-t-dragged') && !moves.some((move) => move.node === node)) node.animate(seen(node), { duration: MOTION_MS, easing: 'ease' });
   if (moves.length) landing();
 }
 
@@ -664,7 +667,13 @@ function landed<T>(read: () => T): { value: T; glide?: LayoutMessage['glide'] } 
   const now = new Map(nodes.map((node) => [node, node.getBoundingClientRect()]));
   const times = running.map((animation) => Number(animation.currentTime ?? 0));
   const ends = running.map((animation) => Number(animation.effect?.getComputedTiming().endTime ?? MOTION_MS));
-  const movers = new Set(running.map((animation) => (animation.effect as KeyframeEffect | null)?.target).filter((target): target is Element => !!target && starts.has(target)));
+  // The blocks gliding from a start of ours, and that start.
+  const movers = new Map<Element, DOMRect>();
+  for (const animation of running) {
+    const start = starts.get(animation);
+    const target = (animation.effect as KeyframeEffect | null)?.target;
+    if (start && target) movers.set(target, start);
+  }
   running.forEach((animation, index) => { animation.currentTime = ends[index]! - 0.01; });
   try {
     const value = read();
@@ -674,7 +683,7 @@ function landed<T>(read: () => T): { value: T; glide?: LayoutMessage['glide'] } 
       const box = node.getBoundingClientRect();
       let mover: Element | null = node;
       while (mover && !movers.has(mover)) mover = mover.parentElement?.closest('.t-block[data-block]') ?? null;
-      const start = mover ? starts.get(mover)! : null;
+      const start = mover ? movers.get(mover)! : null;
       const moverNow = mover ? now.get(mover as HTMLElement) : null;
       const began = !start || !moverNow ? was : mover === node ? start : new DOMRect(was.x + start.x - moverNow.x, was.y + start.y - moverNow.y, was.width, was.height);
       if (Math.abs(began.left - box.left) > 0.5 || Math.abs(began.top - box.top) > 0.5 || Math.abs(began.width - box.width) > 0.5 || Math.abs(began.height - box.height) > 0.5) {
@@ -682,7 +691,7 @@ function landed<T>(read: () => T): { value: T; glide?: LayoutMessage['glide'] } 
       }
     }
     // Glides of the page's own (a counterpart's, D65) are taken where they are, for what is left of them.
-    const ours = running.every((animation) => movers.has((animation.effect as KeyframeEffect | null)?.target as Element));
+    const ours = running.every((animation) => starts.has(animation));
     const elapsed = ours ? Math.max(...times) : 0;
     const ms = ours ? Math.max(...ends) : Math.max(0, ...running.map((animation, index) => ends[index]! - times[index]!));
     return { value, ...(Object.keys(from).length ? { glide: { ms: Math.round(ms), elapsed: Math.round(elapsed), easing: 'cubic-bezier(.23, 1, .32, 1)', from } } : {}) };
