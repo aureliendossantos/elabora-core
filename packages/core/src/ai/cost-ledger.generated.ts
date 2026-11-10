@@ -184,12 +184,12 @@ export const COST_BOOK: CostBook = {
       "plan": "starter",
       "settings": {},
       "period": "elevenlabs/eleven_text_to_sound_v2/starter/2026-10-28",
-      "measurements": 141,
+      "measurements": 173,
       "sent": {
-        "seconds": 1116.5
+        "seconds": 1436.5
       },
-      "list": 11165,
-      "billed": 11165,
+      "list": 14365,
+      "billed": 14365,
       "share": 1,
       "undiscounted": 1
     },
