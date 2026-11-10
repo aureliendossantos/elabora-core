@@ -34,23 +34,23 @@
             {
               "gap": 51,
               "orbits": 1,
-              "instruction": "The satellite is 51 km ahead. Catch it in one lap."
+              "instruction": "The satellite is 51 km ahead. Catch it in 1 lap."
             },
             {
               "gap": 51,
               "orbits": 3,
               "budget": 2.5,
-              "instruction": "Same gap, with 2.5 m/s of fuel for both burns. Take up to three laps."
+              "instruction": "Same gap, with 2.5 m/s of fuel for both burns. Take up to 3 laps."
             },
             {
               "gap": -34,
               "orbits": 2,
               "budget": 2.5,
-              "instruction": "Now the satellite is 34 km behind you. Let it catch up within two laps."
+              "instruction": "Now the satellite is 34 km behind you. Let it catch up within 2 laps."
             }
           ]
         },
-        "textAlternative": "**Text version of the lab.** Your spacecraft and a satellite fly the same circular orbit, 500 km up. For each rendezvous you choose a burn, from braking 5 m/s to speeding up 5 m/s in steps of 0.5 m/s, and, when the rendezvous allows it, a number of laps. Your spacecraft burns, flies its laps, then burns the same amount the other way at the same point: both burns use fuel. The rendezvous is caught when the satellite is within 2 km at the end. At 500 km, each m/s of braking gains about 17 km per lap.\n\n1. The satellite is 51 km ahead. Catch it in one lap.\n2. Same gap, with 2.5 m/s of fuel for both burns. Take up to three laps.\n3. Now the satellite is 34 km behind you. Let it catch up within two laps, with 2.5 m/s of fuel."
+        "textAlternative": "**Text version of the lab.** Your spacecraft and a satellite fly the same circular orbit, 500 km up. For each rendezvous you choose a burn, from braking 5 m/s to speeding up 5 m/s in steps of 0.5 m/s, and, when the rendezvous allows it, a number of laps. Your spacecraft burns, flies its laps, then burns the same amount the other way at the same point: both burns use fuel. The rendezvous is caught when the satellite is within 2 km at the end. At 500 km, each m/s of braking gains about 17 km per lap.\n\n1. The satellite is 51 km ahead. Catch it in 1 lap.\n2. Same gap, with 2.5 m/s of fuel for both burns. Take up to 3 laps.\n3. Now the satellite is 34 km behind you. Let it catch up within 2 laps, with 2.5 m/s of fuel."
       }
     }
   ],
@@ -81,7 +81,7 @@
           "id": "lab-summary",
           "type": "text",
           "props": {
-            "markdown": "The same 51 km took 6 m/s of fuel in one lap, and 2 m/s in three. That is why real rendezvous take their time: hours, sometimes days."
+            "markdown": "The same 51 km took 6 m/s of fuel in 1 lap, and 2 m/s in 3. That is why real rendezvous take their time: hours, sometimes days."
           }
         }
       ]

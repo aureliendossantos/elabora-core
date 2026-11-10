@@ -19,8 +19,8 @@
         <note category="context">Course description (catalogue)</note>
       </notes>
       <segment state="translated">
-        <source>A five-minute module for curious minds: open a clock, turn its gears one by one, and find out why the hour hand turns 12 times slower than the minute hand.</source>
-        <target>Un module de cinq minutes pour les curieux : ouvrez une horloge, faites tourner ses engrenages un à un et découvrez pourquoi l’aiguille des heures tourne 12 fois moins vite que celle des minutes.</target>
+        <source>A 5-minute module for curious minds: open a clock, turn its gears one by one, and find out why the hour hand turns 12 times slower than the minute hand.</source>
+        <target>Un module de 5 minutes pour les curieux : ouvrez une horloge, faites tourner ses engrenages un à un et découvrez pourquoi l’aiguille des heures tourne 12 fois moins vite que celle des minutes.</target>
       </segment>
     </unit>
     <unit id="course.section.clockwork.title">
@@ -532,8 +532,8 @@ Un seul axe, au centre, les entraîne toutes les deux. Alors comment une aiguill
         <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>That makes 12 times slower: the size of a clock's hour wheel.</source>
-        <target>Cela fait 12 fois moins vite : la taille de la roue des heures d’une horloge.</target>
+        <source>That makes 12 times slower: just what a clock's hour hand needs.</source>
+        <target>Cela fait 12 fois moins vite : exactement ce qu’il faut à l’aiguille des heures.</target>
       </segment>
     </unit>
     <unit id="block.question-clock.enumLabels.stage.clock">
@@ -871,8 +871,8 @@ Le grand engrenage tourne dans l’autre sens.</target>
         <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>That makes 12 times slower: the size of a clock's hour wheel.</source>
-        <target>Cela fait 12 fois moins vite : la taille de la roue des heures d’une horloge.</target>
+        <source>That makes 12 times slower: just what a clock's hour hand needs.</source>
+        <target>Cela fait 12 fois moins vite : exactement ce qu’il faut à l’aiguille des heures.</target>
       </segment>
     </unit>
     <unit id="block.teeth-clock.enumLabels.stage.clock">
@@ -1198,8 +1198,8 @@ Un tour complet du petit engrenage fait avancer le grand de 10 de ses 30 dents�
         <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>That makes 12 times slower: the size of a clock's hour wheel.</source>
-        <target>Cela fait 12 fois moins vite : la taille de la roue des heures d’une horloge.</target>
+        <source>That makes 12 times slower: just what a clock's hour hand needs.</source>
+        <target>Cela fait 12 fois moins vite : exactement ce qu’il faut à l’aiguille des heures.</target>
       </segment>
     </unit>
     <unit id="block.count-clock.enumLabels.stage.clock">
@@ -1593,8 +1593,8 @@ Un tour complet du petit engrenage fait avancer le grand de 10 de ses 30 dents�
         <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>That makes 12 times slower: the size of a clock's hour wheel.</source>
-        <target>Cela fait 12 fois moins vite : la taille de la roue des heures d’une horloge.</target>
+        <source>That makes 12 times slower: just what a clock's hour hand needs.</source>
+        <target>Cela fait 12 fois moins vite : exactement ce qu’il faut à l’aiguille des heures.</target>
       </segment>
     </unit>
     <unit id="block.one-gear-clock.enumLabels.stage.clock">
@@ -1702,10 +1702,10 @@ Un tour complet du petit engrenage fait avancer le grand de 10 de ses 30 dents�
       <segment state="translated">
         <source>So clocks slow down in stages. A small gear of 8 teeth is fixed on the gear of 30 and turns with it. It drives a last gear.
 
-The slowdowns multiply. The first pair already turns 3 times slower; the last gear slows it down again.</source>
-        <target>Les horloges ralentissent donc par étapes. Un petit engrenage de 8 dents est fixé sur celui de 30 et tourne avec lui. Il entraîne un dernier engrenage.
+The slowdowns multiply. The first pair already turns 3 times slower; the last gear slows the motion down again.</source>
+        <target>Les horloges ralentissent donc par étapes. Un petit engrenage de 8 dents est fixé sur celui de 30 et tourne avec lui. Il entraîne un dernier engrenage.
 
-Les ralentissements se multiplient. La première paire tourne déjà 3 fois moins vite ; le dernier engrenage ralentit encore.</target>
+Les ralentissements se multiplient. La première paire tourne déjà 3 fois moins vite ; le dernier engrenage ralentit encore le mouvement.</target>
       </segment>
     </unit>
     <unit id="block.two-steps-hint.markdown">
@@ -1932,8 +1932,8 @@ Les ralentissements se multiplient. La première paire tourne déjà 3 fois moi
         <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>That makes 12 times slower: the size of a clock's hour wheel.</source>
-        <target>Cela fait 12 fois moins vite : la taille de la roue des heures d’une horloge.</target>
+        <source>That makes 12 times slower: just what a clock's hour hand needs.</source>
+        <target>Cela fait 12 fois moins vite : exactement ce qu’il faut à l’aiguille des heures.</target>
       </segment>
     </unit>
     <unit id="block.two-steps-clock.enumLabels.stage.clock">
@@ -2279,8 +2279,8 @@ Les ralentissements se multiplient. La première paire tourne déjà 3 fois moi
         <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>That makes 12 times slower: the size of a clock's hour wheel.</source>
-        <target>Cela fait 12 fois moins vite : la taille de la roue des heures d’une horloge.</target>
+        <source>That makes 12 times slower: just what a clock's hour hand needs.</source>
+        <target>Cela fait 12 fois moins vite : exactement ce qu’il faut à l’aiguille des heures.</target>
       </segment>
     </unit>
     <unit id="block.centre-clock.enumLabels.stage.clock">
@@ -2388,10 +2388,10 @@ Les ralentissements se multiplient. La première paire tourne déjà 3 fois moi
       <segment state="translated">
         <source>The gear of 10 teeth drives the gear of 30, which turns 3 times slower. On the same axle, the gear of 8 drives the gear of 32, which turns 4 times slower. Together, 3 × 4 = 12.
 
-Each pair reverses the direction: after both, the hour hand turns clockwise, like the minute hand.</source>
-        <target>L’engrenage de 10 dents entraîne celui de 30, qui tourne 3 fois moins vite. Sur le même axe, l’engrenage de 8 entraîne celui de 32, qui tourne 4 fois moins vite. Ensemble, 3 × 4 = 12.
+Each pair reverses the direction: after both pairs, the hour hand turns clockwise, like the minute hand.</source>
+        <target>L’engrenage de 10 dents entraîne celui de 30, qui tourne 3 fois moins vite. Sur le même axe, l’engrenage de 8 entraîne celui de 32, qui tourne 4 fois moins vite. Ensemble, 3 × 4 = 12.
 
-Chaque paire inverse le sens de rotation : après les deux, l’aiguille des heures tourne dans le sens des aiguilles d’une montre, comme celle des minutes.</target>
+Chaque paire inverse le sens de rotation : après les deux paires, l’aiguille des heures tourne dans le sens des aiguilles d’une montre, comme celle des minutes.</target>
       </segment>
     </unit>
     <unit id="block.answer-hint.markdown">
@@ -2618,8 +2618,8 @@ Chaque paire inverse le sens de rotation : après les deux, l’aiguille des he
         <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>That makes 12 times slower: the size of a clock's hour wheel.</source>
-        <target>Cela fait 12 fois moins vite : la taille de la roue des heures d’une horloge.</target>
+        <source>That makes 12 times slower: just what a clock's hour hand needs.</source>
+        <target>Cela fait 12 fois moins vite : exactement ce qu’il faut à l’aiguille des heures.</target>
       </segment>
     </unit>
     <unit id="block.answer-clock.enumLabels.stage.clock">

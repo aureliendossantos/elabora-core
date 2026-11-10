@@ -2,93 +2,93 @@
   "screen": "premier-reflexe",
   "line": "marc-temps",
   "language": "fr",
-  "textHash": "sha256:aede38fd7ffc816f1492e1495e295bdbef0a9f600ada3a733982a34578272e4e",
-  "duration": 2.835,
+  "textHash": "sha256:82a5b0728bfabf0ec6545c83e598128eea37336030e6bfaa2b8d195f70179e22",
+  "duration": 2.81,
   "provider": "elevenlabs",
   "voice": "kENkNtk0xyzG09WW40xE",
   "generated": true,
-  "audioHash": "sha256:071d4c865b2ce4c1d27fb948e885e58473006740cbe12c79f6b31c2925052863",
-  "createdAt": "2026-10-23T23:42:28Z",
+  "audioHash": "sha256:c0ef89aa31d33d5e2beca85d2e687e58e8181e4984cf6949cf7a71f453cfa7ee",
+  "createdAt": "2026-11-09T21:16:32Z",
   "take": 1,
-  "spokenHash": "sha256:aede38fd7ffc816f1492e1495e295bdbef0a9f600ada3a733982a34578272e4e",
+  "spokenHash": "sha256:82a5b0728bfabf0ec6545c83e598128eea37336030e6bfaa2b8d195f70179e22",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Voix de synthèse : Marcel (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "Donc ce n'est pas lui ? On a perdu cinq minutes, là.",
-  "mouth": "cccwwwoossccssssooooccwwooooocccccccccccccccooooocccoossssssscoooocwwwwwwwccoooooccccc",
+  "text": "Donc ce n'est pas lui ? On a perdu 5 minutes, là.",
+  "mouth": "ccwwwwwwccssoooooccooooooocccccccccccccccoowwwcccssssssssscooooocwwwooooccooooocccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Donc",
-      "start": 0.101,
-      "end": 0.336,
-      "score": 0.997
+      "start": 0.06,
+      "end": 0.275,
+      "score": 0.999
     },
     {
       "text": "ce",
-      "start": 0.442,
-      "end": 0.543,
-      "score": 0.999
+      "start": 0.321,
+      "end": 0.435,
+      "score": 0.884
     },
     {
       "text": "n'",
-      "start": 0.543,
-      "end": 0.603,
-      "score": 0.544
+      "start": 0.442,
+      "end": 0.482,
+      "score": 0.596
     },
     {
       "text": "est",
-      "start": 0.603,
-      "end": 0.704,
-      "score": 0.999
+      "start": 0.482,
+      "end": 0.602,
+      "score": 1
     },
     {
       "text": "pas",
-      "start": 0.704,
-      "end": 0.804,
-      "score": 0.999
+      "start": 0.602,
+      "end": 0.703,
+      "score": 0.998
     },
     {
       "text": "lui",
-      "start": 0.804,
-      "end": 0.979,
-      "score": 0.999
+      "start": 0.703,
+      "end": 0.857,
+      "score": 1
     },
     {
       "text": "On",
-      "start": 1.468,
-      "end": 1.562,
+      "start": 1.345,
+      "end": 1.439,
       "score": 0.999
     },
     {
       "text": "a",
-      "start": 1.589,
-      "end": 1.683,
-      "score": 0.995
-    },
-    {
-      "text": "perdu",
-      "start": 1.689,
-      "end": 1.944,
-      "score": 1
-    },
-    {
-      "text": "cinq",
-      "start": 2.011,
-      "end": 2.192,
-      "score": 1
-    },
-    {
-      "text": "minutes",
-      "start": 2.192,
-      "end": 2.574,
+      "start": 1.485,
+      "end": 1.559,
       "score": 0.999
     },
     {
+      "text": "perdu",
+      "start": 1.586,
+      "end": 1.84,
+      "score": 0.982
+    },
+    {
+      "text": "5",
+      "start": 1.907,
+      "end": 2.108,
+      "score": 0.966
+    },
+    {
+      "text": "minutes",
+      "start": 2.108,
+      "end": 2.489,
+      "score": 0.971
+    },
+    {
       "text": "là",
-      "start": 2.574,
-      "end": 2.688,
-      "score": 1
+      "start": 2.489,
+      "end": 2.623,
+      "score": 0.999
     }
   ]
 }

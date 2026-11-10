@@ -232,14 +232,14 @@ export const COST_BOOK: CostBook = {
       "plan": "starter",
       "settings": {},
       "period": "elevenlabs/eleven_v4/starter/2026-10-13",
-      "measurements": 18,
+      "measurements": 176,
       "sent": {
-        "characters": 1683
+        "characters": 14557
       },
-      "list": 1683,
-      "billed": 674,
-      "share": 0.4005,
-      "undiscounted": 0.4005
+      "list": 14557,
+      "billed": 5827,
+      "share": 0.4003,
+      "undiscounted": 0.4003
     },
     {
       "key": "elevenlabs/eleven_v4_turbo/starter/2026-10-13",

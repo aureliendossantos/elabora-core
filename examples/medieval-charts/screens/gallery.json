@@ -17,7 +17,7 @@
       "slot": "lead",
       "style": "lead",
       "props": {
-        "markdown": "Five questions visitors ask in front of the charts. Could you answer them? Take your time: the lessons stay open in the outline, and you can try again once you have seen your score."
+        "markdown": "Here are 5 questions visitors ask in front of the charts. Could you answer them? Take your time: the lessons stay open in the outline, and you can try again once you have seen your score."
       }
     },
     {
@@ -46,7 +46,7 @@
       "type": "image",
       "props": {
         "asset": "images/scale-dividers.svg",
-        "alt": "A scale of miles of six divisions, black and blank in turn, each divided in fifths by dots. A pair of brass dividers stands on it, one point at the left end of the scale, the other halfway through the fourth division: three and a half divisions."
+        "alt": "A scale of miles of 6 divisions, black and blank in turn, each divided in fifths by dots. A pair of brass dividers stands on it, one point at the left end of the scale, the other halfway through the fourth division: 3.5 divisions."
       }
     },
     {
@@ -86,7 +86,7 @@
       "id": "gallery-back-intro",
       "type": "text",
       "props": {
-        "markdown": "Remember the frown on opening night? Here is the chart again, with the visitor's three puzzles. Think of your answer to each, then select it to compare."
+        "markdown": "Remember the frown on opening night? Here is the chart again, with the visitor's 3 puzzles. Think of your answer to each, then select it to compare."
       }
     },
     {

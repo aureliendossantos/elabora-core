@@ -2,75 +2,75 @@
   "screen": "premier-reflexe",
   "line": "marc-temps",
   "language": "en",
-  "textHash": "sha256:8e64ab6bdef4c3a1a12ce2ad160e66d446390fd53513c20e7d1cf4a838a4ad45",
-  "duration": 3.205,
+  "textHash": "sha256:8cfad32f95be01fb7ead8b58dbb642c35f681f5349d622ad1139bded3442caaf",
+  "duration": 3.52,
   "provider": "elevenlabs",
   "voice": "RNnkVeW25AwKYxZgnHBH",
   "generated": true,
-  "audioHash": "sha256:e304733d261e6fbecc056e916cc5b781116a5d43deb70858f80b8eef2198c96e",
-  "createdAt": "2026-11-05T12:05:23Z",
+  "audioHash": "sha256:1110dfd639074ad3bdce8209ed0de0f3b1d64a84dd35cd0bd46aa9ce4b39c761",
+  "createdAt": "2026-11-09T21:20:12Z",
   "take": 1,
-  "spokenHash": "sha256:8e64ab6bdef4c3a1a12ce2ad160e66d446390fd53513c20e7d1cf4a838a4ad45",
+  "spokenHash": "sha256:8cfad32f95be01fb7ead8b58dbb642c35f681f5349d622ad1139bded3442caaf",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Synthetic voice: Luke (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "So it's not the server? That's five minutes gone.",
-  "mouth": "cccssswwwwwssssooooowwwssoooooowwwwwwwwwcccccccccccccccoooooosscccwwooossscssooooocooooooowwwcccc",
+  "text": "So it's not the server? That's 5 minutes gone.",
+  "mouth": "ccoowwwwsssswwwwssssoossswwwwwwwwssccccccccccccccccooosssscccccooowwwwwcsssscssssooooooooocccccccccccccccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "So",
-      "start": 0.1,
-      "end": 0.321,
+      "start": 0.06,
+      "end": 0.221,
       "score": 1
     },
     {
       "text": "it's",
-      "start": 0.321,
-      "end": 0.561,
-      "score": 0.943
+      "start": 0.221,
+      "end": 0.402,
+      "score": 0.985
     },
     {
       "text": "not",
-      "start": 0.561,
-      "end": 0.821,
-      "score": 1
+      "start": 0.402,
+      "end": 0.604,
+      "score": 0.964
     },
     {
       "text": "the",
-      "start": 0.821,
-      "end": 0.962,
-      "score": 0.994
+      "start": 0.604,
+      "end": 0.744,
+      "score": 0.998
     },
     {
       "text": "server",
-      "start": 0.962,
-      "end": 1.414,
-      "score": 0.975
+      "start": 0.744,
+      "end": 1.218,
+      "score": 0.993
     },
     {
       "text": "That's",
-      "start": 1.823,
-      "end": 2.135,
-      "score": 0.92
+      "start": 1.69,
+      "end": 2.023,
+      "score": 0.967
     },
     {
-      "text": "five",
-      "start": 2.183,
-      "end": 2.464,
-      "score": 0.999
+      "text": "5",
+      "start": 2.072,
+      "end": 2.354,
+      "score": 1
     },
     {
       "text": "minutes",
-      "start": 2.464,
-      "end": 2.764,
-      "score": 0.914
+      "start": 2.354,
+      "end": 2.655,
+      "score": 0.963
     },
     {
       "text": "gone",
-      "start": 2.764,
-      "end": 3.205,
-      "score": 0.83
+      "start": 2.655,
+      "end": 3.089,
+      "score": 0.808
     }
   ]
 }

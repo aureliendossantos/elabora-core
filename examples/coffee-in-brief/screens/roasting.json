@@ -14,7 +14,7 @@
       "x": 0.5,
       "y": 0.55
     },
-    "lead": "A roast takes about twelve minutes and decides much of a coffee's taste. Follow one batch through our roaster."
+    "lead": "A roast takes about 12 minutes and decides much of a coffee's taste. Follow one batch through our roaster."
   },
   "completeWhen": "interactions-done",
   "steps": {
@@ -104,14 +104,14 @@
         "presentation": "scroll",
         "figure": "build",
         "figureImage": "images/curve-axes.svg",
-        "figureAlt": "A graph of the beans' temperature, upwards, over twelve minutes of roasting, across.",
+        "figureAlt": "A graph of the beans' temperature, upwards, over 12 minutes of roasting, across.",
         "items": [
           {
             "id": "drying",
             "title": "Drying",
             "image": "images/curve-drying.svg",
             "alt": "The curve dips after the charge, then climbs through a band shaded yellow: the drying.",
-            "markdown": "Cold beans cool the drum at first: their temperature dips, then climbs. For four or five minutes they lose water and turn from green to pale yellow, smelling of hay."
+            "markdown": "Cold beans cool the drum at first: their temperature dips, then climbs. For 4 or 5 minutes they lose water and turn from green to pale yellow, smelling of hay."
           },
           {
             "id": "browning",

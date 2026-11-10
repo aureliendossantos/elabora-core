@@ -3,7 +3,7 @@
   "format": "elabora/0.1",
   "id": "phishing-by-numbers",
   "title": "Phishing by numbers",
-  "description": "A 10-minute narrated module for the employees of Quillon Freight (a fictional company): spotting and reporting phishing, told through the company's own numbers, in twelve charts that follow the voice.",
+  "description": "A 10-minute narrated module for the employees of Quillon Freight, a fictional company: how to spot and report phishing, told through the company's own numbers in 12 charts that follow the voice.",
   "language": "en",
   "version": "1.0.0",
   "durationMinutes": 10,

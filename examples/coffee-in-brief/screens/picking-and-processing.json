@@ -16,7 +16,7 @@
       "id": "picking-intro",
       "type": "text",
       "props": {
-        "markdown": "A coffee shrub flowers after the rains, and its cherries ripen over weeks, not all at once. That is why the best farms pick by hand, branch by branch, several times in a season."
+        "markdown": "A coffee shrub flowers after the rains, and its cherries ripen over weeks, a few at a time. That is why the best farms pick by hand, branch by branch, several times in a season."
       }
     },
     {
@@ -24,8 +24,8 @@
       "type": "image",
       "props": {
         "asset": "images/branch.svg",
-        "alt": "A coffee branch with clusters of cherries at four stages of ripeness: green, yellow, red and dark red.",
-        "caption": "One branch, four stages: green, yellow, red, then dark red. Only the red ones are ready to pick."
+        "alt": "A coffee branch with clusters of cherries at 4 stages of ripeness: green, yellow, red and dark red.",
+        "caption": "One branch, 4 stages: green, yellow, red, then dark red. Only the red ones are ready to pick."
       }
     },
     {
@@ -62,7 +62,7 @@
           {
             "id": "dry",
             "title": "Dry them for weeks",
-            "markdown": "The seeds, or the whole cherries for a natural, dry in the sun on patios or raised beds, raked several times a day, until about 11 % of their weight is water.",
+            "markdown": "The seeds, or the whole cherries for a natural, dry in the sun on patios or raised beds, raked several times a day, until about 11% of their weight is water.",
             "image": "images/step-dry.svg",
             "alt": "Pale seeds spread on a raised drying bed under the sun."
           },
@@ -117,7 +117,7 @@
           {
             "id": "natural",
             "title": "Natural",
-            "markdown": "The whole cherry dries in the sun for three to four weeks, the seed inside. Expect a heavier, fruity cup: berries, wine, sometimes chocolate. It is the oldest method, common where water is scarce."
+            "markdown": "The whole cherry dries in the sun for 3 to 4 weeks, the seed inside. Expect a heavier, fruity cup: berries, wine, sometimes chocolate. It is the oldest method, common where water is scarce."
           },
           {
             "id": "honey",

@@ -20,7 +20,7 @@
           {
             "id": "reported",
             "figure": "1,840",
-            "label": "phishing emails reported by you",
+            "label": "phishing emails you reported",
             "count": {
               "to": 1840
             },
@@ -72,12 +72,12 @@
       {
         "id": "l2",
         "speaker": "guide",
-        "text": "Email is where 62 percent of our incidents began."
+        "text": "Email is where 62% of our incidents began."
       },
       {
         "id": "l3",
         "speaker": "guide",
-        "text": "And thanks to your reports, we now block a phish in 11 minutes, down from four hours."
+        "text": "Thanks to your reports, we now block a phish in 11 minutes, down from 4 hours."
       }
     ]
   }

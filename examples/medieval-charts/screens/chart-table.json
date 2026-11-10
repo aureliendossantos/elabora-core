@@ -48,7 +48,7 @@
           "required": 2,
           "guided": true
         },
-        "textAlternative": "**Text version of the chart table.** The chart is a portolan chart of the Mediterranean and the Black Sea, turned 9° anticlockwise like the medieval ones. Its scale of miles has six divisions of 50 miles. Bearings below are measured clockwise from the chart's north.\n\n1. Guided: from **Majorca** (Maiorica) to **Cagliari** (Callari), in Sardinia. Cagliari lies at 85°, a little north of east: steer Levante. It is nine divisions of the scale away: 450 miles.\n2. From **Genoa** (Janua) to **Barcelona** (Barchelona): Barcelona lies at 231°, a little west of south-west, eleven divisions away.\n3. Optional: from **Palermo** to **Naples** (Napoli): Naples lies at 6°, almost due north, five divisions away.\n\nFor the second and third voyages, name the wind to steer among the eight winds, and give the distance in miles."
+        "textAlternative": "**Text version of the chart table.** The chart is a portolan chart of the Mediterranean and the Black Sea, turned 9° anticlockwise like the medieval ones. Its scale of miles has 6 divisions of 50 miles. Bearings below are measured clockwise from the chart's north.\n\n1. Guided: from **Majorca** (Maiorica) to **Cagliari** (Callari), in Sardinia. Cagliari lies at 85°, a little north of east: steer Levante. It is 9 divisions of the scale away: 450 miles.\n2. From **Genoa** (Janua) to **Barcelona** (Barchelona): Barcelona lies at 231°, a little west of south-west, 11 divisions away.\n3. Optional: from **Palermo** to **Naples** (Napoli): Naples lies at 6°, almost due north, 5 divisions away.\n\nFor the second and third voyages, name the wind to steer among the eight winds, and give the distance in miles."
       }
     },
     {
@@ -82,7 +82,7 @@
       "width": "wide",
       "props": {
         "rose": "images/wind-rose.svg",
-        "alt": "A wind rose of thirty-two points: eight long points in gold and blue for the principal winds, green points for the half-winds, small red points for the quarter-winds, and a red cross on the east point.",
+        "alt": "A wind rose of 32 points: 8 long points in gold and blue for the principal winds, green points for the half-winds, small red points for the quarter-winds, and a red cross on the east point.",
         "winds": [
           {
             "id": "tramontana",

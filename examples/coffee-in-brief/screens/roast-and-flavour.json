@@ -86,7 +86,7 @@
           {
             "id": "caffeine",
             "title": "Dark roast has more caffeine",
-            "markdown": "Myth. Roasting barely changes the caffeine. A dark bean is lighter, so a scoop of dark beans may even hold a little less. A strong taste is not strength."
+            "markdown": "Myth. Roasting barely changes the caffeine. A dark bean is lighter, so a scoop of dark beans may even hold a little less. A strong taste says nothing about caffeine."
           },
           {
             "id": "fridge",
@@ -184,7 +184,7 @@
       "props": {
         "presentation": "scale",
         "objective": "OBJ-3",
-        "prompt": "How sure do you feel explaining to a customer what the roast changes, and what it does not?",
+        "prompt": "How sure do you feel explaining to a customer what the roast changes and what it leaves alone?",
         "scale": {
           "min": 1,
           "max": 5,

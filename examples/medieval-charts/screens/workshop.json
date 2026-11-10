@@ -43,19 +43,19 @@
         "figure": "build",
         "side": "start",
         "figureImage": "images/ws-skin.svg",
-        "figureAlt": "A portolan chart on a calfskin: rhumb lines radiating from sixteen points round a circle, Majorca, Cagliari and Marseille joined by a triangle of bearings, coasts, harbour names across the land, coloured islands, a scale and a wind rose.",
+        "figureAlt": "A portolan chart on a calfskin: rhumb lines radiating from 16 points round a circle, Majorca, Cagliari and Marseille joined by a triangle of bearings, coasts, harbour names across the land, coloured islands, a scale and a wind rose.",
         "items": [
           {
             "id": "circle",
             "title": "Prick the hidden circle",
-            "markdown": "The work starts on a single calfskin, scraped and dried into vellum; the animal's neck stays on the west side. With dividers, the chart-maker draws a large circle that will never be inked, and pricks **sixteen points** evenly round it. On surviving charts, the pinholes are still there.",
+            "markdown": "The work starts on a single calfskin, scraped and dried into vellum; the animal's neck stays on the west side. With dividers, the chart-maker draws a large circle that will never be inked, and pricks **16 points** evenly round it. On surviving charts, the pinholes are still there.",
             "image": "images/ws-circle.svg",
             "decorative": true
           },
           {
             "id": "rhumbs",
             "title": "Rule the rhumb lines",
-            "markdown": "From the centre and each of the sixteen points, lines run in thirty-two directions across the skin: **black** for the eight principal winds, **green** for the half-winds, **red** for the quarter-winds. Lines of one direction are parallel: wherever you are, a line of your course is never far.",
+            "markdown": "From the centre and each of the 16 points, lines run in 32 directions across the skin: **black** for the eight principal winds, **green** for the half-winds, **red** for the quarter-winds. Lines of one direction are parallel: wherever you are, a line of your course is never far.",
             "image": "images/ws-rhumbs.svg",
             "decorative": true
           },
@@ -197,7 +197,7 @@
       "id": "workshop-tilt",
       "type": "text",
       "props": {
-        "markdown": "Lay a modern map over the finished chart and the whole Mediterranean seems **turned about 9° anticlockwise**. The chart is not careless. The usual explanation: it was built from compass bearings, and the compass of the time pointed several degrees east of true north. Draw every bearing with the compass's north at the top, and the whole sea turns the other way. Steering by the same compass, a pilot still reaches the right harbour.",
+        "markdown": "Lay a modern map over the finished chart and the whole Mediterranean seems **turned about 9° anticlockwise**. The usual explanation: it was built from compass bearings, and the compass of the time pointed several degrees east of true north. Draw every bearing with the compass's north at the top, and the whole sea turns the other way. Steering by the same compass, a pilot still reaches the right harbour.",
         "aside": "Historians still debate how the first charts were compiled, and how closely the tilt matches the compass of the day. Take this as the leading explanation, not a settled fact."
       },
       "step": 3

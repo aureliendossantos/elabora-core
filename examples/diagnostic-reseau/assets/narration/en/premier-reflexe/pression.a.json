@@ -2,69 +2,69 @@
   "screen": "premier-reflexe",
   "line": "pression.a",
   "language": "en",
-  "textHash": "sha256:fed42b2ceddbf01ba047620fe949c93125b4ba4b62e5bff8d7778bdd36438cde",
-  "duration": 2.905,
+  "textHash": "sha256:7b97dce0ce7fb031d01d72adb483ac05329b6b9b8277b7ca5742555009e6250c",
+  "duration": 3.04,
   "provider": "elevenlabs",
   "voice": "WyFXw4PzMbRnp8iLMJwY",
   "generated": true,
-  "audioHash": "sha256:b903ef38be465ef6c5a8add71a85b8e86aae34215523baabdbca13a6ce570c0a",
-  "createdAt": "2026-11-05T12:05:08Z",
+  "audioHash": "sha256:8d81230035a1848613910a508f38848f0094dc0a55e6f98214d4c454e38f65f2",
+  "createdAt": "2026-11-09T21:20:06Z",
   "take": 1,
-  "spokenHash": "sha256:fed42b2ceddbf01ba047620fe949c93125b4ba4b62e5bff8d7778bdd36438cde",
+  "spokenHash": "sha256:7b97dce0ce7fb031d01d72adb483ac05329b6b9b8277b7ca5742555009e6250c",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Synthetic voice: Juliet (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "I'll check your floor's switch first: two minutes.",
-  "mouth": "cwwwssoooocccwwwssssswwwwwoosssssooocooooooooccsssscccccccccccccccoowwwwcooooccccooocccc",
+  "text": "I'll check your floor's switch first: 2 minutes.",
+  "mouth": "swwwcooooocccwwwssssswwwwwwwwcsscooocoossoooossssoocccccccccccccccccssswwwwcooooccccoooocccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "I'll",
-      "start": 0.02,
-      "end": 0.18,
-      "score": 0.995
+      "start": 0,
+      "end": 0.181,
+      "score": 0.954
     },
     {
       "text": "check",
-      "start": 0.18,
-      "end": 0.421,
-      "score": 1
+      "start": 0.181,
+      "end": 0.403,
+      "score": 0.983
     },
     {
       "text": "your",
-      "start": 0.421,
-      "end": 0.581,
-      "score": 0.998
+      "start": 0.403,
+      "end": 0.584,
+      "score": 0.971
     },
     {
       "text": "floor's",
-      "start": 0.581,
-      "end": 1.002,
-      "score": 0.749
+      "start": 0.584,
+      "end": 1.007,
+      "score": 0.685
     },
     {
       "text": "switch",
-      "start": 1.002,
-      "end": 1.342,
-      "score": 0.986
+      "start": 1.007,
+      "end": 1.329,
+      "score": 0.952
     },
     {
       "text": "first",
-      "start": 1.342,
-      "end": 1.775,
-      "score": 0.995
+      "start": 1.329,
+      "end": 1.783,
+      "score": 0.974
     },
     {
-      "text": "two",
-      "start": 2.204,
-      "end": 2.384,
-      "score": 0.939
+      "text": "2",
+      "start": 2.275,
+      "end": 2.476,
+      "score": 0.959
     },
     {
       "text": "minutes",
-      "start": 2.384,
-      "end": 2.797,
-      "score": 0.98
+      "start": 2.476,
+      "end": 2.931,
+      "score": 0.95
     }
   ]
 }

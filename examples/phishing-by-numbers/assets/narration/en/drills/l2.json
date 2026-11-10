@@ -2,104 +2,105 @@
   "screen": "drills",
   "line": "l2",
   "language": "en",
-  "textHash": "sha256:ec3387d64557ccfd0136ba44e8f4a7e8dd205091cc8ec393a827e6e4404d4aab",
-  "duration": 4.2,
+  "textHash": "sha256:4987767f3fc8217e8f98f0067253c73a6a1976643857bc2f7e2640c94a0bfd85",
+  "duration": 4.3,
   "provider": "elevenlabs",
   "voice": "CvD6hF1BJzAFN428j1cO",
   "generated": true,
-  "audioHash": "sha256:17f391d6504b2c37ea89e9d5446792e760e5e66b60ae5adae128759e404577f9",
-  "createdAt": "2026-10-23T12:18:19Z",
+  "audioHash": "sha256:eec6a3d3707899baa4de94ffc123b674a8a3384290b00ce245608586926d5068",
+  "createdAt": "2026-11-09T20:50:06Z",
   "take": 1,
-  "spokenHash": "sha256:ec3387d64557ccfd0136ba44e8f4a7e8dd205091cc8ec393a827e6e4404d4aab",
+  "spokenHash": "sha256:4987767f3fc8217e8f98f0067253c73a6a1976643857bc2f7e2640c94a0bfd85",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Synthetic voice: Kristen (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "Where were clicks by November, do you think? Draw the rest of the line.",
+  "text": "Where do you think clicks were by November? Draw the rest of the line.",
+  "mouth": "ccoowwwwwoooooocccoooooccsscwwwccssscssooooossscwwwwwoooowwwwcoocsssscccccccccccccccccccsswwwwwsssssswwwsscccsssswwooooooooooooccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Where",
-      "start": 0.06,
-      "end": 0.281,
-      "score": 1
+      "start": 0.08,
+      "end": 0.261,
+      "score": 0.968
     },
     {
-      "text": "were",
-      "start": 0.281,
-      "end": 0.482,
-      "score": 0.99
+      "text": "do",
+      "start": 0.261,
+      "end": 0.362,
+      "score": 0.986
+    },
+    {
+      "text": "you",
+      "start": 0.362,
+      "end": 0.543,
+      "score": 0.998
+    },
+    {
+      "text": "think",
+      "start": 0.543,
+      "end": 0.835,
+      "score": 0.998
     },
     {
       "text": "clicks",
-      "start": 0.482,
-      "end": 0.824,
-      "score": 0.98
+      "start": 0.864,
+      "end": 1.246,
+      "score": 0.971
+    },
+    {
+      "text": "were",
+      "start": 1.246,
+      "end": 1.527,
+      "score": 0.981
     },
     {
       "text": "by",
-      "start": 0.824,
-      "end": 1.005,
+      "start": 1.527,
+      "end": 1.728,
       "score": 1
     },
     {
       "text": "November",
-      "start": 1.005,
-      "end": 1.608,
-      "score": 0.953
-    },
-    {
-      "text": "do",
-      "start": 1.608,
-      "end": 1.708,
-      "score": 0.997
-    },
-    {
-      "text": "you",
-      "start": 1.708,
-      "end": 1.889,
-      "score": 0.992
-    },
-    {
-      "text": "think",
-      "start": 1.889,
-      "end": 2.182,
-      "score": 1
-    },
-    {
-      "text": "Draw",
-      "start": 2.854,
-      "end": 3.115,
+      "start": 1.728,
+      "end": 2.322,
       "score": 0.996
     },
     {
+      "text": "Draw",
+      "start": 2.934,
+      "end": 3.215,
+      "score": 0.993
+    },
+    {
       "text": "the",
-      "start": 3.115,
-      "end": 3.256,
-      "score": 1
+      "start": 3.215,
+      "end": 3.356,
+      "score": 0.999
     },
     {
       "text": "rest",
-      "start": 3.256,
-      "end": 3.537,
-      "score": 0.971
+      "start": 3.356,
+      "end": 3.657,
+      "score": 0.953
     },
     {
       "text": "of",
-      "start": 3.537,
-      "end": 3.637,
+      "start": 3.657,
+      "end": 3.758,
       "score": 0.999
     },
     {
       "text": "the",
-      "start": 3.637,
-      "end": 3.778,
-      "score": 0.982
+      "start": 3.758,
+      "end": 3.898,
+      "score": 0.999
     },
     {
       "text": "line",
-      "start": 3.778,
-      "end": 4.151,
-      "score": 1
+      "start": 3.898,
+      "end": 4.271,
+      "score": 0.999
     }
   ]
 }

@@ -32,7 +32,7 @@
             "id": "report",
             "text": "Press Report, then carry on with your day",
             "correct": false,
-            "feedback": "Report is right before a click. After one, the desk needs to know at once that your password is out: call 4444."
+            "feedback": "Before a click, Report is the right move. After one, the desk needs to know at once that your password is out: call 4444."
           }
         ]
       }

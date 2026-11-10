@@ -63,7 +63,7 @@
             "id": "rest",
             "date": "Months 9 to 10",
             "title": "Drying and resting",
-            "markdown": "The beans dry for two to four weeks, then rest in their parchment for a month or more, so that their moisture evens out."
+            "markdown": "The beans dry for 2 to 4 weeks, then rest in their parchment for a month or more, so that their moisture evens out."
           },
           {
             "id": "mill",
@@ -117,7 +117,7 @@
           "type": "text",
           "slot": "first",
           "props": {
-            "markdown": "About 10 to 12 % of the bean's weight. Wetter beans can grow mould; drier ones age fast and taste flat."
+            "markdown": "About 10 to 12% of the bean's weight. Wetter beans can grow mould; drier ones age fast and taste flat."
           }
         },
         {
@@ -192,7 +192,7 @@
             "x": 0.785,
             "y": 0.635,
             "title": "A stone",
-            "markdown": "Picked up on the drying patio. It tastes of nothing, but it can break a grinder: graders count it heavily."
+            "markdown": "Picked up on the drying patio. It has no taste, but it can break a grinder, so graders count it heavily."
           }
         ]
       }
@@ -262,7 +262,7 @@
         "alt": "A metal scoop of pale green coffee beans over an open jute sack.",
         "side": "end",
         "share": "third",
-        "markdown": "Dried to about 11 % moisture and kept in its jute sack, often with a sealed bag inside, green coffee stays fresh for months. Roasted coffee goes stale within weeks. So coffee crosses the ocean green, and is roasted close to where it is drunk."
+        "markdown": "Dried to about 11% moisture and kept in its jute sack, often with a sealed bag inside, green coffee stays fresh for months. Roasted coffee goes stale within weeks. So coffee crosses the ocean green, and is roasted close to where it is drunk."
       }
     },
     {
@@ -280,7 +280,7 @@
           {
             "id": "stack",
             "asset": "images/sacks-stack.svg",
-            "alt": "Jute sacks stacked seven high.",
+            "alt": "Jute sacks stacked 7 high.",
             "caption": "Sacks of about 60 kg, stacked by lot"
           },
           {

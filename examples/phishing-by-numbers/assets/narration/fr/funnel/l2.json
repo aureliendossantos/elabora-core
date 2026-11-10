@@ -2,159 +2,165 @@
   "screen": "funnel",
   "line": "l2",
   "language": "fr",
-  "textHash": "sha256:76226a8b153f9027488a901f72a49ecdc37a6e6b97691fb54913b742178e7749",
-  "duration": 7.22,
+  "textHash": "sha256:76a30a652e06d76d2cd8013d603762b371ff24fc37f532a99de3863fa03cee72",
+  "duration": 8,
   "provider": "elevenlabs",
   "voice": "CvD6hF1BJzAFN428j1cO",
   "generated": true,
-  "audioHash": "sha256:3101d44ff3b5e3cf38d37a8ae7af5de74d5a57ef48644627dd2207d1e00542a0",
-  "createdAt": "2026-11-04T22:18:44Z",
+  "audioHash": "sha256:23e33f2cb7a247deee165121a6fbda05c03327a3bfb787ab9df0b4288fd83acb",
+  "createdAt": "2026-11-09T21:11:21Z",
   "take": 1,
-  "spokenHash": "sha256:76226a8b153f9027488a901f72a49ecdc37a6e6b97691fb54913b742178e7749",
+  "spokenHash": "sha256:76a30a652e06d76d2cd8013d603762b371ff24fc37f532a99de3863fa03cee72",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Voix de synthèse : Kristen (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "Deux personnes sur trois ont ouvert le message, une sur trois a cliqué et une sur douze a saisi un mot de passe.",
-  "mouth": "ccoooocccwwssssssoooosssscccsssswwwoooosswwwwcssssswwwooooowwcsssscoooooossooccccccccccccccwwwoossoooccccssswwwwcoooocssswwwccooocccccccccccccooccccoooosssssssoooooowwooossssscwwoossssoooossoowwwwcoossccccoooccssscccc",
+  "text": "Puis 2 personnes sur 3 ont ouvert le message, 1 sur 3 a cliqué et 1 sur 12 a saisi un mot de passe.",
+  "mouth": "ccssooooocccccccccssooocccoossssssoooosswwwccssscwwwwwwwcwwwwcssssswwooooowwcsssccwwooosssssccccccccccccccccoooossssoossccsssswwwwwcoooccsssssccoowwcccccccccccccccooocccoooosssssssssooooooooooossssscoooosssssooossoooooocooccccccooocccssccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
-      "text": "Deux",
-      "start": 0.06,
-      "end": 0.255,
+      "text": "Puis",
+      "start": 0.02,
+      "end": 0.315,
+      "score": 0.995
+    },
+    {
+      "text": "2",
+      "start": 0.602,
+      "end": 0.816,
       "score": 1
     },
     {
       "text": "personnes",
-      "start": 0.261,
-      "end": 0.716,
-      "score": 0.999
+      "start": 0.822,
+      "end": 1.283,
+      "score": 0.99
     },
     {
       "text": "sur",
-      "start": 0.722,
-      "end": 0.896,
+      "start": 1.283,
+      "end": 1.458,
       "score": 1
     },
     {
-      "text": "trois",
-      "start": 0.923,
-      "end": 1.237,
-      "score": 0.947
+      "text": "3",
+      "start": 1.484,
+      "end": 1.798,
+      "score": 0.949
     },
     {
       "text": "ont",
-      "start": 1.384,
-      "end": 1.538,
-      "score": 0.998
+      "start": 1.905,
+      "end": 2.059,
+      "score": 1
     },
     {
       "text": "ouvert",
-      "start": 1.584,
-      "end": 1.885,
-      "score": 0.952
+      "start": 2.105,
+      "end": 2.386,
+      "score": 1
     },
     {
       "text": "le",
-      "start": 1.885,
-      "end": 1.979,
-      "score": 0.999
+      "start": 2.386,
+      "end": 2.5,
+      "score": 1
     },
     {
       "text": "message",
-      "start": 2.006,
-      "end": 2.561,
+      "start": 2.506,
+      "end": 3.062,
       "score": 1
     },
     {
-      "text": "une",
-      "start": 3.028,
-      "end": 3.203,
-      "score": 0.999
+      "text": "1",
+      "start": 3.609,
+      "end": 3.763,
+      "score": 1
     },
     {
       "text": "sur",
-      "start": 3.229,
-      "end": 3.423,
+      "start": 3.83,
+      "end": 4.024,
       "score": 1
     },
     {
-      "text": "trois",
-      "start": 3.45,
-      "end": 3.744,
-      "score": 0.995
+      "text": "3",
+      "start": 4.05,
+      "end": 4.365,
+      "score": 0.97
     },
     {
       "text": "a",
-      "start": 3.791,
-      "end": 3.865,
+      "start": 4.411,
+      "end": 4.485,
       "score": 0
     },
     {
       "text": "cliqué",
-      "start": 3.931,
-      "end": 4.306,
-      "score": 0.819
+      "start": 4.551,
+      "end": 4.926,
+      "score": 0.812
     },
     {
       "text": "et",
-      "start": 4.733,
-      "end": 4.847,
-      "score": 0.999
+      "start": 5.434,
+      "end": 5.548,
+      "score": 1
     },
     {
-      "text": "une",
-      "start": 4.954,
-      "end": 5.148,
-      "score": 0.873
+      "text": "1",
+      "start": 5.654,
+      "end": 5.808,
+      "score": 0.916
     },
     {
       "text": "sur",
-      "start": 5.174,
-      "end": 5.389,
-      "score": 0.997
+      "start": 5.875,
+      "end": 6.089,
+      "score": 1
     },
     {
-      "text": "douze",
-      "start": 5.435,
-      "end": 5.81,
-      "score": 0.999
+      "text": "12",
+      "start": 6.155,
+      "end": 6.57,
+      "score": 0.954
     },
     {
       "text": "a",
-      "start": 5.896,
-      "end": 5.97,
-      "score": 0.744
+      "start": 6.657,
+      "end": 6.731,
+      "score": 0.633
     },
     {
       "text": "saisi",
-      "start": 6.057,
-      "end": 6.372,
+      "start": 6.837,
+      "end": 7.152,
       "score": 1
     },
     {
       "text": "un",
-      "start": 6.438,
-      "end": 6.518,
-      "score": 0.999
+      "start": 7.198,
+      "end": 7.292,
+      "score": 0.995
     },
     {
       "text": "mot",
-      "start": 6.518,
-      "end": 6.672,
-      "score": 1
+      "start": 7.298,
+      "end": 7.433,
+      "score": 0.992
     },
     {
       "text": "de",
-      "start": 6.679,
-      "end": 6.773,
-      "score": 0.987
+      "start": 7.439,
+      "end": 7.533,
+      "score": 0.959
     },
     {
       "text": "passe",
-      "start": 6.779,
-      "end": 7.114,
-      "score": 0.999
+      "start": 7.539,
+      "end": 7.874,
+      "score": 0.977
     }
   ]
 }

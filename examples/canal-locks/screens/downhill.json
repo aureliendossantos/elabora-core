@@ -51,7 +51,7 @@
                 "id": "nell2",
                 "speaker": "nell",
                 "expression": "agace",
-                "text": "The skipper has been heaving on the lower gates for five minutes. They won't move an inch."
+                "text": "The skipper has been heaving on the lower gates for 5 minutes. They won't move an inch."
               }
             ],
             "prompt": "What do you suggest?",
@@ -130,7 +130,7 @@
               {
                 "id": "c",
                 "label": "Push harder",
-                "text": "Let's both push on the balance beams. The gates must be stuck.",
+                "text": "Let's push on the balance beams together. The gates must be stuck.",
                 "quality": "bad",
                 "retry": true,
                 "do": [
@@ -218,10 +218,10 @@
                     "id": "nell8",
                     "speaker": "nell",
                     "expression": "neutre",
-                    "text": "We can wait. But it won't get any more level than this."
+                    "text": "We can wait. It's already as level as it gets."
                   }
                 ],
-                "feedback": "No harm done, but no need: once the levels match, the gates can open straight away."
+                "feedback": "Waiting is harmless, but the gates can open as soon as the levels match."
               },
               {
                 "id": "c",
@@ -243,10 +243,10 @@
                     "id": "nell9",
                     "speaker": "nell",
                     "expression": "inquiet",
-                    "text": "Not a chance! The upper canal is three metres above us now."
+                    "text": "Not a chance! The upper canal is 3 metres above us now."
                   }
                 ],
-                "feedback": "Now the upper canal holds the higher water, and it presses the upper gates shut. A pair of gates only opens between equal levels."
+                "feedback": "Now the upper canal holds the higher water, and it presses the upper gates shut. A pair of gates opens only between equal levels."
               }
             ],
             "next": "farewell"

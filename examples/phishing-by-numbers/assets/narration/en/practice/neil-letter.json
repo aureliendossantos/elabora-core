@@ -2,68 +2,68 @@
   "screen": "practice",
   "line": "neil-letter",
   "language": "en",
-  "textHash": "sha256:a2bc354c8a3cf070c83e9d2b3fb6d26ac20f7bfee4c312d0935ec24fb6debb0d",
-  "duration": 2.3,
+  "textHash": "sha256:5ef4128a95db8bdbeb718a70608e7a3df0c5c0c2aa1c4bb5c09ac6df33cad235",
+  "duration": 2.27,
   "provider": "elevenlabs",
   "voice": "nXIYu9FT5meibkBbZFT7",
   "generated": true,
-  "audioHash": "sha256:ef5d34fc26ca088d18d0d259b1c77ba6acbafcce754767178d4ee35a180b79e9",
-  "createdAt": "2026-10-24T02:41:48Z",
+  "audioHash": "sha256:4ccee58666adf31247bd75e038f607312445c67d8346c31cda1b976e53eca61b",
+  "createdAt": "2026-11-09T20:45:10Z",
   "take": 1,
-  "spokenHash": "sha256:a2bc354c8a3cf070c83e9d2b3fb6d26ac20f7bfee4c312d0935ec24fb6debb0d",
+  "spokenHash": "sha256:5ef4128a95db8bdbeb718a70608e7a3df0c5c0c2aa1c4bb5c09ac6df33cad235",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Synthetic voice: James (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "Of course. You'll have it in five minutes.",
-  "mouth": "cssccwwwwwoosssssscccccccccccwwwooowwwwoooossccwwwwooocccooosscooooocc",
+  "text": "Of course. You'll have it in 5 minutes.",
+  "mouth": "csscsswwwwooocsssscccccccccooooooowwooooooocccwwwwwwwcccooooccssooccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Of",
-      "start": 0.041,
-      "end": 0.162,
-      "score": 0.999
+      "start": 0.02,
+      "end": 0.161,
+      "score": 0.989
     },
     {
       "text": "course",
-      "start": 0.162,
-      "end": 0.616,
-      "score": 0.994
+      "start": 0.161,
+      "end": 0.594,
+      "score": 0.986
     },
     {
       "text": "You'll",
-      "start": 0.928,
-      "end": 1.15,
-      "score": 0.977
+      "start": 0.904,
+      "end": 1.125,
+      "score": 0.986
     },
     {
       "text": "have",
-      "start": 1.15,
-      "end": 1.271,
-      "score": 0.999
+      "start": 1.125,
+      "end": 1.246,
+      "score": 0.931
     },
     {
       "text": "it",
-      "start": 1.271,
-      "end": 1.352,
-      "score": 0.959
+      "start": 1.246,
+      "end": 1.346,
+      "score": 0.896
     },
     {
       "text": "in",
-      "start": 1.352,
-      "end": 1.524,
+      "start": 1.346,
+      "end": 1.507,
       "score": 0.999
     },
     {
-      "text": "five",
-      "start": 1.554,
-      "end": 1.856,
-      "score": 0.97
+      "text": "5",
+      "start": 1.507,
+      "end": 1.808,
+      "score": 1
     },
     {
       "text": "minutes",
-      "start": 1.856,
-      "end": 2.251,
+      "start": 1.808,
+      "end": 2.201,
       "score": 0.985
     }
   ]

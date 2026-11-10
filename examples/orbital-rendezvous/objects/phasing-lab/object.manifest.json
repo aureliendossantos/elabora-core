@@ -175,11 +175,11 @@
   "language": "en",
   "strings": {
     "taskAhead": {
-      "text": "The satellite is {gap} km ahead. Catch it {orbits, plural, one {in one lap} other {within # laps}}.",
+      "text": "The satellite is {gap} km ahead. Catch it {orbits, plural, one {in 1 lap} other {within # laps}}.",
       "description": "Instruction of a rendezvous without its own, the satellite ahead (gap: a formatted number)"
     },
     "taskBehind": {
-      "text": "The satellite is {gap} km behind you. Let it catch up {orbits, plural, one {in one lap} other {within # laps}}.",
+      "text": "The satellite is {gap} km behind you. Let it catch up {orbits, plural, one {in 1 lap} other {within # laps}}.",
       "description": "Instruction of a rendezvous without its own, the satellite behind"
     },
     "taskFuel": {

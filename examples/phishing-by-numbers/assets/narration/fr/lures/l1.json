@@ -2,111 +2,99 @@
   "screen": "lures",
   "line": "l1",
   "language": "fr",
-  "textHash": "sha256:b0f6a0d7cc7a5740a803bd00ab9403a0fb821952add6be7d8f918d2b28359e63",
-  "duration": 4.65,
+  "textHash": "sha256:18b9f612902e70fc99f71d35da80aa6a7ff4a829a4da289211afd561d579b2d5",
+  "duration": 4.08,
   "provider": "elevenlabs",
   "voice": "CvD6hF1BJzAFN428j1cO",
   "generated": true,
-  "audioHash": "sha256:c892ba6a97bec4c0ec00198d57bf5ec66e444f049ad522dd04bab994cbe9bd9a",
-  "createdAt": "2026-11-04T22:18:33Z",
+  "audioHash": "sha256:0958fc6f655cebe434f0082d78162a7d8b55a498e68463093f08114253dc0ff0",
+  "createdAt": "2026-11-09T21:20:02Z",
   "take": 1,
-  "spokenHash": "sha256:b0f6a0d7cc7a5740a803bd00ab9403a0fb821952add6be7d8f918d2b28359e63",
+  "spokenHash": "sha256:18b9f612902e70fc99f71d35da80aa6a7ff4a829a4da289211afd561d579b2d5",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Voix de synthèse : Kristen (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "À quoi ressemblent ces e-mails ? Aux messages que vous recevez tous les jours au travail.",
-  "mouth": "cooocccwwwcooosssccccwwwwssccoossooooocwwwoossccccccccccccccwwwwcooocwwwwwssscoooooooooosscwwoooooccccssssssoooooooooossssccoooossoooosscccc",
+  "text": "Ces e-mails ressemblent aux messages que vous recevez tous les jours au travail.",
+  "mouth": "ccccwwwcwwwwwcwwwsssssswwwwccccssooooocoocccwwwoosssccwwoooooooossssoooooooccccsssssssoowwwssoooocssccssssssoooossccccccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
-      "text": "À",
-      "start": 0.04,
-      "end": 0.114,
-      "score": 0.63
-    },
-    {
-      "text": "quoi",
-      "start": 0.16,
-      "end": 0.315,
-      "score": 0.979
-    },
-    {
-      "text": "ressemblent",
-      "start": 0.361,
-      "end": 0.916,
-      "score": 0.96
-    },
-    {
-      "text": "ces",
-      "start": 0.922,
-      "end": 1.076,
-      "score": 0.987
+      "text": "Ces",
+      "start": 0.08,
+      "end": 0.255,
+      "score": 0.991
     },
     {
       "text": "e-mails",
-      "start": 1.122,
-      "end": 1.557,
-      "score": 0.808
+      "start": 0.302,
+      "end": 0.744,
+      "score": 0.644
     },
     {
-      "text": "Aux",
-      "start": 1.984,
-      "end": 2.105,
-      "score": 0.78
+      "text": "ressemblent",
+      "start": 0.744,
+      "end": 1.186,
+      "score": 0.98
+    },
+    {
+      "text": "aux",
+      "start": 1.186,
+      "end": 1.266,
+      "score": 0.807
     },
     {
       "text": "messages",
-      "start": 2.105,
-      "end": 2.566,
-      "score": 0.927
+      "start": 1.266,
+      "end": 1.749,
+      "score": 0.965
     },
     {
       "text": "que",
-      "start": 2.566,
-      "end": 2.686,
-      "score": 0.923
+      "start": 1.749,
+      "end": 1.883,
+      "score": 0.996
     },
     {
       "text": "vous",
-      "start": 2.686,
-      "end": 2.84,
-      "score": 1
+      "start": 1.889,
+      "end": 2.044,
+      "score": 0.992
     },
     {
       "text": "recevez",
-      "start": 2.846,
-      "end": 3.281,
+      "start": 2.05,
+      "end": 2.506,
       "score": 1
     },
     {
       "text": "tous",
-      "start": 3.387,
-      "end": 3.588,
+      "start": 2.613,
+      "end": 2.868,
       "score": 1
     },
     {
       "text": "les",
-      "start": 3.588,
-      "end": 3.742,
+      "start": 2.874,
+      "end": 3.009,
       "score": 1
     },
     {
       "text": "jours",
-      "start": 3.748,
-      "end": 4.009,
-      "score": 0.978
+      "start": 3.035,
+      "end": 3.296,
+      "score": 0.984
     },
     {
       "text": "au",
-      "start": 4.009,
-      "end": 4.103,
+      "start": 3.296,
+      "end": 3.391,
       "score": 1
     },
     {
       "text": "travail",
-      "start": 4.109,
-      "end": 4.544,
-      "score": 0.972
+      "start": 3.397,
+      "end": 3.813,
+      "score": 1
     }
   ]
 }

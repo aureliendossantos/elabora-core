@@ -252,7 +252,7 @@
           {
             "phase": "close",
             "title": "The gates close behind it",
-            "caption": "With the lower gates shut, the chamber becomes a closed basin: its water can no longer run away downstream."
+            "caption": "With the lower gates shut, the chamber becomes a closed basin: its water stays inside."
           },
           {
             "phase": "flow",
@@ -262,7 +262,7 @@
           {
             "phase": "level",
             "title": "The boat floats up",
-            "caption": "As the chamber fills, its surface rises, and the barge floats up with it. Nothing pushes it but the water beneath."
+            "caption": "As the chamber fills, its surface rises, and the barge floats up with it. Only the water beneath pushes it."
           },
           {
             "phase": "open",
@@ -672,7 +672,7 @@
       "description": "Above the hint text"
     },
     "nudgeGates": {
-      "text": "A pair of gates only opens when the water is at the same level on both sides.",
+      "text": "A pair of gates opens only when the water is level on both sides.",
       "description": "Hint 1: the gate principle"
     },
     "nudgeEnter": {
@@ -680,11 +680,11 @@
       "description": "Hint 1: the boat can move"
     },
     "nudgeSeal": {
-      "text": "To change the level in the chamber, it must be closed off at both ends.",
+      "text": "To change the water level, close the chamber off at both ends.",
       "description": "Hint 1: close the chamber"
     },
     "nudgeWater": {
-      "text": "Water only flows downhill. Where can the chamber get water from, or send it to?",
+      "text": "Water always flows downhill. Where can the chamber get water from, or send it to?",
       "description": "Hint 1: where water comes from"
     },
     "nudgeWait": {
