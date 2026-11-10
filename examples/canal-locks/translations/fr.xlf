@@ -7940,8 +7940,8 @@ L’effet de chaque choix sur l’écluse :
         <note category="context">Label of the setting "rise" of the free object "canal-lock" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Rise (m)</source>
-        <target>Dénivelé (m)</target>
+        <source>Rise</source>
+        <target>Dénivelé</target>
       </segment>
     </unit>
     <unit id="object.canal-lock.prop.rise.description">

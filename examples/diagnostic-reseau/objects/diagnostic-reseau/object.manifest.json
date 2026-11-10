@@ -298,6 +298,7 @@
         "multipleOf": 0.25,
         "default": 1,
         "title": "Vitesse des paquets",
+        "x-unit": "×",
         "description": "La vitesse des paquets le long des câbles.",
         "x-group": "Animation",
         "x-control": "slider"
