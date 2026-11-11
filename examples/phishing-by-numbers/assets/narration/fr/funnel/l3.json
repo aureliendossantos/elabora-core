@@ -3,80 +3,80 @@
   "line": "l3",
   "language": "fr",
   "textHash": "sha256:619b3116f99ba64a1e475e068a8b963f044f415015987a3d22b9f86a24e3c3ee",
-  "duration": 3.54,
+  "duration": 3.34,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:c0812ee23491faa5d13f78e897a0a8706b69915ee241907e6bbf3da6deedf884",
-  "createdAt": "2026-11-09T21:11:25Z",
+  "audioHash": "sha256:1a9f44159db5a40adf784b3f9e23f40c971b9356cf5c300bac60704e266124c1",
+  "createdAt": "2026-11-11T00:14:57Z",
   "take": 1,
   "spokenHash": "sha256:619b3116f99ba64a1e475e068a8b963f044f415015987a3d22b9f86a24e3c3ee",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Seulement 1 personne sur 7 a prévenu le service sécurité.",
-  "mouth": "ccssswwwwcooooowwwcccoosssssssssssssssssssscwwwwwcccoocwwwcccoooooowwwoooooccwwwwwwwssssoocssoooooccooocccc",
+  "mouth": "ccoowwwwcwwwccccwwooooccoosssswwwooooocoooocwwooccooowwwccssooooowwooossssssssoossssssssssoooccoooccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Seulement",
       "start": 0.081,
-      "end": 0.456,
-      "score": 0.994
+      "end": 0.436,
+      "score": 0.999
     },
     {
       "text": "1",
-      "start": 0.463,
-      "end": 0.577,
-      "score": 0.92
+      "start": 0.543,
+      "end": 0.698,
+      "score": 0.997
     },
     {
       "text": "personne",
-      "start": 0.644,
-      "end": 1.14,
-      "score": 0.996
+      "start": 0.745,
+      "end": 1.161,
+      "score": 0.977
     },
     {
       "text": "sur",
-      "start": 1.147,
-      "end": 1.341,
-      "score": 0.984
+      "start": 1.167,
+      "end": 1.342,
+      "score": 1
     },
     {
       "text": "7",
-      "start": 1.448,
-      "end": 1.744,
-      "score": 0.994
+      "start": 1.429,
+      "end": 1.704,
+      "score": 0.959
     },
     {
       "text": "a",
-      "start": 1.851,
-      "end": 1.925,
-      "score": 0.996
+      "start": 1.791,
+      "end": 1.865,
+      "score": 0.999
     },
     {
       "text": "prévenu",
-      "start": 1.991,
-      "end": 2.347,
-      "score": 0.933
+      "start": 1.891,
+      "end": 2.227,
+      "score": 0.984
     },
     {
       "text": "le",
-      "start": 2.394,
-      "end": 2.488,
+      "start": 2.274,
+      "end": 2.368,
       "score": 0.999
     },
     {
       "text": "service",
-      "start": 2.514,
-      "end": 2.91,
-      "score": 0.936
+      "start": 2.395,
+      "end": 2.75,
+      "score": 0.913
     },
     {
       "text": "sécurité",
-      "start": 2.917,
-      "end": 3.433,
-      "score": 0.999
+      "start": 2.757,
+      "end": 3.253,
+      "score": 0.998
     }
   ]
 }

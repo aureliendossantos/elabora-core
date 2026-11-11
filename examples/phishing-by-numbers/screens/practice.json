@@ -49,19 +49,12 @@
                         "layer": "the-email"
                       }
                     ]
-                  },
-                  {
-                    "at": {
-                      "word": "rings"
-                    },
-                    "do": [
-                      {
-                        "type": "play-sound",
-                        "sound": "sonnerie"
-                      }
-                    ]
                   }
                 ]
+              },
+              {
+                "id": "ring",
+                "sound": "sonnerie"
               },
               {
                 "id": "neil-hello",

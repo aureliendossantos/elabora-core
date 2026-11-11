@@ -3,104 +3,104 @@
   "line": "l3",
   "language": "fr",
   "textHash": "sha256:05d2307c4f8550c784a1f14d14013bfa4447e3039ea57127eff172257bdacd11",
-  "duration": 5.58,
+  "duration": 4.54,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:f8835375eac21d40f453947df07c5d531f809beeed7b4ffd06410f566d4ecfb6",
-  "createdAt": "2026-11-04T22:19:33Z",
+  "audioHash": "sha256:01e779dfc2745afb25dc68dbaee2654efe1856ff28cd904eb9c0103cadead427",
+  "createdAt": "2026-11-11T00:16:23Z",
   "take": 1,
   "spokenHash": "sha256:05d2307c4f8550c784a1f14d14013bfa4447e3039ea57127eff172257bdacd11",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Une fausse facture nous a coûté 48 000 livres. Depuis, nous rappelons les fournisseurs.",
-  "mouth": "cwwwwwwccwwwwooocwwwcccssssoooowwwwwwwwsscooccoooccccooooooooossssoowwwwoooooooossssssscccccccccccccccccwwwwccssoooooccccccccccwwwoowwccccoowwwoosssoooooossssoooosscccc",
+  "mouth": "cwwwwssswwooocwwwccsssoooowwwwwwwwccooccwwwccccoooooooosssssoooooossooossssssccccccsssssccssoowwwwwwcooooooooocccoowwwwssssooooooooossscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Une",
       "start": 0.04,
-      "end": 0.215,
-      "score": 0.991
+      "end": 0.195,
+      "score": 0.916
     },
     {
       "text": "fausse",
-      "start": 0.261,
-      "end": 0.542,
-      "score": 0.999
+      "start": 0.201,
+      "end": 0.442,
+      "score": 0.967
     },
     {
       "text": "facture",
-      "start": 0.542,
-      "end": 1.018,
-      "score": 0.983
+      "start": 0.442,
+      "end": 0.898,
+      "score": 0.996
     },
     {
       "text": "nous",
-      "start": 1.044,
-      "end": 1.218,
-      "score": 0.997
+      "start": 0.904,
+      "end": 1.065,
+      "score": 0.991
     },
     {
       "text": "a",
-      "start": 1.224,
-      "end": 1.319,
-      "score": 0.805
+      "start": 1.065,
+      "end": 1.159,
+      "score": 0.994
     },
     {
       "text": "coûté",
-      "start": 1.345,
-      "end": 1.6,
-      "score": 1
+      "start": 1.165,
+      "end": 1.42,
+      "score": 0.999
     },
     {
       "text": "48",
-      "start": 1.726,
-      "end": 2.228,
-      "score": 0.746
+      "start": 1.507,
+      "end": 2.029,
+      "score": 0.974
     },
     {
       "text": "000",
-      "start": 2.228,
-      "end": 2.529,
+      "start": 2.029,
+      "end": 2.33,
       "score": 0
     },
     {
       "text": "livres",
-      "start": 2.529,
-      "end": 2.904,
-      "score": 0.965
+      "start": 2.33,
+      "end": 2.565,
+      "score": 0.667
     },
     {
       "text": "Depuis",
-      "start": 3.473,
-      "end": 3.888,
-      "score": 0.981
+      "start": 2.813,
+      "end": 3.228,
+      "score": 0.959
     },
     {
       "text": "nous",
-      "start": 4.235,
-      "end": 4.376,
+      "start": 3.435,
+      "end": 3.576,
       "score": 1
     },
     {
       "text": "rappelons",
-      "start": 4.376,
-      "end": 4.777,
-      "score": 0.998
+      "start": 3.576,
+      "end": 3.917,
+      "score": 0.99
     },
     {
       "text": "les",
-      "start": 4.777,
-      "end": 4.878,
-      "score": 0.983
+      "start": 3.917,
+      "end": 4.018,
+      "score": 1
     },
     {
       "text": "fournisseurs",
-      "start": 4.878,
-      "end": 5.554,
-      "score": 0.996
+      "start": 4.018,
+      "end": 4.54,
+      "score": 0.925
     }
   ]
 }

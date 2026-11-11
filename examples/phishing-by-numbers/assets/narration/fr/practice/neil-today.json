@@ -3,19 +3,19 @@
   "line": "neil-today",
   "language": "fr",
   "textHash": "sha256:5089eafb34d6c03a3b062167fe4beb1b71b2f172976d0ff533c97a01d7a55b2e",
-  "duration": 3.01,
+  "duration": 2.99,
   "provider": "elevenlabs",
-  "voice": "nXIYu9FT5meibkBbZFT7",
+  "voice": "1EmYoP3UnnnwhlJKovEy",
   "generated": true,
-  "audioHash": "sha256:f58cd90cf93efc3b0ba04f958ed7819b01bd57ef32ab7f58b015ab186681d643",
-  "createdAt": "2026-11-04T22:20:40Z",
+  "audioHash": "sha256:75d804a7fb0657310a7393c6a406d189e774efeacfb3686a0fc6770b9e1b820e",
+  "createdAt": "2026-11-11T00:15:53Z",
   "take": 1,
   "spokenHash": "sha256:5089eafb34d6c03a3b062167fe4beb1b71b2f172976d0ff533c97a01d7a55b2e",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Vous ne pouvez pas faire le changement aujourd’hui ? Je reste en ligne.",
-  "mouth": "cssswwwccooowwccwwwccwwwwwwsssooosscwwwwwwwwwssoooocccccccccccccccccoooooosscoooooosssscccc",
+  "mouth": "ccwwoooccssswwccwwwssswwoooocwwoosscwwwwwwoooosssooocccccccccccccccoooooooccooooooossssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
@@ -27,20 +27,20 @@
     {
       "text": "ne",
       "start": 0.161,
-      "end": 0.241,
+      "end": 0.255,
       "score": 1
     },
     {
       "text": "pouvez",
-      "start": 0.241,
+      "start": 0.261,
       "end": 0.502,
-      "score": 0.915
+      "score": 0.999
     },
     {
       "text": "pas",
       "start": 0.502,
       "end": 0.642,
-      "score": 0.997
+      "score": 0.999
     },
     {
       "text": "faire",
@@ -51,44 +51,44 @@
     {
       "text": "le",
       "start": 0.823,
-      "end": 0.917,
+      "end": 0.937,
       "score": 0.999
     },
     {
       "text": "changement",
-      "start": 0.923,
-      "end": 1.304,
-      "score": 0.996
+      "start": 0.943,
+      "end": 1.318,
+      "score": 0.998
     },
     {
       "text": "aujourd’hui",
-      "start": 1.304,
-      "end": 1.7,
-      "score": 0.921
+      "start": 1.325,
+      "end": 1.74,
+      "score": 0.901
     },
     {
       "text": "Je",
       "start": 2.228,
-      "end": 2.362,
-      "score": 0.994
+      "end": 2.342,
+      "score": 0.999
     },
     {
       "text": "reste",
       "start": 2.368,
-      "end": 2.623,
+      "end": 2.583,
       "score": 1
     },
     {
       "text": "en",
-      "start": 2.629,
-      "end": 2.709,
+      "start": 2.589,
+      "end": 2.669,
       "score": 1
     },
     {
       "text": "ligne",
-      "start": 2.709,
-      "end": 2.944,
-      "score": 0.992
+      "start": 2.669,
+      "end": 2.924,
+      "score": 1
     }
   ]
 }

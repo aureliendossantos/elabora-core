@@ -3,152 +3,152 @@
   "line": "l2",
   "language": "fr",
   "textHash": "sha256:b398ca8fc9c8aed86b910977601133bc293f98ad4e1a751106e805d2e8dac53e",
-  "duration": 6.92,
+  "duration": 5.99,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:b2e521657ad698be5b987f983daf82c9a585ee7ed02374db1961bdfb7b83db52",
-  "createdAt": "2026-11-04T22:20:04Z",
+  "audioHash": "sha256:85a0c5d359f8a53c64bd9bab1e6a109ac3f9808332be2f321679a7be95370a1c",
+  "createdAt": "2026-11-11T00:14:21Z",
   "take": 1,
   "spokenHash": "sha256:b398ca8fc9c8aed86b910977601133bc293f98ad4e1a751106e805d2e8dac53e",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Nous le bloquons dans les 1 200 boîtes mail, nous prévenons les destinataires et nous en faisons un exercice pour vous entraîner.",
-  "mouth": "cwwwwwwwooocwwwwccooossssswwoooowwwwwsssssoossssssssscwwwwcccoocoooooooccccccccccwwwwccssooossooowwwwwwwooocccooooossccoooooooocccccccwwwwoossssscccsssssooooowwwwssssssssccccoossssccwwooooooooooocssooossssscc",
+  "mouth": "cwwwwwwoocwwwwcccooooooooooooowwwwoowwoosssoocooooccsscoooooowwccccccccsssccsswwwwwwooooocssscooooosscccwwwwwwwwwwccoowwwwwwwwccoooooooooowwsssoooccssssssscccsssssssooossscssoooocc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Nous",
-      "start": 0.04,
-      "end": 0.181,
-      "score": 0.999
+      "start": 0.02,
+      "end": 0.16,
+      "score": 0.991
     },
     {
       "text": "le",
-      "start": 0.181,
-      "end": 0.295,
+      "start": 0.16,
+      "end": 0.274,
       "score": 0.999
     },
     {
       "text": "bloquons",
-      "start": 0.341,
-      "end": 0.796,
-      "score": 0.753
+      "start": 0.281,
+      "end": 0.661,
+      "score": 0.848
     },
     {
       "text": "dans",
-      "start": 0.802,
-      "end": 0.963,
-      "score": 0.999
+      "start": 0.661,
+      "end": 0.801,
+      "score": 0.932
     },
     {
       "text": "les",
-      "start": 0.963,
-      "end": 1.117,
-      "score": 0.997
+      "start": 0.801,
+      "end": 0.936,
+      "score": 0.992
     },
     {
       "text": "1",
-      "start": 1.143,
-      "end": 1.358,
-      "score": 0
+      "start": 0.942,
+      "end": 1.036,
+      "score": 0.173
     },
     {
       "text": "200",
-      "start": 1.404,
-      "end": 1.765,
-      "score": 0.598
+      "start": 1.182,
+      "end": 1.503,
+      "score": 0.748
     },
     {
       "text": "boîtes",
-      "start": 1.765,
-      "end": 2.066,
-      "score": 0.697
+      "start": 1.503,
+      "end": 1.783,
+      "score": 0.428
     },
     {
       "text": "mail",
-      "start": 2.066,
-      "end": 2.361,
-      "score": 0.928
+      "start": 1.783,
+      "end": 2.097,
+      "score": 0.948
     },
     {
       "text": "nous",
-      "start": 2.708,
-      "end": 2.868,
+      "start": 2.364,
+      "end": 2.504,
       "score": 1
     },
     {
       "text": "prévenons",
-      "start": 2.868,
-      "end": 3.324,
-      "score": 0.998
+      "start": 2.504,
+      "end": 2.885,
+      "score": 0.99
     },
     {
       "text": "les",
-      "start": 3.33,
-      "end": 3.45,
-      "score": 0.998
+      "start": 2.885,
+      "end": 2.985,
+      "score": 0.996
     },
     {
       "text": "destinataires",
-      "start": 3.45,
-      "end": 4.326,
-      "score": 0.971
+      "start": 2.985,
+      "end": 3.8,
+      "score": 0.949
     },
     {
       "text": "et",
-      "start": 4.473,
-      "end": 4.573,
+      "start": 3.846,
+      "end": 3.947,
       "score": 1
     },
     {
       "text": "nous",
-      "start": 4.573,
-      "end": 4.748,
-      "score": 0.999
+      "start": 3.947,
+      "end": 4.101,
+      "score": 0.94
     },
     {
       "text": "en",
-      "start": 4.774,
-      "end": 4.868,
-      "score": 1
-    },
-    {
-      "text": "faisons",
-      "start": 4.894,
-      "end": 5.209,
+      "start": 4.107,
+      "end": 4.201,
       "score": 0.999
     },
     {
+      "text": "faisons",
+      "start": 4.207,
+      "end": 4.488,
+      "score": 0.998
+    },
+    {
       "text": "un",
-      "start": 5.235,
-      "end": 5.349,
-      "score": 0.971
+      "start": 4.488,
+      "end": 4.602,
+      "score": 0.999
     },
     {
       "text": "exercice",
-      "start": 5.416,
-      "end": 6.031,
-      "score": 0.992
+      "start": 4.648,
+      "end": 5.203,
+      "score": 1
     },
     {
       "text": "pour",
-      "start": 6.038,
-      "end": 6.212,
-      "score": 1
+      "start": 5.209,
+      "end": 5.369,
+      "score": 0.938
     },
     {
       "text": "vous",
-      "start": 6.218,
-      "end": 6.392,
-      "score": 1
+      "start": 5.369,
+      "end": 5.543,
+      "score": 0.966
     },
     {
       "text": "entraîner",
-      "start": 6.419,
-      "end": 6.854,
-      "score": 0.954
+      "start": 5.549,
+      "end": 5.964,
+      "score": 0.951
     }
   ]
 }

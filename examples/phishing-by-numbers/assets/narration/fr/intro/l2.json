@@ -3,92 +3,92 @@
   "line": "l2",
   "language": "fr",
   "textHash": "sha256:d2c908e619520d70e8a348c0cb31a31fa8480f4d88ce7f6f045675b55b1e4c25",
-  "duration": 4.23,
+  "duration": 3.82,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:cac71187ec335c752eb6be74a960e83aa6b8cf0b720f5106aebcb7c768aae4b5",
-  "createdAt": "2026-11-04T22:18:20Z",
+  "audioHash": "sha256:d2d1f80d5ed2507ce0733b503eb8f74f2b3d4211215fe5b061ad81862b1c3b88",
+  "createdAt": "2026-11-11T00:15:03Z",
   "take": 1,
   "spokenHash": "sha256:d2c908e619520d70e8a348c0cb31a31fa8480f4d88ce7f6f045675b55b1e4c25",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Tout commence par un e-mail dans 62 % de nos incidents de sécurité.",
-  "mouth": "ccoooccwwcccoossscccooowwwwwwwwwcoooosssssoossssscoooccccooowwooooccooocsssooooooooooossswwwssssoooooooossssssccooooooccooocccc",
+  "mouth": "coooocwwccwwwssccoooooowwwwoocwwwoooocoossssscccsscoooowwwwwoooccsscsssswwoooooooooooooosscoooooocsscssssssscsssscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Tout",
       "start": 0.02,
-      "end": 0.194,
-      "score": 0.961
+      "end": 0.181,
+      "score": 0.964
     },
     {
       "text": "commence",
-      "start": 0.201,
-      "end": 0.595,
-      "score": 0.991
+      "start": 0.181,
+      "end": 0.517,
+      "score": 1
     },
     {
       "text": "par",
-      "start": 0.622,
-      "end": 0.756,
-      "score": 1
+      "start": 0.523,
+      "end": 0.664,
+      "score": 0.998
     },
     {
       "text": "un",
-      "start": 0.782,
-      "end": 0.896,
-      "score": 0.997
+      "start": 0.664,
+      "end": 0.778,
+      "score": 1
     },
     {
       "text": "e-mail",
-      "start": 0.942,
-      "end": 1.297,
-      "score": 0.487
+      "start": 0.824,
+      "end": 1.2,
+      "score": 0.648
     },
     {
       "text": "dans",
-      "start": 1.323,
-      "end": 1.518,
-      "score": 0.953
+      "start": 1.227,
+      "end": 1.401,
+      "score": 0.546
     },
     {
       "text": "62",
-      "start": 1.604,
-      "end": 2.64,
-      "score": 0.988
+      "start": 1.488,
+      "end": 2.487,
+      "score": 0.996
     },
     {
       "text": "de",
-      "start": 2.646,
-      "end": 2.76,
-      "score": 1
+      "start": 2.493,
+      "end": 2.608,
+      "score": 0.976
     },
     {
       "text": "nos",
-      "start": 2.767,
-      "end": 2.941,
-      "score": 0.935
+      "start": 2.614,
+      "end": 2.748,
+      "score": 0.999
     },
     {
       "text": "incidents",
-      "start": 3.007,
-      "end": 3.428,
-      "score": 0.99
+      "start": 2.795,
+      "end": 3.137,
+      "score": 0.965
     },
     {
       "text": "de",
-      "start": 3.428,
-      "end": 3.522,
-      "score": 1
+      "start": 3.137,
+      "end": 3.237,
+      "score": 0.913
     },
     {
       "text": "sécurité",
-      "start": 3.548,
-      "end": 4.104,
-      "score": 0.994
+      "start": 3.237,
+      "end": 3.754,
+      "score": 0.996
     }
   ]
 }

@@ -2698,17 +2698,17 @@
       <notes>
         <note category="location">screens/practice.json /blocks/0/props/nodes/0/lines/0/text</note>
         <note category="format">text</note>
-        <note category="context">Line dana-call (guide) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a gesture or an action of the dialogue waits for (« email », « rings »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="context">Line dana-call (guide) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a gesture or an action of the dialogue waits for (« email »): keep each marker, with its id, around the words of your language that say the same thing</note>
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>Tuesday, 4:40 pm. This morning, Finance got an <mrk id="w-email" type="elabora:anchor">email</mrk> from Harlow Tyres. Now the phone <mrk id="w-rings" type="elabora:anchor">rings</mrk>.</source>
-        <target>Mardi, 16 h 40. Ce matin, le service financier a reçu un <mrk id="w-email" type="elabora:anchor">e-mail</mrk> de Harlow Tyres. Le téléphone <mrk id="w-rings" type="elabora:anchor">sonne</mrk>.</target>
+        <source>Tuesday, 4:40 pm. This morning, Finance got an <mrk id="w-email" type="elabora:anchor">email</mrk> from Harlow Tyres. Now the phone rings.</source>
+        <target>Mardi, 16 h 40. Ce matin, le service financier a reçu un <mrk id="w-email" type="elabora:anchor">e-mail</mrk> de Harlow Tyres. Le téléphone sonne.</target>
       </segment>
     </unit>
     <unit id="block.bank-call.nodes.call.lines.neil-hello.text">
       <notes>
-        <note category="location">screens/practice.json /blocks/0/props/nodes/0/lines/1/text</note>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/lines/2/text</note>
         <note category="format">text</note>
         <note category="context">Line neil-hello (neil) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
         <note category="max-length">2000</note>
@@ -2720,7 +2720,7 @@
     </unit>
     <unit id="block.bank-call.nodes.call.lines.neil-bank.text">
       <notes>
-        <note category="location">screens/practice.json /blocks/0/props/nodes/0/lines/2/text</note>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/lines/3/text</note>
         <note category="format">text</note>
         <note category="context">Line neil-bank (neil) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
         <note category="max-length">2000</note>

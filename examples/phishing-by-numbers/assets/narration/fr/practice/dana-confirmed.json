@@ -3,110 +3,110 @@
   "line": "dana-confirmed",
   "language": "fr",
   "textHash": "sha256:d46928f0187d26ce68f7b2acfa243aa4e5d7a2839b5fa19e6217cabbe397ca36",
-  "duration": 6.5,
+  "duration": 5.67,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:97344c41943cfd9614e714c286e4dd8efdf61b4d35b8cf5cb950eee37250896a",
-  "createdAt": "2026-11-04T22:20:58Z",
+  "audioHash": "sha256:e0a56b4f1ca7617221f41ffd6d1a04ebd427bae6c517a76533ee9c0d0f852b15",
+  "createdAt": "2026-11-11T00:16:08Z",
   "take": 1,
   "spokenHash": "sha256:d46928f0187d26ce68f7b2acfa243aa4e5d7a2839b5fa19e6217cabbe397ca36",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Dix minutes plus tard, une réponse cordiale arrive : « Je vous confirme le changement. Merci ! Neil. »",
-  "mouth": "ccssooocoooooccccooocccwwwwooooccccccccwwwwwooooccwwssssccwwwwooooowwwwwsssoossssssssssscccccccccccccccccccooooosssccwwwcccoooocooooosssoooosscoooocccccccccccccssscccoooocccccccccccccwwwooossscccc",
+  "mouth": "ccooowwcwwwwwccccooocwwwwwwoossssccwwwoooooccwwwssccwwoossooooooossssssscooccccccccccccccoooooooccwwwsssooocwwwwsssoooosscoosscccccccccoossscooooccccccccccccooooooossssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Dix",
       "start": 0.06,
-      "end": 0.221,
+      "end": 0.22,
       "score": 1
     },
     {
       "text": "minutes",
-      "start": 0.221,
-      "end": 0.522,
-      "score": 0.994
+      "start": 0.22,
+      "end": 0.501,
+      "score": 0.989
     },
     {
       "text": "plus",
-      "start": 0.522,
-      "end": 0.716,
-      "score": 1
+      "start": 0.501,
+      "end": 0.681,
+      "score": 0.999
     },
     {
       "text": "tard",
-      "start": 0.722,
-      "end": 1.117,
-      "score": 0.967
+      "start": 0.681,
+      "end": 1.056,
+      "score": 1
     },
     {
       "text": "une",
-      "start": 1.324,
-      "end": 1.478,
+      "start": 1.182,
+      "end": 1.322,
       "score": 1
     },
     {
       "text": "réponse",
-      "start": 1.485,
-      "end": 1.9,
-      "score": 0.973
+      "start": 1.322,
+      "end": 1.697,
+      "score": 0.991
     },
     {
       "text": "cordiale",
-      "start": 1.906,
-      "end": 2.441,
-      "score": 1
+      "start": 1.703,
+      "end": 2.118,
+      "score": 0.978
     },
     {
       "text": "arrive",
-      "start": 2.468,
-      "end": 2.923,
+      "start": 2.124,
+      "end": 2.498,
       "score": 1
     },
     {
       "text": "Je",
-      "start": 3.571,
-      "end": 3.685,
-      "score": 0.999
+      "start": 2.965,
+      "end": 3.079,
+      "score": 0.991
     },
     {
       "text": "vous",
-      "start": 3.712,
-      "end": 3.886,
+      "start": 3.086,
+      "end": 3.246,
       "score": 1
     },
     {
       "text": "confirme",
-      "start": 3.892,
-      "end": 4.347,
-      "score": 0.976
+      "start": 3.246,
+      "end": 3.66,
+      "score": 0.996
     },
     {
       "text": "le",
-      "start": 4.353,
-      "end": 4.468,
+      "start": 3.667,
+      "end": 3.781,
       "score": 1
     },
     {
       "text": "changement",
-      "start": 4.474,
-      "end": 4.909,
+      "start": 3.787,
+      "end": 4.201,
       "score": 1
     },
     {
       "text": "Merci",
-      "start": 5.276,
-      "end": 5.651,
-      "score": 0.999
+      "start": 4.448,
+      "end": 4.822,
+      "score": 0.996
     },
     {
       "text": "Neil",
-      "start": 6.099,
-      "end": 6.414,
-      "score": 0.749
+      "start": 5.249,
+      "end": 5.67,
+      "score": 0.42
     }
   ]
 }

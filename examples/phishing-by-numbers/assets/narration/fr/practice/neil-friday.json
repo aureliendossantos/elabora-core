@@ -3,110 +3,110 @@
   "line": "neil-friday",
   "language": "fr",
   "textHash": "sha256:3396c6fb51c71943237d59592838f1eea9feffa99e2594e1cee7ade02493dd51",
-  "duration": 4.94,
+  "duration": 4.73,
   "provider": "elevenlabs",
-  "voice": "nXIYu9FT5meibkBbZFT7",
+  "voice": "1EmYoP3UnnnwhlJKovEy",
   "generated": true,
-  "audioHash": "sha256:3615c836042d5c0bdc1f212c4c4f0864fb976490c5712e6e44dacf7a24233c39",
-  "createdAt": "2026-11-04T22:20:38Z",
+  "audioHash": "sha256:bda2d1ab7903a1409bcacff195d103be49edfc4ef51dbfc4d3fbf81edd9f25f6",
+  "createdAt": "2026-11-11T00:15:51Z",
   "take": 1,
   "spokenHash": "sha256:3396c6fb51c71943237d59592838f1eea9feffa99e2594e1cee7ade02493dd51",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Écoutez, si le paiement n’arrive pas d’ici vendredi, notre directeur suspend vos livraisons.",
-  "mouth": "coocooocwwwwcccccccccccssssswwwccwwwcwwoowwwoooccccwwwssssssssssooooowwwssooocccccccccccccooocsssssssswwwccwwwwssccoooosscccwwooooooooooooooosssssccc",
+  "mouth": "ccsssoossswwwcccccccccccccooowwwcwwwcwwwoowwooosscccwwsssscccooooooooooosscooccccccccccooossswwssssssscccooossscoossccwwwwoooooooooooosssssssc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Écoutez",
-      "start": 0.04,
-      "end": 0.395,
-      "score": 0.998
+      "start": 0.06,
+      "end": 0.435,
+      "score": 0.982
     },
     {
       "text": "si",
-      "start": 0.783,
-      "end": 0.918,
+      "start": 0.802,
+      "end": 0.936,
       "score": 1
     },
     {
       "text": "le",
-      "start": 0.924,
-      "end": 1.038,
-      "score": 0.999
-    },
-    {
-      "text": "paiement",
-      "start": 1.064,
-      "end": 1.319,
+      "start": 0.942,
+      "end": 1.056,
       "score": 1
     },
     {
+      "text": "paiement",
+      "start": 1.082,
+      "end": 1.343,
+      "score": 0.633
+    },
+    {
       "text": "n’",
-      "start": 1.325,
-      "end": 1.366,
-      "score": 0.657
+      "start": 1.343,
+      "end": 1.403,
+      "score": 0.588
     },
     {
       "text": "arrive",
-      "start": 1.366,
-      "end": 1.661,
-      "score": 0.976
+      "start": 1.403,
+      "end": 1.677,
+      "score": 1
     },
     {
       "text": "pas",
-      "start": 1.667,
-      "end": 1.807,
+      "start": 1.704,
+      "end": 1.824,
       "score": 0.997
     },
     {
       "text": "d’",
-      "start": 1.807,
-      "end": 1.868,
-      "score": 0.806
+      "start": 1.824,
+      "end": 1.884,
+      "score": 0.803
     },
     {
       "text": "ici",
-      "start": 1.868,
-      "end": 2.082,
-      "score": 0.994
+      "start": 1.884,
+      "end": 2.078,
+      "score": 0.997
     },
     {
       "text": "vendredi",
-      "start": 2.109,
-      "end": 2.564,
+      "start": 2.105,
+      "end": 2.579,
       "score": 1
     },
     {
       "text": "notre",
-      "start": 3.012,
-      "end": 3.247,
-      "score": 1
+      "start": 2.886,
+      "end": 3.161,
+      "score": 0.987
     },
     {
       "text": "directeur",
-      "start": 3.273,
-      "end": 3.749,
-      "score": 1
+      "start": 3.187,
+      "end": 3.662,
+      "score": 0.996
     },
     {
       "text": "suspend",
-      "start": 3.856,
-      "end": 4.291,
-      "score": 0.981
+      "start": 3.688,
+      "end": 4.089,
+      "score": 0.993
     },
     {
       "text": "vos",
-      "start": 4.318,
-      "end": 4.438,
-      "score": 0.998
+      "start": 4.089,
+      "end": 4.209,
+      "score": 0.739
     },
     {
       "text": "livraisons",
-      "start": 4.438,
-      "end": 4.914,
-      "score": 0.98
+      "start": 4.209,
+      "end": 4.684,
+      "score": 0.935
     }
   ]
 }

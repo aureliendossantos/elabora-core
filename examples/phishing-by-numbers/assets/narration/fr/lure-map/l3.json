@@ -3,170 +3,170 @@
   "line": "l3",
   "language": "fr",
   "textHash": "sha256:df20ad45f2c3fd521851bf986b07a24343802a21256821544c3bbc9615c20faa",
-  "duration": 9.64,
+  "duration": 8.46,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:8663bdf9d2afb5c2e97e638e46ea61f1559105c11d40d81eec7806394b511724",
-  "createdAt": "2026-11-04T22:18:58Z",
+  "audioHash": "sha256:b15a1920c4c0b924cf7adbeabac0dbcbba2bc5d2dfcdeef131e5b2dfe64dc863",
+  "createdAt": "2026-11-11T00:15:14Z",
   "take": 1,
   "spokenHash": "sha256:df20ad45f2c3fd521851bf986b07a24343802a21256821544c3bbc9615c20faa",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Les messages du service paie sont rares, mais convaincants. Les réinitialisations de mot de passe et les factures sont à la fois fréquentes et convaincantes.",
-  "mouth": "ccwwwwcoosssswwwwsssooooossswwoooooosssccccoooosssssoowwssswwwooosscssccccccccoooccwwwssssoosssooossccccccccccccccccccccccwwwooooooooossscsswwoooooowwwssssswwwoooocwwwsscccccwwwwsssssscwwwwwwcccwwwcccsssoooooocooccooooooooooowwwccccwwwwcccoooooccwwwooooccsscccooocccwwwooooosssoooossccssscc",
+  "mouth": "cwwoocwwssswwwoossooooowwoossssssccccwwwwoooooooooosssooooowwwcssccccccooocccwwwooooocccsssscccccccccccccccccwwwwoowwwwwwwwooowwooooooooossooooooocwwwcccccwwwsssssssssssscooccccsssoowwwwcoooooowwwwwssscoooccsssooccccwwoooocsssccwwwccwwwwoosscsssssccoossc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Les",
-      "start": 0.06,
-      "end": 0.2,
-      "score": 1
+      "start": 0.04,
+      "end": 0.16,
+      "score": 0.998
     },
     {
       "text": "messages",
-      "start": 0.2,
-      "end": 0.695,
-      "score": 1
+      "start": 0.16,
+      "end": 0.581,
+      "score": 0.988
     },
     {
       "text": "du",
-      "start": 0.702,
-      "end": 0.816,
+      "start": 0.581,
+      "end": 0.696,
       "score": 0.999
     },
     {
       "text": "service",
-      "start": 0.862,
-      "end": 1.277,
-      "score": 0.998
-    },
-    {
-      "text": "paie",
-      "start": 1.383,
-      "end": 1.684,
-      "score": 0.246
-    },
-    {
-      "text": "sont",
-      "start": 1.684,
-      "end": 1.898,
-      "score": 0.999
-    },
-    {
-      "text": "rares",
-      "start": 1.904,
-      "end": 2.339,
-      "score": 0.999
-    },
-    {
-      "text": "mais",
-      "start": 2.565,
-      "end": 2.76,
+      "start": 0.722,
+      "end": 1.117,
       "score": 1
     },
     {
-      "text": "convaincants",
-      "start": 2.766,
-      "end": 3.381,
+      "text": "paie",
+      "start": 1.163,
+      "end": 1.497,
+      "score": 0.413
+    },
+    {
+      "text": "sont",
+      "start": 1.504,
+      "end": 1.718,
+      "score": 1
+    },
+    {
+      "text": "rares",
+      "start": 1.744,
+      "end": 2.199,
+      "score": 1
+    },
+    {
+      "text": "mais",
+      "start": 2.326,
+      "end": 2.52,
       "score": 0.994
+    },
+    {
+      "text": "convaincants",
+      "start": 2.526,
+      "end": 3.121,
+      "score": 0.972
     },
     {
       "text": "Les",
-      "start": 4.069,
-      "end": 4.223,
-      "score": 0.994
+      "start": 3.649,
+      "end": 3.783,
+      "score": 0.999
     },
     {
       "text": "réinitialisations",
-      "start": 4.229,
-      "end": 5.305,
-      "score": 0.973
+      "start": 3.789,
+      "end": 4.745,
+      "score": 0.983
     },
     {
       "text": "de",
-      "start": 5.311,
-      "end": 5.425,
-      "score": 0.998
+      "start": 4.751,
+      "end": 4.845,
+      "score": 0.999
     },
     {
       "text": "mot",
-      "start": 5.431,
-      "end": 5.586,
-      "score": 0.793
+      "start": 4.872,
+      "end": 5.006,
+      "score": 0.928
     },
     {
       "text": "de",
-      "start": 5.592,
-      "end": 5.706,
-      "score": 0.652
+      "start": 5.012,
+      "end": 5.106,
+      "score": 0.896
     },
     {
       "text": "passe",
-      "start": 5.732,
-      "end": 6.127,
-      "score": 0.974
+      "start": 5.132,
+      "end": 5.447,
+      "score": 0.923
     },
     {
       "text": "et",
-      "start": 6.193,
-      "end": 6.293,
+      "start": 5.453,
+      "end": 5.553,
       "score": 0.999
     },
     {
       "text": "les",
-      "start": 6.293,
-      "end": 6.427,
-      "score": 0.914
+      "start": 5.553,
+      "end": 5.667,
+      "score": 0.929
     },
     {
       "text": "factures",
-      "start": 6.433,
-      "end": 7.089,
+      "start": 5.674,
+      "end": 6.269,
       "score": 0.999
     },
     {
       "text": "sont",
-      "start": 7.215,
-      "end": 7.429,
-      "score": 1
+      "start": 6.275,
+      "end": 6.449,
+      "score": 0.986
     },
     {
       "text": "à",
-      "start": 7.436,
-      "end": 7.51,
+      "start": 6.455,
+      "end": 6.529,
       "score": 1
     },
     {
       "text": "la",
-      "start": 7.516,
-      "end": 7.63,
+      "start": 6.536,
+      "end": 6.65,
       "score": 1
     },
     {
       "text": "fois",
-      "start": 7.656,
-      "end": 7.87,
+      "start": 6.656,
+      "end": 6.87,
       "score": 1
     },
     {
       "text": "fréquentes",
-      "start": 7.957,
-      "end": 8.612,
-      "score": 0.999
+      "start": 6.916,
+      "end": 7.552,
+      "score": 0.994
     },
     {
       "text": "et",
-      "start": 8.698,
-      "end": 8.812,
-      "score": 1
+      "start": 7.618,
+      "end": 7.738,
+      "score": 0.91
     },
     {
       "text": "convaincantes",
-      "start": 8.838,
-      "end": 9.594,
-      "score": 0.976
+      "start": 7.738,
+      "end": 8.434,
+      "score": 0.994
     }
   ]
 }

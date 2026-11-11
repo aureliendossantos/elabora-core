@@ -3,92 +3,92 @@
   "line": "neil-no-need",
   "language": "fr",
   "textHash": "sha256:9a786f77663b250903fc6acc3b0d0c213dc08cca0d945d24395516ef55f26d42",
-  "duration": 2.84,
+  "duration": 2.71,
   "provider": "elevenlabs",
-  "voice": "nXIYu9FT5meibkBbZFT7",
+  "voice": "1EmYoP3UnnnwhlJKovEy",
   "generated": true,
-  "audioHash": "sha256:95bb30c22f9498c098758507dee534bfa42da267a56b62ecec4ba9614f01905e",
-  "createdAt": "2026-11-09T20:47:29Z",
+  "audioHash": "sha256:96b9a5575571316b888f0dabec7d39b2514c9346c51498251af39e23db263fd9",
+  "createdAt": "2026-11-11T00:15:45Z",
   "take": 1,
   "spokenHash": "sha256:9a786f77663b250903fc6acc3b0d0c213dc08cca0d945d24395516ef55f26d42",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "[un peu trop vite] Inutile de rappeler, vous m’avez en ligne. Ça prend 2 minutes.",
-  "mouth": "cwwwwwssoooowwwwwcccoooosssscccccssscwwoowwwooooosssssccccccoooocooooooooocooosscccccc",
+  "mouth": "cooowwssssssswwwwwcccooooossccccccsscwwwwwwooooooooossccccccwwwcooosswwwcooooooccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Inutile",
       "start": 0.04,
-      "end": 0.383,
+      "end": 0.402,
       "score": 1
     },
     {
       "text": "de",
-      "start": 0.383,
-      "end": 0.477,
-      "score": 1
+      "start": 0.402,
+      "end": 0.516,
+      "score": 0.968
     },
     {
       "text": "rappeler",
-      "start": 0.484,
-      "end": 0.84,
-      "score": 0.999
+      "start": 0.522,
+      "end": 0.877,
+      "score": 1
     },
     {
       "text": "vous",
-      "start": 1.088,
-      "end": 1.209,
-      "score": 1
+      "start": 1.084,
+      "end": 1.205,
+      "score": 0.993
     },
     {
       "text": "m’",
-      "start": 1.209,
-      "end": 1.269,
-      "score": 0.638
+      "start": 1.205,
+      "end": 1.265,
+      "score": 0.567
     },
     {
       "text": "avez",
-      "start": 1.269,
-      "end": 1.45,
-      "score": 1
+      "start": 1.265,
+      "end": 1.459,
+      "score": 0.999
     },
     {
       "text": "en",
-      "start": 1.45,
-      "end": 1.531,
+      "start": 1.466,
+      "end": 1.546,
       "score": 1
     },
     {
       "text": "ligne",
-      "start": 1.531,
-      "end": 1.766,
-      "score": 0.993
+      "start": 1.546,
+      "end": 1.78,
+      "score": 0.988
     },
     {
       "text": "Ça",
-      "start": 2.014,
-      "end": 2.129,
-      "score": 0.991
+      "start": 1.967,
+      "end": 2.082,
+      "score": 0.989
     },
     {
       "text": "prend",
-      "start": 2.135,
-      "end": 2.29,
+      "start": 2.088,
+      "end": 2.262,
       "score": 1
     },
     {
       "text": "2",
-      "start": 2.337,
-      "end": 2.458,
-      "score": 0.998
+      "start": 2.268,
+      "end": 2.409,
+      "score": 1
     },
     {
       "text": "minutes",
-      "start": 2.458,
-      "end": 2.814,
-      "score": 0.935
+      "start": 2.409,
+      "end": 2.71,
+      "score": 0.998
     }
   ]
 }

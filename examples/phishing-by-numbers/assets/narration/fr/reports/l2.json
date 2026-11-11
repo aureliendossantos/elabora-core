@@ -3,116 +3,116 @@
   "line": "l2",
   "language": "fr",
   "textHash": "sha256:26ca25ddf6ea4f47cca73b60356dbf5df0fa4ecd5430bbcc3803b2264a7bc267",
-  "duration": 6.85,
+  "duration": 5.94,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:2fa3b36455e7ddd62c744ce299559ccc246fca1216c6836b3aef7a71ecd08d42",
-  "createdAt": "2026-11-04T22:19:24Z",
+  "audioHash": "sha256:7944711e4411e25ab1f4fc03c6243f5e2101d1a404f1dd0def800328f98b3d1c",
+  "createdAt": "2026-11-11T00:16:14Z",
   "take": 1,
   "spokenHash": "sha256:26ca25ddf6ea4f47cca73b60356dbf5df0fa4ecd5430bbcc3803b2264a7bc267",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Puis le bouton « Signaler » est arrivé. Les signalements ont bondi : 153 par mois l’an dernier.",
-  "mouth": "ccssooooowwwcoooccooooccccccccccssssoowwoooooooocccoooccwwwssssscoooccccccccccccccccccwwwwwccssooowwwwcwwwwwcwwwwwwwsscwwoowwwsssssccccccccccccccccccwwsscccoooooowwwwcsscwwwcccoocoocoooooosssssooooooosssscc",
+  "mouth": "ccssswwoowwwcssscooooooosssswwwwwwoooooooocooccwwwssssccoooccccccccccccccooossoowwwwwoocwwwwwcoooooccccwwwwwsscccccccccccccccoowwwssssswwwcwwooocccwwwccsssoocoooosssssssssoooooocc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Puis",
       "start": 0.02,
-      "end": 0.254,
-      "score": 0.999
+      "end": 0.255,
+      "score": 1
     },
     {
       "text": "le",
-      "start": 0.28,
+      "start": 0.281,
       "end": 0.395,
-      "score": 1
+      "score": 0.999
     },
     {
       "text": "bouton",
       "start": 0.401,
-      "end": 0.735,
-      "score": 0.999
+      "end": 0.716,
+      "score": 1
     },
     {
       "text": "Signaler",
-      "start": 1.022,
-      "end": 1.556,
-      "score": 0.75
+      "start": 0.823,
+      "end": 1.358,
+      "score": 0.753
     },
     {
       "text": "est",
-      "start": 1.723,
-      "end": 1.877,
-      "score": 1
+      "start": 1.445,
+      "end": 1.599,
+      "score": 0.959
     },
     {
       "text": "arrivé",
-      "start": 1.903,
-      "end": 2.257,
-      "score": 1
+      "start": 1.605,
+      "end": 1.961,
+      "score": 0.966
     },
     {
       "text": "Les",
-      "start": 2.864,
-      "end": 3.038,
-      "score": 0.993
+      "start": 2.448,
+      "end": 2.589,
+      "score": 0.926
     },
     {
       "text": "signalements",
-      "start": 3.065,
-      "end": 3.619,
-      "score": 0.987
+      "start": 2.589,
+      "end": 3.124,
+      "score": 0.936
     },
     {
       "text": "ont",
-      "start": 3.665,
-      "end": 3.8,
+      "start": 3.151,
+      "end": 3.285,
       "score": 1
     },
     {
       "text": "bondi",
-      "start": 3.906,
-      "end": 4.36,
+      "start": 3.371,
+      "end": 3.767,
       "score": 1
     },
     {
       "text": "153",
-      "start": 4.907,
-      "end": 5.809,
-      "score": 0.985
+      "start": 4.174,
+      "end": 5.031,
+      "score": 0.962
     },
     {
       "text": "par",
-      "start": 5.809,
-      "end": 5.983,
-      "score": 0.997
+      "start": 5.037,
+      "end": 5.211,
+      "score": 0.974
     },
     {
       "text": "mois",
-      "start": 6.029,
-      "end": 6.229,
-      "score": 0.926
+      "start": 5.238,
+      "end": 5.398,
+      "score": 0.919
     },
     {
       "text": "l’",
-      "start": 6.229,
-      "end": 6.309,
-      "score": 0.527
+      "start": 5.398,
+      "end": 5.479,
+      "score": 0.311
     },
     {
       "text": "an",
-      "start": 6.309,
-      "end": 6.403,
-      "score": 0.684
+      "start": 5.479,
+      "end": 5.573,
+      "score": 0.513
     },
     {
       "text": "dernier",
-      "start": 6.429,
-      "end": 6.804,
-      "score": 0.996
+      "start": 5.579,
+      "end": 5.914,
+      "score": 0.997
     }
   ]
 }

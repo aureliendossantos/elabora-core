@@ -3,128 +3,128 @@
   "line": "l3",
   "language": "fr",
   "textHash": "sha256:4f7f13b9c35c32417227b407765ca2ddc73111ae46dc8163cb6501f1b74981e3",
-  "duration": 6.8,
+  "duration": 6.24,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:5da7bded531e9193dd3d6f0cec92c64403e8f6884d11c2bb5ec3afab8fd0d14e",
-  "createdAt": "2026-11-04T22:19:49Z",
+  "audioHash": "sha256:203fe064e18c08eb0556a1b64e443d6587540943929846b37019149a479a537b",
+  "createdAt": "2026-11-11T00:16:35Z",
   "take": 1,
   "spokenHash": "sha256:f85b8f8ae49414f85b5f85e41cfb8cc21da088affde129e5ee3c3947a4fa29ae",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Vous avez cliqué ou saisi un mot de passe ? Appelez tout de suite le service sécurité au 4444.",
-  "mouth": "cooooowwwoooocssooocooooooooooooossswwoooooowwwcoosscccwwwwcssssscccccccccccccccwwcccooooocccoooocoooooooocooooossswwooooossssoosssssoooocccwwooocccooocccoowwwccssccccwwwwwcssssccccwwwwcsssccoooosscssscccc",
+  "mouth": "coooowwoooosssooocoowwwwwwooooooowwooowwwwcwwsscccoossssooccccccccccwwccooooocccooossoooooooccwwooooooooossssssssssoooooocoooowwwcccooocccwwwwccssscccccooooocsssscccccwwwcssssccooosscssscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Vous",
       "start": 0.02,
-      "end": 0.194,
+      "end": 0.174,
       "score": 1
     },
     {
       "text": "avez",
-      "start": 0.201,
-      "end": 0.435,
-      "score": 0.999
+      "start": 0.181,
+      "end": 0.381,
+      "score": 1
     },
     {
       "text": "cliqué",
-      "start": 0.441,
-      "end": 0.776,
-      "score": 0.999
+      "start": 0.381,
+      "end": 0.716,
+      "score": 0.996
     },
     {
       "text": "ou",
-      "start": 0.963,
-      "end": 1.057,
-      "score": 0.994
+      "start": 0.883,
+      "end": 0.977,
+      "score": 0.911
     },
     {
       "text": "saisi",
-      "start": 1.103,
-      "end": 1.418,
+      "start": 1.043,
+      "end": 1.298,
       "score": 1
     },
     {
       "text": "un",
-      "start": 1.464,
-      "end": 1.545,
+      "start": 1.324,
+      "end": 1.405,
       "score": 0.999
     },
     {
       "text": "mot",
-      "start": 1.545,
-      "end": 1.685,
-      "score": 0.987
+      "start": 1.405,
+      "end": 1.525,
+      "score": 0.998
     },
     {
       "text": "de",
-      "start": 1.685,
-      "end": 1.785,
-      "score": 0.893
+      "start": 1.525,
+      "end": 1.625,
+      "score": 0.994
     },
     {
       "text": "passe",
-      "start": 1.785,
-      "end": 2.16,
-      "score": 0.953
+      "start": 1.625,
+      "end": 1.94,
+      "score": 0.999
     },
     {
       "text": "Appelez",
-      "start": 2.668,
-      "end": 3.023,
-      "score": 0.991
+      "start": 2.267,
+      "end": 2.602,
+      "score": 0.994
     },
     {
       "text": "tout",
-      "start": 3.089,
-      "end": 3.25,
-      "score": 1
+      "start": 2.629,
+      "end": 2.789,
+      "score": 0.908
     },
     {
       "text": "de",
-      "start": 3.25,
-      "end": 3.344,
-      "score": 1
+      "start": 2.789,
+      "end": 2.889,
+      "score": 0.992
     },
     {
       "text": "suite",
-      "start": 3.37,
-      "end": 3.625,
-      "score": 1
+      "start": 2.889,
+      "end": 3.144,
+      "score": 0.999
     },
     {
       "text": "le",
-      "start": 3.631,
-      "end": 3.745,
+      "start": 3.15,
+      "end": 3.244,
       "score": 0.999
     },
     {
       "text": "service",
-      "start": 3.791,
-      "end": 4.166,
-      "score": 0.992
-    },
-    {
-      "text": "sécurité",
-      "start": 4.172,
-      "end": 4.748,
-      "score": 0.996
-    },
-    {
-      "text": "au",
-      "start": 4.955,
-      "end": 5.049,
+      "start": 3.271,
+      "end": 3.626,
       "score": 1
     },
     {
+      "text": "sécurité",
+      "start": 3.632,
+      "end": 4.187,
+      "score": 0.989
+    },
+    {
+      "text": "au",
+      "start": 4.394,
+      "end": 4.508,
+      "score": 0.997
+    },
+    {
       "text": "4444",
-      "start": 5.135,
-      "end": 6.714,
-      "score": 0.64
+      "start": 4.575,
+      "end": 6.214,
+      "score": 0.652
     }
   ]
 }

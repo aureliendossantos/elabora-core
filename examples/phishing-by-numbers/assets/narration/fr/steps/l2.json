@@ -3,110 +3,110 @@
   "line": "l2",
   "language": "fr",
   "textHash": "sha256:3ad58e38abd5a34d6ab4d123ea8ecff19d2d276b623b38b4d8768592d84f5a22",
-  "duration": 5.69,
+  "duration": 4.93,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:c27b9cee563012771001fa2cca288e69dbba2706c9ef5b9e6e1e06c9d3555800",
-  "createdAt": "2026-11-04T22:19:46Z",
+  "audioHash": "sha256:ad7d78ee1f01dc8975ac7f1f0ce0225f986fc555b81b11eb53e97e9c27a5daeb",
+  "createdAt": "2026-11-11T00:16:32Z",
   "take": 1,
   "spokenHash": "sha256:3ad58e38abd5a34d6ab4d123ea8ecff19d2d276b623b38b4d8768592d84f5a22",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Vérifiez qui l’a vraiment envoyé et où mène le lien. Puis cliquez sur « Signaler ».",
-  "mouth": "ccwwwwssssccssooooccccssoooowwwsssooowwcooooowwoooowwoooooooooccccwwwccccoossoocwwwwwwwooosssooooocccccccccccccccccsswwwcccssooccoooooooossoooooocccccccccsssswwwwwwssssscc",
+  "mouth": "ccwwwwooosssssssccoooooooosssssswwcwwwwwwwssssssssooooooccoooocccwwwwwcooooooooosssoossccccccccccccssssccssoooccwwoooosssssssssccccoooowwwooossssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Vérifiez",
       "start": 0.06,
-      "end": 0.595,
-      "score": 0.751
+      "end": 0.555,
+      "score": 0.752
     },
     {
       "text": "qui",
-      "start": 0.681,
-      "end": 0.855,
+      "start": 0.561,
+      "end": 0.722,
       "score": 1
     },
     {
       "text": "l’",
-      "start": 0.922,
-      "end": 0.962,
-      "score": 0.004
+      "start": 0.722,
+      "end": 0.802,
+      "score": 0.5
     },
     {
       "text": "a",
-      "start": 0.962,
-      "end": 1.036,
-      "score": 1
+      "start": 0.802,
+      "end": 0.876,
+      "score": 0.999
     },
     {
       "text": "vraiment",
-      "start": 1.102,
-      "end": 1.497,
-      "score": 0.971
+      "start": 0.922,
+      "end": 1.317,
+      "score": 0.996
     },
     {
       "text": "envoyé",
-      "start": 1.543,
-      "end": 1.997,
-      "score": 0.976
+      "start": 1.323,
+      "end": 1.758,
+      "score": 1
     },
     {
       "text": "et",
-      "start": 2.204,
-      "end": 2.318,
+      "start": 1.964,
+      "end": 2.078,
       "score": 1
     },
     {
       "text": "où",
-      "start": 2.464,
-      "end": 2.558,
+      "start": 2.205,
+      "end": 2.299,
       "score": 0.5
     },
     {
       "text": "mène",
-      "start": 2.605,
-      "end": 2.865,
-      "score": 0.991
+      "start": 2.305,
+      "end": 2.559,
+      "score": 0.95
     },
     {
       "text": "le",
-      "start": 2.865,
-      "end": 2.979,
-      "score": 0.969
+      "start": 2.565,
+      "end": 2.679,
+      "score": 1
     },
     {
       "text": "lien",
-      "start": 3.005,
-      "end": 3.26,
-      "score": 1
+      "start": 2.686,
+      "end": 2.92,
+      "score": 0.952
     },
     {
       "text": "Puis",
-      "start": 3.787,
-      "end": 4.021,
-      "score": 0.999
+      "start": 3.267,
+      "end": 3.467,
+      "score": 0.952
     },
     {
       "text": "cliquez",
-      "start": 4.047,
-      "end": 4.482,
-      "score": 0.713
+      "start": 3.467,
+      "end": 3.862,
+      "score": 0.589
     },
     {
       "text": "sur",
-      "start": 4.568,
-      "end": 4.863,
-      "score": 1
+      "start": 3.908,
+      "end": 4.182,
+      "score": 0.996
     },
     {
       "text": "Signaler",
-      "start": 5.109,
-      "end": 5.624,
-      "score": 0.885
+      "start": 4.389,
+      "end": 4.904,
+      "score": 0.8
     }
   ]
 }

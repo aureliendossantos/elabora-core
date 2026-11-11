@@ -3,86 +3,86 @@
   "line": "dana-hangs-up",
   "language": "fr",
   "textHash": "sha256:1b2c5f5860a54fcbd0488f18fbd45d8b90754098a6b41f9cf7f5d37bcb03cc74",
-  "duration": 4.09,
+  "duration": 3.4,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:71a2cb89c3acef31dbefc080c1ccec5a47dd89aab098c8fe50555d1d7d2dc664",
-  "createdAt": "2026-11-04T22:20:50Z",
+  "audioHash": "sha256:d880beb109fcb4d52f1651c85ceb7eca280c579a304661613994909a0454ea07",
+  "createdAt": "2026-11-11T00:16:01Z",
   "take": 1,
   "spokenHash": "sha256:1b2c5f5860a54fcbd0488f18fbd45d8b90754098a6b41f9cf7f5d37bcb03cc74",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Neil raccroche. Son e-mail est toujours dans votre boîte de réception.",
-  "mouth": "ccwwwooooocwwwwccsssssssssscccccccccccccccccccssssswwwooocwwssssssccccooosssooosscwwwooocccooocwwwwssooooooccooocoooooooccc",
+  "mouth": "coowwwwwssooocccooosssooocccccccccccssoowwwwwwcoooooocccssoooooooowwwwoooccsscwwwwcsssssssssscooooooocc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Neil",
-      "start": 0.06,
-      "end": 0.315,
-      "score": 0.727
+      "start": 0.04,
+      "end": 0.275,
+      "score": 0.703
     },
     {
       "text": "raccroche",
-      "start": 0.361,
-      "end": 0.916,
-      "score": 0.991
+      "start": 0.302,
+      "end": 0.839,
+      "score": 0.972
     },
     {
       "text": "Son",
-      "start": 1.544,
-      "end": 1.718,
-      "score": 1
+      "start": 1.207,
+      "end": 1.382,
+      "score": 0.997
     },
     {
       "text": "e-mail",
-      "start": 1.784,
-      "end": 2.079,
-      "score": 0.424
+      "start": 1.408,
+      "end": 1.71,
+      "score": 0.664
     },
     {
       "text": "est",
-      "start": 2.125,
-      "end": 2.259,
-      "score": 0.987
+      "start": 1.71,
+      "end": 1.845,
+      "score": 0.998
     },
     {
       "text": "toujours",
-      "start": 2.286,
-      "end": 2.707,
-      "score": 0.995
+      "start": 1.851,
+      "end": 2.193,
+      "score": 0.986
     },
     {
       "text": "dans",
-      "start": 2.707,
-      "end": 2.867,
-      "score": 1
+      "start": 2.193,
+      "end": 2.334,
+      "score": 0.979
     },
     {
       "text": "votre",
-      "start": 2.867,
-      "end": 3.081,
-      "score": 1
+      "start": 2.334,
+      "end": 2.549,
+      "score": 0.955
     },
     {
       "text": "boîte",
-      "start": 3.128,
-      "end": 3.348,
-      "score": 0.924
+      "start": 2.575,
+      "end": 2.777,
+      "score": 0.973
     },
     {
       "text": "de",
-      "start": 3.348,
-      "end": 3.462,
+      "start": 2.777,
+      "end": 2.871,
       "score": 1
     },
     {
       "text": "réception",
-      "start": 3.469,
-      "end": 4.004,
-      "score": 0.989
+      "start": 2.877,
+      "end": 3.354,
+      "score": 0.995
     }
   ]
 }

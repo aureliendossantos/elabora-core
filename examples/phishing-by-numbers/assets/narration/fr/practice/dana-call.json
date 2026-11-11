@@ -3,134 +3,134 @@
   "line": "dana-call",
   "language": "fr",
   "textHash": "sha256:210b59432b5f1f886748a3544d3f90c4fc7d3565ab180b2c8fe1d9c2e4d54316",
-  "duration": 7.83,
+  "duration": 7.08,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:fcc99782faef53bb54ef067278d816d534b9e794f6063c221c34929e084dd4d7",
-  "createdAt": "2026-11-09T21:30:55Z",
+  "audioHash": "sha256:06af04ffffcc80e03381af00816da6676b4ffa757c4685ae869d7e215e9791ba",
+  "createdAt": "2026-11-11T00:15:30Z",
   "take": 1,
   "spokenHash": "sha256:210b59432b5f1f886748a3544d3f90c4fc7d3565ab180b2c8fe1d9c2e4d54316",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Mardi, 16 h 40. Ce matin, le service financier a reçu un e-mail de Harlow Tyres. Le téléphone sonne.",
-  "mouth": "ccccwwwwoossoocccccccccccccoooosswwwssccwwwwwsssccccccccccccccccccccccccsswwwcwwccwwooooocccoowwwwccwwwssssssscoooooooocssssswwooooosssssswwwwwwwwwcoooooooooooccwwwoooooocccoooooooosssooccccccccccccccccooooccoooooccwwwwwwwwssoosssssccc",
+  "mouth": "ccccwwwwsssooooooccccssswwsssssccoooocssccccsscccccccccccccccsswwcwwwcwwwoowwwsssswwooooooooooosswwwwooooooooowwooooossssswwoooowwwwcwwoooooosssoooooooocccoooooosssssoooccccccccccccccccooccwwwwwccoossooocssccssscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Mardi",
-      "start": 0.08,
-      "end": 0.455,
-      "score": 0.808
+      "start": 0.06,
+      "end": 0.475,
+      "score": 0.997
     },
     {
       "text": "16",
-      "start": 0.861,
-      "end": 1.081,
-      "score": 0.613
+      "start": 0.702,
+      "end": 0.903,
+      "score": 0.982
     },
     {
       "text": "h",
-      "start": 1.081,
-      "end": 1.282,
-      "score": 0.991
+      "start": 0.903,
+      "end": 1.083,
+      "score": 0.998
     },
     {
       "text": "40",
-      "start": 1.282,
-      "end": 1.736,
-      "score": 0.993
+      "start": 1.083,
+      "end": 1.518,
+      "score": 0.976
     },
     {
       "text": "Ce",
-      "start": 2.403,
-      "end": 2.537,
+      "start": 2.026,
+      "end": 2.16,
       "score": 1
     },
     {
       "text": "matin",
-      "start": 2.563,
-      "end": 2.898,
+      "start": 2.166,
+      "end": 2.501,
       "score": 0.999
     },
     {
       "text": "le",
-      "start": 3.104,
-      "end": 3.218,
-      "score": 0.985
+      "start": 2.688,
+      "end": 2.822,
+      "score": 0.989
     },
     {
       "text": "service",
-      "start": 3.284,
-      "end": 3.659,
-      "score": 1
+      "start": 2.868,
+      "end": 3.189,
+      "score": 0.999
     },
     {
       "text": "financier",
-      "start": 3.665,
-      "end": 4.159,
+      "start": 3.189,
+      "end": 3.664,
       "score": 1
     },
     {
       "text": "a",
-      "start": 4.205,
-      "end": 4.279,
-      "score": 0.997
+      "start": 3.691,
+      "end": 3.765,
+      "score": 0.999
     },
     {
       "text": "reçu",
-      "start": 4.306,
-      "end": 4.6,
+      "start": 3.811,
+      "end": 4.085,
       "score": 1
     },
     {
       "text": "un",
-      "start": 4.646,
-      "end": 4.76,
+      "start": 4.112,
+      "end": 4.226,
       "score": 1
     },
     {
       "text": "e-mail",
-      "start": 4.806,
-      "end": 5.101,
-      "score": 0.212
+      "start": 4.272,
+      "end": 4.587,
+      "score": 0.777
     },
     {
       "text": "de",
-      "start": 5.147,
-      "end": 5.261,
-      "score": 0.996
+      "start": 4.613,
+      "end": 4.707,
+      "score": 0.999
     },
     {
       "text": "Harlow",
-      "start": 5.307,
-      "end": 5.681,
-      "score": 0.959
+      "start": 4.754,
+      "end": 5.108,
+      "score": 0.963
     },
     {
       "text": "Tyres",
-      "start": 5.707,
-      "end": 6.202,
-      "score": 0.75
+      "start": 5.135,
+      "end": 5.63,
+      "score": 0.802
     },
     {
       "text": "Le",
-      "start": 6.749,
-      "end": 6.863,
-      "score": 0.9
+      "start": 6.158,
+      "end": 6.272,
+      "score": 0.992
     },
     {
       "text": "téléphone",
-      "start": 6.889,
-      "end": 7.383,
-      "score": 0.957
+      "start": 6.278,
+      "end": 6.733,
+      "score": 0.953
     },
     {
       "text": "sonne",
-      "start": 7.43,
-      "end": 7.744,
-      "score": 0.891
+      "start": 6.739,
+      "end": 7.054,
+      "score": 0.844
     }
   ]
 }

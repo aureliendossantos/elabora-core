@@ -3,104 +3,104 @@
   "line": "l1",
   "language": "fr",
   "textHash": "sha256:a84c56873385292b35565b6e0cb56de7e652352a72439ab088a20c9c645e8a59",
-  "duration": 5.91,
+  "duration": 5.03,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:57015f8a7965f448fc52e9981f9cb8a28f9b5a0cc79855aec65e7ca74caff09d",
-  "createdAt": "2026-11-04T22:19:59Z",
+  "audioHash": "sha256:cc18ea91ca57395f8bf38d6af57ef351b87499809a5f44a8e27f71f4dcab0b26",
+  "createdAt": "2026-11-11T00:14:18Z",
   "take": 1,
   "spokenHash": "sha256:a84c56873385292b35565b6e0cb56de7e652352a72439ab088a20c9c645e8a59",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Votre signalement arrive au service sécurité. En quelques minutes, un analyste examine le message.",
-  "mouth": "ccwwwssssssssssssswwoocwwoooowwwssoossooosscwwooooosssscoooccoooooocccooocccccccccccccccoooccwwwcccsssscwwwooocccsscccwwwwwwwooooossscccccccoooooooocwwoowwwooocssscwwoosssssscccc",
+  "mouth": "ccwwsssoossoowwwwwwcwwoowwwwwoooooossooossssscccoocssoosssccooccccccccccccssccwwwwccooocwwwwwwwwcoooocooooowwwwwooosscooosssscooooooooocccccooosscssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Votre",
-      "start": 0.06,
-      "end": 0.314,
-      "score": 1
+      "start": 0.04,
+      "end": 0.274,
+      "score": 0.951
     },
     {
       "text": "signalement",
-      "start": 0.401,
-      "end": 0.895,
-      "score": 1
+      "start": 0.341,
+      "end": 0.816,
+      "score": 0.976
     },
     {
       "text": "arrive",
-      "start": 0.982,
-      "end": 1.296,
-      "score": 0.932
+      "start": 0.842,
+      "end": 1.096,
+      "score": 1
     },
     {
       "text": "au",
-      "start": 1.302,
-      "end": 1.396,
+      "start": 1.102,
+      "end": 1.196,
       "score": 1
     },
     {
       "text": "service",
-      "start": 1.422,
-      "end": 1.817,
-      "score": 0.999
+      "start": 1.202,
+      "end": 1.557,
+      "score": 0.972
     },
     {
       "text": "sécurité",
-      "start": 1.843,
-      "end": 2.418,
-      "score": 0.993
+      "start": 1.563,
+      "end": 2.078,
+      "score": 0.997
     },
     {
       "text": "En",
-      "start": 2.925,
-      "end": 3.039,
-      "score": 0.992
+      "start": 2.465,
+      "end": 2.559,
+      "score": 1
     },
     {
       "text": "quelques",
-      "start": 3.045,
-      "end": 3.406,
-      "score": 0.978
-    },
-    {
-      "text": "minutes",
-      "start": 3.406,
-      "end": 3.84,
+      "start": 2.565,
+      "end": 2.886,
       "score": 0.999
     },
     {
+      "text": "minutes",
+      "start": 2.886,
+      "end": 3.361,
+      "score": 0.981
+    },
+    {
       "text": "un",
-      "start": 3.967,
-      "end": 4.081,
+      "start": 3.407,
+      "end": 3.521,
       "score": 1
     },
     {
       "text": "analyste",
-      "start": 4.107,
-      "end": 4.602,
-      "score": 1
+      "start": 3.567,
+      "end": 3.988,
+      "score": 0.998
     },
     {
       "text": "examine",
-      "start": 4.708,
-      "end": 5.183,
-      "score": 0.999
+      "start": 3.988,
+      "end": 4.383,
+      "score": 1
     },
     {
       "text": "le",
-      "start": 5.189,
-      "end": 5.283,
+      "start": 4.389,
+      "end": 4.483,
       "score": 1
     },
     {
       "text": "message",
-      "start": 5.289,
-      "end": 5.804,
-      "score": 0.999
+      "start": 4.489,
+      "end": 4.944,
+      "score": 1
     }
   ]
 }

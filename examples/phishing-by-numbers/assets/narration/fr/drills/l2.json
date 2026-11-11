@@ -3,86 +3,86 @@
   "line": "l2",
   "language": "fr",
   "textHash": "sha256:ca6bc1fc5b62580bd07656e95361f62328a3d903ec1f9e9081828ed138fe3fad",
-  "duration": 3.84,
+  "duration": 3.55,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:bb3624e1c17673e8cd21dc2be17cad9bc77fc7926ebf606ce763180a54f260bd",
-  "createdAt": "2026-11-04T22:19:07Z",
+  "audioHash": "sha256:9b622335e82ccc963a0cdb822b04804bacd2ee56054b8f654cac294e59ef73b3",
+  "createdAt": "2026-11-11T00:14:31Z",
   "take": 1,
   "spokenHash": "sha256:ca6bc1fc5b62580bd07656e95361f62328a3d903ec1f9e9081828ed138fe3fad",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "À votre avis, où en était-on en novembre ? Prolongez la courbe.",
-  "mouth": "cwwoooocssssooooooooccccccccccssssooowwwwcwwwccoowwwwooooossssscccsscccccccccccccccccwwwooooosswwwwwwcccsssssscssccc",
+  "mouth": "cwwwwwwsssooossssssoooccccccwwwwooowwwwcwwwcssoooooooooocoooccoossccccccccccccccwwwwwwwoooooooccccoossscccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "À",
       "start": 0.02,
       "end": 0.094,
-      "score": 0.914
+      "score": 0.963
     },
     {
       "text": "votre",
-      "start": 0.121,
-      "end": 0.356,
-      "score": 0.988
+      "start": 0.12,
+      "end": 0.355,
+      "score": 1
     },
     {
       "text": "avis",
-      "start": 0.362,
-      "end": 0.677,
-      "score": 0.99
+      "start": 0.381,
+      "end": 0.696,
+      "score": 0.92
     },
     {
       "text": "où",
-      "start": 1.005,
-      "end": 1.1,
-      "score": 0.998
+      "start": 0.943,
+      "end": 1.037,
+      "score": 0.999
     },
     {
       "text": "en",
-      "start": 1.166,
-      "end": 1.26,
+      "start": 1.083,
+      "end": 1.197,
       "score": 1
     },
     {
       "text": "était-on",
-      "start": 1.287,
-      "end": 1.703,
-      "score": 0.982
+      "start": 1.224,
+      "end": 1.618,
+      "score": 0.974
     },
     {
       "text": "en",
-      "start": 1.749,
-      "end": 1.843,
+      "start": 1.645,
+      "end": 1.739,
       "score": 1
     },
     {
       "text": "novembre",
-      "start": 1.85,
-      "end": 2.326,
-      "score": 0.999
+      "start": 1.745,
+      "end": 2.2,
+      "score": 1
     },
     {
       "text": "Prolongez",
-      "start": 2.775,
-      "end": 3.257,
-      "score": 0.891
+      "start": 2.628,
+      "end": 3.049,
+      "score": 0.921
     },
     {
       "text": "la",
-      "start": 3.257,
-      "end": 3.371,
+      "start": 3.049,
+      "end": 3.163,
       "score": 1
     },
     {
       "text": "courbe",
-      "start": 3.418,
-      "end": 3.774,
-      "score": 0.958
+      "start": 3.189,
+      "end": 3.524,
+      "score": 1
     }
   ]
 }

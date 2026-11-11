@@ -3,133 +3,133 @@
   "line": "l2",
   "language": "fr",
   "textHash": "sha256:83957a9b2f6298cdd986b29d6626c3d275f4a1806e07a778865f4c37d94611d0",
-  "duration": 7.67,
+  "duration": 6.76,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:1ceccdcdac407ce80e382d4b666de4764457e40b5c7365fad5c2f0853c62d4a2",
-  "createdAt": "2026-11-04T22:20:14Z",
+  "audioHash": "sha256:1a54f2480a3a88efe4f5e016df667f8fb550a74ffc80b2f4e0638caeccb8062b",
+  "createdAt": "2026-11-11T00:14:45Z",
   "take": 1,
   "spokenHash": "sha256:83957a9b2f6298cdd986b29d6626c3d275f4a1806e07a778865f4c37d94611d0",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Si oui, ou si l’expéditeur ou le lien vous paraît suspect, signalez le message. Sinon, poursuivez votre travail.",
-  "mouth": "cccssswwwwoooccccccccccccccoooocooooooocccccooooooccwwwwwwcooooooooooowwwwoooossccooooossoooossscccwwwwwcccccccccccccccoosssswwoowwooooocssccwwwssssssscccccccccccccccccoowwwwwwwccccccccccccwwssssscoooooooooooccooccssssssoossssccccc",
+  "mouth": "ccoooooooowwwccccccccccwwooooooooooooocssccoosssscoowwwwsssssoossoowwooocsscccsssssooooocssccwwoooccccccccccccoowwwwwwwwwwooocssscssooossssccccccccccssswwwoooooccccccccoocsssooowwwoooocccccccssssoosssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Si",
       "start": 0.08,
-      "end": 0.234,
+      "end": 0.215,
       "score": 1
     },
     {
       "text": "oui",
-      "start": 0.28,
+      "start": 0.261,
       "end": 0.435,
-      "score": 0.998
+      "score": 0.949
     },
     {
       "text": "ou",
-      "start": 0.901,
-      "end": 0.995,
-      "score": 0.995
+      "start": 0.762,
+      "end": 0.856,
+      "score": 0.999
     },
     {
       "text": "si",
-      "start": 1.041,
-      "end": 1.155,
+      "start": 1.043,
+      "end": 1.177,
       "score": 1
     },
     {
       "text": "l’",
-      "start": 1.182,
-      "end": 1.262,
-      "score": 0.764
+      "start": 1.184,
+      "end": 1.264,
+      "score": 0.679
     },
     {
       "text": "expéditeur",
-      "start": 1.262,
-      "end": 1.957,
-      "score": 0.995
+      "start": 1.264,
+      "end": 1.9,
+      "score": 1
     },
     {
       "text": "ou",
-      "start": 1.983,
-      "end": 2.077,
-      "score": 0.979
+      "start": 1.906,
+      "end": 2.006,
+      "score": 0.965
     },
     {
       "text": "le",
-      "start": 2.083,
-      "end": 2.217,
-      "score": 1
+      "start": 2.006,
+      "end": 2.12,
+      "score": 0.999
     },
     {
       "text": "lien",
-      "start": 2.243,
-      "end": 2.477,
-      "score": 0.989
-    },
-    {
-      "text": "vous",
-      "start": 2.523,
-      "end": 2.684,
+      "start": 2.146,
+      "end": 2.381,
       "score": 1
     },
     {
+      "text": "vous",
+      "start": 2.407,
+      "end": 2.548,
+      "score": 0.996
+    },
+    {
       "text": "paraît",
-      "start": 2.684,
-      "end": 2.978,
-      "score": 0.985
+      "start": 2.548,
+      "end": 2.822,
+      "score": 0.975
     },
     {
       "text": "suspect",
-      "start": 3.004,
-      "end": 3.499,
-      "score": 0.968
+      "start": 2.828,
+      "end": 3.284,
+      "score": 0.981
     },
     {
       "text": "signalez",
-      "start": 3.925,
-      "end": 4.406,
-      "score": 0.739
+      "start": 3.651,
+      "end": 4.072,
+      "score": 0.798
     },
     {
       "text": "le",
-      "start": 4.406,
-      "end": 4.5,
+      "start": 4.072,
+      "end": 4.152,
       "score": 1
     },
     {
       "text": "message",
-      "start": 4.506,
-      "end": 5.021,
-      "score": 0.999
+      "start": 4.152,
+      "end": 4.628,
+      "score": 0.967
     },
     {
       "text": "Sinon",
-      "start": 5.567,
-      "end": 5.902,
-      "score": 1
+      "start": 4.975,
+      "end": 5.31,
+      "score": 0.996
     },
     {
       "text": "poursuivez",
-      "start": 6.268,
-      "end": 6.823,
-      "score": 0.997
+      "start": 5.557,
+      "end": 6.018,
+      "score": 0.999
     },
     {
       "text": "votre",
-      "start": 6.829,
-      "end": 7.083,
-      "score": 0.973
+      "start": 6.018,
+      "end": 6.252,
+      "score": 0.999
     },
     {
       "text": "travail",
-      "start": 7.109,
-      "end": 7.544,
+      "start": 6.299,
+      "end": 6.674,
       "score": 1
     }
   ]

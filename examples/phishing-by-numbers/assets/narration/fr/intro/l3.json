@@ -3,110 +3,110 @@
   "line": "l3",
   "language": "fr",
   "textHash": "sha256:d1a3f26002a0b233b2e43126aeaeeca8de482b5fd4a29251a28f983b71bbbca6",
-  "duration": 5.62,
+  "duration": 4.84,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:3cd58307b6a65a8dda483d5aea468c69758535ee6b0313dd2888a70896caaeb7",
-  "createdAt": "2026-11-09T21:16:24Z",
+  "audioHash": "sha256:fc300b652fc6fb6d8d23bde3ccb8f3b326566b0734ee1dc2cd5a587199335654",
+  "createdAt": "2026-11-11T00:15:05Z",
   "take": 1,
   "spokenHash": "sha256:d1a3f26002a0b233b2e43126aeaeeca8de482b5fd4a29251a28f983b71bbbca6",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Grâce à vos signalements, nous bloquons ces e-mails en 11 minutes, contre 4 heures auparavant.",
-  "mouth": "ccooowwwwccwwoooooocccwwwwwwooocwwwoooccccccccwwwwooocoooocccsssssssooossswwwcoooooocwwwwcccooooosssscwwoossccccsscccccccccoooossooocccwwwcccssswwoosssscccsssooocssssscc",
+  "mouth": "coooooosswwssoosssswwwwwwwwcwwoooooccwwwwwsscwwwwccoooooowwsssooocoooowwooocccwwwwwwwwwcoosssscooossccccccoosscsscccwwwcssscoooocsscccssooocsssscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Grâce",
-      "start": 0.06,
-      "end": 0.395,
-      "score": 1
+      "start": 0.04,
+      "end": 0.335,
+      "score": 0.998
     },
     {
       "text": "à",
-      "start": 0.402,
-      "end": 0.476,
-      "score": 1
+      "start": 0.341,
+      "end": 0.402,
+      "score": 0.998
     },
     {
       "text": "vos",
-      "start": 0.482,
-      "end": 0.656,
-      "score": 0.934
+      "start": 0.402,
+      "end": 0.536,
+      "score": 0.997
     },
     {
       "text": "signalements",
-      "start": 0.662,
-      "end": 1.278,
+      "start": 0.542,
+      "end": 1.118,
       "score": 0.92
     },
     {
       "text": "nous",
-      "start": 1.546,
-      "end": 1.74,
-      "score": 0.95
+      "start": 1.265,
+      "end": 1.46,
+      "score": 0.993
     },
     {
       "text": "bloquons",
-      "start": 1.746,
-      "end": 2.182,
-      "score": 0.949
+      "start": 1.466,
+      "end": 1.862,
+      "score": 0.971
     },
     {
       "text": "ces",
-      "start": 2.228,
-      "end": 2.402,
-      "score": 0.893
+      "start": 1.868,
+      "end": 2.042,
+      "score": 0.856
     },
     {
       "text": "e-mails",
-      "start": 2.449,
-      "end": 2.844,
-      "score": 0.672
+      "start": 2.069,
+      "end": 2.41,
+      "score": 0.74
     },
     {
       "text": "en",
-      "start": 2.87,
-      "end": 2.964,
-      "score": 1
+      "start": 2.41,
+      "end": 2.504,
+      "score": 0.999
     },
     {
       "text": "11",
-      "start": 3.111,
-      "end": 3.346,
-      "score": 0.999
+      "start": 2.631,
+      "end": 2.886,
+      "score": 0.958
     },
     {
       "text": "minutes",
-      "start": 3.352,
-      "end": 3.807,
-      "score": 0.981
+      "start": 2.892,
+      "end": 3.308,
+      "score": 1
     },
     {
       "text": "contre",
-      "start": 4.075,
-      "end": 4.369,
-      "score": 0.999
-    },
-    {
-      "text": "4",
-      "start": 4.456,
-      "end": 4.751,
-      "score": 0.98
-    },
-    {
-      "text": "heures",
-      "start": 4.777,
-      "end": 5.018,
+      "start": 3.495,
+      "end": 3.749,
       "score": 0.997
     },
     {
+      "text": "4",
+      "start": 3.836,
+      "end": 4.111,
+      "score": 0.998
+    },
+    {
+      "text": "heures",
+      "start": 4.117,
+      "end": 4.338,
+      "score": 0.983
+    },
+    {
       "text": "auparavant",
-      "start": 5.018,
-      "end": 5.554,
-      "score": 0.957
+      "start": 4.338,
+      "end": 4.814,
+      "score": 0.975
     }
   ]
 }

@@ -3,116 +3,116 @@
   "line": "l3",
   "language": "fr",
   "textHash": "sha256:ef6e04ef310c949f5e4c9c818fc07d0d4aaf7eccce682d7c0a24dfeaebf8c4fb",
-  "duration": 6.32,
+  "duration": 5.47,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:71409b2f7f6fc81fe28b628cb9dca69adf4d5394dcf98760799f02dd3a1cb10c",
-  "createdAt": "2026-11-04T22:20:16Z",
+  "audioHash": "sha256:f5446479e5ea46322434a4da4ebe10f8747e30115979b8db23e529c559d75c1d",
+  "createdAt": "2026-11-11T00:14:48Z",
   "take": 1,
   "spokenHash": "sha256:ef6e04ef310c949f5e4c9c818fc07d0d4aaf7eccce682d7c0a24dfeaebf8c4fb",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Si vous avez cliqué, appelez le service sécurité. Sinon, c’est terminé : nous prenons le relais.",
-  "mouth": "cccooooossoowwssscccooooccsssscccccccccccccwwccccssooooossscwwwssssssscwwwccoooooooccoooccccccccccccccccccoowwwwwwwcccccccccssoocccwwwooocoooossscccccccccccccccwwwwcccwwwwooooowwwooooooosscc",
+  "mouth": "cooooooooowwoooocccoooccooocccccccccccwwccccwwwooooooooossoossssssssoooooccoooccccccccccccccoooooooooccccccccccssccwwwwwwcoooossccccccccccooooccoowwwwooooosssssssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Si",
-      "start": 0.06,
-      "end": 0.195,
+      "start": 0.04,
+      "end": 0.174,
       "score": 1
     },
     {
       "text": "vous",
-      "start": 0.221,
-      "end": 0.375,
-      "score": 0.993
+      "start": 0.18,
+      "end": 0.335,
+      "score": 0.997
     },
     {
       "text": "avez",
-      "start": 0.381,
-      "end": 0.616,
-      "score": 0.993
+      "start": 0.341,
+      "end": 0.555,
+      "score": 1
     },
     {
       "text": "cliqué",
-      "start": 0.622,
-      "end": 0.997,
-      "score": 1
+      "start": 0.561,
+      "end": 0.896,
+      "score": 0.978
     },
     {
       "text": "appelez",
-      "start": 1.445,
-      "end": 1.8,
-      "score": 1
+      "start": 1.282,
+      "end": 1.603,
+      "score": 0.964
     },
     {
       "text": "le",
-      "start": 1.806,
-      "end": 1.9,
-      "score": 0.999
-    },
-    {
-      "text": "service",
-      "start": 1.946,
-      "end": 2.341,
+      "start": 1.603,
+      "end": 1.717,
       "score": 1
     },
     {
+      "text": "service",
+      "start": 1.723,
+      "end": 2.078,
+      "score": 0.96
+    },
+    {
       "text": "sécurité",
-      "start": 2.348,
-      "end": 2.923,
-      "score": 0.995
+      "start": 2.084,
+      "end": 2.599,
+      "score": 0.985
     },
     {
       "text": "Sinon",
-      "start": 3.511,
-      "end": 3.846,
+      "start": 3.066,
+      "end": 3.38,
       "score": 1
     },
     {
       "text": "c’",
-      "start": 4.133,
-      "end": 4.193,
-      "score": 0.532
+      "start": 3.647,
+      "end": 3.687,
+      "score": 0.547
     },
     {
       "text": "est",
-      "start": 4.193,
-      "end": 4.348,
+      "start": 3.687,
+      "end": 3.821,
       "score": 1
     },
     {
       "text": "terminé",
-      "start": 4.354,
-      "end": 4.829,
-      "score": 1
+      "start": 3.827,
+      "end": 4.262,
+      "score": 0.999
     },
     {
       "text": "nous",
-      "start": 5.337,
-      "end": 5.511,
+      "start": 4.588,
+      "end": 4.749,
       "score": 1
     },
     {
       "text": "prenons",
-      "start": 5.518,
-      "end": 5.839,
-      "score": 1
+      "start": 4.749,
+      "end": 5.069,
+      "score": 0.965
     },
     {
       "text": "le",
-      "start": 5.839,
-      "end": 5.953,
+      "start": 5.069,
+      "end": 5.183,
       "score": 1
     },
     {
       "text": "relais",
-      "start": 5.979,
-      "end": 6.294,
-      "score": 0.963
+      "start": 5.21,
+      "end": 5.464,
+      "score": 0.956
     }
   ]
 }

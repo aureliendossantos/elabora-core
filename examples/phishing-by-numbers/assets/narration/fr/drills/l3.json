@@ -3,80 +3,80 @@
   "line": "l3",
   "language": "fr",
   "textHash": "sha256:bfeaeb2539c1a67cf5b6260843e8138648f723e8f0869d01b7f4efa8bb55f3d8",
-  "duration": 2.89,
+  "duration": 2.51,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:0d42dbbb2dc8a2888f3ff1fcf41636c825e04d851b2894053010f53bd21a9f01",
-  "createdAt": "2026-11-04T22:19:09Z",
+  "audioHash": "sha256:8ab7066f8b07debc41536f4fcb32f23521fe174a442c7821721f54cb4d498e80",
+  "createdAt": "2026-11-11T00:14:33Z",
   "take": 1,
   "spokenHash": "sha256:bfeaeb2539c1a67cf5b6260843e8138648f723e8f0869d01b7f4efa8bb55f3d8",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Dans toutes les équipes, on clique moins qu’en janvier.",
-  "mouth": "ccoowwwwcccooosscooooowwwcssooooccsssscccccwwwwcsssoosscccwwwwwwwsssooooooooooooooooccc",
+  "mouth": "ccwwooccssssssswwooooocoooooccwwwsscccwwwwssooocooocwwwwwsssoooooossssoooocc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Dans",
-      "start": 0.08,
-      "end": 0.295,
-      "score": 0.949
-    },
-    {
-      "text": "toutes",
-      "start": 0.321,
-      "end": 0.576,
-      "score": 0.984
-    },
-    {
-      "text": "les",
-      "start": 0.582,
-      "end": 0.716,
+      "start": 0.06,
+      "end": 0.235,
       "score": 1
     },
     {
-      "text": "équipes",
-      "start": 0.783,
-      "end": 1.238,
-      "score": 0.97
-    },
-    {
-      "text": "on",
-      "start": 1.465,
-      "end": 1.559,
+      "text": "toutes",
+      "start": 0.261,
+      "end": 0.482,
       "score": 0.993
     },
     {
-      "text": "clique",
-      "start": 1.606,
-      "end": 1.88,
+      "text": "les",
+      "start": 0.482,
+      "end": 0.636,
+      "score": 0.994
+    },
+    {
+      "text": "équipes",
+      "start": 0.663,
+      "end": 1.118,
       "score": 0.999
     },
     {
+      "text": "on",
+      "start": 1.305,
+      "end": 1.399,
+      "score": 0.922
+    },
+    {
+      "text": "clique",
+      "start": 1.406,
+      "end": 1.661,
+      "score": 1
+    },
+    {
       "text": "moins",
-      "start": 1.907,
-      "end": 2.168,
-      "score": 0.985
+      "start": 1.687,
+      "end": 1.908,
+      "score": 0.989
     },
     {
       "text": "qu’",
-      "start": 2.168,
-      "end": 2.288,
-      "score": 0.775
+      "start": 1.908,
+      "end": 1.988,
+      "score": 0.792
     },
     {
       "text": "en",
-      "start": 2.288,
-      "end": 2.382,
+      "start": 1.988,
+      "end": 2.082,
       "score": 1
     },
     {
       "text": "janvier",
-      "start": 2.388,
-      "end": 2.804,
-      "score": 0.965
+      "start": 2.088,
+      "end": 2.464,
+      "score": 1
     }
   ]
 }

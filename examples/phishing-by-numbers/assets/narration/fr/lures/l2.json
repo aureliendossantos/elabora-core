@@ -3,164 +3,164 @@
   "line": "l2",
   "language": "fr",
   "textHash": "sha256:9deafedc424747e47f4ac2809dd6301be1b0538e395dd16da9d2dd202ebfd1b4",
-  "duration": 8.8,
+  "duration": 8.12,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:d58090627d63bda800d78e1495b1e1341a573387caccb59816c76cb62f7cc37f",
-  "createdAt": "2026-11-09T21:28:19Z",
+  "audioHash": "sha256:219213a210da2fbfd30d6cac1510c51575e9321358199940dd32c12072282b7b",
+  "createdAt": "2026-11-11T00:15:21Z",
   "take": 1,
   "spokenHash": "sha256:9deafedc424747e47f4ac2809dd6301be1b0538e395dd16da9d2dd202ebfd1b4",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "D’abord des avis de livraison, puis des factures, des réinitialisations de mot de passe, des messages du service paie et quelques autres prétextes.",
-  "mouth": "ccwwwwwcwwwwwwssooooosswwwsssssssoowwooooooossswwwwccccccccccssssooossssccwwwccccssooooooooooccccsssoooossooowwooocsswwoooooowwwsssoooooooocsscccccwwwwwwwccccccccccccccwwwwwcssccwwwwwsssooossssssssssccccccwwooossccoooooooccssoooccwwoooooosscsscccoooccoooccssscooocc",
+  "mouth": "ccwwwwwcwwwwwwwwwwoowwoooooowwooooooooooooooooccccccccccssoosssssscooooccccsssooowwwwwwwccccooosssssoooooooooooooossooossssssssscssccccccwwwwwwssssscssooooocssssssooocssssssoossssssscccwwwwwwcccccccccccooooccwwwwccwwwwwwwccsscccssccssccooocoooc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "D’",
       "start": 0.06,
       "end": 0.14,
-      "score": 0.628
+      "score": 0.654
     },
     {
       "text": "abord",
       "start": 0.14,
-      "end": 0.535,
-      "score": 1
+      "end": 0.495,
+      "score": 0.961
     },
     {
       "text": "des",
-      "start": 0.561,
-      "end": 0.716,
-      "score": 0.997
+      "start": 0.501,
+      "end": 0.656,
+      "score": 0.986
     },
     {
       "text": "avis",
-      "start": 0.762,
-      "end": 1.016,
-      "score": 0.988
+      "start": 0.682,
+      "end": 0.902,
+      "score": 0.999
     },
     {
       "text": "de",
-      "start": 1.022,
-      "end": 1.103,
+      "start": 0.902,
+      "end": 0.996,
       "score": 1
     },
     {
       "text": "livraison",
-      "start": 1.103,
-      "end": 1.698,
-      "score": 0.995
-    },
-    {
-      "text": "puis",
-      "start": 1.965,
-      "end": 2.239,
-      "score": 1
-    },
-    {
-      "text": "des",
-      "start": 2.285,
-      "end": 2.419,
-      "score": 0.999
-    },
-    {
-      "text": "factures",
-      "start": 2.426,
-      "end": 3.161,
-      "score": 0.977
-    },
-    {
-      "text": "des",
-      "start": 3.308,
-      "end": 3.462,
-      "score": 0.999
-    },
-    {
-      "text": "réinitialisations",
-      "start": 3.488,
-      "end": 4.49,
-      "score": 0.957
-    },
-    {
-      "text": "de",
-      "start": 4.49,
-      "end": 4.604,
-      "score": 0.999
-    },
-    {
-      "text": "mot",
-      "start": 4.611,
-      "end": 4.745,
-      "score": 0.925
-    },
-    {
-      "text": "de",
-      "start": 4.751,
-      "end": 4.845,
-      "score": 0.894
-    },
-    {
-      "text": "passe",
-      "start": 4.851,
-      "end": 5.266,
-      "score": 0.952
-    },
-    {
-      "text": "des",
-      "start": 5.613,
-      "end": 5.747,
+      "start": 1.003,
+      "end": 1.518,
       "score": 0.985
     },
     {
-      "text": "messages",
-      "start": 5.753,
-      "end": 6.194,
+      "text": "puis",
+      "start": 1.805,
+      "end": 2.079,
+      "score": 0.985
+    },
+    {
+      "text": "des",
+      "start": 2.125,
+      "end": 2.246,
+      "score": 0.953
+    },
+    {
+      "text": "factures",
+      "start": 2.246,
+      "end": 3.001,
+      "score": 0.982
+    },
+    {
+      "text": "des",
+      "start": 3.048,
+      "end": 3.202,
       "score": 0.996
     },
     {
+      "text": "réinitialisations",
+      "start": 3.228,
+      "end": 4.15,
+      "score": 0.959
+    },
+    {
+      "text": "de",
+      "start": 4.15,
+      "end": 4.244,
+      "score": 0.982
+    },
+    {
+      "text": "mot",
+      "start": 4.251,
+      "end": 4.371,
+      "score": 0.687
+    },
+    {
+      "text": "de",
+      "start": 4.371,
+      "end": 4.485,
+      "score": 0.836
+    },
+    {
+      "text": "passe",
+      "start": 4.491,
+      "end": 4.946,
+      "score": 0.618
+    },
+    {
+      "text": "des",
+      "start": 5.032,
+      "end": 5.167,
+      "score": 0.996
+    },
+    {
+      "text": "messages",
+      "start": 5.193,
+      "end": 5.594,
+      "score": 0.984
+    },
+    {
       "text": "du",
-      "start": 6.194,
-      "end": 6.308,
-      "score": 0.961
+      "start": 5.594,
+      "end": 5.708,
+      "score": 0.998
     },
     {
       "text": "service",
-      "start": 6.355,
-      "end": 6.749,
-      "score": 0.865
+      "start": 5.714,
+      "end": 6.089,
+      "score": 0.996
     },
     {
       "text": "paie",
-      "start": 6.775,
-      "end": 7.05,
-      "score": 0.175
+      "start": 6.115,
+      "end": 6.41,
+      "score": 0.381
     },
     {
       "text": "et",
-      "start": 7.196,
-      "end": 7.311,
+      "start": 6.717,
+      "end": 6.831,
       "score": 0.999
     },
     {
       "text": "quelques",
-      "start": 7.417,
-      "end": 7.812,
+      "start": 6.897,
+      "end": 7.252,
       "score": 0.999
     },
     {
       "text": "autres",
-      "start": 7.878,
-      "end": 8.139,
-      "score": 0.976
+      "start": 7.278,
+      "end": 7.533,
+      "score": 0.943
     },
     {
       "text": "prétextes",
-      "start": 8.139,
-      "end": 8.774,
-      "score": 0.996
+      "start": 7.539,
+      "end": 8.114,
+      "score": 0.986
     }
   ]
 }

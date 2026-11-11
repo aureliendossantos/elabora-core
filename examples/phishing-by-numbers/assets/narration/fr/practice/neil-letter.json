@@ -3,68 +3,68 @@
   "line": "neil-letter",
   "language": "fr",
   "textHash": "sha256:122b13abb811f6255450c16d156498ed52363c5ac8741c08555413d4ff7e475a",
-  "duration": 2.03,
+  "duration": 1.9,
   "provider": "elevenlabs",
-  "voice": "nXIYu9FT5meibkBbZFT7",
+  "voice": "1EmYoP3UnnnwhlJKovEy",
   "generated": true,
-  "audioHash": "sha256:2422c47a59115ba16f6e483e4684c1b8cb70855ae10f79e72a11f61f5f69370c",
-  "createdAt": "2026-11-09T20:47:34Z",
+  "audioHash": "sha256:c9d968a8c685d6651b3fef9cc51480c73d98057ea9328ef231d5ea1d3e18d6b2",
+  "createdAt": "2026-11-11T00:15:47Z",
   "take": 1,
   "spokenHash": "sha256:122b13abb811f6255450c16d156498ed52363c5ac8741c08555413d4ff7e475a",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Bien sûr. Vous l’aurez dans 5 minutes.",
-  "mouth": "ccwwwwsscooowwwcccccccccccccoowwwooooooossssssoocoosscccccccc",
+  "mouth": "ccwwwsssssswwwccccccccccsswwwwwoooooooosscooooocoooooccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Bien",
-      "start": 0.04,
-      "end": 0.215,
-      "score": 1
+      "start": 0.02,
+      "end": 0.196,
+      "score": 0.979
     },
     {
       "text": "sûr",
-      "start": 0.241,
-      "end": 0.496,
+      "start": 0.223,
+      "end": 0.458,
       "score": 1
     },
     {
       "text": "Vous",
-      "start": 0.884,
-      "end": 1.005,
-      "score": 0.981
-    },
-    {
-      "text": "l’",
-      "start": 1.005,
-      "end": 1.045,
-      "score": 0.598
-    },
-    {
-      "text": "aurez",
-      "start": 1.045,
-      "end": 1.226,
-      "score": 0.954
-    },
-    {
-      "text": "dans",
-      "start": 1.226,
-      "end": 1.401,
+      "start": 0.809,
+      "end": 0.93,
       "score": 0.999
     },
     {
-      "text": "5",
-      "start": 1.407,
-      "end": 1.588,
+      "text": "l’",
+      "start": 0.93,
+      "end": 0.991,
+      "score": 0.52
+    },
+    {
+      "text": "aurez",
+      "start": 0.991,
+      "end": 1.186,
       "score": 1
     },
     {
+      "text": "dans",
+      "start": 1.193,
+      "end": 1.368,
+      "score": 0.984
+    },
+    {
+      "text": "5",
+      "start": 1.375,
+      "end": 1.557,
+      "score": 0.999
+    },
+    {
       "text": "minutes",
-      "start": 1.588,
-      "end": 1.984,
-      "score": 1
+      "start": 1.557,
+      "end": 1.9,
+      "score": 0.999
     }
   ]
 }

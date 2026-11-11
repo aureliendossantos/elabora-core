@@ -3,146 +3,146 @@
   "line": "dana-blocked",
   "language": "fr",
   "textHash": "sha256:934ef99a2701c9c990182e9be80d557f082ebe14eb6aa2c422c6fdca119cd4d0",
-  "duration": 8.7,
+  "duration": 6.93,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:a6009b9c14e68d7633f37f4ebabf52cb910c967bb70375d433652d760fe8a4b7",
-  "createdAt": "2026-11-04T22:20:53Z",
+  "audioHash": "sha256:5dfe107ca33577b5763ff3bc17dcc455176305d56cf6f70aadda9fef2a51c0f8",
+  "createdAt": "2026-11-11T00:16:04Z",
   "take": 1,
   "spokenHash": "sha256:934ef99a2701c9c990182e9be80d557f082ebe14eb6aa2c422c6fdca119cd4d0",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Chez Harlow, personne ne connaît Neil. Onze minutes plus tard, le service sécurité bloque l’expéditeur dans toutes les boîtes mail.",
-  "mouth": "cooooooowwwwooowwooocccccccccccwwwsscssswwwwwwwwcssooooooooooooooooccccccccccccccccccccccccwwwsssscooooocccccoooccwwwwwoocccccccccwwwwsssswwsscoosssssssccoooowwwccoooooooocoowwwcccooocsssccooooooccwwwwwssooooooocccssssccooooocwwwwccsscooosssscccccccccccccccccccc",
+  "mouth": "ccoowwwwwwoooowwoooooccccccwwwssooowwwwwoooccooooooooooosssssccccccccccccccccccccwwooocwwwwwccccoocsswwwwwooowwcoooooooooooooossssssssssssssccoosscoowwwccoosssccoosssscoowwoooosssccssssccwwwwcsscccccoooossscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Chez",
-      "start": 0.04,
-      "end": 0.234,
-      "score": 1
+      "start": 0.06,
+      "end": 0.2,
+      "score": 0.999
     },
     {
       "text": "Harlow",
-      "start": 0.261,
-      "end": 0.675,
-      "score": 0.814
+      "start": 0.2,
+      "end": 0.635,
+      "score": 0.764
     },
     {
       "text": "personne",
-      "start": 1.002,
-      "end": 1.497,
+      "start": 0.861,
+      "end": 1.322,
       "score": 1
     },
     {
       "text": "ne",
-      "start": 1.504,
-      "end": 1.618,
-      "score": 1
+      "start": 1.322,
+      "end": 1.436,
+      "score": 0.888
     },
     {
       "text": "connaît",
-      "start": 1.624,
-      "end": 1.918,
-      "score": 0.942
+      "start": 1.442,
+      "end": 1.716,
+      "score": 0.953
     },
     {
       "text": "Neil",
-      "start": 1.924,
-      "end": 2.219,
-      "score": 0.566
+      "start": 1.723,
+      "end": 2.037,
+      "score": 0.64
     },
     {
       "text": "Onze",
-      "start": 3.047,
-      "end": 3.248,
-      "score": 0.948
+      "start": 2.684,
+      "end": 2.858,
+      "score": 1
     },
     {
       "text": "minutes",
-      "start": 3.248,
-      "end": 3.588,
-      "score": 0.978
+      "start": 2.864,
+      "end": 3.145,
+      "score": 1
     },
     {
       "text": "plus",
-      "start": 3.588,
-      "end": 3.769,
-      "score": 0.996
+      "start": 3.145,
+      "end": 3.319,
+      "score": 1
     },
     {
       "text": "tard",
-      "start": 3.769,
-      "end": 4.143,
+      "start": 3.325,
+      "end": 3.659,
       "score": 1
     },
     {
       "text": "le",
-      "start": 4.37,
-      "end": 4.484,
-      "score": 0.994
+      "start": 3.806,
+      "end": 3.92,
+      "score": 0.995
     },
     {
       "text": "service",
-      "start": 4.551,
-      "end": 4.945,
+      "start": 3.966,
+      "end": 4.3,
       "score": 0.999
     },
     {
       "text": "sécurité",
-      "start": 4.951,
-      "end": 5.527,
-      "score": 0.999
+      "start": 4.306,
+      "end": 4.781,
+      "score": 0.995
     },
     {
       "text": "bloque",
-      "start": 5.673,
-      "end": 6.014,
-      "score": 0.998
+      "start": 4.867,
+      "end": 5.148,
+      "score": 0.968
     },
     {
       "text": "l’",
-      "start": 6.014,
-      "end": 6.094,
-      "score": 0.974
+      "start": 5.148,
+      "end": 5.208,
+      "score": 0.884
     },
     {
       "text": "expéditeur",
-      "start": 6.094,
-      "end": 6.81,
+      "start": 5.208,
+      "end": 5.802,
       "score": 1
     },
     {
       "text": "dans",
-      "start": 6.856,
-      "end": 7.05,
-      "score": 0.953
+      "start": 5.808,
+      "end": 5.983,
+      "score": 0.989
     },
     {
       "text": "toutes",
-      "start": 7.137,
-      "end": 7.377,
-      "score": 0.968
-    },
-    {
-      "text": "les",
-      "start": 7.377,
-      "end": 7.497,
+      "start": 6.029,
+      "end": 6.249,
       "score": 1
     },
     {
+      "text": "les",
+      "start": 6.249,
+      "end": 6.349,
+      "score": 0.991
+    },
+    {
       "text": "boîtes",
-      "start": 7.497,
-      "end": 7.778,
-      "score": 0.812
+      "start": 6.349,
+      "end": 6.59,
+      "score": 0.823
     },
     {
       "text": "mail",
-      "start": 7.778,
-      "end": 8.073,
-      "score": 0.918
+      "start": 6.59,
+      "end": 6.864,
+      "score": 0.985
     }
   ]
 }

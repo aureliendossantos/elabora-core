@@ -3,134 +3,134 @@
   "line": "neil-bank",
   "language": "fr",
   "textHash": "sha256:aa61b9057e27ae9d912c5a4ef428aabd0be35e64284dcb6f4414d691d60eb160",
-  "duration": 5.01,
+  "duration": 4.61,
   "provider": "elevenlabs",
-  "voice": "nXIYu9FT5meibkBbZFT7",
+  "voice": "1EmYoP3UnnnwhlJKovEy",
   "generated": true,
-  "audioHash": "sha256:07bad9afb7763b7fd36f8a2dfe5cce199227ecaebc7ae7c32036dcce2a654800",
-  "createdAt": "2026-11-04T22:20:29Z",
+  "audioHash": "sha256:a8d4bcffa7fd59f190c280f67681a0ce960f360ee65b085437ff1bc098155d1f",
+  "createdAt": "2026-11-11T00:15:44Z",
   "take": 1,
   "spokenHash": "sha256:aa61b9057e27ae9d912c5a4ef428aabd0be35e64284dcb6f4414d691d60eb160",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Nous avons changé de banque. Pour le règlement de vendredi, il faut faire le virement sur le nouveau compte.",
-  "mouth": "cooooowwssoosssssooowwwoosscwwwwwccccccccccccccccccoowwwwwwwwwwcooooossssooowwsssssscccccccccoooccooocwwwoooosssssscooooocssoooooooooooooocccsscccccccc",
+  "mouth": "cooooowwssoooccoooooossssscwwwwwcccccccccccccwwwwwooooooocooooooooowwwwwoosscsssoooosssssssccwwwccoooowwssssoocooosssoooooowwssssscsssccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Nous",
       "start": 0.04,
       "end": 0.194,
-      "score": 1
+      "score": 0.985
     },
     {
       "text": "avons",
-      "start": 0.2,
-      "end": 0.455,
-      "score": 0.988
+      "start": 0.221,
+      "end": 0.441,
+      "score": 0.998
     },
     {
       "text": "changé",
-      "start": 0.461,
-      "end": 0.735,
-      "score": 1
+      "start": 0.441,
+      "end": 0.695,
+      "score": 0.991
     },
     {
       "text": "de",
-      "start": 0.762,
-      "end": 0.876,
-      "score": 1
+      "start": 0.742,
+      "end": 0.836,
+      "score": 0.991
     },
     {
       "text": "banque",
-      "start": 0.902,
-      "end": 1.276,
-      "score": 0.958
+      "start": 0.842,
+      "end": 1.197,
+      "score": 0.98
     },
     {
       "text": "Pour",
-      "start": 1.663,
-      "end": 1.804,
+      "start": 1.443,
+      "end": 1.584,
       "score": 1
     },
     {
       "text": "le",
-      "start": 1.804,
-      "end": 1.898,
+      "start": 1.584,
+      "end": 1.678,
       "score": 0.999
     },
     {
       "text": "règlement",
-      "start": 1.904,
-      "end": 2.265,
-      "score": 0.998
+      "start": 1.684,
+      "end": 2.078,
+      "score": 0.975
     },
     {
       "text": "de",
-      "start": 2.265,
-      "end": 2.345,
+      "start": 2.085,
+      "end": 2.179,
       "score": 0.999
     },
     {
       "text": "vendredi",
-      "start": 2.345,
-      "end": 2.8,
-      "score": 0.999
+      "start": 2.185,
+      "end": 2.68,
+      "score": 0.995
     },
     {
       "text": "il",
-      "start": 3.086,
-      "end": 3.2,
+      "start": 2.926,
+      "end": 3.041,
       "score": 1
     },
     {
       "text": "faut",
-      "start": 3.206,
-      "end": 3.367,
-      "score": 1
+      "start": 3.047,
+      "end": 3.207,
+      "score": 0.99
     },
     {
       "text": "faire",
-      "start": 3.367,
-      "end": 3.547,
+      "start": 3.207,
+      "end": 3.387,
       "score": 1
     },
     {
       "text": "le",
-      "start": 3.547,
-      "end": 3.641,
-      "score": 1
+      "start": 3.387,
+      "end": 3.488,
+      "score": 0.997
     },
     {
       "text": "virement",
-      "start": 3.647,
-      "end": 4.022,
-      "score": 0.962
+      "start": 3.488,
+      "end": 3.828,
+      "score": 0.835
     },
     {
       "text": "sur",
-      "start": 4.048,
-      "end": 4.188,
+      "start": 3.828,
+      "end": 3.969,
       "score": 1
     },
     {
       "text": "le",
-      "start": 4.188,
-      "end": 4.303,
-      "score": 0.998
+      "start": 3.969,
+      "end": 4.069,
+      "score": 0.9
     },
     {
       "text": "nouveau",
-      "start": 4.309,
-      "end": 4.603,
-      "score": 0.985
+      "start": 4.069,
+      "end": 4.363,
+      "score": 0.994
     },
     {
       "text": "compte",
-      "start": 4.629,
-      "end": 4.964,
-      "score": 0.989
+      "start": 4.37,
+      "end": 4.604,
+      "score": 0.915
     }
   ]
 }

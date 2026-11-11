@@ -3,74 +3,74 @@
   "line": "l4",
   "language": "fr",
   "textHash": "sha256:f2f802d31668fbaeb30f760bb5f06ae703d6a792c84f271a10096c5446f0f1b4",
-  "duration": 5.15,
+  "duration": 4.52,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:152e2b6e5da979aae30ae090dbd27541ad5c4ca61d12fb0bed70b2c216c9f460",
-  "createdAt": "2026-11-04T22:19:36Z",
+  "audioHash": "sha256:c3fe771ad01485b65a0f2f4f0c5a0aacd6fb5732035b88d4e53a9baed60e34f6",
+  "createdAt": "2026-11-11T00:16:25Z",
   "take": 1,
   "spokenHash": "sha256:f2f802d31668fbaeb30f760bb5f06ae703d6a792c84f271a10096c5446f0f1b4",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Les exercices mensuels en 2025. Et aujourd’hui, ce module.",
-  "mouth": "ccwwwwwssssssssssccccooccssscooossssswwwoooooccooooooooooooooooooooccccoossssccccccccccccccccccccccccccwwwwoosssssooooooooccccccccccccsssooocwwsssssssssccc",
+  "mouth": "ccwwwwwwoooooocssssssscccoooosssoowwooooocooossswwwwwooooooocccoooossccccccccccccccccccoooowwoooooocsssooccccccccccccccoowwcsscccccssscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Les",
-      "start": 0.08,
-      "end": 0.254,
-      "score": 0.921
+      "start": 0.06,
+      "end": 0.215,
+      "score": 0.963
     },
     {
       "text": "exercices",
-      "start": 0.301,
-      "end": 0.902,
-      "score": 1
+      "start": 0.261,
+      "end": 0.784,
+      "score": 0.998
     },
     {
       "text": "mensuels",
-      "start": 0.902,
-      "end": 1.517,
-      "score": 0.984
+      "start": 0.784,
+      "end": 1.36,
+      "score": 0.999
     },
     {
       "text": "en",
-      "start": 1.563,
-      "end": 1.657,
+      "start": 1.426,
+      "end": 1.521,
       "score": 1
     },
     {
       "text": "2025",
-      "start": 1.703,
-      "end": 2.639,
+      "start": 1.547,
+      "end": 2.364,
       "score": 0.994
     },
     {
       "text": "Et",
-      "start": 3.427,
-      "end": 3.541,
+      "start": 2.913,
+      "end": 3.027,
       "score": 1
     },
     {
       "text": "aujourd’hui",
-      "start": 3.567,
-      "end": 4.082,
-      "score": 0.932
+      "start": 3.054,
+      "end": 3.509,
+      "score": 0.933
     },
     {
       "text": "ce",
-      "start": 4.469,
-      "end": 4.603,
-      "score": 0.975
+      "start": 3.897,
+      "end": 4.032,
+      "score": 0.902
     },
     {
       "text": "module",
-      "start": 4.649,
-      "end": 5.064,
-      "score": 0.834
+      "start": 4.078,
+      "end": 4.474,
+      "score": 0.999
     }
   ]
 }

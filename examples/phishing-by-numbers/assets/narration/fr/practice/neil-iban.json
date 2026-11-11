@@ -3,104 +3,104 @@
   "line": "neil-iban",
   "language": "fr",
   "textHash": "sha256:1dacee8801cf265c3db0325d044f144dc06801da598b86327a9059e7031d1770",
-  "duration": 4.12,
+  "duration": 3.52,
   "provider": "elevenlabs",
-  "voice": "nXIYu9FT5meibkBbZFT7",
+  "voice": "1EmYoP3UnnnwhlJKovEy",
   "generated": true,
-  "audioHash": "sha256:1bca6e12519acf05e0ed4c6d8128e2dfd45693d0af086b9fd2d573bcb8820157",
-  "createdAt": "2026-11-04T22:20:35Z",
+  "audioHash": "sha256:6f3e13fcf95334a876a740d09c2f7bb48712f2e5b34358d7274c18d76263acb6",
+  "createdAt": "2026-11-11T00:15:49Z",
   "take": 1,
   "spokenHash": "sha256:1dacee8801cf265c3db0325d044f144dc06801da598b86327a9059e7031d1770",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Parfait. Tout est dans l’e-mail : il suffit de recopier le numéro de compte.",
-  "mouth": "cccooossssssssccccccccccccccoooocwwwwwwwwwoooocoosssscccccccccoosssssssssooowwwwwwwccwwwccccwwoooooooocooooooccccooocccccccc",
+  "mouth": "cccsscccwwwwcccccccccccccooosssoowwwoooooocooossssccccoooocsssscoosswwoooosssscccwwooooooocoowwsscsssccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Parfait",
       "start": 0.04,
-      "end": 0.476,
-      "score": 0.995
+      "end": 0.416,
+      "score": 0.942
     },
     {
       "text": "Tout",
-      "start": 0.905,
-      "end": 1.099,
+      "start": 0.805,
+      "end": 0.979,
       "score": 1
     },
     {
       "text": "est",
-      "start": 1.105,
-      "end": 1.206,
-      "score": 0.999
+      "start": 0.986,
+      "end": 1.086,
+      "score": 0.991
     },
     {
       "text": "dans",
-      "start": 1.206,
-      "end": 1.327,
-      "score": 0.992
+      "start": 1.086,
+      "end": 1.207,
+      "score": 0.986
     },
     {
       "text": "l’",
-      "start": 1.327,
-      "end": 1.387,
-      "score": 0.795
+      "start": 1.207,
+      "end": 1.267,
+      "score": 0.684
     },
     {
       "text": "e-mail",
-      "start": 1.387,
-      "end": 1.762,
-      "score": 0.776
+      "start": 1.267,
+      "end": 1.623,
+      "score": 0.73
     },
     {
       "text": "il",
-      "start": 2.07,
-      "end": 2.184,
+      "start": 1.831,
+      "end": 1.945,
       "score": 1
     },
     {
       "text": "suffit",
-      "start": 2.231,
-      "end": 2.532,
-      "score": 0.999
+      "start": 1.971,
+      "end": 2.273,
+      "score": 0.963
     },
     {
       "text": "de",
-      "start": 2.532,
-      "end": 2.627,
+      "start": 2.273,
+      "end": 2.367,
       "score": 1
     },
     {
       "text": "recopier",
-      "start": 2.673,
-      "end": 3.169,
-      "score": 0.991
+      "start": 2.374,
+      "end": 2.796,
+      "score": 1
     },
     {
       "text": "le",
-      "start": 3.176,
-      "end": 3.27,
+      "start": 2.796,
+      "end": 2.89,
       "score": 1
     },
     {
       "text": "numéro",
-      "start": 3.276,
-      "end": 3.591,
-      "score": 0.999
+      "start": 2.897,
+      "end": 3.172,
+      "score": 0.998
     },
     {
       "text": "de",
-      "start": 3.638,
-      "end": 3.752,
-      "score": 1
+      "start": 3.198,
+      "end": 3.299,
+      "score": 0.994
     },
     {
       "text": "compte",
-      "start": 3.758,
-      "end": 4.074,
-      "score": 0.952
+      "start": 3.299,
+      "end": 3.52,
+      "score": 0.939
     }
   ]
 }

@@ -3,158 +3,158 @@
   "line": "l4",
   "language": "fr",
   "textHash": "sha256:54139288a6a426d906936964c30ff3aec08095873c5c290cccc5ed5ea8a118e4",
-  "duration": 9.68,
+  "duration": 7.74,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:58f6cf59e932d14c536b7b7d704bbc8876a743f805154870fe4f0c001ca0ea9b",
-  "createdAt": "2026-11-04T22:19:13Z",
+  "audioHash": "sha256:657611d47b08718117ce54fe5ba3242c319771d0b8e41ff849c8e9f7cbd5ef6a",
+  "createdAt": "2026-11-11T00:14:36Z",
   "take": 1,
   "spokenHash": "sha256:54139288a6a426d906936964c30ff3aec08095873c5c290cccc5ed5ea8a118e4",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
-  "text": "Aux finances, au service commercial et aux ressources humaines, le taux est descendu à 3 ou 4 %. En informatique, il était déjà bas.",
-  "mouth": "coooccoowwwwwwwwsssssssscccooooccwwwwcsssscwwwwcccsscssswwwwoooooooooooosssoooossooooooocwwwoooooccccccccccccwwwwcccooooowwwwwwsssoooooosssssssssssccccccwwwooocooocccwwwwcssssscooocoossoosscccccccccccccccccccccwwwwwwccwwwwwwcccccoooccsscccccwwwwwwccwwooooooooooosscoosscccccccccccccccccccccc",
+  "text": "Aux finances, au service commercial et aux ressources humaines, le taux est descendu à 3 ou 4 %. En informatique, il était déjà bas.",
+  "mouth": "cwwssoowwwwwwwoooooooooocooooowwwwoooocwwwcccssooooooooooooosssssssoocssoosssooocoowwwwwwwccwwwwwwccwwwwwwwwwoooooooossoooocsssccsssccwwooocssccccwwwccccssccssccoooossccccccccccccooowwwcwwoowwcsssssssscssscoooooocoossswwwwooosscssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Aux",
-      "start": 0.02,
-      "end": 0.134,
-      "score": 0.989
+      "start": 0.04,
+      "end": 0.154,
+      "score": 0.908
     },
     {
       "text": "finances",
       "start": 0.16,
-      "end": 0.796,
-      "score": 0.999
+      "end": 0.776,
+      "score": 0.983
     },
     {
       "text": "au",
-      "start": 0.922,
-      "end": 1.016,
-      "score": 1
-    },
-    {
-      "text": "service",
-      "start": 1.062,
-      "end": 1.437,
-      "score": 0.995
-    },
-    {
-      "text": "commercial",
-      "start": 1.443,
-      "end": 2.038,
+      "start": 0.822,
+      "end": 0.936,
       "score": 0.997
     },
     {
+      "text": "service",
+      "start": 0.942,
+      "end": 1.277,
+      "score": 0.981
+    },
+    {
+      "text": "commercial",
+      "start": 1.283,
+      "end": 1.839,
+      "score": 0.98
+    },
+    {
       "text": "et",
-      "start": 2.084,
-      "end": 2.185,
-      "score": 0.897
+      "start": 1.845,
+      "end": 1.945,
+      "score": 0.898
     },
     {
       "text": "aux",
-      "start": 2.185,
-      "end": 2.305,
-      "score": 1
+      "start": 1.945,
+      "end": 2.065,
+      "score": 0.999
     },
     {
       "text": "ressources",
-      "start": 2.305,
-      "end": 2.8,
-      "score": 1
+      "start": 2.065,
+      "end": 2.52,
+      "score": 0.98
     },
     {
       "text": "humaines",
-      "start": 2.806,
-      "end": 3.261,
-      "score": 1
+      "start": 2.527,
+      "end": 2.982,
+      "score": 0.999
     },
     {
       "text": "le",
-      "start": 3.648,
-      "end": 3.782,
+      "start": 3.128,
+      "end": 3.262,
       "score": 0.999
     },
     {
       "text": "taux",
-      "start": 3.828,
-      "end": 4.022,
-      "score": 0.999
+      "start": 3.289,
+      "end": 3.483,
+      "score": 0.947
     },
     {
       "text": "est",
-      "start": 4.048,
-      "end": 4.149,
+      "start": 3.489,
+      "end": 3.589,
       "score": 1
     },
     {
       "text": "descendu",
-      "start": 4.149,
-      "end": 4.664,
-      "score": 1
+      "start": 3.589,
+      "end": 4.024,
+      "score": 0.999
     },
     {
       "text": "à",
-      "start": 4.79,
-      "end": 4.864,
-      "score": 0.998
+      "start": 4.131,
+      "end": 4.205,
+      "score": 0.999
     },
     {
       "text": "3",
-      "start": 4.97,
-      "end": 5.285,
-      "score": 0.988
+      "start": 4.291,
+      "end": 4.606,
+      "score": 0.957
     },
     {
       "text": "ou",
-      "start": 5.351,
-      "end": 5.465,
-      "score": 0.997
+      "start": 4.692,
+      "end": 4.786,
+      "score": 1
     },
     {
       "text": "4",
-      "start": 5.511,
-      "end": 6.327,
-      "score": 0.967
+      "start": 4.833,
+      "end": 5.608,
+      "score": 0.96
     },
     {
       "text": "En",
-      "start": 6.995,
-      "end": 7.089,
+      "start": 5.976,
+      "end": 6.07,
       "score": 1
     },
     {
       "text": "informatique",
-      "start": 7.135,
-      "end": 7.89,
-      "score": 0.987
-    },
-    {
-      "text": "il",
-      "start": 8.057,
-      "end": 8.171,
-      "score": 0.999
-    },
-    {
-      "text": "était",
-      "start": 8.197,
-      "end": 8.438,
-      "score": 0.982
-    },
-    {
-      "text": "déjà",
-      "start": 8.438,
-      "end": 8.712,
+      "start": 6.096,
+      "end": 6.812,
       "score": 1
     },
     {
+      "text": "il",
+      "start": 6.878,
+      "end": 6.992,
+      "score": 1
+    },
+    {
+      "text": "était",
+      "start": 6.998,
+      "end": 7.239,
+      "score": 0.995
+    },
+    {
+      "text": "déjà",
+      "start": 7.239,
+      "end": 7.493,
+      "score": 0.997
+    },
+    {
       "text": "bas",
-      "start": 8.778,
-      "end": 8.993,
-      "score": 0.992
+      "start": 7.54,
+      "end": 7.714,
+      "score": 0.831
     }
   ]
 }

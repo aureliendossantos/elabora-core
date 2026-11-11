@@ -3,74 +3,74 @@
   "line": "neil-rolling",
   "language": "fr",
   "textHash": "sha256:8efd4c406fdb37ac558963aaf743acbff5d25d22a3bba54844931dc89013022b",
-  "duration": 3.42,
+  "duration": 3.27,
   "provider": "elevenlabs",
-  "voice": "nXIYu9FT5meibkBbZFT7",
+  "voice": "1EmYoP3UnnnwhlJKovEy",
   "generated": true,
-  "audioHash": "sha256:b95097fcbfadc4d70179c9ebaae4d31ba9729aadb6206beac43276e95d020997",
-  "createdAt": "2026-11-04T22:20:47Z",
+  "audioHash": "sha256:316be855851e7db2ccd54c22312073c95f0f387927d9190eb34054685ec661af",
+  "createdAt": "2026-11-11T00:15:59Z",
   "take": 1,
   "spokenHash": "sha256:8efd4c406fdb37ac558963aaf743acbff5d25d22a3bba54844931dc89013022b",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Formidable. Vos camions continueront à rouler, c’est promis.",
-  "mouth": "cccwwoooocssswwwwcssssscccccccccccccoooccwwwcoooooccooossssoooooooowwwwsssoooooooccccccsssscccoooocsscc",
+  "mouth": "ccwwooocssswwwcsssscccccccccccccoooosswwcssoosssssccsssswwoowwwwoooooooooooccccccoooccwwoocsscccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Formidable",
-      "start": 0.06,
-      "end": 0.778,
-      "score": 0.963
+      "start": 0.04,
+      "end": 0.636,
+      "score": 1
     },
     {
       "text": "Vos",
-      "start": 1.207,
-      "end": 1.348,
+      "start": 1.083,
+      "end": 1.238,
       "score": 1
     },
     {
       "text": "camions",
-      "start": 1.348,
-      "end": 1.71,
-      "score": 0.952
+      "start": 1.244,
+      "end": 1.545,
+      "score": 0.996
     },
     {
       "text": "continueront",
-      "start": 1.71,
-      "end": 2.294,
-      "score": 0.978
+      "start": 1.545,
+      "end": 2.086,
+      "score": 0.977
     },
     {
       "text": "à",
-      "start": 2.294,
-      "end": 2.368,
+      "start": 2.086,
+      "end": 2.161,
       "score": 1
     },
     {
       "text": "rouler",
-      "start": 2.414,
-      "end": 2.71,
-      "score": 0.996
+      "start": 2.187,
+      "end": 2.482,
+      "score": 0.972
     },
     {
       "text": "c’",
-      "start": 2.917,
-      "end": 2.978,
-      "score": 0.504
+      "start": 2.648,
+      "end": 2.708,
+      "score": 0.57
     },
     {
       "text": "est",
-      "start": 2.978,
-      "end": 3.098,
-      "score": 0.941
+      "start": 2.708,
+      "end": 2.809,
+      "score": 0.998
     },
     {
       "text": "promis",
-      "start": 3.098,
-      "end": 3.42,
-      "score": 0.733
+      "start": 2.809,
+      "end": 3.164,
+      "score": 0.998
     }
   ]
 }

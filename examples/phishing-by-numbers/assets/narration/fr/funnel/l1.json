@@ -3,122 +3,122 @@
   "line": "l1",
   "language": "fr",
   "textHash": "sha256:0b1061557272b2a48809cb313e44cd5f1a6f46bf45ccf9c68233ca89508b124c",
-  "duration": 5.49,
+  "duration": 5.11,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:f81772d03507cdb797046e6fb6f1399dbfd193e98f24d65240e6a2d147c47693",
-  "createdAt": "2026-11-04T22:18:41Z",
+  "audioHash": "sha256:eb0b9938b8147b1bf1492d9e99b40edac951a7767d8c6495a148cc482adecd8f",
+  "createdAt": "2026-11-11T00:14:52Z",
   "take": 1,
   "spokenHash": "sha256:0b1061557272b2a48809cb313e44cd5f1a6f46bf45ccf9c68233ca89508b124c",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "En janvier, nous vous avons envoyé à tous une fausse demande de réinitialisation de mot de passe.",
-  "mouth": "ccwwwooowwwwsssooocccccccccccwwwwwssssswwwwwwwooosswwwssswwoocccccooooosssccoowwwwccccwwwsssssswwwcooooooooooossooowwwwwcssssooosssssscsssooooooocssccccccssscccssccc",
+  "mouth": "ccwwwwoowwwwwwoowwooooccwwwwwssssswwssooowwwssooooooooooccccoooocsssscoooocccccwwwsssswwwcwwoooooooocwwwwwwwsssoosssscwwssscooooooocssccccssccoooocccccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "En",
       "start": 0.06,
-      "end": 0.174,
+      "end": 0.154,
       "score": 1
     },
     {
       "text": "janvier",
-      "start": 0.2,
-      "end": 0.615,
-      "score": 1
+      "start": 0.18,
+      "end": 0.595,
+      "score": 0.979
     },
     {
       "text": "nous",
-      "start": 0.982,
-      "end": 1.142,
-      "score": 1
+      "start": 0.842,
+      "end": 0.982,
+      "score": 0.999
     },
     {
       "text": "vous",
-      "start": 1.142,
-      "end": 1.296,
-      "score": 0.945
+      "start": 0.982,
+      "end": 1.136,
+      "score": 0.977
     },
     {
       "text": "avons",
-      "start": 1.302,
-      "end": 1.557,
-      "score": 0.989
+      "start": 1.142,
+      "end": 1.377,
+      "score": 1
     },
     {
       "text": "envoyé",
-      "start": 1.563,
-      "end": 1.897,
-      "score": 0.956
+      "start": 1.383,
+      "end": 1.717,
+      "score": 0.951
     },
     {
       "text": "à",
-      "start": 1.964,
-      "end": 2.038,
+      "start": 1.764,
+      "end": 1.838,
       "score": 0.999
     },
     {
       "text": "tous",
-      "start": 2.124,
-      "end": 2.438,
-      "score": 0.995
+      "start": 1.924,
+      "end": 2.238,
+      "score": 1
     },
     {
       "text": "une",
-      "start": 2.545,
-      "end": 2.699,
-      "score": 0.999
+      "start": 2.345,
+      "end": 2.479,
+      "score": 1
     },
     {
       "text": "fausse",
-      "start": 2.805,
-      "end": 3.16,
-      "score": 0.974
-    },
-    {
-      "text": "demande",
-      "start": 3.166,
-      "end": 3.527,
+      "start": 2.565,
+      "end": 2.86,
       "score": 0.999
     },
     {
+      "text": "demande",
+      "start": 2.866,
+      "end": 3.2,
+      "score": 1
+    },
+    {
       "text": "de",
-      "start": 3.527,
-      "end": 3.641,
+      "start": 3.206,
+      "end": 3.3,
       "score": 1
     },
     {
       "text": "réinitialisation",
-      "start": 3.667,
-      "end": 4.662,
-      "score": 0.963
+      "start": 3.327,
+      "end": 4.222,
+      "score": 0.995
     },
     {
       "text": "de",
-      "start": 4.709,
-      "end": 4.803,
-      "score": 0.997
+      "start": 4.228,
+      "end": 4.342,
+      "score": 0.992
     },
     {
       "text": "mot",
-      "start": 4.829,
-      "end": 4.963,
-      "score": 0.954
+      "start": 4.349,
+      "end": 4.469,
+      "score": 0.989
     },
     {
       "text": "de",
-      "start": 4.969,
-      "end": 5.063,
-      "score": 0.999
+      "start": 4.469,
+      "end": 4.569,
+      "score": 1
     },
     {
       "text": "passe",
-      "start": 5.069,
-      "end": 5.404,
-      "score": 0.99
+      "start": 4.569,
+      "end": 4.864,
+      "score": 0.997
     }
   ]
 }

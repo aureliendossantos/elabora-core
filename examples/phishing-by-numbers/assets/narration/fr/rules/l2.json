@@ -3,92 +3,92 @@
   "line": "l2",
   "language": "fr",
   "textHash": "sha256:dd4a210cfc3af1099fcca1d1d00cadaf0a8ed090e658645666c1ca055767c0a4",
-  "duration": 5.98,
+  "duration": 5.36,
   "provider": "elevenlabs",
-  "voice": "CvD6hF1BJzAFN428j1cO",
+  "voice": "5OnMHwgTFgvPVwE8jP6B",
   "generated": true,
-  "audioHash": "sha256:e04cd9894aa514a54161a60e5f86be93a33c772d1be935af9be45b50bdf7ca79",
-  "createdAt": "2026-11-04T22:19:30Z",
+  "audioHash": "sha256:1edf1dd0e404d104f8149de3c50896bd35a14cbdec4389571d8e322082fe4524",
+  "createdAt": "2026-11-11T00:16:20Z",
   "take": 1,
   "spokenHash": "sha256:dd4a210cfc3af1099fcca1d1d00cadaf0a8ed090e658645666c1ca055767c0a4",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Anaïs (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "La connexion en deux étapes en 2021. Le bouton « Signaler » en 2023.",
-  "mouth": "ccwwwccwwwwoossssssssoowwwwwwwwwwssssoocccwwwcccccccooooooooooooooooooooosscssooosscccccccccccccccccccccwwwwwcssccwwwoooccccccsssssswwwooooooccccccwwoooooooowwooooooooocssssooooccc",
+  "mouth": "ccwwwcwwwwwwssssssooooooossssoooooocccoooccccoocooosssswwwwwoossooocssoooossccccccccccccccccccccwwwwcooocoooosssssoowwwwwwoooooooocccccooocoowwwwwssoosssscccsssc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "La",
       "start": 0.06,
-      "end": 0.174,
+      "end": 0.154,
       "score": 1
     },
     {
       "text": "connexion",
-      "start": 0.221,
-      "end": 0.756,
-      "score": 0.975
+      "start": 0.181,
+      "end": 0.656,
+      "score": 1
     },
     {
       "text": "en",
-      "start": 0.803,
-      "end": 0.897,
-      "score": 0.999
+      "start": 0.723,
+      "end": 0.837,
+      "score": 0.968
     },
     {
       "text": "deux",
-      "start": 0.963,
-      "end": 1.198,
-      "score": 0.964
+      "start": 0.883,
+      "end": 1.058,
+      "score": 1
     },
     {
       "text": "étapes",
-      "start": 1.264,
-      "end": 1.72,
-      "score": 0.983
+      "start": 1.124,
+      "end": 1.58,
+      "score": 0.972
     },
     {
       "text": "en",
-      "start": 1.766,
-      "end": 1.86,
+      "start": 1.626,
+      "end": 1.72,
       "score": 1
     },
     {
       "text": "2021",
-      "start": 1.927,
-      "end": 2.783,
-      "score": 0.989
+      "start": 1.747,
+      "end": 2.543,
+      "score": 0.992
     },
     {
       "text": "Le",
-      "start": 3.452,
-      "end": 3.586,
+      "start": 3.192,
+      "end": 3.306,
       "score": 0.999
     },
     {
       "text": "bouton",
-      "start": 3.612,
-      "end": 3.947,
-      "score": 0.987
+      "start": 3.333,
+      "end": 3.668,
+      "score": 0.994
     },
     {
       "text": "Signaler",
-      "start": 4.154,
-      "end": 4.71,
-      "score": 0.732
+      "start": 3.774,
+      "end": 4.33,
+      "score": 0.742
     },
     {
       "text": "en",
-      "start": 4.937,
-      "end": 5.031,
+      "start": 4.497,
+      "end": 4.591,
       "score": 1
     },
     {
       "text": "2023",
-      "start": 5.077,
-      "end": 5.934,
-      "score": 0.98
+      "start": 4.617,
+      "end": 5.354,
+      "score": 0.982
     }
   ]
 }
