@@ -1,0 +1,70 @@
+{
+  "screen": "downhill",
+  "line": "nell6",
+  "language": "en",
+  "textHash": "sha256:de5a2cb9993122d96bd355f1af446afaee61706573e771779676d6e656d4261b",
+  "duration": 2.92,
+  "provider": "elevenlabs",
+  "voice": "kkPJzQOWz2Oz9cUaEaQd",
+  "generated": true,
+  "audioHash": "sha256:4bfd13678e7e66fc46aab7cf6868e122d0a50f756655572f5f67600fdb20bd65",
+  "createdAt": "2026-11-11T00:22:10Z",
+  "take": 1,
+  "spokenHash": "sha256:de5a2cb9993122d96bd355f1af446afaee61706573e771779676d6e656d4261b",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Beatrice (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "There we are: level with the lower canal.",
+  "mouth": "csswwoooowwooooooooosscccccccccccccccccwwwwwcoooosssssccoosssswwwoooocccssoooooosssscccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "There",
+      "start": 0.04,
+      "end": 0.282,
+      "score": 0.991
+    },
+    {
+      "text": "we",
+      "start": 0.282,
+      "end": 0.495,
+      "score": 0.999
+    },
+    {
+      "text": "are",
+      "start": 0.524,
+      "end": 0.756,
+      "score": 0.905
+    },
+    {
+      "text": "level",
+      "start": 1.309,
+      "end": 1.672,
+      "score": 0.993
+    },
+    {
+      "text": "with",
+      "start": 1.672,
+      "end": 1.873,
+      "score": 1
+    },
+    {
+      "text": "the",
+      "start": 1.873,
+      "end": 2.034,
+      "score": 0.968
+    },
+    {
+      "text": "lower",
+      "start": 2.034,
+      "end": 2.376,
+      "score": 0.955
+    },
+    {
+      "text": "canal",
+      "start": 2.376,
+      "end": 2.92,
+      "score": 0.845
+    }
+  ]
+}

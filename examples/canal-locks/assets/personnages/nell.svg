@@ -3,7 +3,7 @@
      data-expressions="neutre souriant inquiet soulage agace"
      data-default-expression="souriant"
      data-gestures="saluer:1.2 hocher:0.8"
-     data-portrait="90 92 220 220">
+     data-portrait="92 128 216 216">
 <style>
 /* Nell, lock keeper: a knitted cap, a work jacket, a scarf the colour of the canal. */
 .skin{fill:var(--character-skin,#C98E6B)}

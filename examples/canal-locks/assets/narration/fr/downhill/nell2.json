@@ -1,0 +1,124 @@
+{
+  "screen": "downhill",
+  "line": "nell2",
+  "language": "fr",
+  "textHash": "sha256:5e40af200c1e66e128975299e246d22723f3f2f37915a826ada007ab6f5d4c3f",
+  "duration": 5.1,
+  "provider": "elevenlabs",
+  "voice": "62qGOOI927DEYwOVyfbC",
+  "generated": true,
+  "audioHash": "sha256:c344258539b664c21de2b27801305e7dc84bca8bb23238b048a63aa455a03570",
+  "createdAt": "2026-11-11T00:22:34Z",
+  "take": 1,
+  "spokenHash": "sha256:5e40af200c1e66e128975299e246d22723f3f2f37915a826ada007ab6f5d4c3f",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Le batelier pousse sur les portes aval depuis 5 minutes. Elles ne bougent pas d’un pouce.",
+  "mouth": "cooooccwwsssssssoowwccccoooooooowwwooooocccoosscwwwsswwwwssssccwwwwwwssoowwwsscssssssscccwwoocccccccccccccwwwsssssscoooooocccccwwwsssssscccooooooooccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Le",
+      "start": 0.04,
+      "end": 0.154,
+      "score": 0.999
+    },
+    {
+      "text": "batelier",
+      "start": 0.181,
+      "end": 0.677,
+      "score": 1
+    },
+    {
+      "text": "pousse",
+      "start": 0.743,
+      "end": 1.038,
+      "score": 1
+    },
+    {
+      "text": "sur",
+      "start": 1.064,
+      "end": 1.239,
+      "score": 1
+    },
+    {
+      "text": "les",
+      "start": 1.245,
+      "end": 1.379,
+      "score": 0.995
+    },
+    {
+      "text": "portes",
+      "start": 1.386,
+      "end": 1.66,
+      "score": 0.967
+    },
+    {
+      "text": "aval",
+      "start": 1.667,
+      "end": 1.921,
+      "score": 0.759
+    },
+    {
+      "text": "depuis",
+      "start": 1.968,
+      "end": 2.283,
+      "score": 0.996
+    },
+    {
+      "text": "5",
+      "start": 2.329,
+      "end": 2.564,
+      "score": 1
+    },
+    {
+      "text": "minutes",
+      "start": 2.59,
+      "end": 3.086,
+      "score": 0.979
+    },
+    {
+      "text": "Elles",
+      "start": 3.494,
+      "end": 3.695,
+      "score": 0.8
+    },
+    {
+      "text": "ne",
+      "start": 3.695,
+      "end": 3.809,
+      "score": 1
+    },
+    {
+      "text": "bougent",
+      "start": 3.835,
+      "end": 4.197,
+      "score": 0.688
+    },
+    {
+      "text": "pas",
+      "start": 4.197,
+      "end": 4.377,
+      "score": 0.994
+    },
+    {
+      "text": "d’",
+      "start": 4.377,
+      "end": 4.458,
+      "score": 0.715
+    },
+    {
+      "text": "un",
+      "start": 4.458,
+      "end": 4.572,
+      "score": 0.999
+    },
+    {
+      "text": "pouce",
+      "start": 4.598,
+      "end": 4.913,
+      "score": 0.998
+    }
+  ]
+}

@@ -201,6 +201,24 @@
       "color": "color.moss",
       "look": {
         "svg": "personnages/nell.svg"
+      },
+      "voices": {
+        "en": {
+          "provider": "elevenlabs",
+          "voice": "kkPJzQOWz2Oz9cUaEaQd",
+          "name": "Beatrice - Mature, Gentle and Engaging",
+          "settings": {
+            "model": "eleven_v4"
+          }
+        },
+        "fr": {
+          "provider": "elevenlabs",
+          "voice": "62qGOOI927DEYwOVyfbC",
+          "name": "Michelle - Calm",
+          "settings": {
+            "model": "eleven_v4"
+          }
+        }
       }
     }
   ],

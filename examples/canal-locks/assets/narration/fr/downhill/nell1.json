@@ -1,0 +1,64 @@
+{
+  "screen": "downhill",
+  "line": "nell1",
+  "language": "fr",
+  "textHash": "sha256:3e04413fcffe7a1e3fdafc53abe65493e00d737a09f785081489b71e96adc532",
+  "duration": 3.18,
+  "provider": "elevenlabs",
+  "voice": "62qGOOI927DEYwOVyfbC",
+  "generated": true,
+  "audioHash": "sha256:64caceb3c715e407a7f391a6a38169ced1125ba71601706a624796a86bb5b552",
+  "createdAt": "2026-11-11T00:22:31Z",
+  "take": 1,
+  "spokenHash": "sha256:3e04413fcffe7a1e3fdafc53abe65493e00d737a09f785081489b71e96adc532",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Bonjour ! Moi, c’est Nell, l’éclusière.",
+  "mouth": "cccooooowwooooooowwwcccccccccccccccwwwwwccccooooocsswwwwsssssssccccsswwcsssooooooooooooosssccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Bonjour",
+      "start": 0.04,
+      "end": 0.678,
+      "score": 0.969
+    },
+    {
+      "text": "Moi",
+      "start": 1.107,
+      "end": 1.282,
+      "score": 0.982
+    },
+    {
+      "text": "c’",
+      "start": 1.49,
+      "end": 1.55,
+      "score": 0.444
+    },
+    {
+      "text": "est",
+      "start": 1.55,
+      "end": 1.691,
+      "score": 0.727
+    },
+    {
+      "text": "Nell",
+      "start": 1.691,
+      "end": 2.006,
+      "score": 0.748
+    },
+    {
+      "text": "l’",
+      "start": 2.254,
+      "end": 2.335,
+      "score": 0.502
+    },
+    {
+      "text": "éclusière",
+      "start": 2.335,
+      "end": 3.033,
+      "score": 0.876
+    }
+  ]
+}

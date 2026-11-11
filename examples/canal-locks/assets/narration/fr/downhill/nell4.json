@@ -1,0 +1,106 @@
+{
+  "screen": "downhill",
+  "line": "nell4",
+  "language": "fr",
+  "textHash": "sha256:803a1c5822c146fecb5fb2e3f248968e1e79968100cb33055fb9787044646408",
+  "duration": 5.12,
+  "provider": "elevenlabs",
+  "voice": "62qGOOI927DEYwOVyfbC",
+  "generated": true,
+  "audioHash": "sha256:d1c6e00d665a1826090112703ddd6c3e621965b77dbcd6b0921f9621b3eeac38",
+  "createdAt": "2026-11-11T00:22:39Z",
+  "take": 1,
+  "spokenHash": "sha256:803a1c5822c146fecb5fb2e3f248968e1e79968100cb33055fb9787044646408",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Hmm. Maintenant, l’eau entre en amont aussi vite qu’elle sort en aval.",
+  "mouth": "ccccwwccccccccccccccccccccccccccwwwcccssswwwooccccccccssssoooocwwwoocoooooooowwwwcoossscccooooooooooocssooooccsssssssssswwwwoosssssccwwwwwsscccccccccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Hmm",
+      "start": 0.141,
+      "end": 0.275,
+      "score": 0
+    },
+    {
+      "text": "Maintenant",
+      "start": 1.024,
+      "end": 1.52,
+      "score": 0.975
+    },
+    {
+      "text": "l’",
+      "start": 1.807,
+      "end": 1.867,
+      "score": 0.678
+    },
+    {
+      "text": "eau",
+      "start": 1.867,
+      "end": 2.042,
+      "score": 0.958
+    },
+    {
+      "text": "entre",
+      "start": 2.189,
+      "end": 2.423,
+      "score": 0.998
+    },
+    {
+      "text": "en",
+      "start": 2.45,
+      "end": 2.564,
+      "score": 1
+    },
+    {
+      "text": "amont",
+      "start": 2.61,
+      "end": 2.925,
+      "score": 0.99
+    },
+    {
+      "text": "aussi",
+      "start": 3.052,
+      "end": 3.347,
+      "score": 1
+    },
+    {
+      "text": "vite",
+      "start": 3.413,
+      "end": 3.695,
+      "score": 0.99
+    },
+    {
+      "text": "qu’",
+      "start": 3.695,
+      "end": 3.755,
+      "score": 0.864
+    },
+    {
+      "text": "elle",
+      "start": 3.755,
+      "end": 3.949,
+      "score": 0.984
+    },
+    {
+      "text": "sort",
+      "start": 3.956,
+      "end": 4.17,
+      "score": 0.674
+    },
+    {
+      "text": "en",
+      "start": 4.176,
+      "end": 4.271,
+      "score": 0.998
+    },
+    {
+      "text": "aval",
+      "start": 4.317,
+      "end": 4.672,
+      "score": 1
+    }
+  ]
+}

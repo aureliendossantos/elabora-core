@@ -1,0 +1,52 @@
+{
+  "screen": "downhill",
+  "line": "nell10",
+  "language": "fr",
+  "textHash": "sha256:a8a1113b95effdaee93d9a2182bf3004d309b1a6a1c04dd91b6f12afc38e5e63",
+  "duration": 1.68,
+  "provider": "elevenlabs",
+  "voice": "62qGOOI927DEYwOVyfbC",
+  "generated": true,
+  "audioHash": "sha256:8b6209b027fb069fa7b29aaa3aa6e603a429860d275056da84db32b1ed37bca8",
+  "createdAt": "2026-11-11T00:22:49Z",
+  "take": 1,
+  "spokenHash": "sha256:a8a1113b95effdaee93d9a2182bf3004d309b1a6a1c04dd91b6f12afc38e5e63",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "À bientôt pour la remontée !",
+  "mouth": "coooccoooocwwwwcooooooosssoocccoowwwwcccccccccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "À",
+      "start": 0.041,
+      "end": 0.115,
+      "score": 0.1
+    },
+    {
+      "text": "bientôt",
+      "start": 0.142,
+      "end": 0.506,
+      "score": 0.969
+    },
+    {
+      "text": "pour",
+      "start": 0.506,
+      "end": 0.648,
+      "score": 0.992
+    },
+    {
+      "text": "la",
+      "start": 0.648,
+      "end": 0.763,
+      "score": 0.999
+    },
+    {
+      "text": "remontée",
+      "start": 0.79,
+      "end": 1.249,
+      "score": 0.752
+    }
+  ]
+}

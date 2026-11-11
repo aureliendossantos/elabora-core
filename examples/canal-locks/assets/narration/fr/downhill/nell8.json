@@ -1,0 +1,106 @@
+{
+  "screen": "downhill",
+  "line": "nell8",
+  "language": "fr",
+  "textHash": "sha256:f6bc3b14f5727cf8213aefccbba4e396725fe15c1b762ff20bea7a7d8539e80a",
+  "duration": 4.56,
+  "provider": "elevenlabs",
+  "voice": "62qGOOI927DEYwOVyfbC",
+  "generated": true,
+  "audioHash": "sha256:1cfece3b1399b88c0f6b0ae8a6a036f9428fea341e3c842b2e3e9e5afd78f40e",
+  "createdAt": "2026-11-11T00:22:46Z",
+  "take": 1,
+  "spokenHash": "sha256:f6bc3b14f5727cf8213aefccbba4e396725fe15c1b762ff20bea7a7d8539e80a",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "On peut attendre. Les niveaux sont déjà aussi égaux qu’ils peuvent l’être.",
+  "mouth": "cssccwwwcwwwwccwwwwwwoossssssccccccccccccccccooosswwssooooooooosswwwwwwwwwcoooooooooooowwwccooooocsssscccooocsssssoooccsssscccccccccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "On",
+      "start": 0.04,
+      "end": 0.134,
+      "score": 1
+    },
+    {
+      "text": "peut",
+      "start": 0.141,
+      "end": 0.335,
+      "score": 1
+    },
+    {
+      "text": "attendre",
+      "start": 0.362,
+      "end": 0.958,
+      "score": 0.995
+    },
+    {
+      "text": "Les",
+      "start": 1.487,
+      "end": 1.641,
+      "score": 1
+    },
+    {
+      "text": "niveaux",
+      "start": 1.647,
+      "end": 1.969,
+      "score": 0.997
+    },
+    {
+      "text": "sont",
+      "start": 1.969,
+      "end": 2.15,
+      "score": 0.973
+    },
+    {
+      "text": "déjà",
+      "start": 2.15,
+      "end": 2.384,
+      "score": 1
+    },
+    {
+      "text": "aussi",
+      "start": 2.551,
+      "end": 2.846,
+      "score": 0.998
+    },
+    {
+      "text": "égaux",
+      "start": 2.973,
+      "end": 3.254,
+      "score": 0.902
+    },
+    {
+      "text": "qu’",
+      "start": 3.254,
+      "end": 3.335,
+      "score": 0.737
+    },
+    {
+      "text": "ils",
+      "start": 3.335,
+      "end": 3.475,
+      "score": 0.968
+    },
+    {
+      "text": "peuvent",
+      "start": 3.475,
+      "end": 3.737,
+      "score": 0.996
+    },
+    {
+      "text": "l’",
+      "start": 3.737,
+      "end": 3.817,
+      "score": 0.469
+    },
+    {
+      "text": "être",
+      "start": 3.817,
+      "end": 4.092,
+      "score": 0.998
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "screen": "downhill",
+  "line": "nell5",
+  "language": "en",
+  "textHash": "sha256:cb4f52ee42dd24275d35637c1594d04350838f6e0f86a1bde3fc0f050fa7f9d5",
+  "duration": 1.77,
+  "provider": "elevenlabs",
+  "voice": "kkPJzQOWz2Oz9cUaEaQd",
+  "generated": true,
+  "audioHash": "sha256:224cadc4f9e6e66aa1bbe4cc0fea049e259063152a84a4c523d6ceb69d2b97ae",
+  "createdAt": "2026-11-11T00:22:08Z",
+  "take": 1,
+  "spokenHash": "sha256:cb4f52ee42dd24275d35637c1594d04350838f6e0f86a1bde3fc0f050fa7f9d5",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Beatrice (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "We could push all day.",
+  "mouth": "cwwwccwwwccccsscwwwsssssscwwwwwooosssswwoooooooosssccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "We",
+      "start": 0.02,
+      "end": 0.161,
+      "score": 1
+    },
+    {
+      "text": "could",
+      "start": 0.161,
+      "end": 0.454,
+      "score": 0.961
+    },
+    {
+      "text": "push",
+      "start": 0.463,
+      "end": 0.836,
+      "score": 0.961
+    },
+    {
+      "text": "all",
+      "start": 0.945,
+      "end": 1.227,
+      "score": 0.889
+    },
+    {
+      "text": "day",
+      "start": 1.227,
+      "end": 1.77,
+      "score": 0.667
+    }
+  ]
+}

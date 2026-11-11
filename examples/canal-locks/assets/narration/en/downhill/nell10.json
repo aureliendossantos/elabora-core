@@ -1,0 +1,64 @@
+{
+  "screen": "downhill",
+  "line": "nell10",
+  "language": "en",
+  "textHash": "sha256:7f3d4468c7ddd6e90dda663db75d4e710fdd50b425b76c300d5d64af85ace962",
+  "duration": 1.57,
+  "provider": "elevenlabs",
+  "voice": "kkPJzQOWz2Oz9cUaEaQd",
+  "generated": true,
+  "audioHash": "sha256:99962f4038eeaa1b3d15475b0f088675b9d0d30a38c97cf74ac9bc0526f9a818",
+  "createdAt": "2026-11-11T00:23:02Z",
+  "take": 2,
+  "spokenHash": "sha256:7f3d4468c7ddd6e90dda663db75d4e710fdd50b425b76c300d5d64af85ace962",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Beatrice (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "See you on the way back up!",
+  "mouth": "ccccccooosssswwwwoooowwooocccsscccooowwwwccccccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "See",
+      "start": 0.121,
+      "end": 0.322,
+      "score": 1
+    },
+    {
+      "text": "you",
+      "start": 0.322,
+      "end": 0.483,
+      "score": 0.997
+    },
+    {
+      "text": "on",
+      "start": 0.483,
+      "end": 0.604,
+      "score": 0.999
+    },
+    {
+      "text": "the",
+      "start": 0.604,
+      "end": 0.725,
+      "score": 0.999
+    },
+    {
+      "text": "way",
+      "start": 0.725,
+      "end": 0.906,
+      "score": 0.975
+    },
+    {
+      "text": "back",
+      "start": 0.906,
+      "end": 1.199,
+      "score": 1
+    },
+    {
+      "text": "up",
+      "start": 1.288,
+      "end": 1.481,
+      "score": 0.999
+    }
+  ]
+}

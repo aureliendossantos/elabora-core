@@ -1,0 +1,118 @@
+{
+  "screen": "downhill",
+  "line": "nell4",
+  "language": "en",
+  "textHash": "sha256:5a15a6ae002f25ef16cc8f9b3144fd109008b5bca04aae6fb194dbc37c3d32ae",
+  "duration": 5.62,
+  "provider": "elevenlabs",
+  "voice": "kkPJzQOWz2Oz9cUaEaQd",
+  "generated": true,
+  "audioHash": "sha256:5f1b49a52bb5f2dcac24c5f5fe968517241002153925cbaf8d76940a91be6f59",
+  "createdAt": "2026-11-11T00:23:00Z",
+  "take": 2,
+  "spokenHash": "sha256:5a15a6ae002f25ef16cc8f9b3144fd109008b5bca04aae6fb194dbc37c3d32ae",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Beatrice (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Hmm. Now it pours in at the top as fast as it leaves at the bottom.",
+  "mouth": "coowwwwcooocssccccccccccccccccccccwwooowwwwccccccsswwwwwwwwwwwwoooossssccssscwwwooocccccooossscccccwwooosssscoooooossooooooooosssssssooocccssccccoosssccccccccccccccccccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Hmm",
+      "start": 0.04,
+      "end": 0.453,
+      "score": 0.375
+    },
+    {
+      "text": "Now",
+      "start": 1.124,
+      "end": 1.365,
+      "score": 1
+    },
+    {
+      "text": "it",
+      "start": 1.365,
+      "end": 1.537,
+      "score": 1
+    },
+    {
+      "text": "pours",
+      "start": 1.566,
+      "end": 2.047,
+      "score": 0.885
+    },
+    {
+      "text": "in",
+      "start": 2.047,
+      "end": 2.188,
+      "score": 0.996
+    },
+    {
+      "text": "at",
+      "start": 2.188,
+      "end": 2.288,
+      "score": 0.976
+    },
+    {
+      "text": "the",
+      "start": 2.288,
+      "end": 2.449,
+      "score": 0.987
+    },
+    {
+      "text": "top",
+      "start": 2.449,
+      "end": 2.882,
+      "score": 1
+    },
+    {
+      "text": "as",
+      "start": 2.991,
+      "end": 3.163,
+      "score": 1
+    },
+    {
+      "text": "fast",
+      "start": 3.272,
+      "end": 3.673,
+      "score": 1
+    },
+    {
+      "text": "as",
+      "start": 3.673,
+      "end": 3.814,
+      "score": 1
+    },
+    {
+      "text": "it",
+      "start": 3.814,
+      "end": 3.974,
+      "score": 0.999
+    },
+    {
+      "text": "leaves",
+      "start": 3.974,
+      "end": 4.356,
+      "score": 0.956
+    },
+    {
+      "text": "at",
+      "start": 4.356,
+      "end": 4.436,
+      "score": 0.999
+    },
+    {
+      "text": "the",
+      "start": 4.436,
+      "end": 4.576,
+      "score": 0.981
+    },
+    {
+      "text": "bottom",
+      "start": 4.576,
+      "end": 5.05,
+      "score": 1
+    }
+  ]
+}

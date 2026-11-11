@@ -1,0 +1,124 @@
+{
+  "screen": "downhill",
+  "line": "nell2",
+  "language": "en",
+  "textHash": "sha256:fd78813a5db6c3ca2352940fc6bb9466e98bf89ad15b35be8826e6bb75702bad",
+  "duration": 5.73,
+  "provider": "elevenlabs",
+  "voice": "kkPJzQOWz2Oz9cUaEaQd",
+  "generated": true,
+  "audioHash": "sha256:0a87a38a76ca65f48fa4970992ba9a58da54697062e3e597e85c928aced10b4e",
+  "createdAt": "2026-11-11T00:22:03Z",
+  "take": 1,
+  "spokenHash": "sha256:fd78813a5db6c3ca2352940fc6bb9466e98bf89ad15b35be8826e6bb75702bad",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Beatrice (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "The skipper has been heaving on the lower gates for 5 minutes. They won't move an inch.",
+  "mouth": "cwwsssscwwwcccwwwwwwssccwwoooccsssooooosswwssooosssoooowwwwwwwcwwwwoooccssssssscccccwwooooooccwwcooooosscccssooccccccccccccccccoooooowwwsscoocooosssooocccoooooooocccooooccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.02,
+      "end": 0.16,
+      "score": 0.992
+    },
+    {
+      "text": "skipper",
+      "start": 0.16,
+      "end": 0.581,
+      "score": 0.991
+    },
+    {
+      "text": "has",
+      "start": 0.581,
+      "end": 0.761,
+      "score": 0.993
+    },
+    {
+      "text": "been",
+      "start": 0.761,
+      "end": 1.034,
+      "score": 0.996
+    },
+    {
+      "text": "heaving",
+      "start": 1.062,
+      "end": 1.543,
+      "score": 0.978
+    },
+    {
+      "text": "on",
+      "start": 1.543,
+      "end": 1.643,
+      "score": 0.999
+    },
+    {
+      "text": "the",
+      "start": 1.643,
+      "end": 1.783,
+      "score": 0.997
+    },
+    {
+      "text": "lower",
+      "start": 1.783,
+      "end": 2.084,
+      "score": 0.967
+    },
+    {
+      "text": "gates",
+      "start": 2.084,
+      "end": 2.484,
+      "score": 0.983
+    },
+    {
+      "text": "for",
+      "start": 2.484,
+      "end": 2.717,
+      "score": 1
+    },
+    {
+      "text": "5",
+      "start": 2.765,
+      "end": 3.177,
+      "score": 0.936
+    },
+    {
+      "text": "minutes",
+      "start": 3.186,
+      "end": 3.698,
+      "score": 0.952
+    },
+    {
+      "text": "They",
+      "start": 4.207,
+      "end": 4.388,
+      "score": 0.974
+    },
+    {
+      "text": "won't",
+      "start": 4.388,
+      "end": 4.688,
+      "score": 0.971
+    },
+    {
+      "text": "move",
+      "start": 4.688,
+      "end": 4.929,
+      "score": 0.999
+    },
+    {
+      "text": "an",
+      "start": 4.929,
+      "end": 5.101,
+      "score": 0.999
+    },
+    {
+      "text": "inch",
+      "start": 5.209,
+      "end": 5.622,
+      "score": 0.927
+    }
+  ]
+}

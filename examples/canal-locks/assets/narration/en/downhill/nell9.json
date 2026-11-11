@@ -1,0 +1,94 @@
+{
+  "screen": "downhill",
+  "line": "nell9",
+  "language": "en",
+  "textHash": "sha256:55a0749acecefd1a0e206c712976abc8fac181b1ee6c3d046a1835974de0778d",
+  "duration": 4.56,
+  "provider": "elevenlabs",
+  "voice": "kkPJzQOWz2Oz9cUaEaQd",
+  "generated": true,
+  "audioHash": "sha256:41954d9a2f022f0f6378a5eec5765ca9c208b6087ecc8bf7ac5d0da3fd4552d5",
+  "createdAt": "2026-11-11T00:22:15Z",
+  "take": 1,
+  "spokenHash": "sha256:55a0749acecefd1a0e206c712976abc8fac181b1ee6c3d046a1835974de0778d",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Beatrice (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Not a chance! The upper canal is 3 metres above us now.",
+  "mouth": "ccwwwwcsssscccoooooowwooowwwssccooocccccccccccccccccwwwcwwwccwwcsssooowwooooooooosscsssssssooooooocoooccoooosssscccoocwwsssscwwooossssscc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Not",
+      "start": 0.08,
+      "end": 0.342,
+      "score": 0.977
+    },
+    {
+      "text": "a",
+      "start": 0.342,
+      "end": 0.494,
+      "score": 0.999
+    },
+    {
+      "text": "chance",
+      "start": 0.542,
+      "end": 1.157,
+      "score": 0.958
+    },
+    {
+      "text": "The",
+      "start": 1.708,
+      "end": 1.908,
+      "score": 0.9
+    },
+    {
+      "text": "upper",
+      "start": 1.908,
+      "end": 2.15,
+      "score": 0.999
+    },
+    {
+      "text": "canal",
+      "start": 2.15,
+      "end": 2.603,
+      "score": 0.95
+    },
+    {
+      "text": "is",
+      "start": 2.612,
+      "end": 2.804,
+      "score": 0.921
+    },
+    {
+      "text": "3",
+      "start": 2.853,
+      "end": 3.234,
+      "score": 0.992
+    },
+    {
+      "text": "metres",
+      "start": 3.234,
+      "end": 3.716,
+      "score": 0.892
+    },
+    {
+      "text": "above",
+      "start": 3.716,
+      "end": 4.018,
+      "score": 0.995
+    },
+    {
+      "text": "us",
+      "start": 4.018,
+      "end": 4.178,
+      "score": 0.999
+    },
+    {
+      "text": "now",
+      "start": 4.178,
+      "end": 4.56,
+      "score": 0.732
+    }
+  ]
+}

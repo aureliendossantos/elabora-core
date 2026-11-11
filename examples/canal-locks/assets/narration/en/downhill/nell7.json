@@ -1,0 +1,70 @@
+{
+  "screen": "downhill",
+  "line": "nell7",
+  "language": "en",
+  "textHash": "sha256:e9f47a8e2d46cba25c11769d8b9cdb5d8cee7c837a81f01df055e29dc0630b63",
+  "duration": 3.1,
+  "provider": "elevenlabs",
+  "voice": "kkPJzQOWz2Oz9cUaEaQd",
+  "generated": true,
+  "audioHash": "sha256:4f2c36f61a96a7859d81b16520dcce1f1ee1f8aec55c5c5f52a327a5d3f1f5ed",
+  "createdAt": "2026-11-11T00:22:11Z",
+  "take": 1,
+  "spokenHash": "sha256:e9f47a8e2d46cba25c11769d8b9cdb5d8cee7c837a81f01df055e29dc0630b63",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Beatrice (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Easy as a garden gate. Off she goes!",
+  "mouth": "ccoooossooooossooocccoowwwwwwcooooocooooossccccccccccccccccccccccwwsssssooocwwwwoowwoosssscccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Easy",
+      "start": 0.081,
+      "end": 0.403,
+      "score": 1
+    },
+    {
+      "text": "as",
+      "start": 0.403,
+      "end": 0.544,
+      "score": 1
+    },
+    {
+      "text": "a",
+      "start": 0.544,
+      "end": 0.696,
+      "score": 0.995
+    },
+    {
+      "text": "garden",
+      "start": 0.705,
+      "end": 1.188,
+      "score": 0.997
+    },
+    {
+      "text": "gate",
+      "start": 1.188,
+      "end": 1.582,
+      "score": 0.959
+    },
+    {
+      "text": "Off",
+      "start": 2.174,
+      "end": 2.355,
+      "score": 0.994
+    },
+    {
+      "text": "she",
+      "start": 2.355,
+      "end": 2.516,
+      "score": 0.998
+    },
+    {
+      "text": "goes",
+      "start": 2.516,
+      "end": 3.051,
+      "score": 0.797
+    }
+  ]
+}

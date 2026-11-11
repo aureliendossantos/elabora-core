@@ -1,0 +1,64 @@
+{
+  "screen": "downhill",
+  "line": "nell1",
+  "language": "en",
+  "textHash": "sha256:f4db5487d53dfebfc0f06c1e7d2b81c8ddb9a4af0e80db4d15b8624b4005afde",
+  "duration": 2.88,
+  "provider": "elevenlabs",
+  "voice": "kkPJzQOWz2Oz9cUaEaQd",
+  "generated": true,
+  "audioHash": "sha256:00f9e03bb17ead3f8500bd3cf134be4ceca47ee33c0e2d3b2b367921d3057bb0",
+  "createdAt": "2026-11-11T00:22:00Z",
+  "take": 1,
+  "spokenHash": "sha256:f4db5487d53dfebfc0f06c1e7d2b81c8ddb9a4af0e80db4d15b8624b4005afde",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Beatrice (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Hello! I'm Nell, I keep this lock.",
+  "mouth": "ccwwwwwwwoowwwcccccccccccccwwooocooooooossssccccccccccccwwwcsscoocccoossscooooosscssscc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Hello",
+      "start": 0.04,
+      "end": 0.454,
+      "score": 0.847
+    },
+    {
+      "text": "I'm",
+      "start": 0.906,
+      "end": 1.128,
+      "score": 0.955
+    },
+    {
+      "text": "Nell",
+      "start": 1.128,
+      "end": 1.502,
+      "score": 0.923
+    },
+    {
+      "text": "I",
+      "start": 1.873,
+      "end": 2.025,
+      "score": 1
+    },
+    {
+      "text": "keep",
+      "start": 2.034,
+      "end": 2.276,
+      "score": 1
+    },
+    {
+      "text": "this",
+      "start": 2.276,
+      "end": 2.498,
+      "score": 0.991
+    },
+    {
+      "text": "lock",
+      "start": 2.498,
+      "end": 2.831,
+      "score": 0.945
+    }
+  ]
+}

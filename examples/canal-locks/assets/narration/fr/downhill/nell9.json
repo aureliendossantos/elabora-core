@@ -1,0 +1,88 @@
+{
+  "screen": "downhill",
+  "line": "nell9",
+  "language": "fr",
+  "textHash": "sha256:6c2c221ba444a9b3f10b0d99980b5b8c9a954fd9ded50889d0bf61d208672d2f",
+  "duration": 4.56,
+  "provider": "elevenlabs",
+  "voice": "62qGOOI927DEYwOVyfbC",
+  "generated": true,
+  "audioHash": "sha256:21873d1423631e08321eb670c60a7234eaabe676f3e338fc6e84e2ad9ed526e6",
+  "createdAt": "2026-11-11T00:22:48Z",
+  "take": 1,
+  "spokenHash": "sha256:6c2c221ba444a9b3f10b0d99980b5b8c9a954fd9ded50889d0bf61d208672d2f",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Impossible ! Le canal supérieur est maintenant 3 mètres au-dessus de nous.",
+  "mouth": "cooocccoooooowwcccsssccccccccccccccssscwwwwwwwwssooooccwwwsssswwooosscwwccccwwooccsssscwwwsscwwwcssssscoooooooocssoossooooocccccccccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Impossible",
+      "start": 0.04,
+      "end": 0.697,
+      "score": 1
+    },
+    {
+      "text": "Le",
+      "start": 1.165,
+      "end": 1.279,
+      "score": 0.999
+    },
+    {
+      "text": "canal",
+      "start": 1.306,
+      "end": 1.621,
+      "score": 1
+    },
+    {
+      "text": "supérieur",
+      "start": 1.667,
+      "end": 2.204,
+      "score": 0.982
+    },
+    {
+      "text": "est",
+      "start": 2.21,
+      "end": 2.31,
+      "score": 1
+    },
+    {
+      "text": "maintenant",
+      "start": 2.31,
+      "end": 2.706,
+      "score": 1
+    },
+    {
+      "text": "3",
+      "start": 2.732,
+      "end": 3.047,
+      "score": 0.996
+    },
+    {
+      "text": "mètres",
+      "start": 3.074,
+      "end": 3.355,
+      "score": 0.994
+    },
+    {
+      "text": "au-dessus",
+      "start": 3.355,
+      "end": 3.757,
+      "score": 0.905
+    },
+    {
+      "text": "de",
+      "start": 3.757,
+      "end": 3.871,
+      "score": 0.998
+    },
+    {
+      "text": "nous",
+      "start": 3.917,
+      "end": 4.152,
+      "score": 0.903
+    }
+  ]
+}
