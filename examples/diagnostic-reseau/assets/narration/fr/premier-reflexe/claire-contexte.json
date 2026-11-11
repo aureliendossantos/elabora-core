@@ -1,0 +1,118 @@
+{
+  "screen": "premier-reflexe",
+  "line": "claire-contexte",
+  "language": "fr",
+  "textHash": "sha256:f65a9ec3ba4e99248a9d61fb31dafd1fe9260051c0696b781d4d25f562e2963b",
+  "duration": 5.08,
+  "provider": "elevenlabs",
+  "voice": "WeAAwKYcS06VmXw086yZ",
+  "generated": true,
+  "audioHash": "sha256:b2e2434ca6afd2551a65f3d3c79bf038bb0f7f7b7acb3af4972c077b5c2af98d",
+  "createdAt": "2026-11-11T00:19:03Z",
+  "take": 1,
+  "spokenHash": "sha256:f65a9ec3ba4e99248a9d61fb31dafd1fe9260051c0696b781d4d25f562e2963b",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Victoria (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Marc est toujours en ligne. Vous êtes Leïla, du support : à vous de mener le diagnostic.",
+  "mouth": "cccwwwsscoooccooooowwooooosssssssscccccccccccccccooooowwsssswwwoowwwssccccoooosssssccccssssccccccccccccccwwooooooooooowwcoooooooossssssoosssccssscccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Marc",
+      "start": 0.06,
+      "end": 0.335,
+      "score": 0.942
+    },
+    {
+      "text": "est",
+      "start": 0.362,
+      "end": 0.462,
+      "score": 1
+    },
+    {
+      "text": "toujours",
+      "start": 0.462,
+      "end": 0.763,
+      "score": 1
+    },
+    {
+      "text": "en",
+      "start": 0.763,
+      "end": 0.863,
+      "score": 1
+    },
+    {
+      "text": "ligne",
+      "start": 0.863,
+      "end": 1.138,
+      "score": 0.983
+    },
+    {
+      "text": "Vous",
+      "start": 1.647,
+      "end": 1.801,
+      "score": 0.96
+    },
+    {
+      "text": "êtes",
+      "start": 1.807,
+      "end": 1.968,
+      "score": 0.996
+    },
+    {
+      "text": "Leïla",
+      "start": 1.968,
+      "end": 2.303,
+      "score": 0.822
+    },
+    {
+      "text": "du",
+      "start": 2.49,
+      "end": 2.624,
+      "score": 0.999
+    },
+    {
+      "text": "support",
+      "start": 2.651,
+      "end": 3.106,
+      "score": 0.984
+    },
+    {
+      "text": "à",
+      "start": 3.494,
+      "end": 3.568,
+      "score": 0.956
+    },
+    {
+      "text": "vous",
+      "start": 3.634,
+      "end": 3.849,
+      "score": 1
+    },
+    {
+      "text": "de",
+      "start": 3.855,
+      "end": 3.97,
+      "score": 1
+    },
+    {
+      "text": "mener",
+      "start": 3.976,
+      "end": 4.257,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 4.257,
+      "end": 4.337,
+      "score": 1
+    },
+    {
+      "text": "diagnostic",
+      "start": 4.337,
+      "end": 4.953,
+      "score": 0.998
+    }
+  ]
+}

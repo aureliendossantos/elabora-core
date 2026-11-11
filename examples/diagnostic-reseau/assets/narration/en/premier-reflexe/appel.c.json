@@ -3,80 +3,80 @@
   "line": "appel.c",
   "language": "en",
   "textHash": "sha256:c8c1fee5522a4a26dbd35684a5a145639694f2005ae4f94fa49c261b10bed60e",
-  "duration": 3.87,
+  "duration": 3.77,
   "provider": "elevenlabs",
-  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "voice": "kdmDKE6EkgrWrrykO9Qt",
   "generated": true,
-  "audioHash": "sha256:4cbf2dba944d33002df78d6ac1386a7ce790c09a2d91077589a019f5593fc358",
-  "createdAt": "2026-11-05T12:04:42Z",
+  "audioHash": "sha256:de40dde996b70770b5f6ec5852c1f27a5e341c86d09a22ba628d9ecfe744fb8a",
+  "createdAt": "2026-11-11T00:19:38Z",
   "take": 1,
   "spokenHash": "sha256:c8c1fee5522a4a26dbd35684a5a145639694f2005ae4f94fa49c261b10bed60e",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Alexandra (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "I'll pass it to second line: with payroll, it's urgent.",
-  "mouth": "cwwwwccwwwwsssscooossswwwcoooooooosssssccccccccccccccccwwwwwccccwwwwwoooooooooooccccccooocsscccoooowwssooossscooccccc",
+  "mouth": "cwwwcccwwwwccsscoooocwwwwcoooooooooossssscccccccccccccccwwssccccssswwooowwwwwwoosssccsscoocccooooossooossccccccccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "I'll",
       "start": 0.02,
-      "end": 0.201,
-      "score": 0.999
+      "end": 0.181,
+      "score": 0.938
     },
     {
       "text": "pass",
-      "start": 0.201,
+      "start": 0.181,
       "end": 0.441,
-      "score": 1
+      "score": 0.99
     },
     {
       "text": "it",
       "start": 0.441,
       "end": 0.541,
-      "score": 0.991
+      "score": 0.995
     },
     {
       "text": "to",
       "start": 0.541,
       "end": 0.682,
-      "score": 0.986
+      "score": 0.988
     },
     {
       "text": "second",
       "start": 0.682,
       "end": 1.003,
-      "score": 0.998
+      "score": 0.986
     },
     {
       "text": "line",
       "start": 1.003,
-      "end": 1.335,
-      "score": 0.998
+      "end": 1.375,
+      "score": 0.981
     },
     {
       "text": "with",
       "start": 1.845,
-      "end": 2.085,
-      "score": 0.947
+      "end": 2.086,
+      "score": 0.997
     },
     {
       "text": "payroll",
-      "start": 2.085,
-      "end": 2.659,
-      "score": 0.753
+      "start": 2.086,
+      "end": 2.679,
+      "score": 0.596
     },
     {
       "text": "it's",
-      "start": 2.908,
-      "end": 3.16,
-      "score": 0.742
+      "start": 2.848,
+      "end": 3.1,
+      "score": 0.934
     },
     {
       "text": "urgent",
-      "start": 3.269,
-      "end": 3.741,
-      "score": 0.985
+      "start": 3.189,
+      "end": 3.641,
+      "score": 0.998
     }
   ]
 }

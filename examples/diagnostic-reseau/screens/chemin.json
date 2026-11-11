@@ -42,14 +42,15 @@
       "slot": "note",
       "style": "rule",
       "props": {
+        "title": "SUP-NET-04",
         "variant": "important",
         "textRef": "TXT-2"
       },
       "timing": {
         "in": {
           "at": {
-            "line": "chemin-regle",
-            "word": "règle"
+            "line": "chemin-regle-dite",
+            "edge": "end"
           },
           "effect": "rise",
           "duration": 0.5
@@ -73,6 +74,11 @@
         "id": "chemin-regle",
         "speaker": "guide",
         "text": "Une panne peut se cacher à chacune de ces étapes. Pour la trouver, la procédure SUP-NET-04 a une règle simple."
+      },
+      {
+        "id": "chemin-regle-dite",
+        "speaker": "guide",
+        "text": "Partez du poste et contrôlez chaque équipement dans l'ordre, même quand la cause semble évidente."
       }
     ]
   },

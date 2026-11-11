@@ -3,80 +3,80 @@
   "line": "marc-collegue",
   "language": "en",
   "textHash": "sha256:0fccc6bde1ebe5d3c671bdcec84fca4b4511e90aaca5c3282ffeff8a0d554591",
-  "duration": 3.37,
+  "duration": 3.36,
   "provider": "elevenlabs",
-  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "voice": "J5iaaqzR5zn6HFG4jV3b",
   "generated": true,
-  "audioHash": "sha256:6cf15faf4b72bdc13def63114c317197ff8ce5d2ea9d4f0675ff28be54e2b315",
-  "createdAt": "2026-11-05T12:04:56Z",
+  "audioHash": "sha256:31a0a3673b88cb94db75efa16daf3388ff378d146f602a9bbf3d0f8d4017cdb3",
+  "createdAt": "2026-11-11T00:19:45Z",
   "take": 1,
   "spokenHash": "sha256:0fccc6bde1ebe5d3c671bdcec84fca4b4511e90aaca5c3282ffeff8a0d554591",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Joseph (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "My colleague says it's the print server, like in March.",
-  "mouth": "cccoooosswwwwwwwoooosswwwooooosssccsscccwwwoossssssoossssssccccccccccwwwwwcsssccccooooocwwwwsscssooccc",
+  "mouth": "cccoocoowwwwooooossooowwwwwoosssscssccccwwwwssssssssssccsssoocccccccccccccoooocwwooooocwwssscccoooocc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "My",
       "start": 0.04,
-      "end": 0.221,
+      "end": 0.201,
       "score": 1
     },
     {
       "text": "colleague",
-      "start": 0.221,
-      "end": 0.662,
-      "score": 0.976
+      "start": 0.201,
+      "end": 0.644,
+      "score": 0.444
     },
     {
       "text": "says",
-      "start": 0.662,
-      "end": 0.963,
-      "score": 0.999
-    },
-    {
-      "text": "it's",
-      "start": 0.963,
-      "end": 1.143,
-      "score": 0.913
-    },
-    {
-      "text": "the",
-      "start": 1.143,
-      "end": 1.304,
-      "score": 0.99
-    },
-    {
-      "text": "print",
-      "start": 1.304,
-      "end": 1.585,
+      "start": 0.644,
+      "end": 0.946,
       "score": 0.968
     },
     {
+      "text": "it's",
+      "start": 0.946,
+      "end": 1.107,
+      "score": 0.932
+    },
+    {
+      "text": "the",
+      "start": 1.107,
+      "end": 1.288,
+      "score": 0.995
+    },
+    {
+      "text": "print",
+      "start": 1.288,
+      "end": 1.61,
+      "score": 0.889
+    },
+    {
       "text": "server",
-      "start": 1.585,
-      "end": 1.978,
-      "score": 0.621
+      "start": 1.61,
+      "end": 2.044,
+      "score": 0.434
     },
     {
       "text": "like",
-      "start": 2.287,
-      "end": 2.599,
-      "score": 1
+      "start": 2.475,
+      "end": 2.676,
+      "score": 0.987
     },
     {
       "text": "in",
-      "start": 2.768,
-      "end": 2.889,
-      "score": 1
+      "start": 2.676,
+      "end": 2.837,
+      "score": 0.049
     },
     {
       "text": "March",
-      "start": 2.889,
-      "end": 3.302,
-      "score": 0.998
+      "start": 2.837,
+      "end": 3.291,
+      "score": 0.984
     }
   ]
 }

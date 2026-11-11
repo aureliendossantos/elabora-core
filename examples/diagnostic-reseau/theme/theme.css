@@ -42,12 +42,13 @@ body { background: transparent; }
 .t-s-go:is([data-t-revealed], [data-t-shown]) { animation: dr-rise var(--t-dur-reveal, 400ms) var(--t-ease-out, ease) both; }
 
 .t-s-rule.t-block--callout .t-callout {
+  text-align: left;
   border: 0; border-radius: var(--t-radius);
   background: color-mix(in srgb, var(--t-color-amber) 16%, var(--t-surface));
   padding: 1.125rem 1.375rem;
   font-size: 1.125rem; line-height: 1.5;
 }
-.t-s-rule.t-block--callout .t-callout-title { color: var(--t-accent); }
+.t-s-rule.t-block--callout .t-callout-title { color: color-mix(in srgb, var(--t-accent) 88%, black); }
 
 /* Notes over the scene, and the dialogue's column, sit on soft cards. */
 .t-layout--stage .st-note .t-block--text .t-text {

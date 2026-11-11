@@ -3,56 +3,56 @@
   "line": "marc-poste",
   "language": "en",
   "textHash": "sha256:590842a9393708ee8133c2001cf6b909465b4b36cbb6efcc8d24bd5e59a4e1d2",
-  "duration": 2.49,
+  "duration": 2.68,
   "provider": "elevenlabs",
-  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "voice": "J5iaaqzR5zn6HFG4jV3b",
   "generated": true,
-  "audioHash": "sha256:88e56c34ed030830ac93e6c164c6aaa62c3e7df7367bba971dfeff7ce3ee018d",
-  "createdAt": "2026-11-05T12:04:51Z",
+  "audioHash": "sha256:a746607053b2fdefab0c17b70aca23a3ad683ae061009f98b4c0bccd2a043554",
+  "createdAt": "2026-11-11T00:19:43Z",
   "take": 1,
   "spokenHash": "sha256:590842a9393708ee8133c2001cf6b909465b4b36cbb6efcc8d24bd5e59a4e1d2",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Joseph (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Yes, no trouble. My emails too.",
-  "mouth": "cwwwwwssssscccccccccwwoosssswwwwccccccccccccccccccoooooocooooosscccwwoosscc",
+  "mouth": "sswwwwsssssccccccccccoowwssswwwwwwcccccccccccccccccccccoooooocooooossccsswwoocccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Yes",
-      "start": 0.04,
-      "end": 0.373,
-      "score": 0.946
+      "start": 0,
+      "end": 0.354,
+      "score": 0.987
     },
     {
       "text": "no",
-      "start": 0.663,
-      "end": 0.843,
-      "score": 0.937
+      "start": 0.705,
+      "end": 0.887,
+      "score": 0.992
     },
     {
       "text": "trouble",
-      "start": 0.843,
-      "end": 1.237,
-      "score": 1
+      "start": 0.887,
+      "end": 1.301,
+      "score": 0.993
     },
     {
       "text": "My",
-      "start": 1.607,
-      "end": 1.799,
-      "score": 0.514
+      "start": 1.753,
+      "end": 1.955,
+      "score": 0.895
     },
     {
       "text": "emails",
-      "start": 1.807,
-      "end": 2.169,
-      "score": 0.344
+      "start": 1.955,
+      "end": 2.358,
+      "score": 0.701
     },
     {
       "text": "too",
-      "start": 2.169,
-      "end": 2.441,
-      "score": 0.958
+      "start": 2.358,
+      "end": 2.68,
+      "score": 0.668
     }
   ]
 }

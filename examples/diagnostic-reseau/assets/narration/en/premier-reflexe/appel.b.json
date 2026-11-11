@@ -3,62 +3,62 @@
   "line": "appel.b",
   "language": "en",
   "textHash": "sha256:48eb3e4891f710e768e2fbff50d9c828c2e5c8b368b0101ecabc4eb7e090cb51",
-  "duration": 2.355,
+  "duration": 2.28,
   "provider": "elevenlabs",
-  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "voice": "kdmDKE6EkgrWrrykO9Qt",
   "generated": true,
-  "audioHash": "sha256:e5dec4461ca33e5fdaa698004d41ff0ab35773151e944fe82606c150732745ca",
-  "createdAt": "2026-11-05T12:04:32Z",
+  "audioHash": "sha256:d6d753d17f4c5078b3438385ac545143f82b710edcf2939b555a0495b6a4a439",
+  "createdAt": "2026-11-11T00:19:35Z",
   "take": 1,
   "spokenHash": "sha256:48eb3e4891f710e768e2fbff50d9c828c2e5c8b368b0101ecabc4eb7e090cb51",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Alexandra (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "What message shows when you start printing?",
-  "mouth": "coooocccwwcooccwwwsssssssswwooooooosscoowwwwwsscwwoooccccoooossoooooocc",
+  "mouth": "cwwwwwcwwwcoooccoossooooooooooossscoooooosscwwwwwccccoowwcooosssssscc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "What",
-      "start": 0.04,
-      "end": 0.302,
-      "score": 0.509
+      "start": 0.041,
+      "end": 0.294,
+      "score": 0.996
     },
     {
       "text": "message",
-      "start": 0.302,
-      "end": 0.765,
-      "score": 1
+      "start": 0.303,
+      "end": 0.747,
+      "score": 0.981
     },
     {
       "text": "shows",
-      "start": 0.765,
-      "end": 1.248,
-      "score": 0.957
+      "start": 0.747,
+      "end": 1.13,
+      "score": 0.997
     },
     {
       "text": "when",
-      "start": 1.248,
-      "end": 1.409,
-      "score": 1
+      "start": 1.13,
+      "end": 1.271,
+      "score": 0.991
     },
     {
       "text": "you",
-      "start": 1.409,
-      "end": 1.53,
+      "start": 1.271,
+      "end": 1.413,
       "score": 1
     },
     {
       "text": "start",
-      "start": 1.53,
-      "end": 1.852,
-      "score": 0.997
+      "start": 1.413,
+      "end": 1.695,
+      "score": 1
     },
     {
       "text": "printing",
-      "start": 1.852,
-      "end": 2.346,
-      "score": 0.857
+      "start": 1.695,
+      "end": 2.251,
+      "score": 0.983
     }
   ]
 }

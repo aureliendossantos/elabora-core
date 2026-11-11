@@ -3,134 +3,134 @@
   "line": "chemin-regle",
   "language": "en",
   "textHash": "sha256:640a7f8c8285a79010130540db25607c0d771be468e0a3f721ebae3a7bb20dd0",
-  "duration": 9.52,
+  "duration": 7.55,
   "provider": "elevenlabs",
   "voice": "WZlYpi1yf6zJhNWXih74",
   "generated": true,
-  "audioHash": "sha256:c7d85b8772d9a0493d38ed3adf3de01261cfccb264311cbdea1f6d69389bc45a",
-  "createdAt": "2026-11-09T21:10:54Z",
+  "audioHash": "sha256:f6a3de5b3c3df495bdeec5980ca54b00f1d44bdac7d80caf9caa48d3174498d3",
+  "createdAt": "2026-11-11T00:18:57Z",
   "take": 1,
-  "spokenHash": "sha256:640a7f8c8285a79010130540db25607c0d771be468e0a3f721ebae3a7bb20dd0",
+  "spokenHash": "sha256:8a43e24bc8dd90b8571268edf2fb01b791a7da8dd488989745136fb9cffed451",
   "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "credit": "Synthetic voice: Hope (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "A failure can hide at any of these steps. To find it, the SUP-NET-04 procedure has one simple rule.",
-  "mouth": "ccssccccwwwwwwwwwoosssoooosssswwooooooooccccccwwwwwwwwwssccooooccccwwwwccccsssccccccccccccccccccoooccwwwooooooooocccccccccccccooooccwwwwwcssoowwwccssoooooooccwwooossssccoowwwwwwwcsssoooooooccwwooossscccwwwooocccwwwwwwcccsssssoosssoooossccccssoossssssswwwwoooocccoooocccoosssoooossscsscc",
+  "mouth": "ccssscccooowwwwwwwwwwcoooooossswwwwwoooocccccwwwoowwwoossccooosssscwwwwccccsssscccccccccccccccccooooccwwwooooooooocccccccccccoossccwwwwccccwwwwssscoowwwwwwwccwwwwwccoosssooossoooosssssoooocssssswwwoooocccwwoocccoooooooooooocccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "A",
       "start": 0.06,
-      "end": 0.212,
-      "score": 0.762
+      "end": 0.2,
+      "score": 0.793
     },
     {
       "text": "failure",
-      "start": 0.221,
-      "end": 0.661,
-      "score": 0.956
+      "start": 0.2,
+      "end": 0.721,
+      "score": 0.975
     },
     {
       "text": "can",
-      "start": 0.661,
-      "end": 0.902,
-      "score": 0.987
+      "start": 0.721,
+      "end": 0.921,
+      "score": 1
     },
     {
       "text": "hide",
-      "start": 0.902,
-      "end": 1.263,
-      "score": 0.999
-    },
-    {
-      "text": "at",
-      "start": 1.263,
-      "end": 1.435,
+      "start": 0.921,
+      "end": 1.242,
       "score": 0.997
     },
     {
+      "text": "at",
+      "start": 1.242,
+      "end": 1.434,
+      "score": 0.909
+    },
+    {
       "text": "any",
-      "start": 1.603,
-      "end": 1.824,
-      "score": 0.999
+      "start": 1.582,
+      "end": 1.802,
+      "score": 0.998
     },
     {
       "text": "of",
-      "start": 1.824,
-      "end": 1.924,
+      "start": 1.802,
+      "end": 1.923,
       "score": 1
     },
     {
       "text": "these",
-      "start": 1.924,
-      "end": 2.145,
-      "score": 0.927
+      "start": 1.923,
+      "end": 2.163,
+      "score": 0.916
     },
     {
       "text": "steps",
-      "start": 2.145,
-      "end": 2.597,
-      "score": 0.945
+      "start": 2.163,
+      "end": 2.635,
+      "score": 0.954
     },
     {
       "text": "To",
-      "start": 3.167,
-      "end": 3.327,
-      "score": 0.961
+      "start": 3.184,
+      "end": 3.365,
+      "score": 0.995
     },
     {
       "text": "find",
-      "start": 3.327,
-      "end": 3.668,
-      "score": 0.992
+      "start": 3.365,
+      "end": 3.705,
+      "score": 0.994
     },
     {
       "text": "it",
-      "start": 3.668,
-      "end": 3.86,
+      "start": 3.705,
+      "end": 3.877,
       "score": 0.996
     },
     {
       "text": "the",
-      "start": 4.189,
-      "end": 4.401,
-      "score": 0.985
+      "start": 4.146,
+      "end": 4.326,
+      "score": 0.998
     },
     {
       "text": "SUP-NET-04",
-      "start": 4.57,
-      "end": 7.275,
-      "score": 0.675
+      "start": 4.326,
+      "end": 5.467,
+      "score": 0.867
     },
     {
       "text": "procedure",
-      "start": 7.275,
-      "end": 7.888,
-      "score": 0.914
+      "start": 5.467,
+      "end": 6.06,
+      "score": 0.93
     },
     {
       "text": "has",
-      "start": 8.017,
-      "end": 8.269,
+      "start": 6.088,
+      "end": 6.34,
       "score": 1
     },
     {
       "text": "one",
-      "start": 8.438,
-      "end": 8.69,
-      "score": 0.909
+      "start": 6.509,
+      "end": 6.741,
+      "score": 1
     },
     {
       "text": "simple",
-      "start": 8.698,
-      "end": 9.119,
-      "score": 0.997
+      "start": 6.769,
+      "end": 7.17,
+      "score": 0.968
     },
     {
       "text": "rule",
-      "start": 9.119,
-      "end": 9.452,
-      "score": 0.999
+      "start": 7.17,
+      "end": 7.502,
+      "score": 0.951
     }
   ]
 }

@@ -3,50 +3,50 @@
   "line": "marc-redemarrer",
   "language": "en",
   "textHash": "sha256:93a3811712ed311da2ec9539ffa2a00fa2ed71178a9dab645b463230373a328d",
-  "duration": 1.37,
+  "duration": 1.35,
   "provider": "elevenlabs",
-  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "voice": "J5iaaqzR5zn6HFG4jV3b",
   "generated": true,
-  "audioHash": "sha256:73403b0b03a75f223fbc39664072d866f197283188599b3e767eb408342f060e",
-  "createdAt": "2026-11-05T12:04:59Z",
+  "audioHash": "sha256:bcba17746d3821d7fae2a8cf895459c72541b2f18289fc765fa328e591b85d07",
+  "createdAt": "2026-11-11T00:19:46Z",
   "take": 1,
   "spokenHash": "sha256:93a3811712ed311da2ec9539ffa2a00fa2ed71178a9dab645b463230373a328d",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Joseph (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Can't you just restart it?",
-  "mouth": "csswwoossssssssssssssssooooocooowwwwwwcccc",
+  "mouth": "ccwwwwsssooosssssssccwwwooossoooooowwwwcc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Can't",
-      "start": 0.04,
-      "end": 0.262,
-      "score": 0.984
+      "start": 0.02,
+      "end": 0.282,
+      "score": 0.985
     },
     {
       "text": "you",
-      "start": 0.262,
-      "end": 0.403,
+      "start": 0.282,
+      "end": 0.443,
       "score": 1
     },
     {
       "text": "just",
-      "start": 0.403,
-      "end": 0.685,
-      "score": 0.955
+      "start": 0.443,
+      "end": 0.705,
+      "score": 1
     },
     {
       "text": "restart",
-      "start": 0.685,
+      "start": 0.705,
       "end": 1.209,
-      "score": 0.884
+      "score": 0.759
     },
     {
       "text": "it",
       "start": 1.209,
-      "end": 1.37,
-      "score": 0.994
+      "end": 1.35,
+      "score": 0.75
     }
   ]
 }

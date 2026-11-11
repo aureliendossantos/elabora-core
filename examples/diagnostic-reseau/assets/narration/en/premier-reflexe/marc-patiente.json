@@ -3,56 +3,56 @@
   "line": "marc-patiente",
   "language": "en",
   "textHash": "sha256:8d1a491e5958f32f739202c969b8964643184baf6afeceb3a63ce3f959baab43",
-  "duration": 3.795,
+  "duration": 3.86,
   "provider": "elevenlabs",
-  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "voice": "J5iaaqzR5zn6HFG4jV3b",
   "generated": true,
-  "audioHash": "sha256:f0b52500021d56324c37bc820314a6f41433671f0e0fd1bf932d0ae0ffa2393a",
-  "createdAt": "2026-11-05T12:05:11Z",
+  "audioHash": "sha256:c76aa193829e5aa1de4c6c53b5ab51f4150b279eb9c00741115a1f0eb6f12e92",
+  "createdAt": "2026-11-11T00:19:50Z",
   "take": 1,
   "spokenHash": "sha256:8d1a491e5958f32f739202c969b8964643184baf6afeceb3a63ce3f959baab43",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Joseph (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "[sighs] Two minutes… All right, I'll wait.",
-  "mouth": "cccccccccccccccccccccccccssssscoooooosscssoooossooooocccccccccccccccccccccwwwwwwwwwwwcccccccccccccoooooowwwwsscccc",
+  "mouth": "ccccccccccccccccccccccssssssoosscssooossccooooccccccccccccccccccccccccccccccccccwwwwwwwwwwccccccccccccccwwwooooosscc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Two",
-      "start": 0.843,
-      "end": 1.196,
-      "score": 0.394
+      "start": 0.744,
+      "end": 1.037,
+      "score": 0.955
     },
     {
       "text": "minutes",
-      "start": 1.265,
-      "end": 1.759,
-      "score": 0.923
+      "start": 1.066,
+      "end": 1.539,
+      "score": 0.949
     },
     {
       "text": "All",
-      "start": 2.47,
-      "end": 2.631,
-      "score": 0.968
+      "start": 2.654,
+      "end": 2.815,
+      "score": 0.997
     },
     {
       "text": "right",
-      "start": 2.631,
-      "end": 2.943,
-      "score": 0.993
+      "start": 2.815,
+      "end": 3.108,
+      "score": 0.936
     },
     {
       "text": "I'll",
-      "start": 3.273,
-      "end": 3.454,
-      "score": 0.858
+      "start": 3.458,
+      "end": 3.659,
+      "score": 0.521
     },
     {
       "text": "wait",
-      "start": 3.454,
-      "end": 3.746,
-      "score": 0.97
+      "start": 3.659,
+      "end": 3.86,
+      "score": 0.978
     }
   ]
 }

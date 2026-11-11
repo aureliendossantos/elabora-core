@@ -1589,12 +1589,24 @@
       <notes>
         <note category="location">screens/chemin.json /narration/lines/2/text</note>
         <note category="format">text</note>
-        <note category="context">Narration line chemin-regle (guide) of screen "Le chemin d'une impression": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« règle »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="context">Narration line chemin-regle (guide) of screen "Le chemin d'une impression": said by a voice in the translated course and shown as its captions</note>
         <note category="max-length">2000</note>
       </notes>
       <segment state="translated">
-        <source>Une panne peut se cacher à chacune de ces étapes. Pour la trouver, la procédure SUP-NET-04 a une <mrk id="w-règle" type="elabora:anchor">règle</mrk> simple.</source>
-        <target>A failure can hide at any of these steps. To find it, the SUP-NET-04 procedure has one simple <mrk id="w-règle" type="elabora:anchor">rule</mrk>.</target>
+        <source>Une panne peut se cacher à chacune de ces étapes. Pour la trouver, la procédure SUP-NET-04 a une règle simple.</source>
+        <target>A failure can hide at any of these steps. To find it, the SUP-NET-04 procedure has one simple rule.</target>
+      </segment>
+    </unit>
+    <unit id="screen.chemin.narration.chemin-regle-dite.text">
+      <notes>
+        <note category="location">screens/chemin.json /narration/lines/3/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line chemin-regle-dite (guide) of screen "Le chemin d'une impression": said by a voice in the translated course and shown as its captions</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Partez du poste et contrôlez chaque équipement dans l'ordre, même quand la cause semble évidente.</source>
+        <target>Start from the computer and check each device in order, even when the cause seems obvious.</target>
       </segment>
     </unit>
     <unit id="block.chemin-reseau.title">
@@ -2223,6 +2235,18 @@
         <target>Print server</target>
       </segment>
     </unit>
+    <unit id="block.chemin-regle.title">
+      <notes>
+        <note category="location">screens/chemin.json /blocks/1/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Callout on screen "Le chemin d'une impression"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>SUP-NET-04</source>
+        <target>SUP-NET-04</target>
+      </segment>
+    </unit>
     <unit id="screen.premier-reflexe.title">
       <notes>
         <note category="location">screens/premier-reflexe.json /title</note>
@@ -2246,9 +2270,21 @@
         <target>Marc's call</target>
       </segment>
     </unit>
-    <unit id="block.appel-marc.nodes.appel.lines.marc-attente.text">
+    <unit id="block.appel-marc.nodes.appel.lines.claire-contexte.text">
       <notes>
         <note category="location">screens/premier-reflexe.json /blocks/0/props/nodes/0/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line claire-contexte (guide) of node "appel" of dialogue "appel-marc" on screen "Marc est toujours en ligne": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Marc est toujours en ligne. Vous êtes Leïla, du support : à vous de mener le diagnostic.</source>
+        <target>Marc is still on the line. You're Leïla, on the support desk: the diagnosis is yours.</target>
+      </segment>
+    </unit>
+    <unit id="block.appel-marc.nodes.appel.lines.marc-attente.text">
+      <notes>
+        <note category="location">screens/premier-reflexe.json /blocks/0/props/nodes/0/lines/1/text</note>
         <note category="format">text</note>
         <note category="context">Line marc-attente (marc) of node "appel" of dialogue "appel-marc" on screen "Marc est toujours en ligne": shown in a bubble and said by a voice in the translated course. Text in square brackets, in markers &lt;mrk type="elabora:direction"&gt;, is a stage direction for the voice (how to say it, never shown): keep it in brackets where the delivery changes in your sentence, and translate or adapt it</note>
         <note category="max-length">2000</note>

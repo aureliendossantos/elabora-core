@@ -3,80 +3,80 @@
   "line": "pression.c",
   "language": "en",
   "textHash": "sha256:8a9d87371924605368765cae833989ce94146bb6cf88c77491e1e2d896e36c92",
-  "duration": 3.02,
+  "duration": 3.22,
   "provider": "elevenlabs",
-  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "voice": "kdmDKE6EkgrWrrykO9Qt",
   "generated": true,
-  "audioHash": "sha256:9727cb793abcaa4b3e77bb938569f6ecff951e38656a463747a95d3880ce95ab",
-  "createdAt": "2026-11-05T12:05:31Z",
+  "audioHash": "sha256:81512bfffdeb0d33691f5ea96338c86e4966d0378982db1ceab76db6aaba8b22",
+  "createdAt": "2026-11-11T00:19:55Z",
   "take": 1,
   "spokenHash": "sha256:8a9d87371924605368765cae833989ce94146bb6cf88c77491e1e2d896e36c92",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Alexandra (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "All right, I'll restart it right away, it'll be faster.",
-  "mouth": "cwwwwwwooosssssssccssswwwwooowwwccoooooooossssoooooooooossscccccccoowwooocsssooooocccoosscc",
+  "mouth": "cwwwooooossscoocccccccccwwwssswwwsscwwwoowwssssswwoooooooooooosscccccoooooccccccwwwsssscoooossscc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "All",
-      "start": 0.04,
+      "start": 0.02,
       "end": 0.201,
-      "score": 0.974
+      "score": 0.951
     },
     {
       "text": "right",
       "start": 0.201,
-      "end": 0.495,
-      "score": 0.982
+      "end": 0.494,
+      "score": 0.995
     },
     {
       "text": "I'll",
-      "start": 0.725,
-      "end": 0.906,
-      "score": 0.987
+      "start": 0.785,
+      "end": 0.946,
+      "score": 0.959
     },
     {
       "text": "restart",
-      "start": 0.906,
-      "end": 1.369,
-      "score": 0.964
+      "start": 0.946,
+      "end": 1.389,
+      "score": 0.986
     },
     {
       "text": "it",
-      "start": 1.369,
-      "end": 1.47,
-      "score": 0.994
+      "start": 1.389,
+      "end": 1.561,
+      "score": 0.911
     },
     {
       "text": "right",
-      "start": 1.47,
-      "end": 1.691,
-      "score": 0.949
-    },
-    {
-      "text": "away",
-      "start": 1.691,
-      "end": 2.025,
-      "score": 1
-    },
-    {
-      "text": "it'll",
-      "start": 2.215,
-      "end": 2.436,
-      "score": 0.991
-    },
-    {
-      "text": "be",
-      "start": 2.436,
-      "end": 2.537,
+      "start": 1.59,
+      "end": 1.811,
       "score": 0.999
     },
     {
+      "text": "away",
+      "start": 1.811,
+      "end": 2.165,
+      "score": 0.995
+    },
+    {
+      "text": "it'll",
+      "start": 2.315,
+      "end": 2.536,
+      "score": 0.986
+    },
+    {
+      "text": "be",
+      "start": 2.536,
+      "end": 2.637,
+      "score": 1
+    },
+    {
       "text": "faster",
-      "start": 2.537,
-      "end": 3.02,
-      "score": 0.89
+      "start": 2.637,
+      "end": 3.211,
+      "score": 0.835
     }
   ]
 }

@@ -3,68 +3,68 @@
   "line": "pression.a",
   "language": "en",
   "textHash": "sha256:7b97dce0ce7fb031d01d72adb483ac05329b6b9b8277b7ca5742555009e6250c",
-  "duration": 3.04,
+  "duration": 3.16,
   "provider": "elevenlabs",
-  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "voice": "kdmDKE6EkgrWrrykO9Qt",
   "generated": true,
-  "audioHash": "sha256:8d81230035a1848613910a508f38848f0094dc0a55e6f98214d4c454e38f65f2",
-  "createdAt": "2026-11-09T21:20:06Z",
+  "audioHash": "sha256:a5eb15cc243c45dd5378ee2aa88a0ee9d85bcd953e416a91c87d48dadbf8a92e",
+  "createdAt": "2026-11-11T00:19:48Z",
   "take": 1,
   "spokenHash": "sha256:7b97dce0ce7fb031d01d72adb483ac05329b6b9b8277b7ca5742555009e6250c",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Alexandra (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "I'll check your floor's switch first: 2 minutes.",
-  "mouth": "swwwcooooocccwwwssssswwwwwwwwcsscooocoossoooossssoocccccccccccccccccssswwwwcooooccccoooocccc",
+  "mouth": "cwwwwcoooooocooooocccsswwwwwoooooooosssssccooosscssooooccccccccccccccccooowwoocoooosscccooccccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "I'll",
-      "start": 0,
-      "end": 0.181,
-      "score": 0.954
+      "start": 0.04,
+      "end": 0.201,
+      "score": 0.939
     },
     {
       "text": "check",
-      "start": 0.181,
-      "end": 0.403,
-      "score": 0.983
+      "start": 0.201,
+      "end": 0.463,
+      "score": 0.959
     },
     {
       "text": "your",
-      "start": 0.403,
-      "end": 0.584,
-      "score": 0.971
+      "start": 0.463,
+      "end": 0.664,
+      "score": 0.984
     },
     {
       "text": "floor's",
-      "start": 0.584,
+      "start": 0.664,
       "end": 1.007,
-      "score": 0.685
+      "score": 0.706
     },
     {
       "text": "switch",
       "start": 1.007,
-      "end": 1.329,
-      "score": 0.952
+      "end": 1.389,
+      "score": 0.996
     },
     {
       "text": "first",
-      "start": 1.329,
-      "end": 1.783,
-      "score": 0.974
+      "start": 1.389,
+      "end": 1.843,
+      "score": 0.956
     },
     {
       "text": "2",
-      "start": 2.275,
-      "end": 2.476,
-      "score": 0.959
+      "start": 2.375,
+      "end": 2.597,
+      "score": 0.926
     },
     {
       "text": "minutes",
-      "start": 2.476,
-      "end": 2.931,
-      "score": 0.95
+      "start": 2.597,
+      "end": 3.01,
+      "score": 0.959
     }
   ]
 }

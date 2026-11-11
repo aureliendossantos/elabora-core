@@ -3,62 +3,62 @@
   "line": "marc-message",
   "language": "en",
   "textHash": "sha256:be0e886138c25cde0ffd20c1ed10f71d4e2aa29ee6174dd27760a8d3cf997cb0",
-  "duration": 3.725,
+  "duration": 3.54,
   "provider": "elevenlabs",
-  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "voice": "J5iaaqzR5zn6HFG4jV3b",
   "generated": true,
-  "audioHash": "sha256:5f5c46de5842d140a53b9c187c0c28d993595683935713955dee348e0b542997",
-  "createdAt": "2026-11-05T12:04:35Z",
+  "audioHash": "sha256:4e63db481b3ce3b8666e441396987bc5bd8255183716477af78fb672f809a8c0",
+  "createdAt": "2026-11-11T00:19:37Z",
   "take": 1,
   "spokenHash": "sha256:be0e886138c25cde0ffd20c1ed10f71d4e2aa29ee6174dd27760a8d3cf997cb0",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Joseph (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "[annoyed] None. The document goes, and then… nothing.",
-  "mouth": "ccccoooowwwwoossscccccccccccccccccssccwwwwwcccooossssswwwwwoooossscoooooowwoosscccccccccccccccccwwwwwccooooccccc",
+  "mouth": "ccccoowwwwwwwssccccccccccccccccoooocwwwooocccooosscooowwwoooossoosssoooooowwoossscccccccccccccwwwwcccoooocc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "None",
-      "start": 0.12,
-      "end": 0.573,
-      "score": 0.892
+      "start": 0.141,
+      "end": 0.555,
+      "score": 0.99
     },
     {
       "text": "The",
-      "start": 1.102,
-      "end": 1.242,
-      "score": 0.622
+      "start": 1.046,
+      "end": 1.187,
+      "score": 0.997
     },
     {
       "text": "document",
-      "start": 1.242,
-      "end": 1.742,
-      "score": 0.88
+      "start": 1.187,
+      "end": 1.71,
+      "score": 0.996
     },
     {
       "text": "goes",
-      "start": 1.742,
-      "end": 2.215,
-      "score": 0.696
+      "start": 1.71,
+      "end": 2.164,
+      "score": 0.958
     },
     {
       "text": "and",
-      "start": 2.243,
-      "end": 2.383,
-      "score": 0.993
+      "start": 2.273,
+      "end": 2.414,
+      "score": 0.994
     },
     {
       "text": "then",
-      "start": 2.383,
-      "end": 2.635,
-      "score": 0.993
+      "start": 2.414,
+      "end": 2.687,
+      "score": 0.956
     },
     {
       "text": "nothing",
-      "start": 3.204,
-      "end": 3.677,
-      "score": 0.949
+      "start": 3.138,
+      "end": 3.54,
+      "score": 0.972
     }
   ]
 }

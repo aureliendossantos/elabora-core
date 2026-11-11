@@ -3,80 +3,80 @@
   "line": "leila-relais",
   "language": "en",
   "textHash": "sha256:2a0d9abf7354df3e70d2dd4d89a75049b3ce4e1036a114c2ea4f8eddb799b8bf",
-  "duration": 4.07,
+  "duration": 4.12,
   "provider": "elevenlabs",
-  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "voice": "kdmDKE6EkgrWrrykO9Qt",
   "generated": true,
-  "audioHash": "sha256:8d78473cc0e2a79b5ca463ac4b60c1a557c6e232f92d76fa41d7bf4bc452c56d",
-  "createdAt": "2026-11-05T12:05:39Z",
+  "audioHash": "sha256:565bf04f2327f0c126983d1e7605e3f5ae253d99b07c745f6aa8b7141d987022",
+  "createdAt": "2026-11-11T00:19:59Z",
   "take": 1,
   "spokenHash": "sha256:2a0d9abf7354df3e70d2dd4d89a75049b3ce4e1036a114c2ea4f8eddb799b8bf",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Alexandra (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Computer and switch respond. I'll carry on checking in order.",
-  "mouth": "cwwooccccwwwwwwwwcoooocssssssooocsssooossccoocoosssssccccccccccccccccccccccwwwccoowwoooowwwwwwssssoocoooooooooooooooosssccc",
+  "mouth": "coooooccccwwwooooocoooossssccwwwwwcsscoosssscwwcooosscccccccccccccccccccccccwwwwcsssswwwwwwwwwooooooocssooooooooooooooossscc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Computer",
-      "start": 0.02,
-      "end": 0.622,
-      "score": 0.982
+      "start": 0.04,
+      "end": 0.635,
+      "score": 0.944
     },
     {
       "text": "and",
-      "start": 0.622,
-      "end": 0.802,
-      "score": 1
-    },
-    {
-      "text": "switch",
-      "start": 0.802,
-      "end": 1.223,
-      "score": 0.975
-    },
-    {
-      "text": "respond",
-      "start": 1.223,
-      "end": 1.796,
+      "start": 0.643,
+      "end": 0.844,
       "score": 0.998
     },
     {
+      "text": "switch",
+      "start": 0.844,
+      "end": 1.286,
+      "score": 0.961
+    },
+    {
+      "text": "respond",
+      "start": 1.286,
+      "end": 1.881,
+      "score": 0.993
+    },
+    {
       "text": "I'll",
-      "start": 2.486,
-      "end": 2.667,
-      "score": 0.989
+      "start": 2.532,
+      "end": 2.733,
+      "score": 0.983
     },
     {
       "text": "carry",
-      "start": 2.667,
-      "end": 3.007,
-      "score": 0.999
+      "start": 2.733,
+      "end": 3.075,
+      "score": 1
     },
     {
       "text": "on",
-      "start": 3.007,
-      "end": 3.168,
-      "score": 0.999
+      "start": 3.075,
+      "end": 3.216,
+      "score": 1
     },
     {
       "text": "checking",
-      "start": 3.168,
-      "end": 3.569,
-      "score": 0.958
+      "start": 3.216,
+      "end": 3.598,
+      "score": 0.973
     },
     {
       "text": "in",
-      "start": 3.569,
-      "end": 3.729,
-      "score": 0.991
+      "start": 3.598,
+      "end": 3.738,
+      "score": 0.722
     },
     {
       "text": "order",
-      "start": 3.729,
-      "end": 4.07,
-      "score": 0.878
+      "start": 3.738,
+      "end": 4.071,
+      "score": 0.997
     }
   ]
 }

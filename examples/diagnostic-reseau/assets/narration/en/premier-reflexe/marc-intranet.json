@@ -3,86 +3,86 @@
   "line": "marc-intranet",
   "language": "en",
   "textHash": "sha256:d4fcb3729e5f457628064f83cee10a8177dd6e92d043676ebd9899cf78a1503e",
-  "duration": 3.92,
+  "duration": 4.18,
   "provider": "elevenlabs",
-  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "voice": "J5iaaqzR5zn6HFG4jV3b",
   "generated": true,
-  "audioHash": "sha256:194d0d34e58bbd870fa7b485461b7c20f34c7e23e62174754e33ab562fe02268",
-  "createdAt": "2026-11-05T12:04:26Z",
+  "audioHash": "sha256:e6fd2f38a1f342759ca191ec979b33e36691ee929cde3835effae86ddb1b5754",
+  "createdAt": "2026-11-11T00:19:33Z",
   "take": 1,
   "spokenHash": "sha256:d4fcb3729e5f457628064f83cee10a8177dd6e92d043676ebd9899cf78a1503e",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Joseph (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Yes, the intranet opens. And my emails come in as usual.",
-  "mouth": "ccccwwwwwwcssscccccccccwwwssooosssoowwwccooooocssccsssscccccccccccccwwwoooocssoowwcwwoosscccoocooooowwwwoooooooosssccc",
+  "mouth": "cwwwwwsssssscccccccccccooossssssswwwwwwwcssoooccccccccssooccccccccccccccccwwoooocsssoooocooooossccwwwcoooooooooowwwwsssscccccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Yes",
-      "start": 0.121,
-      "end": 0.474,
-      "score": 0.999
+      "start": 0.02,
+      "end": 0.413,
+      "score": 0.968
     },
     {
       "text": "the",
       "start": 0.764,
       "end": 0.945,
-      "score": 0.998
+      "score": 0.997
     },
     {
       "text": "intranet",
       "start": 0.945,
-      "end": 1.419,
-      "score": 0.688
+      "end": 1.479,
+      "score": 0.817
     },
     {
       "text": "opens",
-      "start": 1.448,
-      "end": 1.841,
-      "score": 0.398
+      "start": 1.487,
+      "end": 1.941,
+      "score": 1
     },
     {
       "text": "And",
-      "start": 2.272,
-      "end": 2.453,
-      "score": 0.995
+      "start": 2.472,
+      "end": 2.613,
+      "score": 1
     },
     {
       "text": "my",
-      "start": 2.453,
-      "end": 2.654,
-      "score": 0.93
+      "start": 2.613,
+      "end": 2.834,
+      "score": 0.866
     },
     {
       "text": "emails",
-      "start": 2.654,
-      "end": 3.016,
-      "score": 0.606
+      "start": 2.834,
+      "end": 3.236,
+      "score": 0.827
     },
     {
       "text": "come",
-      "start": 3.016,
-      "end": 3.217,
-      "score": 0.963
+      "start": 3.236,
+      "end": 3.457,
+      "score": 1
     },
     {
       "text": "in",
-      "start": 3.217,
-      "end": 3.377,
-      "score": 0.991
+      "start": 3.457,
+      "end": 3.617,
+      "score": 1
     },
     {
       "text": "as",
-      "start": 3.377,
-      "end": 3.538,
-      "score": 0.953
+      "start": 3.617,
+      "end": 3.778,
+      "score": 1
     },
     {
       "text": "usual",
-      "start": 3.538,
-      "end": 3.871,
-      "score": 0.923
+      "start": 3.778,
+      "end": 4.131,
+      "score": 0.98
     }
   ]
 }

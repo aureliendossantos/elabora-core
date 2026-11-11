@@ -264,7 +264,8 @@
           "voice": "WZlYpi1yf6zJhNWXih74",
           "name": "Hope - Professional, Clear and Natural"
         }
-      }
+      },
+      "narrator": true
     },
     {
       "id": "marc",
@@ -277,8 +278,11 @@
         },
         "en": {
           "provider": "elevenlabs",
-          "voice": "RNnkVeW25AwKYxZgnHBH",
-          "name": "Luke - Calm, Warm and Conversational"
+          "voice": "J5iaaqzR5zn6HFG4jV3b",
+          "name": "Joseph - Nasally and Steady",
+          "settings": {
+            "model": "eleven_v4"
+          }
         }
       },
       "color": "color.primary",
@@ -301,8 +305,11 @@
         },
         "en": {
           "provider": "elevenlabs",
-          "voice": "WyFXw4PzMbRnp8iLMJwY",
-          "name": "Juliet - Customer Care: Professional, Empathetic"
+          "voice": "kdmDKE6EkgrWrrykO9Qt",
+          "name": "Alexandra - Conversational and Natural",
+          "settings": {
+            "model": "eleven_v4"
+          }
         }
       }
     }
@@ -321,6 +328,18 @@
         "text": "SUP-NET-04",
         "say": "sup nette zéro quatre"
       }
+    ],
+    "en": [
+      {
+        "text": "SUP-NET-04",
+        "say": "sup net zero four"
+      }
     ]
-  }
+  },
+  "ignored": [
+    {
+      "code": "W_NARRATION_DUPLICATED",
+      "key": "chemin/chemin-regle-dite/chemin-regle@526888c3869a"
+    }
+  ]
 }

@@ -1,0 +1,118 @@
+{
+  "screen": "chemin",
+  "line": "chemin-regle-dite",
+  "language": "fr",
+  "textHash": "sha256:7758426bc50e0eaea55bbf83030ed9c230ea056e08769e9428a44ad0dbb05736",
+  "duration": 5.48,
+  "provider": "elevenlabs",
+  "voice": "WeAAwKYcS06VmXw086yZ",
+  "generated": true,
+  "audioHash": "sha256:62be093a835aac8e59ccfec2e2b057a8535fd09e52cb4d1f3968300c3258ffb2",
+  "createdAt": "2026-11-11T00:18:52Z",
+  "take": 1,
+  "spokenHash": "sha256:7758426bc50e0eaea55bbf83030ed9c230ea056e08769e9428a44ad0dbb05736",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Victoria (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Partez du poste et contrôlez chaque équipement dans l'ordre, même quand la cause semble évidente.",
+  "mouth": "ccoosscwwwooooocccwwooooooccssccccooocoooossccwwoooossoooooooccwwwcsssscccwwwwoowwooooooosssccccccccccccccccccccwwwcoosssswwwooccssswwooossssccoowwsssssssssssccssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Partez",
+      "start": 0.02,
+      "end": 0.361,
+      "score": 0.694
+    },
+    {
+      "text": "du",
+      "start": 0.361,
+      "end": 0.496,
+      "score": 0.999
+    },
+    {
+      "text": "poste",
+      "start": 0.542,
+      "end": 0.977,
+      "score": 1
+    },
+    {
+      "text": "et",
+      "start": 1.144,
+      "end": 1.265,
+      "score": 0.976
+    },
+    {
+      "text": "contrôlez",
+      "start": 1.265,
+      "end": 1.78,
+      "score": 0.839
+    },
+    {
+      "text": "chaque",
+      "start": 1.887,
+      "end": 2.162,
+      "score": 1
+    },
+    {
+      "text": "équipement",
+      "start": 2.168,
+      "end": 2.623,
+      "score": 0.982
+    },
+    {
+      "text": "dans",
+      "start": 2.65,
+      "end": 2.81,
+      "score": 1
+    },
+    {
+      "text": "l'",
+      "start": 2.81,
+      "end": 2.925,
+      "score": 0.894
+    },
+    {
+      "text": "ordre",
+      "start": 2.931,
+      "end": 3.186,
+      "score": 0.997
+    },
+    {
+      "text": "même",
+      "start": 3.694,
+      "end": 3.968,
+      "score": 1
+    },
+    {
+      "text": "quand",
+      "start": 3.975,
+      "end": 4.155,
+      "score": 0.999
+    },
+    {
+      "text": "la",
+      "start": 4.155,
+      "end": 4.27,
+      "score": 1
+    },
+    {
+      "text": "cause",
+      "start": 4.296,
+      "end": 4.611,
+      "score": 0.993
+    },
+    {
+      "text": "semble",
+      "start": 4.617,
+      "end": 4.872,
+      "score": 0.987
+    },
+    {
+      "text": "évidente",
+      "start": 4.898,
+      "end": 5.394,
+      "score": 1
+    }
+  ]
+}

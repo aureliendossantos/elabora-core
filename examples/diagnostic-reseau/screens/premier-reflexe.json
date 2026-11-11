@@ -2,6 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1.12/screen.schema.json",
   "id": "premier-reflexe",
   "title": "Marc est toujours en ligne",
+  "showTitle": false,
   "covers": [
     "ITEM-3"
   ],
@@ -24,6 +25,11 @@
             "title": "Par où commencer ?",
             "lines": [
               {
+                "id": "claire-contexte",
+                "speaker": "guide",
+                "text": "Marc est toujours en ligne. Vous êtes Leïla, du support : à vous de mener le diagnostic."
+              },
+              {
                 "id": "marc-attente",
                 "speaker": "marc",
                 "expression": "inquiet",
@@ -40,7 +46,8 @@
                   {
                     "id": "marc-intranet",
                     "speaker": "marc",
-                    "text": "Oui, l'intranet s'ouvre. Et mes mails arrivent normalement."
+                    "text": "Oui, l'intranet s'ouvre. Et mes mails arrivent normalement.",
+                    "expression": "neutre"
                   }
                 ],
                 "feedback": "Bon réflexe : vous partez du début du chemin. Le poste joint le réseau, vous pouvez passer au commutateur."
@@ -91,7 +98,8 @@
               {
                 "id": "marc-poste",
                 "speaker": "marc",
-                "text": "Oui, sans souci. Mes mails aussi."
+                "text": "Oui, sans souci. Mes mails aussi.",
+                "expression": "neutre"
               }
             ],
             "next": "pression"

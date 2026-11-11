@@ -3,74 +3,74 @@
   "line": "marc-niveau2",
   "language": "en",
   "textHash": "sha256:e1797462f4fc726ab3a2902f846f66bb398034a3e86b4df1f9261cfc428d6d99",
-  "duration": 3.14,
+  "duration": 3.11,
   "provider": "elevenlabs",
-  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "voice": "J5iaaqzR5zn6HFG4jV3b",
   "generated": true,
-  "audioHash": "sha256:f93cc3b0754f82842bc1ae36f795eaa91ae925fe40554751b5c927fb6879de7b",
-  "createdAt": "2026-11-05T12:04:44Z",
+  "audioHash": "sha256:ed1227539fa1540cc3497e151a308c0e79a21413939ae852cd43c5a4357840f3",
+  "createdAt": "2026-11-11T00:19:40Z",
   "take": 1,
   "spokenHash": "sha256:e1797462f4fc726ab3a2902f846f66bb398034a3e86b4df1f9261cfc428d6d99",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Joseph (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "[worried] Second line? And they'll call me back before noon?",
-  "mouth": "cccccsssoosssoosssssoooossccccccccccccccccccoooowwwssssoooocssscooooccssccwwwwooooowwwwwwwwcccc",
+  "mouth": "ccccooooossssssoooowwooocccccccccccccccccoooowwwcsssssssscooocwwwwccccssscwwoosssssooooooooocc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Second",
-      "start": 0.161,
-      "end": 0.523,
-      "score": 0.983
+      "start": 0.141,
+      "end": 0.502,
+      "score": 0.994
     },
     {
       "text": "line",
-      "start": 0.523,
-      "end": 0.897,
-      "score": 0.915
+      "start": 0.502,
+      "end": 0.874,
+      "score": 0.687
     },
     {
       "text": "And",
-      "start": 1.449,
-      "end": 1.53,
-      "score": 0.996
+      "start": 1.344,
+      "end": 1.445,
+      "score": 0.994
     },
     {
       "text": "they'll",
-      "start": 1.53,
-      "end": 1.771,
-      "score": 0.975
+      "start": 1.445,
+      "end": 1.665,
+      "score": 0.985
     },
     {
       "text": "call",
-      "start": 1.771,
-      "end": 1.953,
-      "score": 0.969
+      "start": 1.665,
+      "end": 1.886,
+      "score": 0.991
     },
     {
       "text": "me",
-      "start": 1.953,
-      "end": 2.073,
-      "score": 0.999
+      "start": 1.886,
+      "end": 2.027,
+      "score": 1
     },
     {
       "text": "back",
-      "start": 2.073,
-      "end": 2.295,
-      "score": 0.996
+      "start": 2.027,
+      "end": 2.287,
+      "score": 0.963
     },
     {
       "text": "before",
-      "start": 2.295,
-      "end": 2.697,
-      "score": 0.992
+      "start": 2.287,
+      "end": 2.709,
+      "score": 0.999
     },
     {
       "text": "noon",
-      "start": 2.697,
-      "end": 3.14,
-      "score": 0.755
+      "start": 2.709,
+      "end": 3.11,
+      "score": 0.75
     }
   ]
 }

@@ -1,0 +1,118 @@
+{
+  "screen": "chemin",
+  "line": "chemin-regle-dite",
+  "language": "en",
+  "textHash": "sha256:2689f3c6c231fe203abea49fb23609933c30709c9d8231e25dc6460238e5facf",
+  "duration": 5.71,
+  "provider": "elevenlabs",
+  "voice": "WZlYpi1yf6zJhNWXih74",
+  "generated": true,
+  "audioHash": "sha256:f8fcc73d375df3d7fa6c8b6c80a4ce58e04b4ed798fcc8d108e828905a5c7a07",
+  "createdAt": "2026-11-11T00:18:59Z",
+  "take": 1,
+  "spokenHash": "sha256:2689f3c6c231fe203abea49fb23609933c30709c9d8231e25dc6460238e5facf",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Hope (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Start from the computer and check each device in order, even when the cause seems obvious.",
+  "mouth": "ccssswwwwcccooocooocwwooccccwwooooooooccwwwwwwwoooccccccoooocooocooosswwooooccsswwwwcwwwwwsssssssccccccccccccccwwoowwwoooooooocsssssssoooccccoooooocccoooocccssssssssccccccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Start",
+      "start": 0.06,
+      "end": 0.361,
+      "score": 1
+    },
+    {
+      "text": "from",
+      "start": 0.361,
+      "end": 0.541,
+      "score": 1
+    },
+    {
+      "text": "the",
+      "start": 0.541,
+      "end": 0.661,
+      "score": 0.999
+    },
+    {
+      "text": "computer",
+      "start": 0.661,
+      "end": 1.274,
+      "score": 0.996
+    },
+    {
+      "text": "and",
+      "start": 1.362,
+      "end": 1.483,
+      "score": 0.998
+    },
+    {
+      "text": "check",
+      "start": 1.483,
+      "end": 1.795,
+      "score": 0.971
+    },
+    {
+      "text": "each",
+      "start": 1.903,
+      "end": 2.164,
+      "score": 0.999
+    },
+    {
+      "text": "device",
+      "start": 2.164,
+      "end": 2.656,
+      "score": 1
+    },
+    {
+      "text": "in",
+      "start": 2.665,
+      "end": 2.837,
+      "score": 0.999
+    },
+    {
+      "text": "order",
+      "start": 2.885,
+      "end": 3.217,
+      "score": 0.937
+    },
+    {
+      "text": "even",
+      "start": 3.687,
+      "end": 3.967,
+      "score": 0.954
+    },
+    {
+      "text": "when",
+      "start": 3.967,
+      "end": 4.127,
+      "score": 1
+    },
+    {
+      "text": "the",
+      "start": 4.127,
+      "end": 4.268,
+      "score": 0.997
+    },
+    {
+      "text": "cause",
+      "start": 4.268,
+      "end": 4.628,
+      "score": 0.995
+    },
+    {
+      "text": "seems",
+      "start": 4.628,
+      "end": 5.021,
+      "score": 0.949
+    },
+    {
+      "text": "obvious",
+      "start": 5.069,
+      "end": 5.501,
+      "score": 0.632
+    }
+  ]
+}

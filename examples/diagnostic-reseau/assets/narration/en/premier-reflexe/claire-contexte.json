@@ -1,0 +1,118 @@
+{
+  "screen": "premier-reflexe",
+  "line": "claire-contexte",
+  "language": "en",
+  "textHash": "sha256:873e4dca243c937a91a535b9c69e98e8445e392031f4db7ce2081cacf473d49a",
+  "duration": 6,
+  "provider": "elevenlabs",
+  "voice": "WZlYpi1yf6zJhNWXih74",
+  "generated": true,
+  "audioHash": "sha256:f4b60c7a5ecbeb1f6ad3bb1497f926cf068b0d37f26abd14ca7d9b00707849cd",
+  "createdAt": "2026-11-11T00:19:07Z",
+  "take": 1,
+  "spokenHash": "sha256:873e4dca243c937a91a535b9c69e98e8445e392031f4db7ce2081cacf473d49a",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Hope (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Marc is still on the line. You're Leïla, on the support desk: the diagnosis is yours.",
+  "mouth": "ccccwwwwccssssscccccccwwwwwwoooooooooooosssssscccccccccccccccoowwwwooowwwooosssssccccccwwwoooocoooccwwwwccssssssccccccccccccccccccsssswwwwwwoowwoooccooooccccooosssooooossssssoossccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Marc",
+      "start": 0.08,
+      "end": 0.393,
+      "score": 0.749
+    },
+    {
+      "text": "is",
+      "start": 0.442,
+      "end": 0.582,
+      "score": 1
+    },
+    {
+      "text": "still",
+      "start": 0.582,
+      "end": 0.943,
+      "score": 0.974
+    },
+    {
+      "text": "on",
+      "start": 0.943,
+      "end": 1.044,
+      "score": 0.991
+    },
+    {
+      "text": "the",
+      "start": 1.044,
+      "end": 1.184,
+      "score": 0.999
+    },
+    {
+      "text": "line",
+      "start": 1.184,
+      "end": 1.537,
+      "score": 1
+    },
+    {
+      "text": "You're",
+      "start": 2.027,
+      "end": 2.308,
+      "score": 0.795
+    },
+    {
+      "text": "Leïla",
+      "start": 2.308,
+      "end": 2.741,
+      "score": 0.686
+    },
+    {
+      "text": "on",
+      "start": 2.95,
+      "end": 3.03,
+      "score": 0.999
+    },
+    {
+      "text": "the",
+      "start": 3.03,
+      "end": 3.151,
+      "score": 0.995
+    },
+    {
+      "text": "support",
+      "start": 3.151,
+      "end": 3.512,
+      "score": 0.988
+    },
+    {
+      "text": "desk",
+      "start": 3.512,
+      "end": 3.844,
+      "score": 0.283
+    },
+    {
+      "text": "the",
+      "start": 4.314,
+      "end": 4.435,
+      "score": 0.92
+    },
+    {
+      "text": "diagnosis",
+      "start": 4.435,
+      "end": 5.229,
+      "score": 0.99
+    },
+    {
+      "text": "is",
+      "start": 5.298,
+      "end": 5.418,
+      "score": 0.94
+    },
+    {
+      "text": "yours",
+      "start": 5.418,
+      "end": 5.952,
+      "score": 0.907
+    }
+  ]
+}

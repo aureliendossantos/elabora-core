@@ -3,68 +3,68 @@
   "line": "marc-etage",
   "language": "en",
   "textHash": "sha256:c639f56ac6ebc4daa3349aebf1a61cfeaf2353a2846e32601c239adf4e7a2103",
-  "duration": 2.8,
+  "duration": 2.89,
   "provider": "elevenlabs",
-  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "voice": "J5iaaqzR5zn6HFG4jV3b",
   "generated": true,
-  "audioHash": "sha256:6e75de0c39f6bdf71110f6fe9b306fac0ecd8a86d4f9eb62ed4f8629ad099f8d",
-  "createdAt": "2026-11-05T12:05:34Z",
+  "audioHash": "sha256:80635795eae89d5a08034a5a7f4e7516087610c4a817b4803f2950bbffdbb830",
+  "createdAt": "2026-11-11T00:19:57Z",
   "take": 1,
   "spokenHash": "sha256:c639f56ac6ebc4daa3349aebf1a61cfeaf2353a2846e32601c239adf4e7a2103",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Joseph (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "[worried] Wait… nobody on the floor can print now.",
-  "mouth": "cccoowwoosssccccccccccccccccccccoooocwwoooooooossccwwwwwwsswwwcoocwwwoocoowwwsssssccc",
+  "mouth": "cooooooossssccccccccccccccccccccoooocooowwooooosssscooowwwccwwwwcccoowwwsscoowwooossscc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Wait",
-      "start": 0.081,
-      "end": 0.414,
-      "score": 0.952
+      "start": 0.04,
+      "end": 0.413,
+      "score": 0.985
     },
     {
       "text": "nobody",
-      "start": 1.068,
-      "end": 1.41,
-      "score": 0.976
+      "start": 1.064,
+      "end": 1.425,
+      "score": 0.966
     },
     {
       "text": "on",
-      "start": 1.41,
-      "end": 1.511,
-      "score": 0.998
+      "start": 1.425,
+      "end": 1.525,
+      "score": 0.999
     },
     {
       "text": "the",
-      "start": 1.511,
-      "end": 1.652,
-      "score": 0.999
+      "start": 1.525,
+      "end": 1.686,
+      "score": 1
     },
     {
       "text": "floor",
-      "start": 1.652,
-      "end": 1.914,
-      "score": 0.999
+      "start": 1.686,
+      "end": 1.967,
+      "score": 0.953
     },
     {
       "text": "can",
-      "start": 1.914,
-      "end": 2.135,
+      "start": 1.967,
+      "end": 2.188,
       "score": 1
     },
     {
       "text": "print",
-      "start": 2.135,
-      "end": 2.458,
-      "score": 0.963
+      "start": 2.188,
+      "end": 2.529,
+      "score": 0.979
     },
     {
       "text": "now",
-      "start": 2.458,
-      "end": 2.8,
-      "score": 0.667
+      "start": 2.529,
+      "end": 2.89,
+      "score": 0.656
     }
   ]
 }

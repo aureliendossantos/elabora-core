@@ -3,80 +3,80 @@
   "line": "leila-poste",
   "language": "en",
   "textHash": "sha256:f36994ae838eb7cea4b04ec1827478a1434eebefcfc38199c4860ebd4d491c80",
-  "duration": 3.56,
+  "duration": 3.48,
   "provider": "elevenlabs",
-  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "voice": "kdmDKE6EkgrWrrykO9Qt",
   "generated": true,
-  "audioHash": "sha256:e8b6adb74ca65b2ba843e78d324c7c7b25e17c8c365ba32c3b003cb60634134a",
-  "createdAt": "2026-11-05T12:04:49Z",
+  "audioHash": "sha256:836d9e0495cdc48dcef093c52702c0dea2795b2bd1956f30a0ea55cf412335c0",
+  "createdAt": "2026-11-11T00:19:42Z",
   "take": 1,
   "spokenHash": "sha256:f36994ae838eb7cea4b04ec1827478a1434eebefcfc38199c4860ebd4d491c80",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Alexandra (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Let's start from your computer, then: does the intranet open?",
-  "mouth": "ccwwwcccccoooooocoooocwwwwcwwwwccwwooooossoosssssccccccccccccccccwwwwwcooooossoowwsssoowwoooccoooooccoooooc",
+  "mouth": "coowwwccsssswwwwwcooocoooocssooocccwwooooooooossssccccccccccccccccccccwwwccooooooossoowwwwwwwwwcccoossscc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "Let's",
-      "start": 0.06,
-      "end": 0.282,
-      "score": 0.647
+      "start": 0.04,
+      "end": 0.302,
+      "score": 0.9
     },
     {
       "text": "start",
-      "start": 0.282,
-      "end": 0.563,
-      "score": 0.95
+      "start": 0.302,
+      "end": 0.604,
+      "score": 0.978
     },
     {
       "text": "from",
-      "start": 0.563,
-      "end": 0.724,
+      "start": 0.604,
+      "end": 0.744,
       "score": 0.999
     },
     {
       "text": "your",
-      "start": 0.724,
-      "end": 0.885,
-      "score": 0.949
+      "start": 0.744,
+      "end": 0.925,
+      "score": 0.995
     },
     {
       "text": "computer",
-      "start": 0.885,
-      "end": 1.368,
-      "score": 0.961
+      "start": 0.925,
+      "end": 1.428,
+      "score": 0.974
     },
     {
       "text": "then",
-      "start": 1.368,
-      "end": 1.641,
-      "score": 0.998
+      "start": 1.428,
+      "end": 1.701,
+      "score": 0.691
     },
     {
       "text": "does",
-      "start": 2.152,
-      "end": 2.373,
-      "score": 0.998
+      "start": 2.293,
+      "end": 2.494,
+      "score": 0.995
     },
     {
       "text": "the",
-      "start": 2.373,
-      "end": 2.626,
-      "score": 0.775
+      "start": 2.494,
+      "end": 2.635,
+      "score": 0.993
     },
     {
       "text": "intranet",
-      "start": 2.655,
-      "end": 3.189,
-      "score": 0.766
+      "start": 2.635,
+      "end": 3.118,
+      "score": 0.807
     },
     {
       "text": "open",
-      "start": 3.238,
-      "end": 3.56,
-      "score": 0.848
+      "start": 3.118,
+      "end": 3.48,
+      "score": 0.811
     }
   ]
 }

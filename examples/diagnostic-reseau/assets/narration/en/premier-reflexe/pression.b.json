@@ -3,98 +3,98 @@
   "line": "pression.b",
   "language": "en",
   "textHash": "sha256:674e2bfd74c787ebe180adf8daf1f98a41482a88da7ff85b0d47347abb71d06e",
-  "duration": 2.985,
+  "duration": 3.52,
   "provider": "elevenlabs",
-  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "voice": "kdmDKE6EkgrWrrykO9Qt",
   "generated": true,
-  "audioHash": "sha256:f08b6213cc225450d5e6f1d6b6bdcb04ef0e1d3c623a4b3926e562ffa22774a3",
-  "createdAt": "2026-11-05T12:05:20Z",
+  "audioHash": "sha256:837fea1f9e5a8fc6fa59c2b1328a0926496a1b16e564db5d9ac0f0f0224bd289",
+  "createdAt": "2026-11-11T00:19:52Z",
   "take": 1,
   "spokenHash": "sha256:674e2bfd74c787ebe180adf8daf1f98a41482a88da7ff85b0d47347abb71d06e",
-  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
+  "credit": "Synthetic voice: Alexandra (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "I'll take a look at the server, then come back to the switch.",
-  "mouth": "cwwwwwcwwwcoowwwwcooccoosssswwooossoooooooccccccoowwwooosssscsscsssccooooossscoooccccooocc",
+  "mouth": "cooocsswwwcwwwwwwwoocwwwwwwwwwwwwcooooooocccccwwwoosssscsscwwwccssssssssscooossccooooccccccccccccccccccccc",
   "aligner": "wav2vec2-base-960h@a19f851 quantized",
   "words": [
     {
       "text": "I'll",
-      "start": 0.04,
-      "end": 0.2,
-      "score": 0.987
+      "start": 0.02,
+      "end": 0.181,
+      "score": 0.948
     },
     {
       "text": "take",
-      "start": 0.2,
-      "end": 0.401,
-      "score": 0.999
+      "start": 0.181,
+      "end": 0.382,
+      "score": 0.997
     },
     {
       "text": "a",
-      "start": 0.401,
-      "end": 0.461,
-      "score": 0.996
+      "start": 0.382,
+      "end": 0.463,
+      "score": 0.765
     },
     {
       "text": "look",
-      "start": 0.461,
-      "end": 0.621,
-      "score": 1
+      "start": 0.463,
+      "end": 0.624,
+      "score": 0.999
     },
     {
       "text": "at",
-      "start": 0.621,
-      "end": 0.721,
+      "start": 0.624,
+      "end": 0.704,
       "score": 0.999
     },
     {
       "text": "the",
-      "start": 0.721,
-      "end": 0.861,
-      "score": 0.999
+      "start": 0.704,
+      "end": 0.845,
+      "score": 0.994
     },
     {
       "text": "server",
-      "start": 0.861,
-      "end": 1.374,
-      "score": 0.989
+      "start": 0.845,
+      "end": 1.379,
+      "score": 0.968
     },
     {
       "text": "then",
-      "start": 1.623,
-      "end": 1.875,
-      "score": 0.999
+      "start": 1.509,
+      "end": 1.73,
+      "score": 0.942
     },
     {
       "text": "come",
-      "start": 1.903,
-      "end": 2.084,
-      "score": 1
+      "start": 1.73,
+      "end": 1.931,
+      "score": 0.998
     },
     {
       "text": "back",
-      "start": 2.084,
-      "end": 2.264,
-      "score": 1
+      "start": 1.931,
+      "end": 2.112,
+      "score": 0.999
     },
     {
       "text": "to",
-      "start": 2.264,
-      "end": 2.404,
-      "score": 1
+      "start": 2.112,
+      "end": 2.253,
+      "score": 0.972
     },
     {
       "text": "the",
-      "start": 2.404,
-      "end": 2.504,
-      "score": 1
+      "start": 2.253,
+      "end": 2.374,
+      "score": 0.999
     },
     {
       "text": "switch",
-      "start": 2.504,
-      "end": 2.917,
-      "score": 0.985
+      "start": 2.374,
+      "end": 2.827,
+      "score": 0.961
     }
   ]
 }
