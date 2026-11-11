@@ -83,8 +83,8 @@
         },
         "fr": {
           "provider": "elevenlabs",
-          "voice": "1EmYoP3UnnnwhlJKovEy",
-          "name": "Anthony - Salesman",
+          "voice": "OOiDJrD1goukqfTpiySr",
+          "name": "Greg - Authentic French Voice",
           "settings": {
             "model": "eleven_v4"
           }

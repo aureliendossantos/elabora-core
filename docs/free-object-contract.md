@@ -148,7 +148,7 @@ Move to the new settings over `transition.duration` with `host.onFrame`: take wh
 - **Tests**: `set-props` with `transition` (`{ "action": "set-props", "props": { … }, "transition": { "duration": 1200, "safeArea": { "top": 128 } } }`) gives the props as a passage does; the steps that follow advance through it frame by frame, so a `snapshot` at frame 30 shows the passage on its way. `elabora object replay` plays it in the course page, in real time.
 
 ## 5. Sandbox
-`<iframe sandbox="allow-scripts" allow="" referrerpolicy="no-referrer">` (no `allow-same-origin`; `allow-pointer-lock` only if declared) and a frame CSP `default-src 'none'; script-src 'self'; connect-src 'none'; …`. The object cannot reach the course page, the LMS API, cookies, storage or the network. Only the host talks to the LMS. Objects are compiled into classic scripts because module scripts would need CORS headers from the LMS server.
+`<iframe sandbox="allow-scripts" allow="autoplay" referrerpolicy="no-referrer">` (no `allow-same-origin`; `allow-pointer-lock` only if declared; `autoplay` so that an object's Web Audio may sound after the learner's gesture anywhere in the module, a dialogue's choice that drives it for instance, an `AudioContext` made in the frame starting without a click of its own; a decorative backdrop object keeps `allow=""`) and a frame CSP `default-src 'none'; script-src 'self'; connect-src 'none'; …`. The object cannot reach the course page, the LMS API, cookies, storage or the network. Only the host talks to the LMS. Objects are compiled into classic scripts because module scripts would need CORS headers from the LMS server.
 
 ## 6. Gates
 

@@ -1513,6 +1513,8 @@ export function mount(container, ctx) {
   // ── Commands from screen events ──
   function runCommand(cmd) {
     if (!cmd || cmd === 'none') return;
+    // A command follows the learner's gesture elsewhere in the module (a dialogue's choice): its sound may start.
+    if (!muted) learnerGesture();
     if (cmd === 'replay' || cmd === 'next-step' || cmd === 'previous-step') { act(cmd, 'event'); return; }
     if (props.mode === 'explain') return;
     act(cmd, 'event');

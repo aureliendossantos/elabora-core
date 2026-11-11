@@ -3,86 +3,86 @@
   "line": "nell9",
   "language": "fr",
   "textHash": "sha256:6c2c221ba444a9b3f10b0d99980b5b8c9a954fd9ded50889d0bf61d208672d2f",
-  "duration": 4.56,
+  "duration": 3.84,
   "provider": "elevenlabs",
-  "voice": "62qGOOI927DEYwOVyfbC",
+  "voice": "JgQlYGzpXIS8wtMbmdFv",
   "generated": true,
-  "audioHash": "sha256:21873d1423631e08321eb670c60a7234eaabe676f3e338fc6e84e2ad9ed526e6",
-  "createdAt": "2026-11-11T00:22:48Z",
-  "take": 1,
+  "audioHash": "sha256:c3f4ca99bdee10023d3d27d8416cea744342cb502320211ef32e5dac7ed6bac1",
+  "createdAt": "2026-11-11T01:17:26Z",
+  "take": 2,
   "spokenHash": "sha256:6c2c221ba444a9b3f10b0d99980b5b8c9a954fd9ded50889d0bf61d208672d2f",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "credit": "Voix de synthèse : Valy (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Impossible ! Le canal supérieur est maintenant 3 mètres au-dessus de nous.",
-  "mouth": "cooocccoooooowwcccsssccccccccccccccssscwwwwwwwwssooooccwwwsssswwooosscwwccccwwooccsssscwwwsscwwwcssssscoooooooocssoossooooocccccccccccccc",
+  "mouth": "cwwcccoooooosscssssccccccccccccwwwcooooooosssoooccwwooowwwwwwwwcoocoooowwwccsssccwwooocooccccooooossssssssoosssssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Impossible",
-      "start": 0.04,
-      "end": 0.697,
-      "score": 1
+      "start": 0.02,
+      "end": 0.637,
+      "score": 0.999
     },
     {
       "text": "Le",
-      "start": 1.165,
-      "end": 1.279,
+      "start": 1.046,
+      "end": 1.16,
       "score": 0.999
     },
     {
       "text": "canal",
-      "start": 1.306,
-      "end": 1.621,
-      "score": 1
+      "start": 1.186,
+      "end": 1.461,
+      "score": 0.996
     },
     {
       "text": "supérieur",
-      "start": 1.667,
-      "end": 2.204,
-      "score": 0.982
+      "start": 1.508,
+      "end": 1.984,
+      "score": 0.999
     },
     {
       "text": "est",
-      "start": 2.21,
-      "end": 2.31,
-      "score": 1
+      "start": 1.991,
+      "end": 2.091,
+      "score": 0.933
     },
     {
       "text": "maintenant",
-      "start": 2.31,
-      "end": 2.706,
+      "start": 2.091,
+      "end": 2.507,
       "score": 1
     },
     {
       "text": "3",
-      "start": 2.732,
-      "end": 3.047,
-      "score": 0.996
+      "start": 2.533,
+      "end": 2.829,
+      "score": 0.988
     },
     {
       "text": "mètres",
-      "start": 3.074,
-      "end": 3.355,
-      "score": 0.994
+      "start": 2.855,
+      "end": 3.116,
+      "score": 0.949
     },
     {
       "text": "au-dessus",
-      "start": 3.355,
-      "end": 3.757,
-      "score": 0.905
+      "start": 3.116,
+      "end": 3.478,
+      "score": 1
     },
     {
       "text": "de",
-      "start": 3.757,
-      "end": 3.871,
-      "score": 0.998
+      "start": 3.478,
+      "end": 3.593,
+      "score": 0.999
     },
     {
       "text": "nous",
-      "start": 3.917,
-      "end": 4.152,
-      "score": 0.903
+      "start": 3.619,
+      "end": 3.814,
+      "score": 0.995
     }
   ]
 }

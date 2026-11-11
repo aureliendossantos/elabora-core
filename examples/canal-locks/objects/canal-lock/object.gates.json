@@ -2,7 +2,7 @@
   "object": "canal-lock",
   "version": "1.2.1",
   "elabora": "0.1.0",
-  "at": "2026-11-09T21:46:18.730Z",
+  "at": "2026-11-11T01:19:30.683Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,17 +23,17 @@
     "maxTextureSize": 8192,
     "webglContexts": 1,
     "contextLost": false,
-    "bootMs": 6063,
+    "bootMs": 1894,
     "bootSamples": [
-      4458,
-      6537,
-      5544,
-      6063,
-      8246,
-      4618,
-      6543,
-      6921,
-      5714
+      1774,
+      1765,
+      1839,
+      1977,
+      1894,
+      2933,
+      2466,
+      1850,
+      1971
     ]
   },
   "tests": [
@@ -70,5 +70,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:6834333a828030edfb234e25591ceaabb8dbb7c5f06faf9e1b8eb542721f350a"
+  "fingerprint": "sha256:221b6aeb792af4f73c457c04fc7bcd80255ea4141e2c6c961f84453b07ccbb9e"
 }

@@ -3,79 +3,79 @@
   "line": "neil-direct",
   "language": "fr",
   "textHash": "sha256:df825a836b04dbcae3c917c5fefd3e114c32761339a331f12ee1c9ad6b299d21",
-  "duration": 2.95,
+  "duration": 3.03,
   "provider": "elevenlabs",
-  "voice": "1EmYoP3UnnnwhlJKovEy",
+  "voice": "OOiDJrD1goukqfTpiySr",
   "generated": true,
-  "audioHash": "sha256:9c921db48581dc7cfff5ed8b0f4ea181c3689bad8fc3fb6112837141f596266d",
-  "createdAt": "2026-11-11T00:15:57Z",
-  "take": 1,
+  "audioHash": "sha256:cc4dc8bd468656f4a851d918664783d09afb7a5e7cadb4a6728e1d61445b0cb4",
+  "createdAt": "2026-11-11T01:16:50Z",
+  "take": 2,
   "spokenHash": "sha256:df825a836b04dbcae3c917c5fefd3e114c32761339a331f12ee1c9ad6b299d21",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
+  "credit": "Voix de synthèse : Greg (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Parfait, c’est ma ligne directe. J’attends votre appel.",
-  "mouth": "cccsssccwwwwcccccccccccccooocooooooossssooossccccccccccccccccoowwssoooooosswwwcccsssscccc",
+  "mouth": "ccoossscwwwwcccccccccccccssooocoooowwwssooooooocccccccccccccccccccoooossooooossssscccsssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Parfait",
-      "start": 0.04,
-      "end": 0.415,
-      "score": 0.99
+      "start": 0.02,
+      "end": 0.395,
+      "score": 0.999
     },
     {
       "text": "c’",
-      "start": 0.763,
-      "end": 0.803,
-      "score": 0.499
+      "start": 0.823,
+      "end": 0.883,
+      "score": 0.513
     },
     {
       "text": "est",
-      "start": 0.803,
-      "end": 0.923,
-      "score": 0.665
+      "start": 0.883,
+      "end": 0.983,
+      "score": 0.965
     },
     {
       "text": "ma",
-      "start": 0.923,
-      "end": 1.003,
+      "start": 0.983,
+      "end": 1.084,
       "score": 1
     },
     {
       "text": "ligne",
-      "start": 1.003,
-      "end": 1.238,
-      "score": 0.943
+      "start": 1.084,
+      "end": 1.304,
+      "score": 0.969
     },
     {
       "text": "directe",
-      "start": 1.244,
-      "end": 1.68,
-      "score": 0.994
+      "start": 1.304,
+      "end": 1.74,
+      "score": 0.987
     },
     {
       "text": "J’",
-      "start": 2.047,
-      "end": 2.107,
-      "score": 0.5
+      "start": 2.187,
+      "end": 2.268,
+      "score": 0.507
     },
     {
       "text": "attends",
-      "start": 2.107,
-      "end": 2.348,
-      "score": 0.959
+      "start": 2.268,
+      "end": 2.488,
+      "score": 0.984
     },
     {
       "text": "votre",
-      "start": 2.348,
-      "end": 2.543,
-      "score": 0.999
+      "start": 2.488,
+      "end": 2.669,
+      "score": 1
     },
     {
       "text": "appel",
-      "start": 2.549,
-      "end": 2.824,
+      "start": 2.669,
+      "end": 2.944,
       "score": 1
     }
   ]

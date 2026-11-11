@@ -3,56 +3,56 @@
   "line": "nell5",
   "language": "fr",
   "textHash": "sha256:b0a575fc5aef7250ee007ddc692d0b572d38b68cbbf02d12ee587b40290c7ea5",
-  "duration": 2.16,
+  "duration": 1.65,
   "provider": "elevenlabs",
-  "voice": "62qGOOI927DEYwOVyfbC",
+  "voice": "JgQlYGzpXIS8wtMbmdFv",
   "generated": true,
-  "audioHash": "sha256:fe0e804e0c20ccad8904d566c62038d450d332fd163902ba8b61368d5ec87c75",
-  "createdAt": "2026-11-11T00:22:40Z",
-  "take": 1,
+  "audioHash": "sha256:b31ff1288e8c26ba54120049bfd1846eec9c74b70c50b312605d9fa77aca56b6",
+  "createdAt": "2026-11-11T01:17:18Z",
+  "take": 2,
   "spokenHash": "sha256:b0a575fc5aef7250ee007ddc692d0b572d38b68cbbf02d12ee587b40290c7ea5",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "credit": "Voix de synthèse : Valy (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "On pourrait pousser toute la journée.",
-  "mouth": "cooccoooowwwcccooooowwwcccccwwooocoooowwwssssssssswwwwssccccccccc",
+  "mouth": "cwwwcooooowwccooosssssccccwwwcccwwwooooooooooosscc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "On",
-      "start": 0.02,
+      "start": 0.04,
       "end": 0.135,
-      "score": 0.987
+      "score": 1
     },
     {
       "text": "pourrait",
-      "start": 0.142,
-      "end": 0.438,
-      "score": 0.991
+      "start": 0.141,
+      "end": 0.443,
+      "score": 1
     },
     {
       "text": "pousser",
-      "start": 0.444,
-      "end": 0.781,
+      "start": 0.443,
+      "end": 0.758,
       "score": 1
     },
     {
       "text": "toute",
-      "start": 0.929,
-      "end": 1.225,
-      "score": 0.955
+      "start": 0.825,
+      "end": 1.08,
+      "score": 1
     },
     {
       "text": "la",
-      "start": 1.232,
-      "end": 1.346,
+      "start": 1.087,
+      "end": 1.181,
       "score": 1
     },
     {
       "text": "journée",
-      "start": 1.413,
-      "end": 1.851,
-      "score": 0.99
+      "start": 1.207,
+      "end": 1.604,
+      "score": 0.993
     }
   ]
 }

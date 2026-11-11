@@ -3,103 +3,103 @@
   "line": "nell4",
   "language": "fr",
   "textHash": "sha256:803a1c5822c146fecb5fb2e3f248968e1e79968100cb33055fb9787044646408",
-  "duration": 5.12,
+  "duration": 4.39,
   "provider": "elevenlabs",
-  "voice": "62qGOOI927DEYwOVyfbC",
+  "voice": "JgQlYGzpXIS8wtMbmdFv",
   "generated": true,
-  "audioHash": "sha256:d1c6e00d665a1826090112703ddd6c3e621965b77dbcd6b0921f9621b3eeac38",
-  "createdAt": "2026-11-11T00:22:39Z",
-  "take": 1,
+  "audioHash": "sha256:88f8cc179a239619f18aba4d71618e6254cd00b2cbfe2671e241814b13e26ae7",
+  "createdAt": "2026-11-11T01:17:17Z",
+  "take": 2,
   "spokenHash": "sha256:803a1c5822c146fecb5fb2e3f248968e1e79968100cb33055fb9787044646408",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "credit": "Voix de synthèse : Valy (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Hmm. Maintenant, l’eau entre en amont aussi vite qu’elle sort en aval.",
-  "mouth": "ccccwwccccccccccccccccccccccccccwwwcccssswwwooccccccccssssoooocwwwoocoooooooowwwwcoossscccooooooooooocssooooccsssssssssswwwwoosssssccwwwwwsscccccccccccccc",
+  "mouth": "ccccwwoosssssssccccccccccccccccwwwcsssswwwoosscccwwwwwwwwwccwwwwccccwwooooocoooooccccwwwsssssoossooccccwwwwooooooooossooocoooosssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Hmm",
-      "start": 0.141,
-      "end": 0.275,
+      "start": 0.12,
+      "end": 0.982,
       "score": 0
     },
     {
       "text": "Maintenant",
-      "start": 1.024,
-      "end": 1.52,
-      "score": 0.975
+      "start": 0.982,
+      "end": 1.477,
+      "score": 0.982
     },
     {
       "text": "l’",
-      "start": 1.807,
-      "end": 1.867,
-      "score": 0.678
+      "start": 1.684,
+      "end": 1.764,
+      "score": 0.708
     },
     {
       "text": "eau",
-      "start": 1.867,
-      "end": 2.042,
-      "score": 0.958
+      "start": 1.764,
+      "end": 1.918,
+      "score": 0.991
     },
     {
       "text": "entre",
-      "start": 2.189,
-      "end": 2.423,
-      "score": 0.998
+      "start": 2.045,
+      "end": 2.279,
+      "score": 0.966
     },
     {
       "text": "en",
-      "start": 2.45,
-      "end": 2.564,
-      "score": 1
+      "start": 2.285,
+      "end": 2.399,
+      "score": 0.997
     },
     {
       "text": "amont",
-      "start": 2.61,
-      "end": 2.925,
-      "score": 0.99
+      "start": 2.426,
+      "end": 2.74,
+      "score": 0.962
     },
     {
       "text": "aussi",
-      "start": 3.052,
-      "end": 3.347,
+      "start": 2.867,
+      "end": 3.161,
       "score": 1
     },
     {
       "text": "vite",
-      "start": 3.413,
-      "end": 3.695,
-      "score": 0.99
+      "start": 3.187,
+      "end": 3.368,
+      "score": 1
     },
     {
       "text": "qu’",
-      "start": 3.695,
-      "end": 3.755,
-      "score": 0.864
+      "start": 3.368,
+      "end": 3.428,
+      "score": 0.893
     },
     {
       "text": "elle",
-      "start": 3.755,
-      "end": 3.949,
-      "score": 0.984
+      "start": 3.428,
+      "end": 3.602,
+      "score": 0.946
     },
     {
       "text": "sort",
-      "start": 3.956,
-      "end": 4.17,
-      "score": 0.674
+      "start": 3.628,
+      "end": 3.829,
+      "score": 0.999
     },
     {
       "text": "en",
-      "start": 4.176,
-      "end": 4.271,
-      "score": 0.998
+      "start": 3.829,
+      "end": 3.943,
+      "score": 0.999
     },
     {
       "text": "aval",
-      "start": 4.317,
-      "end": 4.672,
+      "start": 3.969,
+      "end": 4.284,
       "score": 1
     }
   ]

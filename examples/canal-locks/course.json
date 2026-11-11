@@ -213,8 +213,8 @@
         },
         "fr": {
           "provider": "elevenlabs",
-          "voice": "62qGOOI927DEYwOVyfbC",
-          "name": "Michelle - Calm",
+          "voice": "JgQlYGzpXIS8wtMbmdFv",
+          "name": "Valy - Storyteller",
           "settings": {
             "model": "eleven_v4"
           }

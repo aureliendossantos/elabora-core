@@ -3,68 +3,68 @@
   "line": "neil-letter",
   "language": "fr",
   "textHash": "sha256:122b13abb811f6255450c16d156498ed52363c5ac8741c08555413d4ff7e475a",
-  "duration": 1.9,
+  "duration": 1.87,
   "provider": "elevenlabs",
-  "voice": "1EmYoP3UnnnwhlJKovEy",
+  "voice": "OOiDJrD1goukqfTpiySr",
   "generated": true,
-  "audioHash": "sha256:c9d968a8c685d6651b3fef9cc51480c73d98057ea9328ef231d5ea1d3e18d6b2",
-  "createdAt": "2026-11-11T00:15:47Z",
-  "take": 1,
+  "audioHash": "sha256:4186d70514585f03e5632a8ffadbdeffc04041d27db9f837dd069f91f28c9a8b",
+  "createdAt": "2026-11-11T01:16:40Z",
+  "take": 2,
   "spokenHash": "sha256:122b13abb811f6255450c16d156498ed52363c5ac8741c08555413d4ff7e475a",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
+  "credit": "Voix de synthèse : Greg (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Bien sûr. Vous l’aurez dans 5 minutes.",
-  "mouth": "ccwwwsssssswwwccccccccccsswwwwwoooooooosscooooocoooooccccc",
+  "mouth": "ccwwwwssccooowwccccccccccccssoooooooosssssssssoocooossccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Bien",
-      "start": 0.02,
-      "end": 0.196,
-      "score": 0.979
+      "start": 0.04,
+      "end": 0.215,
+      "score": 1
     },
     {
       "text": "sûr",
-      "start": 0.223,
-      "end": 0.458,
+      "start": 0.241,
+      "end": 0.496,
       "score": 1
     },
     {
       "text": "Vous",
-      "start": 0.809,
-      "end": 0.93,
-      "score": 0.999
-    },
-    {
-      "text": "l’",
-      "start": 0.93,
-      "end": 0.991,
-      "score": 0.52
-    },
-    {
-      "text": "aurez",
-      "start": 0.991,
-      "end": 1.186,
+      "start": 0.905,
+      "end": 1.046,
       "score": 1
     },
     {
+      "text": "l’",
+      "start": 1.046,
+      "end": 1.086,
+      "score": 0.579
+    },
+    {
+      "text": "aurez",
+      "start": 1.086,
+      "end": 1.267,
+      "score": 0.997
+    },
+    {
       "text": "dans",
-      "start": 1.193,
-      "end": 1.368,
-      "score": 0.984
+      "start": 1.267,
+      "end": 1.421,
+      "score": 0.996
     },
     {
       "text": "5",
-      "start": 1.375,
-      "end": 1.557,
-      "score": 0.999
+      "start": 1.428,
+      "end": 1.609,
+      "score": 0.997
     },
     {
       "text": "minutes",
-      "start": 1.557,
-      "end": 1.9,
-      "score": 0.999
+      "start": 1.609,
+      "end": 1.87,
+      "score": 0.98
     }
   ]
 }

@@ -269,7 +269,8 @@ export function createObjects({ main, course, courseState, labels, framesPort, r
     const props = block.props;
     const iframe = element('iframe', {
       id: uniqueId('object'), title: props.title, ...objectFrame(definition.dir, definition.permissions || [], framesPort, document.baseURI),
-      allow: '', referrerpolicy: 'no-referrer', 'aria-describedby': descriptionId, loading: 'eager'
+      // autoplay: an object's sound may follow a learner's gesture anywhere in the module (a dialogue's choice that drives it), not only in its own frame.
+      allow: 'autoplay', referrerpolicy: 'no-referrer', 'aria-describedby': descriptionId, loading: 'eager'
     });
     const loading = element('div', { class: 't-object-loading', role: 'status', hidden: true }, element('span', { class: 't-object-spinner', 'aria-hidden': 'true' }), element('span', { text: labels.objectLoading }));
     const keep = kept ? element('div', { class: 't-keep-frame', 'data-key': block.continuity?.key }, iframe, loading) : null;

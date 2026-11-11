@@ -300,7 +300,7 @@
           "motionIntensity": "expressive",
           "entrance": "fade",
           "allowViewChange": false,
-          "sound": false
+          "sound": true
         },
         "a11y": {
           "description": "The same lock, seen in three-quarter view. The barge floats in the full chamber, level with the upper canal; the lower gates are shut, with the lower canal 3 metres below. Each choice in the conversation operates the lock: paddles let water through, gates swing or strain, and the barge rises or sinks with the water."

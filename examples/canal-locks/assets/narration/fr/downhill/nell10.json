@@ -3,50 +3,50 @@
   "line": "nell10",
   "language": "fr",
   "textHash": "sha256:a8a1113b95effdaee93d9a2182bf3004d309b1a6a1c04dd91b6f12afc38e5e63",
-  "duration": 1.68,
+  "duration": 1.37,
   "provider": "elevenlabs",
-  "voice": "62qGOOI927DEYwOVyfbC",
+  "voice": "JgQlYGzpXIS8wtMbmdFv",
   "generated": true,
-  "audioHash": "sha256:8b6209b027fb069fa7b29aaa3aa6e603a429860d275056da84db32b1ed37bca8",
-  "createdAt": "2026-11-11T00:22:49Z",
-  "take": 1,
+  "audioHash": "sha256:09f8474e63704aec0e9084bdae1e3b0b394000407b8c6d3829b42c9a970ff81b",
+  "createdAt": "2026-11-11T01:17:28Z",
+  "take": 2,
   "spokenHash": "sha256:a8a1113b95effdaee93d9a2182bf3004d309b1a6a1c04dd91b6f12afc38e5e63",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "credit": "Voix de synthèse : Valy (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "À bientôt pour la remontée !",
-  "mouth": "coooccoooocwwwwcooooooosssoocccoowwwwcccccccccccccc",
+  "mouth": "cwwwcooooocwwwwcoooowwssoocooccooooccccccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "À",
-      "start": 0.041,
+      "start": 0.04,
       "end": 0.115,
-      "score": 0.1
+      "score": 0.544
     },
     {
       "text": "bientôt",
-      "start": 0.142,
-      "end": 0.506,
-      "score": 0.969
+      "start": 0.141,
+      "end": 0.497,
+      "score": 0.975
     },
     {
       "text": "pour",
-      "start": 0.506,
-      "end": 0.648,
-      "score": 0.992
+      "start": 0.504,
+      "end": 0.645,
+      "score": 0.986
     },
     {
       "text": "la",
-      "start": 0.648,
-      "end": 0.763,
-      "score": 0.999
+      "start": 0.645,
+      "end": 0.759,
+      "score": 0.99
     },
     {
       "text": "remontée",
-      "start": 0.79,
-      "end": 1.249,
-      "score": 0.752
+      "start": 0.766,
+      "end": 1.182,
+      "score": 0.75
     }
   ]
 }

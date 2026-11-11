@@ -3,62 +3,62 @@
   "line": "nell1",
   "language": "fr",
   "textHash": "sha256:3e04413fcffe7a1e3fdafc53abe65493e00d737a09f785081489b71e96adc532",
-  "duration": 3.18,
+  "duration": 2.86,
   "provider": "elevenlabs",
-  "voice": "62qGOOI927DEYwOVyfbC",
+  "voice": "JgQlYGzpXIS8wtMbmdFv",
   "generated": true,
-  "audioHash": "sha256:64caceb3c715e407a7f391a6a38169ced1125ba71601706a624796a86bb5b552",
-  "createdAt": "2026-11-11T00:22:31Z",
-  "take": 1,
+  "audioHash": "sha256:7a34208c0dad8a44001e73116cfe0e2c99434eb9dfd2a53307e8192920990e10",
+  "createdAt": "2026-11-11T01:17:08Z",
+  "take": 2,
   "spokenHash": "sha256:3e04413fcffe7a1e3fdafc53abe65493e00d737a09f785081489b71e96adc532",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "credit": "Voix de synthèse : Valy (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Bonjour ! Moi, c’est Nell, l’éclusière.",
-  "mouth": "cccooooowwooooooowwwcccccccccccccccwwwwwccccooooocsswwwwsssssssccccsswwcsssooooooooooooosssccccc",
+  "mouth": "cccwwwwsswwwwoooccccccccccccccccwwwwwcccssssoooooowwwssssscccccoooocccoooooooooosscccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Bonjour",
-      "start": 0.04,
-      "end": 0.678,
-      "score": 0.969
+      "start": 0.061,
+      "end": 0.558,
+      "score": 1
     },
     {
       "text": "Moi",
-      "start": 1.107,
-      "end": 1.282,
-      "score": 0.982
+      "start": 1.007,
+      "end": 1.182,
+      "score": 0.999
     },
     {
       "text": "c’",
-      "start": 1.49,
-      "end": 1.55,
-      "score": 0.444
+      "start": 1.41,
+      "end": 1.47,
+      "score": 0.346
     },
     {
       "text": "est",
-      "start": 1.55,
-      "end": 1.691,
-      "score": 0.727
+      "start": 1.47,
+      "end": 1.591,
+      "score": 0.738
     },
     {
       "text": "Nell",
-      "start": 1.691,
-      "end": 2.006,
-      "score": 0.748
+      "start": 1.591,
+      "end": 1.867,
+      "score": 0.742
     },
     {
       "text": "l’",
-      "start": 2.254,
-      "end": 2.335,
-      "score": 0.502
+      "start": 2.115,
+      "end": 2.196,
+      "score": 0.515
     },
     {
       "text": "éclusière",
-      "start": 2.335,
-      "end": 3.033,
-      "score": 0.876
+      "start": 2.196,
+      "end": 2.813,
+      "score": 0.941
     }
   ]
 }

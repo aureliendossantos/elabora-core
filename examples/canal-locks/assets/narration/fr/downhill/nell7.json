@@ -3,80 +3,80 @@
   "line": "nell7",
   "language": "fr",
   "textHash": "sha256:cd15da241e9cc5278e50603339698da1a38edc603449e4a9eed06b7999b053fe",
-  "duration": 4.32,
+  "duration": 3.63,
   "provider": "elevenlabs",
-  "voice": "62qGOOI927DEYwOVyfbC",
+  "voice": "JgQlYGzpXIS8wtMbmdFv",
   "generated": true,
-  "audioHash": "sha256:a0737fe705933221b20473c9a4320648e83c0a137f931562e177e875aa8e6d49",
-  "createdAt": "2026-11-11T00:22:44Z",
-  "take": 1,
+  "audioHash": "sha256:fe99b4d6d6f4df0cd03f2a8c7fa90632a8f3005e67b10f79d1413dcc9d27f158",
+  "createdAt": "2026-11-11T01:17:22Z",
+  "take": 2,
   "spokenHash": "sha256:cd15da241e9cc5278e50603339698da1a38edc603449e4a9eed06b7999b053fe",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "credit": "Voix de synthèse : Valy (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Aussi facile qu’un portillon de jardin. La voilà repartie !",
-  "mouth": "ccooooooosssswwwssssoooossscoooocccccoooocooooooooocwwwwwsssccwwwsscccccccccccccccccwwwssswwwwwwccwwwwwcccoowwooossccoooooooooooss",
+  "mouth": "ccooooooosssssssssssswwssccwwwwcccoosscssoowwooooooooooocooooccccccccccccccccccwwwwwwwwwwwwcccccccccssooooccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Aussi",
       "start": 0.06,
       "end": 0.295,
-      "score": 0.999
+      "score": 0.982
     },
     {
       "text": "facile",
-      "start": 0.382,
-      "end": 0.898,
+      "start": 0.381,
+      "end": 0.836,
       "score": 1
     },
     {
       "text": "qu’",
-      "start": 0.904,
-      "end": 1.025,
-      "score": 0.708
+      "start": 0.842,
+      "end": 0.963,
+      "score": 0.691
     },
     {
       "text": "un",
-      "start": 1.025,
-      "end": 1.119,
-      "score": 0.999
+      "start": 0.963,
+      "end": 1.057,
+      "score": 1
     },
     {
       "text": "portillon",
-      "start": 1.186,
-      "end": 1.688,
-      "score": 0.977
+      "start": 1.083,
+      "end": 1.558,
+      "score": 0.974
     },
     {
       "text": "de",
-      "start": 1.688,
-      "end": 1.788,
-      "score": 0.516
+      "start": 1.564,
+      "end": 1.659,
+      "score": 1
     },
     {
       "text": "jardin",
-      "start": 1.788,
-      "end": 2.224,
-      "score": 0.988
+      "start": 1.665,
+      "end": 2.04,
+      "score": 1
     },
     {
       "text": "La",
-      "start": 2.813,
-      "end": 2.948,
-      "score": 0.123
+      "start": 2.627,
+      "end": 2.762,
+      "score": 0.999
     },
     {
       "text": "voilà",
-      "start": 2.954,
-      "end": 3.175,
-      "score": 0.217
+      "start": 2.768,
+      "end": 3.002,
+      "score": 0.997
     },
     {
       "text": "repartie",
-      "start": 3.175,
-      "end": 4.32,
-      "score": 0.68
+      "start": 3.008,
+      "end": 3.524,
+      "score": 0.919
     }
   ]
 }

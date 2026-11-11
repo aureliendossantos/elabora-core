@@ -3,122 +3,122 @@
   "line": "neil-fine",
   "language": "fr",
   "textHash": "sha256:74caf27a3dc0277c54421145ef658731b44680bd25e70159b0ab983349cc494c",
-  "duration": 4.37,
+  "duration": 4.77,
   "provider": "elevenlabs",
-  "voice": "1EmYoP3UnnnwhlJKovEy",
+  "voice": "OOiDJrD1goukqfTpiySr",
   "generated": true,
-  "audioHash": "sha256:43c01fd5a736271590dab8a6484d8d3a5887df0618c8dde582eb17c3a43f0794",
-  "createdAt": "2026-11-11T00:15:56Z",
-  "take": 1,
+  "audioHash": "sha256:a9f108a42b32d81408b6984b20ae06e73292bd7517f41d89b3ae051c12f7d1ca",
+  "createdAt": "2026-11-11T01:16:48Z",
+  "take": 2,
   "spokenHash": "sha256:74caf27a3dc0277c54421145ef658731b44680bd25e70159b0ab983349cc494c",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Anthony (ElevenLabs)",
+  "credit": "Voix de synthèse : Greg (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "[soupire] Très bien. Mais si vos camions restent à l’arrêt, il ne faudra pas m’en vouloir.",
-  "mouth": "cccccccccccccccccccccsswwwcwwoooccccccccccccccccccwwwccooowwsssscoooooooooccwwwwwwssooooosssccooooooccoosswwsscwwwwcoossssoooooocccc",
+  "mouth": "ccccccccccccccccccccssssscooooccccccccccccccccccccoooccssoooooooocwwcoowwwwwwwwcccwwoowwssooooocccccccccooooossssssssssccccwwwcooossoooooosssccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Très",
-      "start": 0.662,
-      "end": 0.856,
+      "start": 0.621,
+      "end": 0.836,
       "score": 0.969
     },
     {
       "text": "bien",
-      "start": 0.862,
-      "end": 1.056,
+      "start": 0.842,
+      "end": 1.016,
       "score": 1
     },
     {
       "text": "Mais",
-      "start": 1.624,
-      "end": 1.778,
+      "start": 1.623,
+      "end": 1.798,
       "score": 1
     },
     {
       "text": "si",
-      "start": 1.784,
-      "end": 1.918,
+      "start": 1.904,
+      "end": 2.038,
       "score": 1
     },
     {
       "text": "vos",
-      "start": 1.924,
-      "end": 2.045,
-      "score": 0.995
+      "start": 2.044,
+      "end": 2.185,
+      "score": 0.792
     },
     {
       "text": "camions",
-      "start": 2.045,
-      "end": 2.325,
-      "score": 0.83
+      "start": 2.185,
+      "end": 2.505,
+      "score": 0.879
     },
     {
       "text": "restent",
-      "start": 2.325,
-      "end": 2.566,
-      "score": 0.842
+      "start": 2.505,
+      "end": 2.766,
+      "score": 0.775
     },
     {
       "text": "à",
-      "start": 2.566,
-      "end": 2.626,
-      "score": 0.998
-    },
-    {
-      "text": "l’",
-      "start": 2.626,
-      "end": 2.686,
-      "score": 0.584
-    },
-    {
-      "text": "arrêt",
-      "start": 2.686,
-      "end": 2.961,
+      "start": 2.766,
+      "end": 2.826,
       "score": 0.999
     },
     {
+      "text": "l’",
+      "start": 2.826,
+      "end": 2.886,
+      "score": 0.799
+    },
+    {
+      "text": "arrêt",
+      "start": 2.886,
+      "end": 3.161,
+      "score": 1
+    },
+    {
       "text": "il",
-      "start": 3.147,
-      "end": 3.248,
+      "start": 3.467,
+      "end": 3.568,
       "score": 1
     },
     {
       "text": "ne",
-      "start": 3.248,
-      "end": 3.342,
+      "start": 3.568,
+      "end": 3.682,
       "score": 1
     },
     {
       "text": "faudra",
-      "start": 3.348,
-      "end": 3.602,
-      "score": 0.985
+      "start": 3.688,
+      "end": 3.962,
+      "score": 0.975
     },
     {
       "text": "pas",
-      "start": 3.668,
-      "end": 3.829,
-      "score": 0.998
+      "start": 4.049,
+      "end": 4.209,
+      "score": 0.996
     },
     {
       "text": "m’",
-      "start": 3.829,
-      "end": 3.869,
-      "score": 0.5
+      "start": 4.209,
+      "end": 4.269,
+      "score": 0.701
     },
     {
       "text": "en",
-      "start": 3.869,
-      "end": 3.963,
-      "score": 0.5
+      "start": 4.269,
+      "end": 4.363,
+      "score": 1
     },
     {
       "text": "vouloir",
-      "start": 3.969,
-      "end": 4.304,
-      "score": 0.993
+      "start": 4.369,
+      "end": 4.724,
+      "score": 0.994
     }
   ]
 }

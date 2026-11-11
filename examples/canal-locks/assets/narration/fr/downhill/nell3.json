@@ -3,91 +3,91 @@
   "line": "nell3",
   "language": "fr",
   "textHash": "sha256:0d06a2c56ff978f547852de756ec1cb5466f7f9b87ad61dcde156ab3c01b4570",
-  "duration": 3.33,
+  "duration": 3.09,
   "provider": "elevenlabs",
-  "voice": "62qGOOI927DEYwOVyfbC",
+  "voice": "JgQlYGzpXIS8wtMbmdFv",
   "generated": true,
-  "audioHash": "sha256:a74a2c7977b94548c63459070c4b53df3b004dd5dfa7681bfa6b9fb85c0ada21",
-  "createdAt": "2026-11-11T00:22:36Z",
-  "take": 1,
+  "audioHash": "sha256:949a6a4284709f8e5256d8f7df3268ab586b80f1c0ccff38a7809519548082a6",
+  "createdAt": "2026-11-11T01:17:14Z",
+  "take": 2,
   "spokenHash": "sha256:0d06a2c56ff978f547852de756ec1cb5466f7f9b87ad61dcde156ab3c01b4570",
   "settingsHash": "sha256:8af292abb51dcfcdb42957c511caabce88357f6f1bda687fe49afad870c8e1c1",
-  "credit": "Voix de synthèse : Michelle (ElevenLabs)",
+  "credit": "Voix de synthèse : Valy (ElevenLabs)",
   "model": "elevenlabs/eleven_v4",
   "text": "Vous entendez ce bruit d’eau ? Elle s’écoule vers l’aval.",
-  "mouth": "coooowwwcwwwwcwwwwooooccssoooccooooooccccccccccccccccwwsssssoooccoooosssssssoooowwwcwwwwoosscccccccc",
+  "mouth": "ccoooowwwcoooooooossssoocccwwwwwwwooccccccccccccccccccoossssssscccwwwwsswwwooooocoooooosscccc",
   "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
   "words": [
     {
       "text": "Vous",
-      "start": 0.02,
-      "end": 0.194,
-      "score": 0.969
+      "start": 0.04,
+      "end": 0.215,
+      "score": 0.996
     },
     {
       "text": "entendez",
-      "start": 0.221,
-      "end": 0.596,
-      "score": 0.997
+      "start": 0.241,
+      "end": 0.616,
+      "score": 0.993
     },
     {
       "text": "ce",
-      "start": 0.622,
-      "end": 0.736,
+      "start": 0.662,
+      "end": 0.756,
       "score": 1
     },
     {
       "text": "bruit",
-      "start": 0.762,
-      "end": 1.017,
+      "start": 0.783,
+      "end": 1.023,
       "score": 1
     },
     {
       "text": "d’",
       "start": 1.023,
-      "end": 1.063,
-      "score": 0.755
+      "end": 1.084,
+      "score": 0.576
     },
     {
       "text": "eau",
-      "start": 1.063,
-      "end": 1.218,
-      "score": 0.987
+      "start": 1.084,
+      "end": 1.238,
+      "score": 0.997
     },
     {
       "text": "Elle",
-      "start": 1.745,
+      "start": 1.746,
       "end": 1.94,
       "score": 1
     },
     {
       "text": "s’",
-      "start": 1.986,
-      "end": 2.086,
-      "score": 0.811
+      "start": 1.966,
+      "end": 2.067,
+      "score": 0.766
     },
     {
       "text": "écoule",
-      "start": 2.086,
-      "end": 2.441,
-      "score": 0.972
+      "start": 2.067,
+      "end": 2.362,
+      "score": 1
     },
     {
       "text": "vers",
-      "start": 2.447,
-      "end": 2.628,
+      "start": 2.368,
+      "end": 2.548,
       "score": 1
     },
     {
       "text": "l’",
-      "start": 2.628,
-      "end": 2.708,
-      "score": 0.745
+      "start": 2.548,
+      "end": 2.609,
+      "score": 0.623
     },
     {
       "text": "aval",
-      "start": 2.708,
-      "end": 3.083,
+      "start": 2.609,
+      "end": 2.964,
       "score": 1
     }
   ]
