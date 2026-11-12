@@ -20,6 +20,9 @@ export interface Submission {
   inverse: Op[];         // inverse[k] undoes ops[ops.length - 1 - k], on the files at base
   // An undo: the changes it undoes. What it could not undo is in the committed change's skipped.
   undoes?: { batch?: string; changes: string[] };
+  // What the copy's own rebase of the change overwrote (it was made before the copy got changes of
+  // others): passed on with the change, so that whoever wrote those values is told.
+  overwrote?: Overwrite[];
 }
 
 // An operation that rebase applied over a value written by a change its author had not seen (a

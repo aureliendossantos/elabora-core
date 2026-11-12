@@ -35,8 +35,12 @@ function merge(base: Json | undefined, head: Json | undefined, mine: Json | unde
   if (Array.isArray(base) && Array.isArray(head) && Array.isArray(mine)) {
     const kinds = [keyedKind(base), keyedKind(head), keyedKind(mine)];
     if (kinds.every((kind) => kind === 'objects' || kind === 'empty') && kinds.some((kind) => kind === 'objects')) return mergeKeyed(base, head, mine, wins, path, conflicts);
-    if (kinds.every((kind) => kind === null) && base.length === head.length && base.length === mine.length) {
-      return base.map((element, i) => merge(element, head[i], mine[i], wins, [...path, String(i)], conflicts) ?? null);
+    if (kinds.every((kind) => kind !== 'objects')) {
+      if (base.length === head.length && base.length === mine.length) {
+        return base.map((element, i) => merge(element, head[i], mine[i], wins, [...path, String(i)], conflicts) ?? null);
+      }
+      const spliced = mergeSequence(base, head, mine);
+      if (spliced) return spliced;
     }
   }
   conflicts.push({ path, head, mine });
@@ -44,6 +48,31 @@ function merge(base: Json | undefined, head: Json | undefined, mine: Json | unde
 }
 
 const copy = (value: Json | undefined): Json | undefined => (value === undefined ? undefined : cloneJson(value));
+
+// An array without ids that each side changed in one stretch (elements added at its end, one
+// removed, a few replaced): when the stretches do not overlap, both apply. Two additions at the
+// same place both go in, head's first. null: they overlap.
+function mergeSequence(base: Json[], head: Json[], mine: Json[]): Json[] | null {
+  const h = stretch(base, head);
+  const m = stretch(base, mine);
+  const empty = (x: Stretch) => x.from === x.to;
+  const inside = (p: number, x: Stretch) => x.from < p && p < x.to;
+  if (!empty(h) && !empty(m) ? h.from < m.to && m.from < h.to : empty(h) && !empty(m) ? inside(h.from, m) : !empty(h) && empty(m) ? inside(m.from, h) : false) return null;
+  const headFirst = h.from < m.from || (h.from === m.from && (empty(h) || !empty(m)));
+  const [first, second] = headFirst ? [h, m] : [m, h];
+  return [...base.slice(0, first.from), ...first.elements, ...base.slice(first.to, second.from), ...second.elements, ...base.slice(second.to)].map(cloneJson);
+}
+
+interface Stretch { from: number; to: number; elements: Json[] }
+
+// The stretch of base an array replaced: base[from, to) became elements.
+function stretch(base: Json[], next: Json[]): Stretch {
+  let start = 0;
+  while (start < base.length && start < next.length && equalJson(base[start], next[start])) start++;
+  let end = 0;
+  while (end < base.length - start && end < next.length - start && equalJson(base[base.length - 1 - end], next[next.length - 1 - end])) end++;
+  return { from: start, to: base.length - end, elements: next.slice(start, next.length - end) };
+}
 
 // Keys in head's order; a key only mine added goes after the key it follows in mine.
 function mergeObjects(base: JsonObject, head: JsonObject, mine: JsonObject, wins: 'mine' | 'head', path: Segment[], conflicts: MergeConflict[]): JsonObject {
@@ -64,8 +93,8 @@ function mergeObjects(base: JsonObject, head: JsonObject, mine: JsonObject, wins
 
 const at = (object: JsonObject, key: string): Json | undefined => (hasKey(object, key) ? object[key] : undefined);
 
-// Elements by id, in head's order; an element only mine added goes after the one it follows in
-// mine. An element removed on one side and changed on the other is a conflict.
+// Elements by id, in head's order. An element removed on one side and changed on the other is a
+// conflict; a change of order on mine's side is not kept (moves are operations of their own).
 function mergeKeyed(base: Json[], head: Json[], mine: Json[], wins: 'mine' | 'head', path: Segment[], conflicts: MergeConflict[]): Json[] {
   const byId = (array: Json[]) => new Map(array.map((element) => [elementId(element) as string, element]));
   const b = byId(base);
@@ -73,14 +102,12 @@ function mergeKeyed(base: Json[], head: Json[], mine: Json[], wins: 'mine' | 'he
   const m = byId(mine);
   const order = head.map((element) => elementId(element) as string);
   let previous: string | null = null;
+  // An element of mine head has not (added by mine, or removed by head: merge says whether mine's
+  // edit keeps it) goes after the one it follows in mine.
   for (const element of mine) {
     const id = elementId(element) as string;
-    if (!order.includes(id) && !b.has(id)) order.splice(previous === null ? 0 : order.indexOf(previous) + 1, 0, id);
-    if (order.includes(id)) previous = id;
-  }
-  for (const element of base) {
-    const id = elementId(element) as string;
-    if (!order.includes(id) && m.has(id)) order.push(id); // head removed it: merge says whether mine's edit keeps it
+    if (!order.includes(id)) order.splice(previous === null ? 0 : order.indexOf(previous) + 1, 0, id);
+    previous = id;
   }
   const out: Json[] = [];
   for (const id of order) {

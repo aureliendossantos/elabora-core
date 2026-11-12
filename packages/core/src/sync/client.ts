@@ -79,7 +79,8 @@ export class SyncClient {
         const { id, at, author, batch, command, undoes } = first.change;
         first.sent = {
           id, base: this.headSeq, at, author, ops: placed.ops, inverse: invertOps(this.confirmedFiles, placed.ops),
-          ...(batch ? { batch } : {}), ...(command ? { command } : {}), ...(undoes ? { undoes } : {})
+          ...(batch ? { batch } : {}), ...(command ? { command } : {}), ...(undoes ? { undoes } : {}),
+          ...(first.overwrote.length ? { overwrote: first.overwrote } : {})
         };
       }
       this.inFlight = true;
@@ -137,7 +138,7 @@ export class SyncClient {
     const first = this.waiting[0];
     if (first && first.change.id === change.id) {
       this.inFlight = false;
-      this.settle({ id: change.id, placed: change, skipped: [...first.skipped, ...change.skipped], overwrote: [...first.overwrote, ...change.overwrote] });
+      this.settle({ id: change.id, placed: change, skipped: [...first.skipped, ...change.skipped], overwrote: change.overwrote });
     } else if (first?.sent && !this.inFlight) first.sent = undefined; // prepared on an older head
     this.recompute();
     return 'ok';

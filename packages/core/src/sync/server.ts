@@ -58,7 +58,7 @@ export function acceptChange(state: RoomState, submission: Submission, options: 
     ops: result.ops,
     inverse: invertOps(state.files, result.ops),
     skipped: result.skipped,
-    overwrote: result.overwrote,
+    overwrote: [...(Array.isArray(submission.overwrote) ? submission.overwrote : []), ...result.overwrote],
     ...(submission.undoes ? { undoes: submission.undoes } : {})
   };
   return { committed, files: result.files, duplicate: false };
