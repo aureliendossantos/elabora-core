@@ -76,3 +76,6 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D70](decisions/D70.md) | The author approves a translated plan through their agent, who asks first | 5 Nov 2026 |
 | [D71](decisions/D71.md) | The package's languages are the author's choice; a translation not approved goes in with a warning | 6 Nov 2026 |
 | [D72](decisions/D72.md) | Blocks placed by hand: the flow first, a place where the author drops it, back in the flow below the minimum window | 6 Nov 2026 |
+| [D80](decisions/D80.md) | Validation without code generation: the format's schemas compiled by `pnpm run gen`, inline schemas read by an interpreter | 12 Nov 2026 |
+| [D81](decisions/D81.md) | The schemas a course writes: the keywords the interpreter reads, and a clear refusal for the others | 12 Nov 2026 |
+| [D82](decisions/D82.md) | Where Ajv stays, and the proof in a Worker | 12 Nov 2026 |

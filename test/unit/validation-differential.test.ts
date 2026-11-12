@@ -93,7 +93,7 @@ test('the precompiled validators report what Ajv reports, on data made from ever
 // the props of the example components and the props of their objects.
 function inlineSchemas(): { name: string; schema: JsonSchema }[] {
   const out: { name: string; schema: JsonSchema }[] = [];
-  for (const type of [...BLOCK_TYPES.map((t) => `blocks/${t}`), ...LAYOUT_TYPES.map((t) => `layouts/${t}`), 'sound', 'object-tests', 'plan-notes']) out.push({ name: type, schema: stripX(derefSchema(getSchema(type))) as JsonSchema });
+  for (const type of [...BLOCK_TYPES.map((t) => `blocks/${t}`), ...LAYOUT_TYPES.map((t) => `layouts/${t}`), 'sound', 'object-tests', 'plan-notes']) out.push({ name: type, schema: stripX(derefSchema(getSchema(type)!)) as JsonSchema });
   for (const example of exampleNames()) {
     const root = path.join(EXAMPLES_DIR, example);
     for (const dir of fs.existsSync(path.join(root, 'components')) ? fs.readdirSync(path.join(root, 'components')) : []) {
