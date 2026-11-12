@@ -10,6 +10,8 @@ import type { AccountErased, AccountLimits, AccountSession, AccountUsage, CloudA
 
 export interface ServiceInfo {
   protocol: number;
+  // The server has teams and their projects' rooms (elabora-cloud C80); absent on an older server.
+  teams?: boolean;
   accounts: { signup: 'open' | 'closed'; codeLength: number; codeSeconds: number; attempts: number; sessionDays: number };
 }
 

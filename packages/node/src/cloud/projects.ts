@@ -7,7 +7,8 @@ import type { Committed, Refusal, SnapshotFile, Submission } from '@elabora/core
 import { blobPath, copyBlobTo, hasBlob, putBytes, putFileSnapshot, readBlob, type BlobHash } from '../blobs.ts';
 import { readProjectFiles } from '../project-reader.ts';
 import { lastEntry } from '../journal/journal.ts';
-import { CloudClient, CloudError, segment } from './client.ts';
+import { CloudClient, CloudError, cloudUrl, segment } from './client.ts';
+import type { ServiceInfo } from './account.ts';
 import { requireCredential } from './credentials.ts';
 import { sendBlobs } from './blob-upload.ts';
 import { linkFile, readLink, writeLink, type Person, type ProjectLink } from './link.ts';
@@ -23,16 +24,16 @@ export { readLink, writeLink, unlinkFolder, linkFile, stampAuthor, type Person, 
 // version 10): the projects' routes, the media, and the link a folder keeps to its project, with
 // what the room confirmed and the changes made here that wait for it.
 
-// A project's room is on staging only (D83): the address is given, never the default production API.
+// A project's room is on the account's server (ELABORA_CLOUD_URL, or Elabora's hosting), over HTTPS (HTTP on
+// this computer only): its origin. Whether that server has teams, it says itself (teamsOffered).
 export function projectsApi(value: string | undefined = process.env.ELABORA_CLOUD_URL): string {
-  const raw = value?.trim();
-  if (!raw) throw new CloudError(0, 'E_CLOUD_URL', 'Projects in the cloud run on a test server for now: give its address (ELABORA_CLOUD_URL or --api).');
-  let url: URL;
-  try { url = new URL(raw); } catch { throw new CloudError(0, 'E_CLOUD_URL', `Not an address: ${raw}`); }
-  const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
-  if (url.hostname === 'api.elabora.studio') throw new CloudError(0, 'E_CLOUD_URL', 'Projects in the cloud are not open on Elabora\'s hosting yet: give a test server\'s address.');
-  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && local)) throw new CloudError(0, 'E_CLOUD_URL', `The API is reached over HTTPS (http only on this computer), not ${url.origin}.`);
-  return url.origin;
+  return new URL(cloudUrl(value)).origin;
+}
+
+// Whether a server has teams and their projects' rooms: its GET /v1 says teams: true (elabora-cloud C80).
+// Elabora's hosting says false today; a server that says nothing has none either.
+export async function teamsOffered(api: string): Promise<boolean> {
+  return (await new CloudClient(api).request<ServiceInfo>('GET', '/v1')).teams === true;
 }
 
 export type { CoverType, InvitationToMe, ProjectCover, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';

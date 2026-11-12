@@ -516,6 +516,9 @@ with ELABORA_CLOUD_KEY_FILE and ELABORA_CLOUD_SPACE.
 
 ## Projects in the cloud (test server)
 
+On the account's server (`ELABORA_CLOUD_URL`, `--api`, or Elabora's hosting) once its `GET /v1` says `teams: true`
+(elabora-cloud C80): a test server for now; Elabora's hosting says `false` and refuses the project routes.
+
 ```text
 cloud teams [--api <origin>] [--json]               Your teams on the server, with their ids
 cloud project create [dir] --team <id> [--name <n>] [--api <origin>] [--json]

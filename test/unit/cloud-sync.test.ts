@@ -2,6 +2,8 @@ import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { openProject, type Session } from '@elabora/engine/session';
 import type { RoomSocket } from '@elabora/engine/session-cloud';
 import { acceptChange, journalOf, type ClientMessage, type Committed, type ServerMessage } from '@elabora/core/sync/index';
@@ -9,7 +11,7 @@ import { changesToUndo } from '@elabora/core/ops/batch';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
 import { CloudClient } from '@elabora/node/cloud/client';
-import { keepConfirmed, linkFile, projectsApi, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
+import { keepConfirmed, linkFile, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { copyExample, readJSON } from '../helpers.ts';
 
@@ -171,10 +173,23 @@ const sameFolders = (a: string, b: string) => {
   return null;
 };
 
-test('projects in the cloud are on a test server only: no address, or Elabora\'s hosting, is refused', () => {
-  assert.throws(() => projectsApi(''), /test server/);
-  assert.throws(() => projectsApi('https://api.elabora.studio'), /not open/);
-  assert.equal(projectsApi('https://staging.example.test'), 'https://staging.example.test');
+test('projects in the cloud are on the account\'s server, which says whether it has teams (C80): true, false or nothing', async () => {
+  assert.equal(projectsApi(''), 'https://api.elabora.studio');
+  assert.equal(projectsApi('https://staging.example.test/'), 'https://staging.example.test');
+  assert.throws(() => projectsApi('http://staging.example.test'), /HTTPS/);
+  let said: Record<string, unknown> = { service: 'elabora-cloud', protocol: 10, teams: true };
+  const server = http.createServer((request, response) => { response.setHeader('content-type', 'application/json'); response.end(JSON.stringify(request.url === '/v1' ? said : {})); });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const api = projectsApi(`http://127.0.0.1:${(server.address() as AddressInfo).port}`);
+  try {
+    assert.equal(await teamsOffered(api), true);
+    said = { service: 'elabora-cloud', protocol: 10, teams: false };
+    assert.equal(await teamsOffered(api), false);
+    said = { service: 'elabora-cloud', protocol: 9 };
+    assert.equal(await teamsOffered(api), false, 'a server that says nothing has no teams');
+  } finally {
+    server.close();
+  }
 });
 
 test('two linked folders stay the same: a person\'s edit, a file an agent writes, offline and back, an agent\'s run sent as one', async () => {
