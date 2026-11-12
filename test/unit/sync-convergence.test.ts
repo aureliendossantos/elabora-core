@@ -10,7 +10,7 @@ const DRAWS = Number(process.env.ELABORA_SYNC_DRAWS ?? 120);
 const FAILED = [
   31, // a copy's own rebase overwrote another's value, and the change did not say so: no one was told
   48, // two removals emptied a screen's blocks: the server refuses what does not validate
-  140, // two copies duplicating a block drew the same id: the server refused the second
+  140, // two copies duplicating a block drew the same id (before D77): the server refused the second
   3834 // an agent rewrote course.json with its keys in another order: every version looked as far (D75 compares values)
 ];
 

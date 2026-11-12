@@ -114,26 +114,28 @@ test('duplicate and detach: copies get new ids; detach keeps the id and the cont
   s.blocks.push(card('chemin-card', {}, [{ id: 'chemin-card-note', type: 'text', slot: 'more', props: { markdown: 'Then the switch.' } }]));
   writeJSON(dir, 'screens/chemin.json', s);
   const d = edit.duplicateBlock(dir, { block: 'chemin-card' });
-  assert.equal(d.block, 'chemin-card-copy');
-  assert.deepEqual(d.renamed, { 'chemin-card': 'chemin-card-copy', 'chemin-card-note': 'chemin-card-note-copy' });
+  // One random suffix for the copy and the blocks of its slots (D77).
+  const tag = /^chemin-card-copy-([a-z0-9]{4})$/.exec(d.block)?.[1];
+  assert.ok(tag, d.block);
+  assert.deepEqual(d.renamed, { 'chemin-card': d.block, 'chemin-card-note': `chemin-card-note-copy-${tag}` });
   let after = readJSON(dir, 'screens/chemin.json');
-  assert.equal(after.blocks[after.blocks.length - 1].blocks[0].id, 'chemin-card-note-copy');
+  assert.equal(after.blocks[after.blocks.length - 1].blocks[0].id, `chemin-card-note-copy-${tag}`);
   assert.deepEqual(errors(dir), []);
   // Edit the copy only.
-  edit.updateBlock(dir, { block: 'chemin-card-copy', props: { title: 'Ping the printer' } });
+  edit.updateBlock(dir, { block: d.block, props: { title: 'Ping the printer' } });
   // Detach the original: two native text blocks in its place.
   const r = edit.detachBlock(dir, { block: 'chemin-card' });
   assert.deepEqual(r.blocks, ['text:chemin-card', 'text:chemin-card-note']);
   after = readJSON(dir, 'screens/chemin.json');
   assert.equal(after.blocks.find((b: Block) => b.id === 'chemin-card').type, 'text');
-  assert.equal(after.blocks.find((b: Block) => b.id === 'chemin-card-copy').props.title, 'Ping the printer');
+  assert.equal(after.blocks.find((b: Block) => b.id === d.block).props.title, 'Ping the printer');
   assert.deepEqual(errors(dir), []);
   edit.undo(dir);
   assert.equal(readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === 'chemin-card').type, 'key-card');
   // Blocks move into and out of slots.
-  edit.moveBlock(dir, { block: 'chemin-card-note-copy', parent: 'chemin-card', slot: 'more' });
+  edit.moveBlock(dir, { block: `chemin-card-note-copy-${tag}`, parent: 'chemin-card', slot: 'more' });
   assert.equal(readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === 'chemin-card').blocks.length, 2);
-  assert.ok(!readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === 'chemin-card-copy').blocks);
+  assert.ok(!readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === d.block).blocks);
 });
 
 test('fork of quiz: headless template, extra props, plan question, same state key and scoring', async () => {

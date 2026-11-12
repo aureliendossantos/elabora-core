@@ -43,7 +43,7 @@ export function addSound(context: CommandContext, args: AddSoundArgs): CommandOu
   const added = addSoundFile(context, args);
   if (!args.line || !added.files) return added;
   const { screen, layer, after, step, caption, volume } = args.line;
-  const placed = addNarrationLine(commandContext(added.files, { now: context.now }), {
+  const placed = addNarrationLine({ ...commandContext(added.files, { now: context.now }), suffix: context.suffix }, {
     screen, ...(layer !== undefined ? { layer } : {}), ...(after !== undefined ? { after } : {}),
     line: { sound: added.result.id, ...(step !== undefined ? { step } : {}), ...(caption?.trim() ? { caption: caption.trim() } : {}), ...(volume !== undefined ? { volume } : {}) }
   });

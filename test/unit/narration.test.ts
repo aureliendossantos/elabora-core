@@ -194,12 +194,13 @@ test('elabora timeline: steps, lines, audio and the events on the timeline, as t
 test('narration edits: lines added, changed, moved and removed (with their audio), as undoable changes', { skip: NO_FFMPEG }, () => {
   const dir = narrated();
   const added = edit.addNarrationLine(dir, { screen: 'accueil', line: { text: 'Une dernière chose.', step: 2 } });
-  assert.equal(added.line, 'l4');
-  edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l4', speaker: 'marc', pauseBefore: 1 });
-  edit.moveNarrationLine(dir, { screen: 'accueil', line: 'l4', after: 'l2' });
+  // Its id: its rank, then a random suffix (D77).
+  assert.match(added.line, /^l4-[a-z0-9]{4}$/);
+  edit.updateNarrationLine(dir, { screen: 'accueil', line: added.line, speaker: 'marc', pauseBefore: 1 });
+  edit.moveNarrationLine(dir, { screen: 'accueil', line: added.line, after: 'l2' });
   edit.updateNarration(dir, { screen: 'accueil', seek: 'free' });
   let screen = readJSON(dir, 'screens/accueil.json');
-  assert.deepEqual(screen.narration.lines.map((line: { id: string }) => line.id), ['l1', 'l2', 'l4', 'l3']);
+  assert.deepEqual(screen.narration.lines.map((line: { id: string }) => line.id), ['l1', 'l2', added.line, 'l3']);
   assert.equal(screen.narration.seek, 'free');
   const removed = edit.removeNarrationLine(dir, { screen: 'accueil', line: 'l2' });
   assert.ok(!fs.existsSync(path.join(dir, 'assets/narration/fr/accueil/l2.m4a')) && !fs.existsSync(path.join(dir, 'assets/narration/fr/accueil/l2.json')), 'its audio goes with it');

@@ -42,15 +42,41 @@ export interface CommandContext {
   // Who runs it, when the runner knows: a few commands are a person's alone (a version of the plan,
   // its validation) or refuse an agent what the author must decide (a text kept « à l'identique »).
   readonly author?: Author;
+  // A short random suffix for the ids the command makes (D77): copies of a project in the cloud
+  // make ids each on their own, and must not draw the same.
+  suffix(): string;
 }
 
 // files: the project after the command; ops: the operations it means instead. result: what the
 // caller gets back (the ids it created, the screen it touched…).
 export type CommandOutput<Result> = { files: ProjectFiles; ops?: undefined; result: Result } | { ops: Op[]; files?: undefined; result: Result };
 
-export function commandContext(files: ProjectFiles, options: { root?: string; now?: Date; author?: Author } = {}): CommandContext {
+// random: numbers in [0, 1) for the ids' suffixes; by default the platform's cryptographic
+// generator. Tests give a seeded one to get the same ids at each run.
+export function commandContext(files: ProjectFiles, options: { root?: string; now?: Date; author?: Author; random?: () => number } = {}): CommandContext {
   let project: Project | null = null;
-  return { files, now: options.now ?? new Date(), ...(options.author ? { author: options.author } : {}), project: () => (project ??= loadProject(files, { root: options.root })) };
+  const random = options.random ?? cryptoRandom;
+  return {
+    files, now: options.now ?? new Date(), ...(options.author ? { author: options.author } : {}),
+    project: () => (project ??= loadProject(files, { root: options.root })),
+    suffix: () => drawSuffix(random)
+  };
+}
+
+const ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const SUFFIX_LENGTH = 4;
+
+export function drawSuffix(random: () => number): string {
+  let suffix = '';
+  for (let i = 0; i < SUFFIX_LENGTH; i++) suffix += ALPHABET[Math.floor(random() * ALPHABET.length)];
+  return suffix;
+}
+
+// The core runs in Node, browsers and workers alike: each has crypto.getRandomValues.
+function cryptoRandom(): number {
+  const word = new Uint32Array(1);
+  (globalThis as unknown as { crypto: { getRandomValues(array: Uint32Array): Uint32Array } }).crypto.getRandomValues(word);
+  return word[0] / 2 ** 32;
 }
 
 // Edits of a snapshot, for commands that compute files: reads see earlier writes, JSON documents
@@ -259,9 +285,25 @@ export function allIds(project: Project): Set<string> {
   return ids;
 }
 
-export function freshId(ids: Set<string>, base: string): string {
-  let id = base.slice(0, 48);
-  for (let n = 2; ids.has(id); n++) id = `${base.slice(0, 44)}-${n}`;
-  ids.add(id);
-  return id;
+// An id the command makes (D77): its readable part, then a random suffix (flow-text-k3f9), drawn
+// again when the project has it. Ids are 48 characters at most.
+export function freshId(ids: Set<string>, base: string, context: Pick<CommandContext, 'suffix'>): string {
+  const readable = base.slice(0, 48 - SUFFIX_LENGTH - 1).replace(/-+$/, '');
+  for (;;) {
+    const id = `${readable}-${context.suffix()}`;
+    if (!ids.has(id)) {
+      ids.add(id);
+      return id;
+    }
+  }
+}
+
+// An id made from another made by the same command (the blocks of a copied screen after the
+// copy's id): as it is when free, otherwise a fresh one.
+export function derivedId(ids: Set<string>, base: string, context: Pick<CommandContext, 'suffix'>): string {
+  if (base.length <= 48 && !ids.has(base)) {
+    ids.add(base);
+    return base;
+  }
+  return freshId(ids, base, context);
 }

@@ -14,6 +14,8 @@ export interface ExecuteOptions {
   author?: Author;
   now?: Date;
   root?: string;
+  // Numbers in [0, 1) for the suffixes of the ids it makes (D77); by default cryptographic.
+  random?: () => number;
   // The format migration writes what the core's migrations computed, schema problems included.
   skipSchemaCheck?: boolean;
 }
@@ -26,7 +28,7 @@ export interface Executed<Result> {
 }
 
 export function executeCommand<Result>(files: ProjectFiles, name: string, run: (context: CommandContext) => CommandOutput<Result>, options: ExecuteOptions = {}): Executed<Result> {
-  const output = run(commandContext(files, { root: options.root, now: options.now, author: options.author }));
+  const output = run(commandContext(files, { root: options.root, now: options.now, author: options.author, random: options.random }));
   const ops = output.ops ?? opsBetween(files, output.files);
   if (!ops.length) return { ops, inverse: [], after: files, result: output.result };
   const after = applyOps(files, ops);

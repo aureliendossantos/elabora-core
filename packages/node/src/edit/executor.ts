@@ -45,6 +45,8 @@ export interface EditOptions {
   validate?: boolean;
   // false: no automatic version before writing (an engine schedules its versions itself).
   autoVersion?: boolean;
+  // Numbers in [0, 1) for the suffixes of the ids commands make (D77); tests give a seeded one.
+  random?: () => number;
 }
 
 export interface CommandSpec<Result> {
@@ -98,7 +100,7 @@ export function runCommand<Result extends object>(dir: string, spec: CommandSpec
     let stale: string[] = [];
     for (let attempt = 1; ; attempt++) {
       const before = snapshotFor(root, options, stale);
-      const { ops, inverse, after, result } = executeCommand(before, spec.name, spec.run, { root, author, skipSchemaCheck: spec.migratesFormat });
+      const { ops, inverse, after, result } = executeCommand(before, spec.name, spec.run, { root, author, random: options.random, skipSchemaCheck: spec.migratesFormat });
       if (!ops.length) return { entry: null, ops, result, written: { before, after: before } };
       if (attempt === 1 && options.autoVersion !== false) backup = takeAutoVersion(root, author, before, spec.versionReason);
       options.beforeWrite?.(attempt);

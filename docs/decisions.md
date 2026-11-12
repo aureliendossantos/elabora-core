@@ -80,6 +80,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D74](decisions/D74.md) | Rebase: the value before decides; a person's value wins, an agent's gives way; whole values merge three ways first | 12 Nov 2026 |
 | [D75](decisions/D75.md) | A file written by an agent's own tools is computed from the version it most likely read | 12 Nov 2026 |
 | [D76](decisions/D76.md) | A command runs on files in the core: files in, its change out | 12 Nov 2026 |
+| [D77](decisions/D77.md) | Ids a command makes end with a short random suffix | 12 Nov 2026 |
 | [D80](decisions/D80.md) | Validation without code generation: the format's schemas compiled by `pnpm run gen`, inline schemas read by an interpreter | 12 Nov 2026 |
 | [D81](decisions/D81.md) | The schemas a course writes: the keywords the interpreter reads, and a clear refusal for the others | 12 Nov 2026 |
 | [D82](decisions/D82.md) | Where Ajv stays, and the proof in a Worker | 12 Nov 2026 |

@@ -4,7 +4,7 @@ import { parseJSON } from '../util/json.ts';
 import type { FileHash, ProjectFiles } from '../project/files.ts';
 import { narrationLines, narrationAudioPath, narrationSidecarPath, readNarrationSidecar, NARRATION_DIR, isSoundLine } from '../narration/narration.ts';
 import type { Narration, NarrationLine, NarrationAudio, NarrationSoundLine, WrittenNarrationLine } from '../narration/narration.ts';
-import { CommandError, Draft, assignFields, commandContext, insertAt, listIn, screenFile, type CommandContext, type CommandOutput } from './context.ts';
+import { CommandError, Draft, assignFields, commandContext, freshId, insertAt, listIn, screenFile, type CommandContext, type CommandOutput } from './context.ts';
 import { reanchorLine, type Reanchored } from './timing.ts';
 import { lineWordTimes } from '../narration/words.ts';
 import { isMouth } from '../narration/mouth.ts';
@@ -96,8 +96,7 @@ export function addNarrationLine(context: CommandContext, { screen, layer, line,
   return editNarration(context, screen, (narration, data) => {
     const ids = screenLineIds(data);
     if (line.id && ids.has(line.id)) throw new CommandError(`Screen "${screen}" already has a line "${line.id}" (ids are unique in the screen, every track counted).`);
-    let id = line.id;
-    for (let n = ids.size + 1; !id; n++) if (!ids.has(`l${n}`)) id = `l${n}`;
+    const id = line.id || freshId(ids, `l${ids.size + 1}`, context);
     if (isSoundLine(line) && ('text' in line || 'speaker' in line)) throw new CommandError('A sound line has a sound, not a text nor a speaker: its caption says what it is for learners.');
     const added = { ...line, id } as WrittenNarrationLine;
     if (after === null) narration.lines.unshift(added);
@@ -430,7 +429,7 @@ export function setNarrationWords(context: CommandContext, args: SetNarrationWor
 
 // A command's files read as the project the next one starts from: two commands written as one
 // undoable change.
-const after = (context: CommandContext, files: ProjectFiles): CommandContext => commandContext(files, { now: context.now });
+const after = (context: CommandContext, files: ProjectFiles): CommandContext => ({ ...commandContext(files, { now: context.now }), suffix: context.suffix });
 
 // « Nouvelle réplique depuis un fichier audio… »: a line and its audio in one change. The text is
 // what the recording says (a transcription the author checked, or typed), the audio a recording

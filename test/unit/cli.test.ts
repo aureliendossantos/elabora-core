@@ -192,7 +192,8 @@ test('history groups changes by batch of AI work; undo keeps what changed since;
   assert.equal((await elabora(['block', 'duplicate', dir, 'chemin-intro'], ROOT, { author: agent })).status, 0);
   // A person edits the copy meanwhile: undoing the batch keeps it.
   const screen = readJSON(dir, 'screens/chemin.json');
-  screen.blocks.find((block: Block) => block.id === 'chemin-intro-copy').props.markdown = 'Rewritten by hand.';
+  const copied = screen.blocks.find((block: Block) => block.id.startsWith('chemin-intro-copy-')).id;
+  screen.blocks.find((block: Block) => block.id === copied).props.markdown = 'Rewritten by hand.';
   writeJSON(dir, 'screens/chemin.json', screen);
 
   const history = await elabora(['history', dir]);
@@ -204,9 +205,9 @@ test('history groups changes by batch of AI work; undo keeps what changed since;
   const undone = await elabora(['undo', dir, '--batch']);
   assert.equal(undone.status, 0, undone.stderr);
   assert.match(undone.stdout, new RegExp(`^✔ Undid batch ${batch.id} "Ajoute un quiz": 2 change\\(s\\)`));
-  assert.match(undone.stdout, /\n  kept: screens\/chemin\.json blocks\[chemin-intro-copy\]: changed since\n$/);
+  assert.match(undone.stdout, new RegExp(`\\n  kept: screens/chemin\\.json blocks\\[${copied}\\]: changed since\\n$`));
   assert.ok(!fs.existsSync(path.join(dir, 'components/my-card/component.json')));
-  assert.equal(readJSON(dir, 'screens/chemin.json').blocks.find((block: Block) => block.id === 'chemin-intro-copy').props.markdown, 'Rewritten by hand.');
+  assert.equal(readJSON(dir, 'screens/chemin.json').blocks.find((block: Block) => block.id === copied).props.markdown, 'Rewritten by hand.');
   // Undoing the undo redoes.
   const last = edit.history(dir).at(-1);
   assert.equal(last?.op, 'undo_batch');
@@ -333,7 +334,7 @@ test('MCP: words found and replaced, a screen duplicated, a variable renamed and
   assert.deepEqual([replaced.replaced, replaced.units], [1, [title.unit]]);
   assert.equal(readJSON(dir, 'screens/chemin.json').blocks.find((block: Block) => block.id === 'chemin-roles').props.items.find((item: { id: string }) => item.id === 'pare-feu').title, 'Le firewall');
   const copy = await callJSON(client, 'elabora_duplicate_screen', { id: 'chemin' });
-  assert.equal(copy.screen, 'chemin-copy');
+  assert.match(copy.screen, /^chemin-copy-[a-z0-9]{4}$/);
   await callJSON(client, 'elabora_rename_variable', { from: 'indiceVu', to: 'aideVue' });
   assert.ok(readJSON(dir, 'course.json').variables.some((variable: { id: string }) => variable.id === 'aideVue'));
   const used = await client.callTool({ name: 'elabora_remove_variable', arguments: { id: 'aideVue' } });

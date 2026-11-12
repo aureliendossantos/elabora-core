@@ -22,36 +22,41 @@ test('edits are validated, journaled and undoable', () => {
   assert.equal(fs.readFileSync(path.join(dir, 'screens/chemin.json'), 'utf8'), before);
 });
 
-test('a block added without an id gets a free one; an id in use is refused', () => {
+test('a block added without an id gets one: its screen and type, then a random suffix (D77); an id in use is refused', () => {
   const dir = copyExample();
   const first = edit.addBlock(dir, { screen: 'chemin', block: { type: 'text', props: { markdown: 'Un.' } }, after: 'chemin-regle' });
   const second = edit.addBlock(dir, { screen: 'chemin', block: { type: 'text', props: { markdown: 'Deux.' } }, after: 'chemin-regle' });
-  assert.equal(first.block, 'chemin-text');
-  assert.equal(second.block, 'chemin-text-2');
-  assert.deepEqual(readJSON(dir, 'screens/chemin.json').blocks.slice(2, 5).map((b: { id: string }) => b.id), ['chemin-regle', 'chemin-text-2', 'chemin-text']);
+  assert.match(first.block, /^chemin-text-[a-z0-9]{4}$/);
+  assert.match(second.block, /^chemin-text-[a-z0-9]{4}$/);
+  assert.notEqual(first.block, second.block);
+  assert.deepEqual(readJSON(dir, 'screens/chemin.json').blocks.slice(2, 5).map((b: { id: string }) => b.id), ['chemin-regle', second.block, first.block]);
+  // The suffix comes from the random numbers given: the same ones, the same ids.
+  const seeded = () => { let n = 0; return () => ((n += 0.37) % 1); };
+  const again = [copyExample(), copyExample()].map((d) => edit.addBlock(d, { screen: 'chemin', block: { type: 'text', props: { markdown: 'Un.' } } }, { random: seeded() }).block);
+  assert.equal(again[0], again[1]);
   assert.throws(() => edit.addBlock(dir, { screen: 'chemin', block: { id: 'chemin-regle', type: 'text', props: { markdown: 'Trois.' } } }), /already used/);
 });
 
 test('a layer or an event written without an id is new and gets a free one; a variable still used is not removed', () => {
   const dir = copyExample();
   const layer = edit.upsertLayer(dir, { screen: 'chemin', layer: { title: 'Pour aller plus loin', blocks: [{ type: 'text', props: { markdown: 'Plus loin.' } }] } });
-  assert.equal(layer.layer, 'chemin-layer');
-  assert.equal(readJSON(dir, 'screens/chemin.json').layers[0].blocks[0].id, 'chemin-layer-text');
-  const first = edit.upsertEvent(dir, { screen: 'chemin', event: { on: { type: 'screen.enter' }, do: [{ type: 'show-layer', layer: 'chemin-layer' }] } });
-  const second = edit.upsertEvent(dir, { screen: 'chemin', event: { on: { type: 'layer.closed', target: 'chemin-layer' }, do: [{ type: 'set-variable', variable: 'indiceVu', value: true }] } });
-  assert.deepEqual([first.event, second.event], ['chemin-event', 'chemin-event-2']);
+  assert.match(layer.layer, /^chemin-layer-[a-z0-9]{4}$/);
+  assert.match(readJSON(dir, 'screens/chemin.json').layers[0].blocks[0].id, new RegExp(`^${layer.layer}-text-[a-z0-9]{4}$`));
+  const first = edit.upsertEvent(dir, { screen: 'chemin', event: { on: { type: 'screen.enter' }, do: [{ type: 'show-layer', layer: layer.layer }] } });
+  const second = edit.upsertEvent(dir, { screen: 'chemin', event: { on: { type: 'layer.closed', target: layer.layer }, do: [{ type: 'set-variable', variable: 'indiceVu', value: true }] } });
+  assert.match(first.event, /^chemin-event-[a-z0-9]{4}$/);
   const screen = readJSON(dir, 'screens/chemin.json');
-  assert.deepEqual(screen.layers.map((l: { id: string }) => l.id), ['chemin-layer']);
-  assert.deepEqual(screen.events.map((e: { id: string }) => e.id), ['chemin-event', 'chemin-event-2']);
+  assert.deepEqual(screen.layers.map((l: { id: string }) => l.id), [layer.layer]);
+  assert.deepEqual(screen.events.map((e: { id: string }) => e.id), [first.event, second.event]);
   // Written again with its id: replaced in place.
-  edit.upsertEvent(dir, { screen: 'chemin', event: { id: 'chemin-event', on: { type: 'screen.enter' }, do: [{ type: 'go-to', screen: 'next' }] } });
+  edit.upsertEvent(dir, { screen: 'chemin', event: { id: first.event, on: { type: 'screen.enter' }, do: [{ type: 'go-to', screen: 'next' }] } });
   assert.deepEqual(readJSON(dir, 'screens/chemin.json').events.map((e: { do: { type: string }[] }) => e.do[0].type), ['go-to', 'set-variable']);
   // Its trigger chosen, its actions not yet: written as it is.
   const started = edit.upsertEvent(dir, { screen: 'chemin', event: { on: { type: 'click', target: 'chemin-btn' }, do: [] } });
   assert.deepEqual(readJSON(dir, 'screens/chemin.json').events.find((e: { id: string }) => e.id === started.event).do, []);
   edit.removeEvent(dir, { screen: 'chemin', id: started.event });
-  assert.throws(() => edit.removeVariable(dir, { id: 'indiceVu' }), /used by events chemin\/chemin-event-2, simulation\/simulation-indice/);
-  edit.removeEvent(dir, { screen: 'chemin', id: 'chemin-event-2' });
+  assert.throws(() => edit.removeVariable(dir, { id: 'indiceVu' }), new RegExp(`used by events chemin/${second.event}, simulation/simulation-indice`));
+  edit.removeEvent(dir, { screen: 'chemin', id: second.event });
   edit.removeEvent(dir, { screen: 'simulation', id: 'simulation-indice' });
   edit.removeVariable(dir, { id: 'indiceVu' });
   assert.ok(!(readJSON(dir, 'course.json').variables ?? []).some((v: { id: string }) => v.id === 'indiceVu'));
@@ -92,18 +97,20 @@ test('a variable renamed: course.json, the events that read or write it, its key
 test('a screen duplicated: after it in its section, new ids for its blocks, layers and events, its events pointing at its own', () => {
   const dir = copyExample();
   const result = edit.duplicateScreen(dir, { id: 'premier-reflexe', title: 'Premier réflexe (bis)' });
-  assert.equal(result.screen, 'premier-reflexe-copy');
-  assert.deepEqual(readJSON(dir, 'course.json').sections.find((s: { id: string }) => s.id === 'pratiquer').screens, ['premier-reflexe', 'premier-reflexe-copy', 'simulation']);
-  const copy = readJSON(dir, 'screens/premier-reflexe-copy.json');
+  // One random suffix for the copy and what it renames (D77).
+  const tag = /^premier-reflexe-copy-([a-z0-9]{4})$/.exec(result.screen)?.[1] as string;
+  assert.ok(tag, result.screen);
+  assert.deepEqual(readJSON(dir, 'course.json').sections.find((s: { id: string }) => s.id === 'pratiquer').screens, ['premier-reflexe', result.screen, 'simulation']);
+  const copy = readJSON(dir, `screens/${result.screen}.json`);
   assert.equal(copy.title, 'Premier réflexe (bis)');
-  assert.deepEqual(copy.blocks.map((b: { id: string }) => b.id), ['reflexe-choix-copy']);
-  assert.deepEqual(copy.layers.map((l: { id: string; blocks: { id: string }[] }) => [l.id, l.blocks.map((b) => b.id)]), [['rappel-regle-copy', ['rappel-texte-copy']]]);
-  assert.deepEqual(copy.events.map((e: { id: string; on: { target: string } }) => [e.id, e.on.target]), [['reflexe-bon-copy', 'reflexe-choix-copy'], ['reflexe-serveur-copy', 'reflexe-choix-copy']]);
-  assert.deepEqual(copy.events[1].do, [{ type: 'show-layer', layer: 'rappel-regle-copy' }]);
+  assert.deepEqual(copy.blocks.map((b: { id: string }) => b.id), [`reflexe-choix-copy-${tag}`]);
+  assert.deepEqual(copy.layers.map((l: { id: string; blocks: { id: string }[] }) => [l.id, l.blocks.map((b) => b.id)]), [[`rappel-regle-copy-${tag}`, [`rappel-texte-copy-${tag}`]]]);
+  assert.deepEqual(copy.events.map((e: { id: string; on: { target: string } }) => [e.id, e.on.target]), [[`reflexe-bon-copy-${tag}`, `reflexe-choix-copy-${tag}`], [`reflexe-serveur-copy-${tag}`, `reflexe-choix-copy-${tag}`]]);
+  assert.deepEqual(copy.events[1].do, [{ type: 'show-layer', layer: `rappel-regle-copy-${tag}` }]);
   // Ids named after the screen follow its new id.
   const second = edit.duplicateScreen(dir, { id: 'chemin' });
-  assert.equal(second.screen, 'chemin-copy');
-  assert.ok(readJSON(dir, 'screens/chemin-copy.json').blocks.every((b: { id: string }) => b.id.startsWith('chemin-copy-')));
+  assert.match(second.screen, /^chemin-copy-[a-z0-9]{4}$/);
+  assert.ok(readJSON(dir, `screens/${second.screen}.json`).blocks.every((b: { id: string }) => b.id.startsWith(`${second.screen}-`)));
   assert.equal(validateDir(dir).summary.errors, 0);
 });
 

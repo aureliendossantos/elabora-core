@@ -48,8 +48,8 @@ export function upsertLayer(context: CommandContext, { screen, layer }: UpsertLa
     return { ...out, result: { layer: layer.id } };
   }
   const ids = allIds(context.project());
-  const id = layer.id || freshId(ids, `${screen}-layer`);
-  const blocks = (Array.isArray(layer.blocks) ? layer.blocks : []).map((block) => (isRecord(block) && !block.id ? { ...block, id: freshId(ids, `${id}-${block.type}`) } : block));
+  const id = layer.id || freshId(ids, `${screen}-layer`, context);
+  const blocks = (Array.isArray(layer.blocks) ? layer.blocks : []).map((block) => (isRecord(block) && !block.id ? { ...block, id: freshId(ids, `${id}-${block.type}`, context) } : block));
   const out = editScreen(context, screen, (s, file) => upsert(listIn<ScreenLayer>(s, 'layers', file, { create: true }), { ...layer, id, blocks } as ScreenLayer));
   return { ...out, result: { layer: id } };
 }
@@ -67,7 +67,7 @@ export interface UpsertEventArgs {
 }
 
 export function upsertEvent(context: CommandContext, { screen, event }: UpsertEventArgs): CommandOutput<{ event: string }> {
-  const id = event.id || freshId(allIds(context.project()), `${screen}-event`);
+  const id = event.id || freshId(allIds(context.project()), `${screen}-event`, context);
   const out = editScreen(context, screen, (s, file) => upsert(listIn<Event>(s, 'events', file, { create: true }), { ...event, id } as Event));
   return { ...out, result: { event: id } };
 }

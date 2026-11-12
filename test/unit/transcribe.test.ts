@@ -122,12 +122,12 @@ test('a new line from an audio file: its text what the recording says, its audio
   fs.renameSync(file.replace(/wav$/, 'm4a'), file);
   await withEnv(fakeEnv({ 'appel-marc.m4a': 'Vous pouvez m\'aider ?' }), async () => {
     const added = await addNarrationLineFromAudio(dir, { screen: 'accueil', file });
-    assert.equal(added.line, 'l3');
+    assert.match(added.line, /^l3-[a-z0-9]{4}$/);
     assert.equal(added.text, 'Vous pouvez m\'aider ?');
     assert.equal(added.transcript?.transcriber, 'fake');
     const line = readJSON(dir, 'screens/accueil.json').narration.lines[2];
-    assert.deepEqual(line, { id: 'l3', text: 'Vous pouvez m\'aider ?', step: 2, speaker: 'marc' });
-    const info = narrationLines(loadProjectFromDir(dir), 'accueil', 'fr')!.find((candidate) => candidate.id === 'l3')!;
+    assert.deepEqual(line, { id: added.line, text: 'Vous pouvez m\'aider ?', step: 2, speaker: 'marc' });
+    const info = narrationLines(loadProjectFromDir(dir), 'accueil', 'fr')!.find((candidate) => candidate.id === added.line)!;
     assert.deepEqual([info.status, info.provider, info.voice, info.generated], ['ok', 'recording', 'appel-marc.wav', false]);
     assert.ok(info.duration! > 1 && info.duration! < 2);
     // One change: undone, the line and its audio go together.
@@ -217,7 +217,7 @@ test('cli: elabora narration add-from-audio and retranscribe, --dry-run printing
   const env = { ...process.env, ...fakeEnv({ 'cli.m4a': 'Le copieur aussi.', 'l2.m4a': 'Plus rien ne marche.' }) };
   const elabora = (...args: string[]) => execFileAsync(process.execPath, [path.join(ROOT, 'bin/elabora.js'), ...args], { env, encoding: 'utf8' });
   const added = await elabora('narration', 'add-from-audio', dir, 'accueil', file);
-  assert.match(added.stdout, /^✔ Line l3 of accueil, from cli\.m4a: « Le copieur aussi\. »\n {2}Transcribed by fake: check the text/);
+  assert.match(added.stdout, /^✔ Line l3-[a-z0-9]{4} of accueil, from cli\.m4a: « Le copieur aussi\. »\n {2}Transcribed by fake: check the text/);
   const dry = await elabora('narration', 'retranscribe', dir, 'accueil', 'l2', '--dry-run');
   assert.match(dry.stdout, /Now: {8}Ni l'imprimante, ni le partage ne marchent\.\n {2}Recording: {2}Plus rien ne marche\./);
   assert.equal(readJSON(dir, 'screens/accueil.json').narration.lines[1].text, 'Ni l\'imprimante, ni le partage ne marchent.');

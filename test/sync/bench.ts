@@ -73,6 +73,7 @@ interface Copy {
   actors: Actor[];
   versions: Version[];        // the copy's earlier views and who changed each, newest first (D75)
   reads: Map<string, Files>;  // what an agent writing with its own tools read, by actor
+  ids: () => number;          // the copy's own draw of ids' suffixes (D77), seeded
 }
 
 interface Made {
@@ -102,7 +103,7 @@ export function runBench(options: BenchOptions): BenchReport {
   const now = () => new Date(Date.UTC(2026, 10, 12, 20, 0, changes)).toISOString();
 
   const copy = (name: string): Copy => ({
-    name, client: new SyncClient(start, 0), up: [], down: [], online: true, versions: [], reads: new Map(),
+    name, client: new SyncClient(start, 0), up: [], down: [], online: true, versions: [], reads: new Map(), ids: random(options.seed * 31 + name.charCodeAt(0)).next,
     actors: [
       { id: `${name}-human`, author: { kind: 'human', name: `person ${name}` }, human: true },
       { id: `${name}-agent`, author: { kind: 'agent', name: `agent of ${name}` }, human: false },
@@ -221,7 +222,7 @@ export function runBench(options: BenchOptions): BenchReport {
     const command = commandsFor(rng, view, word);
     if (!command) return;
     try {
-      const { ops } = executeCommand(view as ProjectFiles, command.name, command.run, { author: actor.author, now: new Date(0) });
+      const { ops } = executeCommand(view as ProjectFiles, command.name, command.run, { author: actor.author, now: new Date(0), random: c.ids });
       record(c, actor, ops, view, JSON.stringify(ops).includes(word) ? [word] : [], command.name, actor.human ? {} : { batch: `${actor.id}-batch` });
     } catch (error) {
       if (!(error instanceof CommandError)) throw error;

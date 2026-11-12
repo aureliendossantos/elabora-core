@@ -5,7 +5,7 @@ import { getRegistry } from '../components/registry.ts';
 import { fallbackBlocks } from '../components/fallback.ts';
 import { isRecord, objectsIn } from '../util/values.ts';
 import {
-  CommandError, Draft, allIds, anchorFor, findBlock, freshId, insertAt, listAt, pruneEmptyBlocks, screenFile, segmentsOf, targetList,
+  CommandError, Draft, allIds, anchorFor, derivedId, findBlock, freshId, insertAt, listAt, pruneEmptyBlocks, screenFile, segmentsOf, targetList,
   type BlockTarget, type CommandContext, type CommandOutput, type Placement
 } from './context.ts';
 
@@ -13,7 +13,7 @@ type Props = Record<string, unknown>;
 
 export interface AddBlockArgs extends Placement {
   screen: string;
-  // Without an id, the block gets a free one: <screen>-<type>, then -2, -3…
+  // Without an id, the block gets one: <screen>-<type>-<random suffix> (D77).
   block: Omit<Block, 'props' | 'id'> & { id?: string; props?: Props };
   layer?: string | null;
   parent?: string | null; // a component instance: the block goes in one of its slots (block.slot)
@@ -23,7 +23,7 @@ export function addBlock(context: CommandContext, args: AddBlockArgs): CommandOu
   const { screen: screenId, block, layer, parent, after, position } = args;
   const ids = allIds(context.project());
   if (block.id && ids.has(block.id)) throw new CommandError(`Id "${block.id}" is already used`);
-  const id = block.id || freshId(ids, `${screenId}-${block.type}`);
+  const id = block.id || freshId(ids, `${screenId}-${block.type}`, context);
   const draft = new Draft(context.files);
   const screen = draft.json<Screen>(screenFile(screenId));
   const added = { props: {}, ...block, id } as Block;
@@ -178,9 +178,11 @@ export function duplicateBlock(context: CommandContext, args: DuplicateBlockArgs
   const source = draft.json<Screen>(place.file);
   const original = listAt(source, place.list)[place.index];
   const renamed = new Map<string, string>();
+  // One suffix for the whole copy: the instance and the blocks of its slots read as one.
+  const tag = context.suffix();
   const copy = (block: Block, root: boolean): Block => {
     const duplicate = structuredClone(block);
-    duplicate.id = root && id ? (ids.add(id), id) : freshId(ids, `${block.id}-copy`);
+    duplicate.id = root && id ? (ids.add(id), id) : derivedId(ids, `${block.id.slice(0, 48 - 10)}-copy-${tag}`, context);
     renamed.set(block.id, duplicate.id);
     if (Array.isArray(block.blocks)) duplicate.blocks = block.blocks.map((child) => (isRecord(child) ? copy(child, false) : child));
     return duplicate;

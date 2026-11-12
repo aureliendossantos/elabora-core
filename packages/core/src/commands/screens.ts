@@ -6,7 +6,7 @@ import { parseJSON } from '../util/json.ts';
 import { NARRATION_DIR } from '../narration/narration.ts';
 import type { Op } from '../ops/types.ts';
 import { keyedKind } from '../ops/path.ts';
-import { CommandError, Draft, allIds, anchorFor, assignFields, freshId, insertAt, listIn, screenFile, type CommandContext, type CommandOutput, type Placement } from './context.ts';
+import { CommandError, Draft, allIds, anchorFor, assignFields, derivedId, insertAt, listIn, screenFile, type CommandContext, type CommandOutput, type Placement } from './context.ts';
 
 // The sections of course.json, and whether one lists a screen (a section whose list is broken
 // lists none; editing it is refused).
@@ -46,7 +46,7 @@ export function createScreen(context: CommandContext, args: CreateScreenArgs): C
 
 export interface DuplicateScreenArgs {
   id: string;
-  newId?: string | null; // the copy's id; otherwise <id>-copy
+  newId?: string | null; // the copy's id; otherwise <id>-copy-<random suffix> (D77)
   title?: string | null; // the copy's title; otherwise the original's
 }
 
@@ -60,13 +60,15 @@ export function duplicateScreen(context: CommandContext, { id, newId, title }: D
   const draft = new Draft(context.files);
   const source = draft.json<Screen>(screenFile(id));
   if (newId && (ids.has(newId) || draft.exists(screenFile(newId)))) throw new CommandError(`Id "${newId}" is already used`);
-  const copyId = newId || freshId(ids, `${id}-copy`);
+  // One random suffix for the copy and what it renames (D77): its blocks, layers and events read with it.
+  const tag = context.suffix();
+  const copyId = newId || derivedId(ids, `${id.slice(0, 48 - 10)}-copy-${tag}`, context);
   ids.add(copyId);
   const renamed = new Map<string, string>([[id, copyId]]);
   const rename = (old: string): string => {
     const known = renamed.get(old);
     if (known) return known;
-    const next = freshId(ids, old.startsWith(`${id}-`) ? `${copyId}-${old.slice(id.length + 1)}` : `${old}-copy`);
+    const next = derivedId(ids, old.startsWith(`${id}-`) ? `${copyId}-${old.slice(id.length + 1)}` : `${old.slice(0, 48 - 10)}-copy-${tag}`, context);
     renamed.set(old, next);
     return next;
   };

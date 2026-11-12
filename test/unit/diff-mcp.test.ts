@@ -69,7 +69,7 @@ test('MCP: tools are listed with annotations; edits return diagnostics; read-onl
   assert.match(got.template, /t-callout/);
   assert.match(got.edit, /elabora_write_component_file/);
   const dup = await callJSON(client, 'elabora_duplicate_block', { block: 'chemin-intro' });
-  assert.equal(dup.block, 'chemin-intro-copy');
+  assert.match(dup.block, /^chemin-intro-copy-[a-z0-9]{4}$/);
   const ro = await connect({ readOnly: true });
   assert.ok((await ro.listTools()).tools.every((t) => t.annotations?.readOnlyHint));
 });
