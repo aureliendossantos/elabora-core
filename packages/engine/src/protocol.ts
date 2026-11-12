@@ -714,7 +714,8 @@ export type EngineEvent =
   // A project in the cloud (D83): whether the copy is connected, the room's number it has, how many
   // changes made here wait for the room, and who is there (each copy connected, this one included:
   // client says which is this one's).
-  | { type: 'cloudStatus'; online: boolean; head: number; pending: number; client: string; peers: Presence[] }
+  // held: why the room keeps the copy out for now (elabora-cloud C80, C83); protocol: the room's, for an app older than it.
+  | { type: 'cloudStatus'; online: boolean; head: number; pending: number; client: string; peers: Presence[]; held?: 'outdated' | 'storage-newer' | 'full'; protocol?: string }
   // A change made here that the room placed with operations left out or values overwritten, or refused.
   | { type: 'cloudOutcome'; outcome: Outcome }
   // Someone else's change, placed by the room, replaced values a change of this copy had written

@@ -98,7 +98,7 @@ import type { BuildOptions, BuildResult } from '@elabora/node/build';
 import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
-import { SessionCloud, type CloudOptions, type Where } from './session-cloud.ts';
+import { SessionCloud, type CloudHeld, type CloudOptions, type Where } from './session-cloud.ts';
 import { folderSnapshot, type PushSource } from '@elabora/node/cloud/projects';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type {
@@ -370,11 +370,16 @@ export class Session {
     this.#cloud?.where(where);
   }
 
+  // Try the room again now: a copy it kept out for its storage or its connections (elabora-cloud C80, C83).
+  cloudRetry(): void {
+    this.#cloud?.retry();
+  }
+
   // The copy of the project in the cloud: connected, the room's number, changes waiting, who is there,
   // the team and project (null: not linked).
-  get cloud(): { online: boolean; head: number; pending: number; client: string; team: string; project: string; peers: readonly Presence[]; role: 'owner' | 'editor' | 'viewer' | null; settled: () => Promise<void> } | null {
+  get cloud(): { online: boolean; head: number; pending: number; client: string; team: string; project: string; peers: readonly Presence[]; role: 'owner' | 'editor' | 'viewer' | null; held: CloudHeld | null; settled: () => Promise<void> } | null {
     const cloud = this.#cloud;
-    return cloud && { online: cloud.online, head: cloud.head, pending: cloud.pending, client: cloud.link.client, team: cloud.link.team, project: cloud.link.project, peers: cloud.peers, role: cloud.role, settled: () => cloud.settled() };
+    return cloud && { online: cloud.online, head: cloud.head, pending: cloud.pending, client: cloud.link.client, team: cloud.link.team, project: cloud.link.project, peers: cloud.peers, role: cloud.role, held: cloud.held, settled: () => cloud.settled() };
   }
 
   // What the room changed in the view, written in the folder and journaled as the change of its

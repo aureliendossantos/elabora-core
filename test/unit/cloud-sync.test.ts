@@ -35,6 +35,10 @@ class Room {
   // (D94) unless sayRole is false, as a room before it.
   readonly roles = new Map<string, 'owner' | 'editor' | 'viewer'>();
   sayRole = true;
+  // Every hello closed with this code (elabora-cloud C80, C83: another protocol, a newer storage, every
+  // connection taken), and how many hellos came.
+  refuseHello: { code: 4005 | 4006 | 4007; reason?: string } | null = null;
+  hellos = 0;
   constructor(files: Files) { this.files = files; }
 
   connect = (): RoomSocket => {
@@ -46,6 +50,8 @@ class Room {
 
   receive(from: FakeSocket, message: ClientMessage): void {
     if (message.type === 'hello') {
+      this.hellos++;
+      if (this.refuseHello) return from.close(this.refuseHello.code, this.refuseHello.reason);
       if (this.away.has(message.client)) return from.close();
       from.presence = { actor: message.actor, client: message.client, at: '2026-11-12T09:00:00.000Z' };
       const role = this.roles.get(message.client);
@@ -98,16 +104,16 @@ class Room {
 
 class FakeSocket implements RoomSocket {
   readyState = 0;
-  readonly #listeners = new Map<string, ((event: { data: unknown; code?: number }) => void)[]>();
+  readonly #listeners = new Map<string, ((event: { data: unknown; code?: number; reason?: string }) => void)[]>();
   readonly room: Room;
   presence: Presence | null = null;
   constructor(room: Room) { this.room = room; }
-  addEventListener(type: string, listener: (event: { data: unknown; code?: number }) => void): void {
+  addEventListener(type: string, listener: (event: { data: unknown; code?: number; reason?: string }) => void): void {
     this.#listeners.set(type, [...(this.#listeners.get(type) ?? []), listener]);
   }
-  emit(type: string, data?: unknown, code?: number): void {
+  emit(type: string, data?: unknown, code?: number, reason?: string): void {
     if (type === 'open') this.readyState = 1;
-    for (const listener of this.#listeners.get(type) ?? []) listener({ data, ...(code ? { code } : {}) });
+    for (const listener of this.#listeners.get(type) ?? []) listener({ data, ...(code ? { code } : {}), ...(reason ? { reason } : {}) });
   }
   send(data: string): void {
     if (this.readyState !== 1) return;
@@ -117,16 +123,16 @@ class FakeSocket implements RoomSocket {
   deliver(message: ServerMessage): void {
     if (this.readyState === 1) setTimeout(() => this.emit('message', JSON.stringify(message)), 2);
   }
-  close(code?: number): void {
+  close(code?: number, reason?: string): void {
     if (this.readyState === 3) return;
     this.readyState = 3;
     this.room.sockets.delete(this);
     if (this.presence) this.room.tellPresence(null);
-    this.emit('close', undefined, code);
+    this.emit('close', undefined, code, reason);
   }
 }
 
-async function linked(room: Room, dir: string, membership: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'> = async () => 'member'): Promise<Session> {
+async function linked(room: Room, dir: string, membership: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'> = async () => 'member', later = 300): Promise<Session> {
   const { files } = readProjectFiles(dir);
   const link: ProjectLink = {
     format: 'elabora-cloud-project/1', api: 'http://localhost:1', team: 'tm_test', project: 'prj_test', client: `c${path.basename(dir)}`,
@@ -134,7 +140,7 @@ async function linked(room: Room, dir: string, membership: () => Promise<'member
   };
   writeLink(dir, link);
   const session = await openProject(dir, {
-    cloud: { api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20], membership },
+    cloud: { api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20], later, membership },
     backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, debounceMs: 30
   });
   sessions.push(session);
@@ -551,4 +557,60 @@ test('a room that does not say the role in welcome: the copy writes as before, a
   await a.run('update_screen', { id: 'chemin', title: 'Refusé' }, { kind: 'agent', name: 'claude-code' });
   await until(() => outcomes.some((event) => (event.outcome as { refused?: { code: string } }).refused?.code === 'E_SYNC_READ_ONLY'), 'refused, as before D94');
   await until(() => screen(A, 'chemin').title === before, 'the refused change left the module');
+});
+
+test('an app older than the room (4005): the copy keeps its changes and does not try again, even when asked; the room\'s protocol is said (C80)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  await settled(room, a);
+  const statuses = eventsOf(a, 'cloudStatus');
+  room.refuseHello = { code: 4005, reason: 'elabora-sync/2' };
+  room.drop();
+  await until(() => a.cloud?.held === 'outdated', 'kept out');
+  await a.run('update_screen', { id: 'chemin', title: 'Pas encore envoyé' }, { kind: 'human' });
+  await until(() => a.cloud?.pending === 1, 'the change waits');
+  const hellos = room.hellos;
+  a.cloudRetry();
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  assert.equal(room.hellos, hellos, 'not tried again, even when asked');
+  assert.equal(a.cloud?.online, false);
+  assert.ok(statuses.some((status) => status.held === 'outdated' && status.protocol === 'elabora-sync/2'), 'the room\'s protocol said');
+  assert.ok(fs.existsSync(linkFile(A)), 'still linked');
+  assert.equal(screen(A, 'chemin').title, 'Pas encore envoyé');
+});
+
+test('a project whose connections are all taken (4007): the copy keeps its changes and tries again later, not in a loop; then they go (C83)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A, async () => 'member', 1500);
+  await settled(room, a);
+  room.refuseHello = { code: 4007 };
+  room.drop();
+  await until(() => a.cloud?.held === 'full', 'kept out');
+  const hellos = room.hellos;
+  await a.run('update_screen', { id: 'chemin', title: 'Écrit pendant que c\'est plein' }, { kind: 'human' });
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.equal(room.hellos, hellos, 'not in a loop: tried again later');
+  room.refuseHello = null;
+  await settled(room, a);
+  assert.equal(a.cloud?.held, null);
+  const placed = room.files.get('screens/chemin.json');
+  assert.equal(placed?.kind === 'text' && JSON.parse(placed.text).title, 'Écrit pendant que c\'est plein');
+});
+
+test('a room whose storage is newer than its server (4006): the copy keeps its changes; asked, it tries again at once (C80)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A, async () => 'member', 60_000);
+  await settled(room, a);
+  room.refuseHello = { code: 4006 };
+  room.drop();
+  await until(() => a.cloud?.held === 'storage-newer', 'kept out');
+  await a.run('update_screen', { id: 'chemin', title: 'Écrit pendant la mise à niveau' }, { kind: 'human' });
+  room.refuseHello = null;
+  a.cloudRetry();
+  await settled(room, a);
+  const placed = room.files.get('screens/chemin.json');
+  assert.equal(placed?.kind === 'text' && JSON.parse(placed.text).title, 'Écrit pendant la mise à niveau');
 });

@@ -35,6 +35,10 @@ export interface CloudHost {
 export type Where = Pick<Presence, 'screen' | 'selection' | 'view'>;
 // Why a copy ended: its person is no longer in the team, or the project was deleted.
 export type CloudEnd = 'removed' | 'deleted';
+// Why the room keeps a copy out for now (elabora-cloud C80, C83), its changes kept here: an app older
+// than the room (4005: not tried again, Elabora is to be updated), the room's storage newer than the
+// server's code (4006), or the project's connections all taken (4007): tried again later, or when asked.
+export type CloudHeld = 'outdated' | 'storage-newer' | 'full';
 
 export interface CloudOptions {
   api: string;
@@ -43,6 +47,8 @@ export interface CloudOptions {
   link: ProjectLink;
   // Waits between reconnections, in milliseconds (the last repeats).
   backoff?: number[];
+  // The wait before trying again a room that kept the copy out for its storage or its connections.
+  later?: number;
   // Opens the room's connection (tests give a room in memory); by default a WebSocket with the
   // session in Authorization, never in the address.
   connect?: (url: string, token: string) => RoomSocket;
@@ -57,13 +63,16 @@ export interface RoomSocket {
   send(data: string): void;
   close(code?: number, reason?: string): void;
   addEventListener(type: 'open' | 'error', listener: () => void): void;
-  addEventListener(type: 'close', listener: (event: { code?: number }) => void): void;
+  addEventListener(type: 'close', listener: (event: { code?: number; reason?: string }) => void): void;
   addEventListener(type: 'message', listener: (event: { data: unknown }) => void): void;
 }
 
 const OPEN = 1;
 // The room's close codes (elabora-cloud C37): the person's membership ended, the project was deleted.
 const CLOSED: Record<number, CloudEnd> = { 4003: 'removed', 4004: 'deleted' };
+const HELD: Record<number, CloudHeld> = { 4005: 'outdated', 4006: 'storage-newer', 4007: 'full' };
+// About a minute, as the room's Retry-After says for its storage (60 s).
+const LATER = 60_000;
 // How often a copy the room keeps out asks whether its person still reaches the project.
 const MEMBERSHIP_EVERY = 30_000;
 // Where the person is, sent at most so often (the last place always goes).
@@ -95,6 +104,8 @@ export class SessionCloud {
   #whereSent: string | null = null;
   #whereTimer: NodeJS.Timeout | null = null;
   #ended: CloudEnd | null = null;
+  // Kept out for now by the room (its protocol, for an app older than it).
+  #held: { reason: CloudHeld; protocol: string | null } | null = null;
   #askedAt = -Infinity;
   // The person's role as the room last said it (D93): null until it says one.
   #role: RoomRole | null = null;
@@ -116,6 +127,7 @@ export class SessionCloud {
   get peers(): readonly Presence[] { return this.#peers; }
   get link(): Readonly<ProjectLink> { return this.#link; }
   get role(): RoomRole | null { return this.#role; }
+  get held(): CloudHeld | null { return this.#held?.reason ?? null; }
 
   // Journal entries the copy has not taken in yet (made while no session synced), then a check that
   // the folder is the view: what differs goes as a file edit no Elabora tool made.
@@ -209,6 +221,7 @@ export class SessionCloud {
         // the waiting changes: the pump follows every message received.
         welcomed = true;
         this.#online = true;
+        this.#held = null;
         this.#peers = message.peers;
         // The person's role as the room says it at the connection (D94), before anything waiting goes:
         // opened as a viewer, or demoted while away, the copy keeps; an editor again, it sends.
@@ -240,9 +253,10 @@ export class SessionCloud {
       this.#peers = [];
       this.#client.disconnected();
       this.#status();
-      if (this.#stopped) return;
+      // An app older than the room is not tried again: Elabora is to be updated first.
+      if (this.#stopped || this.#held?.reason === 'outdated') return;
       const waits = this.#options.backoff ?? [500, 1000, 2000, 5000, 10000];
-      this.#timer = setTimeout(() => this.#connect(), waits[Math.min(this.#attempt++, waits.length - 1)]);
+      this.#timer = setTimeout(() => this.#connect(), this.#held ? this.#options.later ?? LATER : waits[Math.min(this.#attempt++, waits.length - 1)]);
       this.#timer.unref?.();
       // Kept out before a welcome: the person may have left the team while the module was closed.
       if (!welcomed) void this.#askMembership();
@@ -256,6 +270,8 @@ export class SessionCloud {
         void this.#later(async () => this.#end(end));
         return;
       }
+      const held = event?.code ? HELD[event.code] : undefined;
+      if (held && this.#ws === ws) this.#held = { reason: held, protocol: held === 'outdated' ? event.reason || null : null };
       lost();
     });
     ws.addEventListener('error', lost);
@@ -278,6 +294,14 @@ export class SessionCloud {
     unlinkFolder(this.#host.root);
     this.#host.ended();
     this.#host.emit({ type: 'cloudEnded', reason, team: this.#link.team, project: this.#link.project });
+  }
+
+  // Tried again now, at the author's word: a copy the room kept out for its storage or its connections.
+  retry(): void {
+    if (this.#stopped || this.#ws || !this.#held || this.#held.reason === 'outdated') return;
+    if (this.#timer) clearTimeout(this.#timer);
+    this.#timer = null;
+    this.#connect();
   }
 
   #send(message: ClientMessage): void {
@@ -386,7 +410,7 @@ export class SessionCloud {
 
   #status(): void {
     if (this.#ended) return;
-    this.#host.emit({ type: 'cloudStatus', online: this.#online, head: this.#client.head, pending: this.#client.pending, client: this.#link.client, peers: this.#peers });
+    this.#host.emit({ type: 'cloudStatus', online: this.#online, head: this.#client.head, pending: this.#client.pending, client: this.#link.client, peers: this.#peers, ...(this.#held ? { held: this.#held.reason, ...(this.#held.protocol ? { protocol: this.#held.protocol } : {}) } : {}) });
   }
 
   #wake(): void {
