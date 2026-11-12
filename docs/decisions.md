@@ -90,3 +90,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D84](decisions/D84.md) | The commands by name, with the schema of their arguments, in the core | 12 Nov 2026 |
 | [D85](decisions/D85.md) | A room's refusals are named in the protocol | 12 Nov 2026 |
 | [D86](decisions/D86.md) | A project's validation kept change by change, in the core | 12 Nov 2026 |
+| [D87](decisions/D87.md) | An undo carries what it left out, through a project's server | 12 Nov 2026 |

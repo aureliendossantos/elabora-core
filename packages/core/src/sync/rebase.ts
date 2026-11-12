@@ -35,6 +35,9 @@ export interface RebaseResult {
   skipped: SkippedOp[];
   overwrote: Overwrite[];
   files: Files;            // head with ops applied
+  // The operations of the change not placed whole (left out, or merged with a part left out), by
+  // index, with why: an undo records them (D87).
+  left: { index: number; reason: SkippedOp['reason']; message: string }[];
   refusal?: Omit<Refusal, 'id'>; // set: nothing applies (ops is empty, files is head)
 }
 
@@ -42,15 +45,18 @@ export interface RebaseResult {
 // value that was overwritten.
 export function rebase(head: Files, change: RebaseInput, since: readonly Committed[] = []): RebaseResult {
   if (change.inverse.length !== change.ops.length) {
-    return { ops: [], skipped: [], overwrote: [], files: head, refusal: { code: 'E_SYNC_MALFORMED', message: `Change ${change.id}: its inverse does not match its operations` } };
+    return { ops: [], skipped: [], overwrote: [], files: head, left: [], refusal: { code: 'E_SYNC_MALFORMED', message: `Change ${change.id}: its inverse does not match its operations` } };
   }
   const run: Run = { workspace: openWorkspace(head), change, ai: isAiAuthor(change.author), since, ops: [], skipped: [], overwrote: [] };
   const n = change.ops.length;
+  const left: RebaseResult['left'] = [];
   for (let k = 0; k < n; k++) {
+    const before = run.skipped.length;
     const outcome = place(run, change.ops[k], change.inverse[n - 1 - k]);
-    if (outcome) return { ops: [], skipped: [], overwrote: [], files: head, refusal: outcome };
+    if (outcome) return { ops: [], skipped: [], overwrote: [], files: head, left: [], refusal: outcome };
+    if (run.skipped.length > before) left.push({ index: k, reason: run.skipped[before].reason, message: run.skipped[before].message });
   }
-  return { ops: run.ops, skipped: run.skipped, overwrote: run.overwrote, files: closeWorkspace(run.workspace) };
+  return { ops: run.ops, skipped: run.skipped, overwrote: run.overwrote, files: closeWorkspace(run.workspace), left };
 }
 
 interface Run {

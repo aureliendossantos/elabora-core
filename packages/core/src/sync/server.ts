@@ -2,6 +2,7 @@ import type { Files } from '../ops/types.ts';
 import { checkShape, invertOps, touchedFiles } from '../ops/apply.ts';
 import { OpError } from '../ops/errors.ts';
 import { rebase } from './rebase.ts';
+import { leftByRebase } from './undo-log.ts';
 import type { Committed, Refusal, Submission } from './protocol.ts';
 
 // What the server of a project does with a submitted change (D73), pure: the room (elabora-cloud)
@@ -61,7 +62,8 @@ export function acceptChange(state: RoomState, submission: Submission, options: 
     inverse: invertOps(state.files, result.ops),
     skipped: result.skipped,
     overwrote: [...(submission.overwrote ?? []), ...result.overwrote],
-    ...(submission.undoes ? { undoes: submission.undoes } : {})
+    // An undo keeps what it left out, and what this rebase left out of it (D87).
+    ...(submission.undoes ? { undoes: leftByRebase(submission.undoes, submission.id, submission.ops, result.left) } : {})
   };
   return { committed, files: result.files, duplicate: false };
 }
@@ -84,6 +86,22 @@ function malformedReason(submission: Submission): string | null {
     } catch (error) {
       if (error instanceof OpError) return error.message;
       throw error;
+    }
+  }
+  const undoes = submission.undoes as unknown;
+  if (undoes !== undefined) {
+    const u = undoes as { batch?: unknown; changes?: unknown; skipped?: unknown };
+    if (!u || typeof u !== 'object' || !Array.isArray(u.changes) || u.changes.length > 10_000 || !u.changes.every((id) => typeof id === 'string') || (u.batch !== undefined && typeof u.batch !== 'string')) return 'undoes must name the changes it undoes';
+    if (u.skipped !== undefined) {
+      if (!Array.isArray(u.skipped) || u.skipped.length > 10_000 || !u.skipped.every((s) => s && typeof s === 'object' && typeof s.change === 'string')) return 'undoes.skipped must list operations left out, each with its change';
+      for (const s of u.skipped as { op: unknown }[]) {
+        try {
+          checkShape(s.op as never);
+        } catch (error) {
+          if (error instanceof OpError) return `undoes.skipped: ${error.message}`;
+          throw error;
+        }
+      }
     }
   }
   const overwrote = submission.overwrote as unknown;

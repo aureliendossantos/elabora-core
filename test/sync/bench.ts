@@ -14,6 +14,9 @@ import type { Author, Files, Op } from '@elabora/core/ops/types';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { formatJson, sameContent, textFile } from '@elabora/core/ops/json';
 import { undoChanges } from '@elabora/core/ops/undo';
+import { applyOps } from '@elabora/core/ops/apply';
+import { belongsTo, changesToUndo, undoState } from '@elabora/core/ops/batch';
+import { journalOf } from '@elabora/core/sync/undo-log';
 import { executeCommand } from '@elabora/core/commands/execute';
 import {
   CommandError, addBlock, updateBlock, removeBlock, moveBlock, duplicateBlock, updateScreen, duplicateScreen, deleteScreen,
@@ -27,7 +30,7 @@ import type { Diagnostic } from '@elabora/core/diagnostics/index';
 import { SyncClient, type Outcome } from '@elabora/core/sync/client';
 import { acceptChange } from '@elabora/core/sync/server';
 import { externalEdit, type Version } from '@elabora/core/sync/external';
-import type { ClientMessage, Committed, Overwrite, ServerMessage } from '@elabora/core/sync/protocol';
+import type { ClientMessage, Committed, Overwrite, ServerMessage, Undoes } from '@elabora/core/sync/protocol';
 import { benchCourse } from './fixture.ts';
 
 export interface BenchOptions {
@@ -41,6 +44,8 @@ export interface BenchOptions {
   // Each change placed, the server's validation kept change by change (D86) is compared with a
   // whole validation of the same files: a difference is a problem of the draw.
   differential?: boolean;
+  // Agents undo their batch now and then, from the server's log, as an agent of the cloud does (D87).
+  agentUndos?: boolean;
 }
 
 export interface BenchReport {
@@ -141,10 +146,12 @@ export function runBench(options: BenchOptions): BenchReport {
       from.down.push({ type: 'ack', change: accepted.committed });
       return;
     }
+    const logBefore = server.log.slice();
     server.head = accepted.committed.seq;
     server.files = accepted.files;
     server.log.push(accepted.committed);
     count('placed');
+    if (accepted.committed.undoes) differences.push(...undoProblems(logBefore, server.log, server.files, accepted.committed, count));
     if (kept) {
       kept = revalidate(kept, accepted.files as ProjectFiles);
       const difference = sameFindings(kept, validateProject(loadProject(accepted.files as ProjectFiles)).diagnostics);
@@ -182,7 +189,7 @@ export function runBench(options: BenchOptions): BenchReport {
     c.versions.length = Math.min(c.versions.length, 64);
   };
 
-  const record = (c: Copy, actor: Actor, ops: Op[], seen: Files, written: string[], name: string, extra: { undoes?: { changes: string[] }; batch?: string; overwrote?: Overwrite[] } = {}) => {
+  const record = (c: Copy, actor: Actor, ops: Op[], seen: Files, written: string[], name: string, extra: { undoes?: Undoes; batch?: string; overwrote?: Overwrite[] } = {}) => {
     if (!ops.length) return;
     const id = `${c.name}-${++changes}`;
     made.set(id, { id, actor, seen, tokens: written, ops, head: c.client.pending ? -1 : c.client.head });
@@ -232,6 +239,7 @@ export function runBench(options: BenchOptions): BenchReport {
     const view = c.client.view;
     if (actor.author.kind === 'external') return writeFiles(c, actor);
     if (actor.human && rng.chance(0.12)) return undoOwn(c, actor);
+    if (options.agentUndos && !actor.human && rng.chance(0.1)) return undoBatch(c, actor);
     const word = token(actor);
     const command = commandsFor(rng, view, word);
     if (!command) return;
@@ -252,9 +260,24 @@ export function runBench(options: BenchOptions): BenchReport {
     const view = c.client.view;
     const result = undoChanges(view, [last]);
     undone.add(last.id);
-    record(c, actor, result.ops, view, [], 'undo', { undoes: { changes: [last.id] } });
+    record(c, actor, result.ops, view, [], 'undo', { undoes: { changes: [last.id], ...(result.skipped.length ? { skipped: result.skipped } : {}) } });
   };
   const undone = new Set<string>();
+
+  // An agent undoes its batch, as an agent of the cloud does: from the server's log (what this copy
+  // got of it), by the core's rules (D79): what an earlier undo left out is tried again.
+  const undoBatch = (c: Copy, actor: Actor) => {
+    const entries = journalOf(server.log.filter((change) => change.seq <= c.client.head));
+    const batch = `${actor.id}-batch`;
+    const changes = changesToUndo(entries, { batch }).filter((change) => belongsTo(change.author, actor.author));
+    if (!changes.length) return;
+    const view = c.client.view;
+    const result = undoChanges(view, changes);
+    if (!result.ops.length) return;
+    count('undo of an agent\'s batch');
+    if (result.skipped.length) count('undo of an agent\'s batch, in part');
+    record(c, actor, result.ops, view, [], 'undo', { batch, undoes: { batch, changes: changes.map((change) => change.id), ...(result.skipped.length ? { skipped: result.skipped } : {}) } });
+  };
 
   // An agent writing with its own tools: it reads a file, and later writes it with its edit.
   const writeFiles = (c: Copy, actor: Actor) => {
@@ -353,6 +376,44 @@ export function runBench(options: BenchOptions): BenchReport {
   }
 
   return { seed: options.seed, problems: [...differences, ...check(server, copies, made, outcomes, validate)], stats };
+}
+
+// An undo placed (D87): each operation it left out is an inverse operation of one of its targets as
+// the log holds them (else it counts as undone without having been), and every inverse operation of
+// its targets in force before it is, after it, either still in force or applied.
+function undoProblems(logBefore: readonly Committed[], log: readonly Committed[], files: Files, undo: Committed, count: (key: string) => void): string[] {
+  const problems: string[] = [];
+  const undoes = undo.undoes as Undoes;
+  const byId = new Map(log.map((change) => [change.id, change]));
+  const targets = undoes.changes.map((id) => byId.get(id)).filter((change): change is Committed => !!change);
+  const key = (op: unknown) => JSON.stringify(op);
+  for (const left of undoes.skipped ?? []) {
+    const named = undoes.changes.includes(left.change) ? targets.filter((target) => target.id === left.change) : targets;
+    if (!named.some((target) => target.inverse.some((op) => key(op) === key(left.op)))) {
+      if (left.op.op === 'insert' || left.op.op === 'move') count('undo: a reanchored insert or move left out, not matched');
+      else problems.push(`undo ${undo.id}: a left-out operation matches no inverse of its targets (${left.change}, ${left.op.op} ${left.op.file})`);
+    }
+  }
+  const inForce = (state: ReturnType<typeof undoState>, target: Committed): Set<number> =>
+    state.undone.has(target.id) ? new Set() : new Set(state.remaining.get(target.id) ?? target.inverse.map((_, k) => k));
+  const before = undoState(journalOf(logBefore));
+  const after = undoState(journalOf(log));
+  for (const target of targets) {
+    const now = inForce(after, target);
+    for (const k of inForce(before, target)) {
+      if (now.has(k)) continue;
+      const op = target.inverse[k];
+      if (op.op !== 'set') { count('undo: an inverse other than set taken, not checked'); continue; }
+      // Applied: one of the undo's operations placed, or the files hold what it writes (applying it
+      // again changes nothing; a later inverse of the same undo may have written the place again).
+      // A value merged with what others wrote since (an agent's undo keeps a person's addition) is applied too.
+      let holds = undo.ops.some((placed) => key(placed) === key(op) || (placed.op === 'set' && placed.file === op.file && key(placed.path) === key(op.path)));
+      if (!holds) try { holds = key(applyOps(files, [op]).get(op.file)) === key(files.get(op.file)); } catch { holds = false; }
+      if (!holds) problems.push(`undo ${undo.id}: ${target.id}'s inverse ${k} (${op.file}) counts as undone but the files do not hold it`);
+      else count('undo: an inverse taken and applied');
+    }
+  }
+  return problems;
 }
 
 // What a validation kept change by change found, against a whole validation: every finding, its

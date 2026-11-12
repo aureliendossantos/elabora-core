@@ -46,7 +46,9 @@ export function undoState(entries: readonly JournalEntry[]): UndoState {
     for (const id of entry.undoes.changes) {
       const target = byId.get(id);
       if (!target) continue;
-      const left = new Set(entry.skipped.filter((skipped) => skipped.change === id).map((skipped) => JSON.stringify(skipped.op)));
+      // Its own left-out operations, and those a rebase left out as the undo was placed in a project
+      // in the cloud (named after the undo, D87).
+      const left = new Set(entry.skipped.filter((skipped) => skipped.change === id || !entry.undoes.changes.includes(skipped.change)).map((skipped) => JSON.stringify(skipped.op)));
       const indexes = done.get(id) ?? new Set<number>();
       target.inverse.forEach((op, k) => { if (!left.has(JSON.stringify(op))) indexes.add(k); });
       done.set(id, indexes);

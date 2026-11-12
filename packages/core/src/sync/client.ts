@@ -3,7 +3,8 @@ import { applyOps, invertOps } from '../ops/apply.ts';
 import { isAiAuthor } from '../ops/batch.ts';
 import { binaryFile, textFile } from '../ops/json.ts';
 import { rebase } from './rebase.ts';
-import type { Committed, Overwrite, Refusal, ServerMessage, Submission } from './protocol.ts';
+import type { Committed, Overwrite, Refusal, ServerMessage, Submission, Undoes } from './protocol.ts';
+import { leftByRebase } from './undo-log.ts';
 
 // A copy of a project in the cloud (D73): the files the server confirmed, and the changes made here
 // that it has not placed yet, oldest first. What the copy shows (and writes in its folder) is always
@@ -19,7 +20,8 @@ export interface LocalChange {
   batch?: string;
   command?: { name: string; args: unknown };
   ops: Op[];
-  undoes?: { batch?: string; changes: string[] };
+  // An undo: what it undoes and what it left out (D87).
+  undoes?: Undoes;
   // What it replaced that its author may not have seen (an agent's file edit, D75): told to whoever wrote it.
   overwrote?: Overwrite[];
   // Its inverse on the view, when the caller has it (a journal's): what the change replaced.
@@ -96,8 +98,9 @@ export class SyncClient {
         const ops: Op[] = [];
         let count = 0;
         let bytes = 0;
+        let firstLeft: ReturnType<typeof rebase>['left'] = [];
         for (const item of this.waiting) {
-          if (count && (!isAiAuthor(first.change.author) || !first.change.batch || item.change.batch !== first.change.batch || !sameAuthor(item.change.author, first.change.author)
+          if (count && (!isAiAuthor(first.change.author) || !first.change.batch || first.change.undoes || item.change.batch !== first.change.batch || !sameAuthor(item.change.author, first.change.author)
             || item.change.undoes || count >= GROUP_CHANGES || ops.length + item.change.ops.length > GROUP_OPS || bytes + JSON.stringify(item.change.ops).length > GROUP_BYTES)) break;
           const placed = rebase(files, { id: item.change.id, author: item.change.author, ops: item.change.ops, inverse: item.inverse });
           if (placed.refusal) {
@@ -106,6 +109,7 @@ export class SyncClient {
             this.recompute();
             break;
           }
+          if (!count) firstLeft = placed.left;
           item.skipped = placed.skipped;
           item.overwrote = [...(item.change.overwrote ?? []), ...placed.overwrote];
           files = placed.files;
@@ -123,7 +127,8 @@ export class SyncClient {
           id: first.sentId, base: this.headSeq, at, author, ops, inverse: invertOps(this.confirmedFiles, ops),
           ...(batch ? { batch } : {}),
           ...(count > 1 ? { command: { name: 'changes', args: { ids: run.map((item) => item.change.id), commands: run.map((item) => item.change.command?.name ?? null) } } } : command ? { command } : {}),
-          ...(undoes ? { undoes } : {}),
+          // An undo goes alone: what this rebase left out of it is added to what it left out.
+          ...(undoes ? { undoes: leftByRebase(undoes, first.change.id, first.change.ops, firstLeft) } : {}),
           ...(overwrote.length ? { overwrote } : {})
         };
       }

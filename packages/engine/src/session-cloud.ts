@@ -114,7 +114,8 @@ export class SessionCloud {
     const change: LocalChange = {
       id: this.#submissionId(entry.id), at: entry.at, author: entry.author, batch: entry.batch,
       ...(entry.command ? { command: entry.command } : {}), ops: entry.ops, inverse: entry.inverse,
-      ...(entry.type === 'undo' ? { undoes: { ...entry.undoes, changes: entry.undoes.changes.map((id) => this.#submissionId(id)) } } : {}),
+      // An undo, with what it left out (D87): ids as the project's server knows them.
+      ...(entry.type === 'undo' ? { undoes: { ...entry.undoes, changes: entry.undoes.changes.map((id) => this.#submissionId(id)), ...(entry.skipped.length ? { skipped: entry.skipped.map((skipped) => ({ ...skipped, change: this.#submissionId(skipped.change) })) } : {}) } } : {}),
       ...(unsure.length ? { overwrote: unsure } : {})
     };
     this.#client.record(change);

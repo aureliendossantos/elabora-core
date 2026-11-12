@@ -182,3 +182,26 @@ test('a change the room refused for a missing medium goes again, and is placed',
   assert.equal(screen(B, 'chemin').title, 'Après deux refus');
   assert.deepEqual(refusals, []);
 });
+
+test('an undo in a linked folder sends what it left out, and the room keeps it (D87)', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const agent = { kind: 'agent' as const, name: 'claude-code' };
+  await a.run('update_screen', { id: 'chemin', title: 'Titre de l\'agent' }, agent);
+  await a.run('update_screen', { id: 'accueil', title: 'Accueil de l\'agent' }, agent);
+  await settled(room, a, b);
+  await b.run('update_screen', { id: 'chemin', title: 'Titre de la personne' }, { kind: 'human' });
+  await settled(room, a, b);
+  const batch = room.log.at(-2)?.batch as string;
+  await a.undoBatch(batch, { kind: 'human' });
+  await settled(room, a, b);
+  assert.deepEqual([screen(B, 'chemin').title, screen(B, 'accueil').title === 'Accueil de l\'agent'], ['Titre de la personne', false]);
+  const undo = room.log.at(-1);
+  assert.ok(undo?.undoes, JSON.stringify(undo));
+  assert.equal(undo?.undoes?.skipped?.length, 1, JSON.stringify(undo?.undoes));
+  assert.ok(undo?.undoes?.changes.every((id) => room.log.some((change) => change.id === id)), 'its targets as the room knows them');
+});

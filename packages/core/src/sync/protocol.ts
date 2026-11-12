@@ -18,8 +18,8 @@ export interface Submission {
   command?: { name: string; args: unknown };
   ops: Op[];
   inverse: Op[];         // inverse[k] undoes ops[ops.length - 1 - k], on the files at base
-  // An undo: the changes it undoes. What it could not undo is in the committed change's skipped.
-  undoes?: { batch?: string; changes: string[] };
+  // An undo: the changes it undoes, and what of them it left out (D87).
+  undoes?: Undoes;
   // What the copy's own rebase of the change overwrote (it was made before the copy got changes of
   // others): passed on with the change, so that whoever wrote those values is told.
   overwrote?: Overwrite[];
@@ -51,7 +51,19 @@ export interface Committed {
   inverse: Op[];
   skipped: SkippedOp[];  // operations of the submission left out (an agent's value over a person's…)
   overwrote: Overwrite[];
-  undoes?: { batch?: string; changes: string[] };
+  undoes?: Undoes;
+}
+
+// What an undo undid (D79, D87): the changes it targets, and the inverse operations of theirs it
+// left out, so that they stay in force and a later undo tries them again. A left-out operation names
+// the change it is the inverse of and is that change's inverse operation as the log holds it, or
+// (left out by a rebase as the undo was placed) names the undo itself and is the operation it did
+// not place; journalOf and undoState read both. The copy that computed the undo sends what it left
+// out; each rebase on the way (the copy's, the server's) adds what it left out.
+export interface Undoes {
+  batch?: string;
+  changes: string[];
+  skipped?: SkippedOp[];
 }
 
 // A change the server did not place: nothing of it applies. acceptChange's codes:
