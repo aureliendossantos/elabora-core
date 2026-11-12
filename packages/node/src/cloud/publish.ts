@@ -10,6 +10,7 @@ import { loadProjectFromDir } from '../project-reader.ts';
 import type { Project } from '@elabora/core/project/model';
 import { CloudError, REVIEW_PAGE_ORIGIN, cloudUrl, publicationUrl, segment } from './client.ts';
 import { connect, guard } from './account.ts';
+import { sendBlobs } from './blob-upload.ts';
 import type { Connection } from './account.ts';
 import { recordPublished, screenHashes } from './records.ts';
 import type { AnnouncedManifest, CloudPublication, CloudReview, PublicationMeta, PublishCheck, Visibility } from './types.ts';
@@ -74,22 +75,6 @@ export const manifestOf = (files: readonly LocalFile[], noindex: boolean, meta: 
   meta
 });
 
-async function readRange(file: string, offset: number, length: number): Promise<Uint8Array> {
-  const handle = await fs.promises.open(file, 'r');
-  try {
-    const bytes = new Uint8Array(length);
-    let read = 0;
-    while (read < length) {
-      const { bytesRead } = await handle.read(bytes, read, length - read, offset + read);
-      if (bytesRead === 0) throw new CloudError(0, 'E_CLOUD_FILE_CHANGED', `${file} changed while it was being sent: publish again.`);
-      read += bytesRead;
-    }
-    return bytes;
-  } finally {
-    await handle.close();
-  }
-}
-
 interface Announced {
   unchanged: boolean;
   upload?: string;
@@ -99,9 +84,6 @@ interface Announced {
   missing: { sha256: string; size: number }[];
   limits?: { singlePutMaxBytes: number; partBytes: number };
 }
-
-const BLOB_TIMEOUT = 15 * 60_000;
-const PARALLEL = 4;
 
 // Publishes a folder already built for the web: announce, send what is missing, commit.
 export async function publishFolder(connection: Connection, folder: string, { name, visibility, noindex, meta, onProgress = () => {} }: {
@@ -119,42 +101,17 @@ export async function publishFolder(connection: Connection, folder: string, { na
     return { ...result, unchanged: true, previous: announced.version, url: announced.url, pinnedUrl: announced.url ? `${announced.url}@${announced.version}/` : null, sentFiles: 0, sentBytes: 0 };
   }
   const bySha = new Map(files.map((file) => [file.sha256, file]));
-  const limit = announced.limits?.singlePutMaxBytes ?? 64 * 1024 * 1024;
-  const totalBytes = announced.missing.reduce((sum, blob) => sum + blob.size, 0);
-  let sentBytes = 0;
-  let multipartFiles = 0;
   const upload = `${base}/uploads/${segment(announced.upload ?? '')}`;
-  const send = async (missing: { sha256: string; size: number }) => {
+  const fileOf = (missing: { sha256: string }) => {
     const file = bySha.get(missing.sha256);
     if (!file) throw new CloudError(0, 'E_CLOUD_PROTOCOL', `The API asked for a file this module does not have (${missing.sha256.slice(0, 12)}…).`);
-    const blob = `${upload}/blobs/${missing.sha256}`;
-    if (missing.size <= limit) {
-      await guard(credential, async () => client.request('PUT', blob, { bytes: await readRange(file.absolute, 0, file.size), timeoutMs: BLOB_TIMEOUT }));
-    } else {
-      multipartFiles++;
-      const started = await guard(credential, () => client.request<{ present: boolean; multipart?: string; partBytes?: number; parts?: number }>('POST', `${blob}/multipart`));
-      if (!started.present) {
-        const multipart = `${blob}/multipart/${encodeURIComponent(started.multipart ?? '')}`;
-        const partBytes = started.partBytes ?? 0;
-        const parts: { partNumber: number; etag: string }[] = [];
-        for (let n = 1; n <= (started.parts ?? 0); n++) {
-          const offset = (n - 1) * partBytes;
-          const bytes = await readRange(file.absolute, offset, Math.min(partBytes, file.size - offset));
-          const part = await guard(credential, () => client.request<{ partNumber: number; etag: string }>('PUT', `${multipart}/${n}`, { bytes, timeoutMs: BLOB_TIMEOUT }));
-          parts.push({ partNumber: part.partNumber, etag: part.etag });
-          onProgress({ phase: 'send', file: file.path, sentBytes: sentBytes + offset + bytes.byteLength, totalBytes });
-        }
-        await guard(credential, () => client.request('POST', `${multipart}/complete`, { json: { parts }, timeoutMs: BLOB_TIMEOUT }));
-      }
-    }
-    sentBytes += missing.size;
-    onProgress({ phase: 'send', file: file.path, sentBytes, totalBytes });
+    return file.absolute;
   };
-  // A few at a time: blobs are independent until the commit, which checks them all.
-  const queue = [...announced.missing];
-  await Promise.all(Array.from({ length: Math.min(PARALLEL, queue.length) }, async () => {
-    for (let next = queue.shift(); next; next = queue.shift()) await send(next);
-  }));
+  const byPath = new Map(files.map((file) => [file.absolute, file.path]));
+  const { sentBytes, multipartFiles } = await sendBlobs({
+    client, upload, missing: announced.missing, fileOf, limit: announced.limits?.singlePutMaxBytes, guard: (call) => guard(credential, call),
+    onProgress: (sent) => onProgress({ phase: 'send', file: byPath.get(sent.file), sentBytes: sent.sentBytes, totalBytes: sent.totalBytes })
+  });
   onProgress({ phase: 'commit' });
   const committed = await guard(credential, () => client.request<{ version: string; url: string | null; pinnedUrl: string | null }>('POST', `${upload}/commit`));
   return { ...result, version: committed.version, unchanged: false, previous: announced.previous ?? null, url: committed.url, pinnedUrl: committed.pinnedUrl, sentFiles: announced.missing.length, sentBytes, multipartFiles };

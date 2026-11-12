@@ -99,6 +99,7 @@ import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
 import { SessionCloud, type CloudOptions } from './session-cloud.ts';
+import { folderSnapshot, type PushSource } from '@elabora/node/cloud/projects';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type {
   BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, ExternalNotes, FileEntry, FileView,
@@ -322,6 +323,18 @@ export class Session {
     this.#assertOpen();
     if (this.#cloud) throw new Error('This session already syncs a project in the cloud.');
     await this.#startCloud(options);
+  }
+
+  // What a first upload of the open module sends (pushFolder's source): its files and the journal's
+  // last entry, read together in the session's queue and under the project's lock. Whatever is done
+  // in the module during the upload comes after that entry, and goes to the room as the changes of
+  // its authors once linkCloud starts (D88).
+  async cloudSnapshot(): Promise<PushSource> {
+    this.#assertOpen();
+    return this.#queue.run(() => this.#locked(async () => {
+      await this.#syncWithDisk();
+      return folderSnapshot(this.root);
+    }));
   }
 
   async #startCloud(options: CloudOptions): Promise<void> {

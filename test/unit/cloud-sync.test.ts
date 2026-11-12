@@ -278,3 +278,25 @@ test('an agent\'s run sent as one change, then undone whole in the folder: the r
   assert.notEqual(screen(B, 'chemin').title, 'Agent 7');
   assert.deepEqual(changesToUndo(journalOf(room.log), { batch: grouped.batch }).map((change) => change.id), [], 'nothing of the run left to undo in the room\'s log');
 });
+
+test('what is done in a module while its first upload runs goes to the room as its author\'s, once linked (D88)', async () => {
+  const A = copyExample();
+  const a = await openProject(A, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, debounceMs: 30 });
+  sessions.push(a);
+  // The upload reads the module; the author goes on working before it is linked.
+  const source = await a.cloudSnapshot();
+  await a.run('update_screen', { id: 'chemin', title: 'Pendant l\'envoi' }, { kind: 'human' });
+  const room = new Room(source.files);
+  const link: ProjectLink = {
+    format: 'elabora-cloud-project/1', api: 'http://localhost:1', team: 'tm_test', project: 'prj_test', client: 'cA',
+    person: { id: 'acc_ada', name: 'Ada' }, head: room.head, confirmed: keepConfirmed(A, source.files), waiting: [], journal: source.journal
+  };
+  writeLink(A, link);
+  await a.linkCloud({ api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20] });
+  await settled(room, a);
+  const sent = room.log.at(-1);
+  assert.equal(room.log.length, 1, JSON.stringify(room.log.map((change) => change.command)));
+  assert.deepEqual([sent?.author.kind, sent?.command?.name], ['human', 'update_screen']);
+  const placed = room.files.get('screens/chemin.json');
+  assert.equal(placed?.kind === 'text' && JSON.parse(placed.text).title, 'Pendant l\'envoi');
+});

@@ -91,3 +91,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D85](decisions/D85.md) | A room's refusals are named in the protocol | 12 Nov 2026 |
 | [D86](decisions/D86.md) | A project's validation kept change by change, in the core | 12 Nov 2026 |
 | [D87](decisions/D87.md) | An undo carries what it left out, through a project's server | 12 Nov 2026 |
+| [D88](decisions/D88.md) | A first upload sends its media a few at a time, from a snapshot taken under the lock | 12 Nov 2026 |

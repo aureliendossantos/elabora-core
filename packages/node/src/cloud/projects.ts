@@ -9,6 +9,7 @@ import { readProjectFiles } from '../project-reader.ts';
 import { lastEntry } from '../journal/journal.ts';
 import { CloudClient, CloudError, segment } from './client.ts';
 import { requireCredential } from './credentials.ts';
+import { sendBlobs } from './blob-upload.ts';
 import { readLink, writeLink, type Person, type ProjectLink } from './link.ts';
 
 export { readLink, writeLink, linkFile, stampAuthor, type Person, type ProjectLink } from './link.ts';
@@ -81,15 +82,17 @@ export function blobsOf(ops: readonly Op[]): string[] {
 }
 
 // Announces every medium a change writes (even those the team holds: the upload keeps them from
-// the collection until the change is numbered) and sends those it lacks; commit it once the change is placed.
-export async function sendMedia(client: CloudClient, root: string, team: string, hashes: readonly string[]): Promise<string | null> {
+// the collection until the change is numbered) and sends those it lacks, a few at a time (D88);
+// commit it once the change is placed.
+export async function sendMedia(client: CloudClient, root: string, team: string, hashes: readonly string[], onProgress?: (sent: { sentBytes: number; totalBytes: number }) => void): Promise<string | null> {
   if (!hashes.length) return null;
   const media = hashes.map((hash) => ({ sha256: hex(hash), size: fs.statSync(blobPath(root, hash as BlobHash)).size }));
-  const upload = await client.request<{ upload: string; missing: { sha256: string }[] }>('POST', `/v1/teams/${segment(team)}/uploads`, { json: { media } });
-  for (const { sha256 } of upload.missing) {
-    const bytes = readBlob(root, `sha256:${sha256}` as BlobHash);
-    await client.request('PUT', `/v1/teams/${segment(team)}/uploads/${segment(upload.upload)}/blobs/${sha256}`, { bytes, timeoutMs: 300_000 });
-  }
+  const upload = await client.request<{ upload: string; missing: { sha256: string; size: number }[]; limits?: { singlePutMaxBytes: number } }>('POST', `/v1/teams/${segment(team)}/uploads`, { json: { media } });
+  onProgress?.({ sentBytes: 0, totalBytes: upload.missing.reduce((sum, blob) => sum + blob.size, 0) });
+  await sendBlobs({
+    client, upload: `/v1/teams/${segment(team)}/uploads/${segment(upload.upload)}`, missing: upload.missing, limit: upload.limits?.singlePutMaxBytes,
+    fileOf: (blob) => blobPath(root, `sha256:${blob.sha256}` as BlobHash), onProgress
+  });
   return upload.upload;
 }
 
@@ -143,53 +146,74 @@ const CHANGE_OPS = 900;
 
 export interface Pushed { link: ProjectLink; changes: number; files: number; media: number }
 
+// What a first upload sends: the folder's files, every binary file and long text in the folder's blob
+// store, and the journal's last entry at that moment. Taken under the project's lock by an open
+// session (Session.cloudSnapshot), so that what is done in the module while the upload runs is in the
+// journal after it, and goes as the changes of its authors once the folder is linked (D88).
+export interface PushSource { files: Files; journal: number }
+
+export async function folderSnapshot(dir: string): Promise<PushSource> {
+  const root = path.resolve(dir);
+  const { files } = readProjectFiles(root);
+  const out = new Map<string, FileContent>();
+  for (const [rel, file] of files) {
+    if (rel.normalize('NFC') !== rel) throw new CloudError(0, 'E_CLOUD_PATH', `${rel}: its name is not in Unicode NFC; rename it before the upload.`);
+    if (file.kind === 'text') out.set(rel, file);
+    else {
+      const stored = await putFileSnapshot(root, path.join(root, rel));
+      out.set(rel, binaryFile(stored.hash, stored.size));
+    }
+  }
+  return { files: out, journal: lastEntry(root)?.seq ?? 0 };
+}
+
+// How far a first upload is: its media by bytes, then its files by change.
+export type PushProgress =
+  | { phase: 'media'; sentBytes: number; totalBytes: number }
+  | { phase: 'files'; sent: number; total: number };
+
 // A folder's files into an empty project of the cloud, then the folder linked to it.
-export async function pushFolder(dir: string, options: { api: string; team: string; project: string }): Promise<Pushed> {
+export async function pushFolder(dir: string, options: { api: string; team: string; project: string }, { source, onProgress }: { source?: PushSource; onProgress?: (progress: PushProgress) => void } = {}): Promise<Pushed> {
   const root = path.resolve(dir);
   if (readLink(root)) throw new CloudError(0, 'E_CLOUD_LINKED', `${root} is already linked to a project: elabora cloud project sync.`);
   const client = projectsClient(options.api);
-  const person = await whoAmI(client);
-  const remote = await projectFiles(client, options.team, options.project);
+  const [person, remote] = await Promise.all([whoAmI(client), projectFiles(client, options.team, options.project)]);
   if (remote.head !== 0 || remote.files.length) throw new CloudError(0, 'E_CLOUD_NOT_EMPTY', 'This project already has files: clone it instead (elabora cloud project clone).');
-  const { files } = readProjectFiles(root);
+  const { files, journal } = source ?? await folderSnapshot(root);
   const ops: Op[] = [];
   const media: string[] = [];
   for (const [rel, file] of files) {
-    if (rel.normalize('NFC') !== rel) throw new CloudError(0, 'E_CLOUD_PATH', `${rel}: its name is not in Unicode NFC; rename it before the upload.`);
     if (file.kind === 'text' && Buffer.byteLength(file.text) <= TEXT_LIMIT) ops.push({ op: 'write', file: rel, text: file.text });
     else {
-      const hash = file.kind === 'text' ? putBytes(root, file.text) : (await putFileSnapshot(root, path.join(root, rel))).hash;
+      const hash = file.kind === 'text' ? putBytes(root, file.text) : file.hash as string;
       media.push(hash);
       ops.push({ op: 'write', file: rel, blob: hash });
     }
   }
   ops.sort((a, b) => (a.file === 'course.json' ? 1 : b.file === 'course.json' ? -1 : a.file < b.file ? -1 : 1));
-  const upload = await sendMedia(client, root, options.team, media);
-  let head = 0;
-  let changes = 0;
-  let chunk: Op[] = [];
+  const upload = await sendMedia(client, root, options.team, media, onProgress && ((sent) => onProgress({ phase: 'media', ...sent })));
+  // The changes, cut where the room's limits say (course.json alone, last).
+  const chunks: Op[][] = [];
   let size = 0;
-  const flush = async () => {
-    if (!chunk.length) return;
+  for (const op of ops) {
+    const bytes = 'text' in op ? Buffer.byteLength(op.text) : 100;
+    const chunk = chunks.at(-1);
+    if (!chunk || size + bytes > CHANGE_BYTES || chunk.length >= CHANGE_OPS || op.file === 'course.json') { chunks.push([op]); size = bytes; }
+    else { chunk.push(op); size += bytes; }
+  }
+  let head = 0;
+  onProgress?.({ phase: 'files', sent: 0, total: chunks.length });
+  for (const [n, chunk] of chunks.entries()) {
     const id = `push-${crypto.randomBytes(6).toString('hex')}`;
     const inverse: Op[] = chunk.map((op): Op => ({ op: 'delete', file: op.file })).reverse();
     const answer = await submitChange(client, options.team, options.project, { id, base: head, at: new Date().toISOString(), author: { kind: 'human' }, command: { name: 'push', args: null }, ops: chunk, inverse });
     if ('refused' in answer) throw new CloudError(0, answer.refused.code, `The project refused the upload: ${answer.refused.message}`);
     head = answer.ack.seq;
-    changes++;
-    chunk = [];
-    size = 0;
-  };
-  for (const op of ops) {
-    const bytes = 'text' in op ? Buffer.byteLength(op.text) : 100;
-    if (chunk.length && (size + bytes > CHANGE_BYTES || chunk.length >= CHANGE_OPS || op.file === 'course.json')) await flush();
-    chunk.push(op);
-    size += bytes;
+    onProgress?.({ phase: 'files', sent: n + 1, total: chunks.length });
   }
-  await flush();
   await commitMedia(client, options.team, upload);
-  const link = newLink(root, options, person, head, files);
-  return { link, changes, files: files.size, media: media.length };
+  const link = newLink(root, options, person, head, files, journal);
+  return { link, changes: chunks.length, files: files.size, media: media.length };
 }
 
 // A project of the cloud into a new folder, linked to it.
@@ -209,13 +233,13 @@ export async function cloneProject(dir: string, options: { api: string; team: st
       await copyBlobTo(root, file.blob as BlobHash, target);
     }
   }
-  return newLink(root, options, person, remote.head, snapshotToFiles(remote.files));
+  return newLink(root, options, person, remote.head, snapshotToFiles(remote.files), lastEntry(root)?.seq ?? 0);
 }
 
-function newLink(root: string, options: { api: string; team: string; project: string }, person: Person, head: number, files: Files): ProjectLink {
+function newLink(root: string, options: { api: string; team: string; project: string }, person: Person, head: number, files: Files, journal: number): ProjectLink {
   const link: ProjectLink = {
     format: 'elabora-cloud-project/1', api: options.api, team: options.team, project: options.project, client: newClientId(), person,
-    head, confirmed: keepConfirmed(root, files), waiting: [], journal: lastEntry(root)?.seq ?? 0
+    head, confirmed: keepConfirmed(root, files), waiting: [], journal
   };
   writeLink(root, link);
   return link;
