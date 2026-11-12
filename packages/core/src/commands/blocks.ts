@@ -9,7 +9,7 @@ import {
   type BlockTarget, type CommandContext, type CommandOutput, type Placement
 } from './context.ts';
 import { copyTranslations } from './translation.ts';
-import { applySet, type PathEdit } from './set-paths.ts';
+import { applySet, inPlaceOf, type PathEdit } from './set-paths.ts';
 
 type Props = Record<string, unknown>;
 
@@ -106,7 +106,7 @@ function mergeProps(base: Props, patch: Props): Props {
   const out = { ...base };
   for (const [key, value] of Object.entries(patch)) {
     if (value === null) delete out[key];
-    else out[key] = value;
+    else out[key] = inPlaceOf(base[key], value);
   }
   return out;
 }

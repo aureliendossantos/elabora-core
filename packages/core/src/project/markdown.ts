@@ -13,6 +13,12 @@ import { parseBlanks, replaceBlanks } from '@elabora/player/fill-in';
 import { recordOf, recordsOf, textOf } from '../compile/values.ts';
 import { listOf, objectsIn } from '../util/values.ts';
 
+// What the review (audience 'client') says around the course's own words, in its language.
+const REVIEW_WORDS = {
+  fr: { objectives: 'Objectifs', question: 'Question : ', fillIn: 'Texte à trous : ', distractors: 'Mots en trop : ', sort: 'Classer : ', reflection: 'Réflexion : ', model: 'Réponse d’expert : ', decision: 'Décision : ', best: '(la meilleure)', notScored: 'non noté', layer: 'Calque' },
+  en: { objectives: 'Objectives', question: 'Question: ', fillIn: 'Fill in the blanks: ', distractors: 'Extra words: ', sort: 'Sort: ', reflection: 'Reflection: ', model: 'Expert answer: ', decision: 'Decision: ', best: '(the best)', notScored: 'not scored', layer: 'Layer' }
+} as const;
+
 // Markdown projection of a course.
 //   audience 'agent': ids, types, events and references, compact (an agent's map of the course)
 //   audience 'client': what the learner sees and how it maps to the validated plan (review)
@@ -22,6 +28,8 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
   const pidx = planIndex(plan);
   const reg = getRegistry(project);
   const agent = audience === 'agent';
+  // The review's words, in the course's language (French, else English).
+  const w = REVIEW_WORDS[(course.language ?? '').toLowerCase().startsWith('fr') ? 'fr' : 'en'];
   const L: string[] = [];
   const short = (s: unknown, n = 160): string => { const t = markdownToText(s); return t.length > n ? `${t.slice(0, n - 1)}…` : t; };
 
@@ -38,7 +46,7 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
       if (project.objects.size) L.push(`- free objects: ${[...project.objects.keys()].map((id) => `\`${id}\``).join(', ')} — before changing one, \`elabora object map . <id>\` (its sections, functions and lines); a question about Elabora: \`elabora docs --search <words>\``);
       L.push('');
     }
-    L.push(agent ? '## Plan objectives' : '## Objectifs / Objectives', '');
+    L.push(agent ? '## Plan objectives' : `## ${w.objectives}`, '');
     for (const o of objectsIn(plan?.objectives)) L.push(`- **${o.id}** ${o.statement}`);
     L.push('');
   }
@@ -137,7 +145,7 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
               break;
             }
             case 'quiz': {
-              L.push(`${indent}- ${tag}${agent ? '' : 'Question : '}${short(p.stem, 300)}${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ' — not scored' : ''}`);
+              L.push(`${indent}- ${tag}${agent ? '' : w.question}${short(p.stem, 300)}${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ` — ${agent ? 'not scored' : w.notScored}` : ''}`);
               for (const o of recordsOf(p.options)) L.push(`${indent}  - [${o.correct ? 'x' : ' '}] ${agent ? `\`${o.id}\` ` : ''}${o.text}${!agent && o.feedback ? ` — _${short(o.feedback, 300)}_` : ''}`);
               break;
             }
@@ -145,7 +153,7 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
             case 'numeric': {
               const tolerance = recordOf(p.tolerance);
               const tol = p.tolerance ? ('absolute' in tolerance ? ` ± ${tolerance.absolute}` : ` ± ${tolerance.percent} %`) : '';
-              L.push(`${indent}- ${tag}${agent ? '' : 'Question : '}${short(p.stem, 300)} → **${p.answer}${tol}${p.unit ? ` ${p.unit}` : ''}**${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ' — not scored' : ''}`);
+              L.push(`${indent}- ${tag}${agent ? '' : w.question}${short(p.stem, 300)} → **${p.answer}${tol}${p.unit ? ` ${p.unit}` : ''}**${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ` — ${agent ? 'not scored' : w.notScored}` : ''}`);
               for (const m of recordsOf(p.misconceptions)) L.push(`${indent}  - ${agent ? `\`${m.id}\` ` : ''}${m.value} — _${short(m.feedback, agent ? 100 : 300)}_`);
               break;
             }
@@ -155,9 +163,9 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
               const distractors = Array.isArray(p.distractors) ? p.distractors.filter((word) => typeof word === 'string') : [];
               if (agent) L.push(`${indent}- ${tag}fill-in (${p.presentation || 'typed'}, ${blanks.length} blank${blanks.length === 1 ? '' : 's'})${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ' — not scored' : ''}: ${short(replaceBlanks(p.markdown, (_, blank) => `[[${blank.answers.join('|')}]]`), 220)}${distractors.length ? ` · distractors ${distractors.join(', ')}` : ''}`);
               else {
-                L.push(`${indent}- Texte à trous : ${p.stem ? short(p.stem, 300) : ''}${p.scored === false ? ' — not scored' : ''}`.trimEnd());
+                L.push(`${indent}- ${w.fillIn}${p.stem ? short(p.stem, 300) : ''}${p.scored === false ? ` — ${w.notScored}` : ''}`.trimEnd());
                 L.push(`${indent}  - ${fillInText(p.markdown).replace(/\s*\n\s*/g, ' ').trim()}`);
-                if (distractors.length) L.push(`${indent}  - Mots en trop : ${distractors.join(', ')}`);
+                if (distractors.length) L.push(`${indent}  - ${w.distractors}${distractors.join(', ')}`);
                 const feedback = recordOf(p.feedback);
                 if (feedback.incorrect) L.push(`${indent}  - _${short(feedback.incorrect, 300)}_`);
               }
@@ -165,20 +173,20 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
             }
             case 'sort': {
               const lines = sortLines(p);
-              L.push(`${indent}- ${tag}${agent ? `sort (${p.presentation || 'pairs'}) ` : 'Classer : '}${short(p.stem, 300)}${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ' — not scored' : ''}`.trimEnd());
+              L.push(`${indent}- ${tag}${agent ? `sort (${p.presentation || 'pairs'}) ` : w.sort}${short(p.stem, 300)}${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ` — ${agent ? 'not scored' : w.notScored}` : ''}`.trimEnd());
               for (const line of lines) L.push(`${indent}  ${line.startsWith('- ') ? line : `- ${line}`}`);
               break;
             }
             case 'reflection': {
               const scale = recordOf(p.scale);
-              L.push(`${indent}- ${tag}${agent ? `reflection (${p.presentation || 'text'}${p.presentation === 'scale' ? ` ${scale.min ?? 1}–${scale.max ?? 5}` : `, ${p.maxLength ?? 500} characters`}${p.download ? ', download' : ''}) ` : 'Réflexion : '}${short(p.prompt, 300)}`);
+              L.push(`${indent}- ${tag}${agent ? `reflection (${p.presentation || 'text'}${p.presentation === 'scale' ? ` ${scale.min ?? 1}–${scale.max ?? 5}` : `, ${p.maxLength ?? 500} characters`}${p.download ? ', download' : ''}) ` : w.reflection}${short(p.prompt, 300)}`);
               if (p.presentation === 'scale' && (scale.minLabel || scale.maxLabel)) L.push(`${indent}  - ${scale.min ?? 1} ${scale.minLabel || ''} … ${scale.max ?? 5} ${scale.maxLabel || ''}`.replace(/\s+/g, ' '));
-              if (p.model) L.push(`${indent}  - ${agent ? 'model' : "Réponse d'expert"} : _${short(p.model, agent ? 160 : 1000)}_`);
+              if (p.model) L.push(`${indent}  - ${agent ? 'model: ' : w.model}_${short(p.model, agent ? 160 : 1000)}_`);
               break;
             }
             case 'decision':
-              L.push(`${indent}- ${tag}${agent ? '' : 'Décision : '}${short(p.prompt, 300)}`);
-              for (const o of recordsOf(p.options)) L.push(`${indent}  - ${agent ? `\`${o.id}\` ` : ''}${o.label}${o.correct ? ' (best)' : ''}${o.feedback ? ` → _${short(o.feedback, agent ? 100 : 300)}_` : ''}`);
+              L.push(`${indent}- ${tag}${agent ? '' : w.decision}${short(p.prompt, 300)}`);
+              for (const o of recordsOf(p.options)) L.push(`${indent}  - ${agent ? `\`${o.id}\` ` : ''}${o.label}${o.correct ? ` ${agent ? '(best)' : w.best}` : ''}${o.feedback ? ` → _${short(o.feedback, agent ? 100 : 300)}_` : ''}`);
               break;
             case 'dialogue': {
               // D61: for agents a summary (elabora dialogue show prints it whole), for clients the script.
@@ -206,7 +214,7 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
       };
       blockLines(s.blocks);
       for (const l of objectsIn(s.layers)) {
-        L.push(`- ${agent ? `layer \`${l.id}\`` : 'Calque'} « ${l.title} »`);
+        L.push(`- ${agent ? `layer \`${l.id}\`` : w.layer} « ${l.title} »`);
         blockLines(l.blocks, '  ');
       }
       const events = objectsIn(s.events);

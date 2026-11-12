@@ -67,7 +67,7 @@ function setAt(root: Record<string, unknown>, path: readonly Segment[], value: u
       }
       if (next === path.length) {
         if (value === null) delete node[key];
-        else node[key] = isRecord(node[key]) && isRecord(value) ? inPlaceOf(node[key], value) : value;
+        else node[key] = inPlaceOf(node[key], value);
         return;
       }
       if (node[key] === undefined || node[key] === null) {
@@ -101,16 +101,22 @@ function setAt(root: Record<string, unknown>, path: readonly Segment[], value: u
       if (value.id !== undefined && value.id !== segment.id) throw new CommandError(`set: "${text}" changes an id; ids are permanent: elabora_rename renames one, and what names it follows.`);
       const entry = { id: segment.id, ...value } as Record<string, Json>;
       if (index < 0) list.push(entry);
-      else list[index] = inPlaceOf(list[index], entry) as Record<string, Json>;
+      else list[index] = inPlaceOf(list[index], entry);
     }
     return;
   }
 }
 
-// An object written where one was: the keys it keeps stay in their place (a change records only what
-// changed, never a key moved), new keys follow.
-export function inPlaceOf(was: unknown, next: Record<string, unknown>): Record<string, unknown> {
-  if (!isRecord(was)) return next;
+// A value written where one was: the keys an object keeps stay in their place, in it and in the
+// objects and the entries of the lists it holds (by id in a keyed list, else by place), new keys follow; so a change records
+// only what changed, never a key moved (an agent writing a dialogue's node again in its own order).
+export function inPlaceOf<Value>(was: unknown, next: Value): Value {
+  if (Array.isArray(next) && Array.isArray(was)) {
+    // Entries of a keyed list by id, of another list by place (only the order of keys changes).
+    const keyed = keyedKind(next as Json[]) === 'objects' && keyedKind(was as Json[]) === 'objects';
+    return next.map((entry, index) => inPlaceOf(keyed ? (was as Json[])[indexOfId(was as Json[], elementId(entry as Json)!)] : was[index], entry)) as Value;
+  }
+  if (!isRecord(was) || !isRecord(next)) return next;
   const kept = Object.keys(was).filter((key) => Object.hasOwn(next, key));
-  return Object.fromEntries([...kept, ...Object.keys(next).filter((key) => !Object.hasOwn(was, key))].map((key) => [key, next[key]]));
+  return Object.fromEntries([...kept, ...Object.keys(next).filter((key) => !Object.hasOwn(was, key))].map((key) => [key, inPlaceOf(was[key], next[key])])) as Value;
 }

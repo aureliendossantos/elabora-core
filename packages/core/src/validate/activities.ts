@@ -45,25 +45,26 @@ export function checkFillIn(ctx: CheckContext, place: Place, props: Record<strin
 
 export function checkSort(ctx: CheckContext, place: Place, props: Record<string, unknown>): void {
   const { block, file, at } = place;
-  const report = (path: string, message: string) => ctx.reporter.emit('E_SORT_TARGET', { file, path: at(path), target: block.id, message: `Sort "${block.id}" ${message}` });
+  // Each fault with its own fix (the catalogue's covers them all).
+  const report = (path: string, message: string, fix?: string) => ctx.reporter.emit('E_SORT_TARGET', { file, path: at(path), target: block.id, message: `Sort "${block.id}" ${message}`, ...(fix ? { fix } : {}) });
   const presentation = props.presentation === 'categories' || props.presentation === 'order' ? props.presentation : 'pairs';
   const items = list(props.items).map(fieldsOf);
   const targets = list(props.targets).map(fieldsOf);
   const repeated = (entries: Record<string, unknown>[]) => entries.map((entry) => entry.id).filter((id, index, ids) => typeof id === 'string' && ids.indexOf(id) !== index);
-  if (items.length < 2) report('items', items.length ? 'has one item: a sort needs at least two (four to eight is best).' : 'has no items.');
-  for (const id of new Set(repeated(items))) report('items', `has two items "${String(id)}".`);
+  if (items.length < 2) report('items', items.length ? 'has one item: a sort needs at least two (four to eight is best).' : 'has no items.', 'Give items whole with all of them (four to eight is best), or change one item by its path (set: props.items[<id>]) and keep the others.');
+  for (const id of new Set(repeated(items))) report('items', `has two items "${String(id)}".`, `Give one of the two items "${String(id)}" another id.`);
   if (presentation !== 'order') {
-    for (const id of new Set(repeated(targets))) report('targets', `has two targets "${String(id)}".`);
+    for (const id of new Set(repeated(targets))) report('targets', `has two targets "${String(id)}".`, `Give one of the two targets "${String(id)}" another id.`);
     const ids = targets.map((target) => target.id);
     items.forEach((item, index) => {
-      if (item.target === undefined) report(`items/${index}`, `(${presentation}) has an item, "${String(item.id)}", that names no target.`);
-      else if (!ids.includes(item.target)) report(`items/${index}/target`, `has an item, "${String(item.id)}", that goes to "${String(item.target)}", which is not one of its targets (${ids.join(', ') || 'none'}).`);
+      if (item.target === undefined) report(`items/${index}`, `(${presentation}) has an item, "${String(item.id)}", that names no target.`, `Give item "${String(item.id)}" a target: ${ids.join(', ') || 'add the targets first'}.`);
+      else if (!ids.includes(item.target)) report(`items/${index}/target`, `has an item, "${String(item.id)}", that goes to "${String(item.target)}", which is not one of its targets (${ids.join(', ') || 'none'}).`, `Point item "${String(item.id)}" at one of ${ids.join(', ') || 'its targets'}, or add a target "${String(item.target)}".`);
     });
-    if (presentation === 'categories' && (targets.length < 2 || targets.length > 4)) report('targets', `(categories) has ${targets.length} targets: two to four categories.`);
+    if (presentation === 'categories' && (targets.length < 2 || targets.length > 4)) report('targets', `(categories) has ${targets.length} targets: two to four categories.`, 'Give it two to four targets, each item naming one of them.');
     if (presentation === 'pairs') {
       const taken = items.map((item) => item.target);
       const unmatched = targets.filter((target) => taken.filter((id) => id === target.id).length !== 1);
-      if (items.length !== targets.length || unmatched.length) report('targets', `(pairs) does not match one to one: ${items.length} items for ${targets.length} targets${unmatched.length ? `, ${unmatched.map((target) => `"${String(target.id)}"`).join(', ')} not taken by exactly one item` : ''}.`);
+      if (items.length !== targets.length || unmatched.length) report('targets', `(pairs) does not match one to one: ${items.length} items for ${targets.length} targets${unmatched.length ? `, ${unmatched.map((target) => `"${String(target.id)}"`).join(', ')} not taken by exactly one item` : ''}.`, 'pairs: as many targets as items, each item naming a target no other item names (or presentation categories, for several items per target).');
     }
   }
   items.forEach((item, index) => checkPicture(ctx, place, item.image, item.alt, `items/${index}/`, `Item "${String(item.id)}"`));

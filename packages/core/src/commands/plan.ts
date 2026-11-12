@@ -1,5 +1,5 @@
 import { schemaId } from '@elabora/format';
-import { validateSchema } from '@elabora/format/schemas';
+import { derefSchema, getSchema, validateSchema, type SchemaError } from '@elabora/format/schemas';
 import type { Course, PatchOperation, Plan, PlanNote, PlanVersion } from '../project/model.ts';
 import { applyPatch } from '../util/json-patch.ts';
 import { followPlanOrder, planCourse, screenCovers, type PlanOrderFollowed } from '../project/plan-order.ts';
@@ -61,8 +61,27 @@ function checkPlanSchema(before: Plan | null, written: Plan, patched: boolean): 
   const known = new Set(patched && before ? validateSchema('plan', before).map((error) => `${error.path}\0${error.message}`) : []);
   const problems = validateSchema('plan', written).filter((error) => !known.has(`${error.path}\0${error.message}`));
   if (problems.length) {
-    throw new CommandError(`plan.json would not match its schema, so nothing was written: ${problems.slice(0, 6).map((error) => `${error.path || '/'}: ${error.message}`).join('; ')}${problems.length > 6 ? ` (and ${problems.length - 6} more)` : ''}.`);
+    throw new CommandError(`plan.json would not match its schema, so nothing was written: ${problems.slice(0, 6).map((error) => `${error.path || '/'}: ${error.message}${goesAt(error)}`).join('; ')}${problems.length > 6 ? ` (and ${problems.length - 6} more)` : ''}.`);
   }
+}
+
+// A property written where the plan has none of that name, said with where the plan has it
+// (lockedTexts at the root: it goes at items[].lockedTexts, each item's own).
+function goesAt(error: SchemaError): string {
+  const name = error.keyword === 'additionalProperties' ? /^unknown property "([^"]+)"/.exec(error.message)?.[1] : undefined;
+  if (!name) return '';
+  const places: string[] = [];
+  const walk = (schema: unknown, at: string, depth: number) => {
+    if (!isRecord(schema) || depth > 6) return;
+    for (const [key, value] of Object.entries(isRecord(schema.properties) ? schema.properties : {})) {
+      const here = at ? `${at}.${key}` : key;
+      if (key === name) places.push(here);
+      walk(value, here, depth + 1);
+    }
+    walk(schema.items, `${at}[]`, depth + 1);
+  };
+  walk(derefSchema(getSchema('plan')), '', 0);
+  return places.length ? `; the plan has "${name}" at ${places.join(', ')}` : '';
 }
 
 // The plan written as one change: its schema checked, an agent kept off the verbatim texts, the

@@ -1,6 +1,7 @@
 import type { Block, Screen } from '../project/model.ts';
 import { getRegistry, rootOf } from '../components/registry.ts';
 import { isRecord } from '../util/values.ts';
+import { inPlaceOf } from './set-paths.ts';
 import { CommandError, Draft, findBlock, listAt, type CommandContext, type CommandOutput } from './context.ts';
 
 // A node of a dialogue written whole (docs/decisions.md D61): its lines, its options, its way out.
@@ -39,9 +40,10 @@ export function setDialogueNode(context: CommandContext, args: SetDialogueNodeAr
   const id = args.node.id;
   const existing = nodes.findIndex((node) => isRecord(node) && node.id === id);
   const moving = args.after !== undefined || args.first === true;
-  if (existing >= 0 && !moving) nodes[existing] = args.node;
+  // Written again in place: what it keeps keeps its place, so the change is only what changed.
+  if (existing >= 0 && !moving) nodes[existing] = inPlaceOf(nodes[existing], args.node);
   else {
-    if (existing >= 0) nodes.splice(existing, 1);
+    const was = existing >= 0 ? nodes.splice(existing, 1)[0] : undefined;
     let index = nodes.length;
     if (args.first) index = 0;
     else if (args.after !== undefined) {
@@ -49,7 +51,7 @@ export function setDialogueNode(context: CommandContext, args: SetDialogueNodeAr
       if (at < 0) throw new CommandError(`Dialogue "${args.block}" has no node "${args.after}" to add after (nodes: ${nodes.map((node) => (isRecord(node) ? node.id : '?')).join(', ') || 'none'}).`);
       index = at + 1;
     }
-    nodes.splice(index, 0, args.node);
+    nodes.splice(index, 0, inPlaceOf(was, args.node));
   }
   draft.writeJson(file, screen);
   return { files: draft.files(), result: { screen: screenId, node: id, added: existing < 0, index: nodes.findIndex((node) => isRecord(node) && node.id === id) } };

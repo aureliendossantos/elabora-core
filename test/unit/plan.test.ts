@@ -354,3 +354,8 @@ test('versions and notes stay with the course (its archive, its backups), never 
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('write_plan: a property written where the plan has none of that name says where the plan has it', () => {
+  const dir = copyExample();
+  assert.throws(() => edit.writePlan(dir, { patch: [{ op: 'add', path: '/lockedTexts', value: [{ id: 'TXT-RULE', text: 'Une règle.', verbatim: true }] }] }), /\/: unknown property "lockedTexts".*the plan has "lockedTexts" at items\[\]\.lockedTexts/);
+});
