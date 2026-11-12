@@ -22,6 +22,9 @@ class Room {
   files: Files;
   log: Committed[] = [];
   readonly sockets = new Set<FakeSocket>();
+  // The next submissions refused with this code (a room that could not find a medium).
+  refuse: { code: 'E_SYNC_BLOB_MISSING'; times: number } | null = null;
+  refused = 0;
   constructor(files: Files) { this.files = files; }
 
   connect = (): RoomSocket => {
@@ -35,6 +38,10 @@ class Room {
     if (message.type === 'hello') return from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: [] });
     if (message.type === 'catchup') return from.deliver({ type: 'catchup', changes: this.log.filter((change) => change.seq > message.since), head: this.head });
     if (message.type !== 'submit') return;
+    if (this.refuse && this.refuse.times-- > 0) {
+      this.refused++;
+      return from.deliver({ type: 'refused', refusal: { id: message.change.id, code: this.refuse.code, message: 'Send the medium first.' }, head: this.head });
+    }
     const accepted = acceptChange({ head: this.head, files: this.files, log: this.log }, message.change);
     if ('refusal' in accepted) return from.deliver({ type: 'refused', refusal: accepted.refusal, head: this.head });
     if (!accepted.duplicate) {
@@ -157,4 +164,21 @@ test('two linked folders stay the same: a person\'s edit, a file an agent writes
   const journal = fs.readdirSync(path.join(A, '.elabora/journal')).flatMap((file) => fs.readFileSync(path.join(A, '.elabora/journal', file), 'utf8').trim().split('\n').map((line) => JSON.parse(line)));
   assert.ok(journal.some((entry) => entry.command?.name === 'update_screen' && entry.author.id === 'acc_ada'));
   assert.ok(journal.some((entry) => entry.command?.name === 'sync'));
+});
+
+test('a change the room refused for a missing medium goes again, and is placed', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const refusals: unknown[] = [];
+  a.subscribe((message) => { if (message.kind === 'event' && message.event.type === 'cloudOutcome' && 'refused' in message.event.outcome) refusals.push(message.event.outcome); });
+  room.refuse = { code: 'E_SYNC_BLOB_MISSING', times: 2 };
+  await a.run('update_screen', { id: 'chemin', title: 'Après deux refus' }, { kind: 'human' });
+  await settled(room, a, b);
+  assert.equal(room.refused, 2);
+  assert.equal(screen(B, 'chemin').title, 'Après deux refus');
+  assert.deepEqual(refusals, []);
 });
