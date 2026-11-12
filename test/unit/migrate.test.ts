@@ -68,7 +68,7 @@ test('a step migrates in memory, and elabora migrate writes it as one system cha
   assert.deepEqual(change.command, { name: 'migrate_format', args: { from: 'elabora/0.0', to: FORMAT } });
   assert.equal(listVersions(dir).at(-1)?.reason, 'migration');
   assert.equal(edit.migrateProject(dir, { steps: [step] }).migrated, false, 'nothing left to migrate');
-  edit.undo(dir);
+  edit.undo(dir, undefined, { author: { kind: 'human' } });
   assert.deepEqual(folder(dir), before, 'undo gives the older files back');
   assert.equal(edit.migrateIfOutdated(dir, { steps: [step] })?.to, FORMAT);
 });

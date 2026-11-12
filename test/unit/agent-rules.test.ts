@@ -49,7 +49,7 @@ test('rules nobody edited are brought up to date with the notes kept; edited one
   assert.equal(agentRulesState(updated).status, 'current');
   assert.equal(elabora(['validate', dir]).stderr, '', 'current: nothing to say');
   // elabora undo gives the old rules back.
-  assert.ok(edit.undo(dir).change);
+  assert.ok(edit.undo(dir, undefined, { author: { kind: 'human' } }).change);
   assert.equal(fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8'), old);
 
   // Edited by someone: left as it is, said, replaced only with --force (the notes kept).
@@ -123,13 +123,13 @@ test('a course without CLAUDE.md gets the one line @AGENTS.md from any command; 
     assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '@AGENTS.md\n');
     assert.equal(elabora(['validate', dir]).stderr, '', 'written once');
     // A system change, which elabora undo reverts.
-    assert.ok(edit.undo(dir).change);
+    assert.ok(edit.undo(dir, undefined, { author: { kind: 'human' } }).change);
     assert.ok(!fs.existsSync(path.join(dir, 'CLAUDE.md')));
     // With outdated rules, both in one change; rules update says what it wrote.
     fs.writeFileSync(path.join(dir, 'AGENTS.md'), currentRules().text);
     const both = updateAgentRules(dir);
     assert.deepEqual([both.rules, both.claude], [true, true]);
-    edit.undo(dir);
+    edit.undo(dir, undefined, { author: { kind: 'human' } });
     assert.match(elabora(['rules', 'update', dir]).stdout, /^✔ AGENTS\.md: rules revision \d+ → \d+; CLAUDE\.md written/);
     // The author's own: left as it is, whatever the rules.
     fs.writeFileSync(path.join(dir, 'CLAUDE.md'), '# Mes consignes\nVoir AGENTS.md.\n');

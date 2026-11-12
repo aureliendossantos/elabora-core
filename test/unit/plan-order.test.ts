@@ -95,7 +95,7 @@ test('write_plan with a move patch moves the screens in the same change, a valid
   assert.deepEqual(readJSON(dir, 'plan.json').items.map((item: { id: string }) => item.id), ['ITEM-1', 'ITEM-2', 'ITEM-5', 'ITEM-3', 'ITEM-4', 'ITEM-6']);
   assert.deepEqual(readJSON(dir, 'course.json').sections.map((section: { screens: string[] }) => section.screens), [['accueil', 'chemin', 'evaluation'], ['premier-reflexe', 'simulation'], ['bilan']]);
   // Undone at once, plan and screens together.
-  edit.undo(dir);
+  edit.undo(dir, undefined, { author: { kind: 'human' } });
   assert.deepEqual(readJSON(dir, 'course.json').sections.map((section: { screens: string[] }) => section.screens), [['accueil', 'chemin'], ['premier-reflexe', 'simulation'], ['evaluation', 'bilan']]);
   // « Revenir à la V1 » on a move takes the screens back too.
   edit.writePlan(dir, { patch: [{ op: 'move', from: '/items/4', path: '/items/2' }] }, { author: { kind: 'human' } });

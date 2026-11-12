@@ -85,10 +85,11 @@ export function changesToUndo(entries: readonly JournalEntry[], target: { batch:
 // ── undo by person (D79) ─────────────────────────────────────────────
 
 // Whether a change is one of this person's steps: their own, or the work of an agent they launched.
-// Locally, people have no id: every person's change and every agent's is the one person's of this
-// computer. System changes (migrations, the lock written by a build) are no one's step.
+// Locally, people have no id: every change is the one person's of this computer, system changes
+// (a migration, the agents' rules brought up to date, a medium converted) included. In a project in
+// the cloud, a system change is no one's.
 export function belongsTo(author: Author, person: Author): boolean {
-  if (author.kind === 'system') return false;
+  if (author.kind === 'system') return person.kind === 'human' && person.id === undefined;
   if (person.kind === 'agent' || person.kind === 'external') return author.kind === person.kind && author.name === person.name && author.chat === person.chat;
   if (author.kind === 'human') return author.id === person.id;
   return author.by === person.id;
@@ -100,7 +101,8 @@ export function lastStep(entries: readonly JournalEntry[], person: Author): { ch
   const state = undoState(entries);
   const sorted = [...entries].sort((a, b) => b.seq - a.seq);
   for (const entry of sorted) {
-    if (entry.type !== 'change' || state.attempted.has(entry.id) || !entry.ops.length || !belongsTo(entry.author, person)) continue;
+    // The lock a build writes is no step to take back.
+    if (entry.type !== 'change' || state.attempted.has(entry.id) || !entry.ops.length || entry.command?.name === 'build' || !belongsTo(entry.author, person)) continue;
     return isAiAuthor(entry.author) && !isAiAuthor(person) ? { change: entry, batch: entry.batch } : { change: entry };
   }
   return null;

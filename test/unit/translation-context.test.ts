@@ -113,7 +113,7 @@ test('the translated plan approved as a change, undone like any other', () => {
   assert.equal(readJSON(dir, 'translations/en.approval.json').by, 'Emma Collins, Hélios');
   const status = translationStatus(loadProjectFromDir(dir), { to: 'en' })[0];
   assert.equal(status?.exists && status.plan, 'approved');
-  edit.undo(dir);
+  edit.undo(dir, undefined, { author: { kind: 'human' } });
   assert.equal(fs.existsSync(path.join(dir, 'translations/en.approval.json')), false);
   assert.throws(() => edit.approveTranslation(dir, { to: 'en', by: '' }, { author: { kind: 'human' } }), /--by/);
 });
