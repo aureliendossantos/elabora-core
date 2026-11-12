@@ -21,7 +21,9 @@ import {
 } from '@elabora/core/commands/index';
 import { loadProject } from '@elabora/core/project/load';
 import { validateProject } from '@elabora/core/validate/index';
+import { errorCounts, revalidate, validationState, type ValidationState } from '@elabora/core/validate/incremental';
 import type { ProjectFiles } from '@elabora/core/project/files';
+import type { Diagnostic } from '@elabora/core/diagnostics/index';
 import { SyncClient, type Outcome } from '@elabora/core/sync/client';
 import { acceptChange } from '@elabora/core/sync/server';
 import { externalEdit, type Version } from '@elabora/core/sync/external';
@@ -36,6 +38,9 @@ export interface BenchOptions {
   external?: 'closest-version' | 'current';
   // Only copy A acts and no copy goes offline: the generator alone, without concurrency.
   solo?: boolean;
+  // Each change placed, the server's validation kept change by change (D86) is compared with a
+  // whole validation of the same files: a difference is a problem of the draw.
+  differential?: boolean;
 }
 
 export interface BenchReport {
@@ -111,6 +116,8 @@ export function runBench(options: BenchOptions): BenchReport {
     ]
   });
   const copies = [copy('A'), copy('B')];
+  const differences: string[] = [];
+  let kept: ValidationState | null = options.differential ? validationState(start as ProjectFiles) : null;
 
   const validate = (after: Files): string | null => {
     const errors = validateProject(loadProject(after as ProjectFiles)).diagnostics.filter((d) => d.severity === 'error');
@@ -138,6 +145,12 @@ export function runBench(options: BenchOptions): BenchReport {
     server.files = accepted.files;
     server.log.push(accepted.committed);
     count('placed');
+    if (kept) {
+      kept = revalidate(kept, accepted.files as ProjectFiles);
+      const difference = sameFindings(kept, validateProject(loadProject(accepted.files as ProjectFiles)).diagnostics);
+      if (difference) differences.push(`after ${accepted.committed.id} (${accepted.committed.command?.name ?? 'a file'}): ${difference}`);
+      count(kept.ran.full ? 'validated whole' : 'validated in part');
+    }
     if (accepted.committed.skipped.length) count('placed with skipped operations');
     if (accepted.committed.overwrote.length) count('placed over a value not seen');
     if (accepted.committed.command?.name === 'changes') count('placed as a run of an agent\'s changes');
@@ -339,7 +352,22 @@ export function runBench(options: BenchOptions): BenchReport {
     }
   }
 
-  return { seed: options.seed, problems: check(server, copies, made, outcomes, validate), stats };
+  return { seed: options.seed, problems: [...differences, ...check(server, copies, made, outcomes, validate)], stats };
+}
+
+// What a validation kept change by change found, against a whole validation: every finding, its
+// severity, place, message and flags, and the errors counted as a room counts them.
+export function sameFindings(kept: ValidationState, whole: readonly Diagnostic[]): string | null {
+  const key = (d: Diagnostic) => JSON.stringify([d.code, d.severity, d.file ?? '', d.path ?? '', d.target ?? '', d.message, d.key ?? '', !!d.waived, !!d.ignored]);
+  const a = kept.diagnostics.map(key).sort();
+  const b = whole.map(key).sort();
+  const missing = b.filter((k) => !a.includes(k));
+  const extra = a.filter((k) => !b.includes(k));
+  if (missing.length || extra.length || a.length !== b.length) return `missing ${missing.slice(0, 3).join(' ')}; extra ${extra.slice(0, 3).join(' ')} (${a.length} for ${b.length})`;
+  const counts = errorCounts(kept);
+  const wholeCounts = errorCounts({ diagnostics: whole });
+  if (JSON.stringify([...counts].sort()) !== JSON.stringify([...wholeCounts].sort())) return 'the errors counted differ';
+  return null;
 }
 
 // ── what the bench affirms ───────────────────────────────────────────

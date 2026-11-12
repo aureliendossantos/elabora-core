@@ -18,7 +18,7 @@ Every check of `@elabora/core/validate` is declared, in the order of the report,
 - `createValidationContext(project, options)` builds what checks share once (registry, plan index, listed screens, blocks by id); `validateScreen(context, screenId)` returns the findings of one screen, `validateProjectChecks(context)` those of the project checks, and together they make up the findings of `validateProject`;
 - loading, validating and compiling never throw on a project that parses but breaks its schema (a test runs seeded mutations through every reader): the validator reports it.
 
-The session (`project-state.ts`) keeps the findings per screen and per project check and re-runs what a change can affect:
+The session (`project-state.ts`) keeps the findings per screen and per project check and re-runs what a change can affect, by the rules a room's validation follows too (`@elabora/core` `validate/incremental.ts`, D86, which holds the shared pieces):
 - **a screen file**: that screen's checks; the screens that mention an id whose element (block, layer, event, the screen itself) changed in it, as a JSON string in their file; the project checks marked `readsScreens` (the others keep their findings: object code and generators are not parsed again). When only screen files changed, the loaded project is the previous one with those screens replaced: the components, so the registry and the analyses of templates, stay the same objects;
 - **an asset**, or a change of the media status (a job under way, an unreadable file): the screens that name it and every project check;
 - **any other file**: everything. A test checks, edit after edit on two sample courses, that the findings equal those of a full load and validation.

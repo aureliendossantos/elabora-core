@@ -1,12 +1,12 @@
 import { loadProject } from '@elabora/core/project/load';
 import { readText } from '@elabora/core/project/files';
-import { parseJSON } from '@elabora/core/util/json';
 import type { MediaStatus, ProjectFiles, SourceFile, SyncArtefact } from '@elabora/core/project/files';
 import { sameContent } from '@elabora/core/ops/json';
-import type { LoadError, Project, Screen, ScreenEntry } from '@elabora/core/project/model';
+import type { Project } from '@elabora/core/project/model';
 import { COURSE_CHECKS, FILE_CHECKS, createValidationContext, ignoredOf, validateScreen } from '@elabora/core/validate/index';
 import type { Check, CheckContext, ValidationContext, ValidationOptions } from '@elabora/core/validate/index';
 import { hasCourse, startRun } from '@elabora/core/validate/context';
+import { changedSignatures, withScreens } from '@elabora/core/validate/incremental';
 import { applyIgnored, applyWaivers, createReporter, sortDiagnostics, summarize } from '@elabora/core/diagnostics/index';
 import type { Diagnostic, Summary } from '@elabora/core/diagnostics/index';
 
@@ -311,51 +311,10 @@ export class ProjectState {
   }
 }
 
-// The project with some screen files read again, as loadProject reads them (screens in file name
-// order, a file that does not parse reported as a load error).
-export function withScreens(project: Project, files: ProjectFiles, paths: readonly string[]): Project {
-  const changed = new Set(paths);
-  const screens = new Map<string, ScreenEntry>();
-  for (const [id, entry] of project.screens) if (!changed.has(entry.file)) screens.set(id, entry);
-  const loadErrors: LoadError[] = project.loadErrors.filter((error) => !changed.has(error.file));
-  for (const file of paths) {
-    const text = readText(files, file);
-    if (text === null) continue; // deleted
-    const parsed = parseJSON(text);
-    if (parsed.error !== undefined) loadErrors.push({ code: 'E_JSON_PARSE', file, message: parsed.error });
-    else if (parsed.value === null || typeof parsed.value !== 'object' || Array.isArray(parsed.value)) loadErrors.push({ code: 'E_SCHEMA', file, message: '/: must be object (schema screen)' });
-    else screens.set((SCREEN_FILE.exec(file) as RegExpExecArray)[1], { file, data: parsed.value as Screen });
-  }
-  const ordered = new Map([...screens].sort(([, a], [, b]) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0)));
-  return { ...project, files, screens: ordered, loadErrors };
-}
-
 function parseError(path: string, error: string): Diagnostic {
   return createReporter().emit('E_JSON_PARSE', { file: path, message: `${path} does not parse (${error}): its last valid content is used until it is fixed.` });
 }
 
 function sameList(a: readonly Diagnostic[], b: readonly Diagnostic[] | undefined): boolean {
   return b !== undefined && a.length === b.length && JSON.stringify(a) === JSON.stringify(b);
-}
-
-// The content of each element with an id (screen, layers, blocks, events…), by id: what other
-// screens may read of this one.
-function signatures(value: unknown, out: Map<string, string>): Map<string, string> {
-  if (Array.isArray(value)) {
-    for (const item of value) signatures(item, out);
-  } else if (value !== null && typeof value === 'object') {
-    const id = (value as { id?: unknown }).id;
-    if (typeof id === 'string') out.set(id, (out.get(id) ?? '') + JSON.stringify(value));
-    for (const item of Object.values(value)) signatures(item, out);
-  }
-  return out;
-}
-
-// Adds the ids whose element was added, removed or changed between two versions of a screen.
-export function changedSignatures(before: unknown, after: unknown, out: Set<string>): Set<string> {
-  const was = signatures(before, new Map());
-  const now = signatures(after, new Map());
-  for (const [id, signature] of was) if (now.get(id) !== signature) out.add(id);
-  for (const id of now.keys()) if (!was.has(id)) out.add(id);
-  return out;
 }
