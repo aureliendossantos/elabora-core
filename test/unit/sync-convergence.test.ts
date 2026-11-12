@@ -6,10 +6,9 @@ import { runBench } from '../sync/bench.ts';
 // agents drawn at random, a copy offline and back. ELABORA_SYNC_DRAWS=5000 runs more draws.
 const DRAWS = Number(process.env.ELABORA_SYNC_DRAWS ?? 120);
 
-// Seeds that once failed, kept as fixed cases (what each one caught).
+// Seeds that once failed, kept as fixed cases: each fails again when what it caught comes back.
 const FAILED = [
-  31, // an agent's stale file write over a person's edit of the same field: both versions as close (D75 takes the oldest)
-  23, // two people adding a pronunciation at once: the copy's own rebase overwrote, and the other was not told
+  31, // a copy's own rebase overwrote another's value, and the change did not say so: no one was told
   48, // two removals emptied a screen's blocks: the server refuses what does not validate
   140, // two copies duplicating a block drew the same id: the server refused the second
   3834 // an agent rewrote course.json with its keys in another order: every version looked as far (D75 compares values)

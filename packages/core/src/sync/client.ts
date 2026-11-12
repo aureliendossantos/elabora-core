@@ -1,5 +1,6 @@
-import type { Author, Files, Op, SkippedOp } from '../ops/types.ts';
+import type { Author, FileContent, Files, Op, SkippedOp } from '../ops/types.ts';
 import { applyOps, invertOps } from '../ops/apply.ts';
+import { binaryFile, textFile } from '../ops/json.ts';
 import { rebase } from './rebase.ts';
 import type { Committed, Overwrite, Refusal, ServerMessage, Submission } from './protocol.ts';
 
@@ -18,6 +19,8 @@ export interface LocalChange {
   command?: { name: string; args: unknown };
   ops: Op[];
   undoes?: { batch?: string; changes: string[] };
+  // What it replaced that its author may not have seen (an agent's file edit, D75): told to whoever wrote it.
+  overwrote?: Overwrite[];
 }
 
 // The end of a change made here: placed (with what it left out or overwrote, here and on the
@@ -70,8 +73,8 @@ export class SyncClient {
       const first = this.waiting[0];
       if (!first.sent) {
         const placed = rebase(this.confirmedFiles, { id: first.change.id, author: first.change.author, ops: first.change.ops, inverse: first.inverse });
-        first.skipped.push(...placed.skipped);
-        first.overwrote.push(...placed.overwrote);
+        first.skipped = placed.skipped;
+        first.overwrote = [...(first.change.overwrote ?? []), ...placed.overwrote];
         if (placed.refusal) {
           this.settle({ id: first.change.id, refused: { id: first.change.id, ...placed.refusal }, skipped: first.skipped, overwrote: first.overwrote });
           continue;
@@ -90,7 +93,7 @@ export class SyncClient {
   }
 
   // A message of the server. Returns 'gap' when a change is missing before this one: ask for a
-  // catchup from head.
+  // catchup from head. A snapshot (the server no longer keeps that far back) replaces confirmed.
   receive(message: ServerMessage): 'ok' | 'gap' {
     switch (message.type) {
       case 'ack':
@@ -110,8 +113,18 @@ export class SyncClient {
         this.recompute();
         return 'ok';
       }
-      case 'snapshot':
-        throw new Error('SyncClient: a snapshot replaces the copy; build a new client from it');
+      case 'snapshot': {
+        // The server no longer keeps the changes since this copy's number: the project as it is
+        // replaces confirmed, and the waiting changes go on top of it as of any change of others.
+        const files = new Map<string, FileContent>();
+        for (const file of message.files) files.set(file.path, 'text' in file ? textFile(file.path, file.text) : binaryFile(file.blob, file.size));
+        this.confirmedFiles = files;
+        this.headSeq = message.head;
+        this.inFlight = false;
+        if (this.waiting[0]) this.unprepare(this.waiting[0]);
+        this.recompute();
+        return 'ok';
+      }
       default:
         return 'ok';
     }
@@ -121,8 +134,14 @@ export class SyncClient {
   // change once, whatever the number of times it gets it). Rebased again on what came meanwhile.
   disconnected(): void {
     this.inFlight = false;
-    const first = this.waiting[0];
-    if (first) first.sent = undefined;
+    if (this.waiting[0]) this.unprepare(this.waiting[0]);
+  }
+
+  // A prepared change goes back to how it was made: it is rebased again before it is sent.
+  private unprepare(item: Waiting): void {
+    item.sent = undefined;
+    item.skipped = [];
+    item.overwrote = [];
   }
 
   // Outcomes of the changes made here, oldest first, since the last call.
@@ -139,7 +158,7 @@ export class SyncClient {
     if (first && first.change.id === change.id) {
       this.inFlight = false;
       this.settle({ id: change.id, placed: change, skipped: [...first.skipped, ...change.skipped], overwrote: change.overwrote });
-    } else if (first?.sent && !this.inFlight) first.sent = undefined; // prepared on an older head
+    } else if (first?.sent && !this.inFlight) this.unprepare(first); // prepared on an older head
     this.recompute();
     return 'ok';
   }

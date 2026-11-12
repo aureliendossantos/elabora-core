@@ -35,12 +35,12 @@ A copy (`SyncClient`) holds the files the server confirmed, their number, and it
 
 - **One change in flight.** The first waiting change is rebased on confirmed just before it is sent, so its base is exact and the server meets only others' changes. What that rebase left out or overwrote goes with the change (`Submission.overwrote`), and in the outcome its author is shown.
 - A change of others (`change`) or the acknowledgement of its own (`ack`) applies to confirmed, in number order; a gap asks for a catchup from the copy's number.
-- **Offline**, the waiting changes pile up and show at once. On reconnecting the copy says its number (`hello`), gets what came since (`catchup`, or the whole project as a `snapshot` when the server no longer keeps that far back), recognises its own changes among them by id, and sends the rest in order.
+- **Offline**, the waiting changes pile up and show at once. On reconnecting the copy says its number (`hello`), gets what came since (`catchup`), recognises its own changes among them by id, and sends the rest in order. When the server no longer keeps that far back it sends the project as it is (`snapshot`): it replaces confirmed, and the waiting changes go on top of it as on any change of others.
 - `takeOutcomes()` gives, for each change made here, whether it was placed (with what was left out or overwritten, here and on the server) or refused.
 
 ## Files written by an agent's own tools
 
-An agent may read a file, think, and write it long after: what it writes is the file as it read it, with its edit. Computed from the files as they are, that write would undo what was written meanwhile, in silence. A copy computes it from the version the agent most likely read instead (`externalEdit`): among the recent versions of each written file, the one closest to what was written (by value, whatever the order of keys), the oldest of those as close; then rebases it on the files as they are, as an agent's change. Where they clash, what is there now is kept, and `merged` lists the files whose content is no longer what the agent wrote, for it to read again.
+An agent may read a file, think, and write it long after: what it writes is the file as it read it, with its edit. Computed from the files as they are, that write would undo what was written meanwhile, in silence. A copy computes it from the version the agent most likely read instead (`externalEdit`): among the recent versions of each written file (each with who made the change after it), the one closest to what was written, JSON by value whatever the order of keys, other text by lines; then rebases it on the files as they are, as an agent's change. Where they clash, what is there now is kept, and `merged` lists the files whose content is no longer what the agent wrote, for it to read again. When several versions are as close, the newest is taken; if a person changed the file between them, what the edit replaces of theirs is reported as overwritten and `unsure` (the agent may not have seen it), so they are told.
 
 ## Messages
 
@@ -60,6 +60,8 @@ An agent may read a file, think, and write it long after: what it writes is the 
 | `refused { refusal, head }` | |
 | `catchup { changes, head }`, `snapshot { head, files }` | what a copy missed |
 | `presence { peers }` | who is there: an `Actor` (a person, or an agent with the person who launched it) per copy |
+
+**Authors.** A change's author is the `Author` of [operations](operations.md), with, in a project in the cloud, `id` (a person's stable id, their account) and, for an agent, `by` (the person who launched it). The rule of rebase depends on the author's kind, so the server sets the author from the connection, never from what a copy says.
 
 ## The convergence bench
 

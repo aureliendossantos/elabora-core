@@ -97,8 +97,26 @@ test('server: a change is placed once, numbered, its inverse on head; a stale ba
   assert.ok('committed' in again && again.duplicate && again.committed === first.committed);
   const stale = acceptChange({ ...after, log: [] }, { ...submission, id: 'c2' });
   assert.ok('refusal' in stale && stale.refusal.code === 'E_SYNC_BASE');
-  const malformed = acceptChange(after, { ...submission, id: 'c3', inverse: [] });
-  assert.ok('refusal' in malformed && malformed.refusal.code === 'E_SYNC_MALFORMED');
+  // From the network: a change of the wrong shape is refused, never thrown at the room.
+  for (const wrong of [{ inverse: [] }, { inverse: [{ op: 'set', file: 'screens/one.json' }] }, { ops: [{ op: 'nope', file: 'x' }] }, { overwrote: 'all' }]) {
+    const malformed = acceptChange(after, { ...submission, id: 'c3', ...wrong } as unknown as Submission);
+    assert.ok('refusal' in malformed && malformed.refusal.code === 'E_SYNC_MALFORMED', JSON.stringify(wrong));
+  }
+});
+
+test('client: a snapshot (the server no longer keeps that far back) replaces confirmed; waiting changes stay on top', () => {
+  const base = screen([block('a', 'one'), block('b', 'two')]);
+  const client = new SyncClient(base, 3);
+  const value = read(base);
+  value.blocks[0].props.markdown = 'offline';
+  client.record({ id: 'w1', at: '2026-11-12T20:00:00.000Z', author: human, ops: diffFiles(base, doc(value)) });
+  client.next();
+  client.disconnected();
+  const now = read(base);
+  now.blocks[1].props.markdown = 'meanwhile';
+  client.receive({ type: 'snapshot', head: 40, files: [{ path: 'screens/one.json', text: JSON.stringify(now, null, 2) + '\n' }] });
+  assert.deepEqual(read(client.view).blocks.map((b: any) => b.props.markdown), ['offline', 'meanwhile']);
+  assert.deepEqual([client.head, client.next()?.base, client.next()], [40, 40, null]);
 });
 
 test('client: what it shows is confirmed with its waiting changes rebased on top; one in flight; a change of others in between', () => {
@@ -138,17 +156,37 @@ test('client: what it shows is confirmed with its waiting changes rebased on top
   assert.deepEqual(outcomes.map((o) => [o.id, o.overwrote.map((w) => w.was)]), [['m1', []], ['m2', ['theirs']]]);
 });
 
-test('external edit: a file written from an older version keeps what was written since; the edit of the same value is left out', () => {
+test('external edit: a file written from an older version keeps what was written since in it', () => {
   const v0 = screen([block('a', 'one'), block('b', 'two')]);
   const v1 = applyOps(v0, change(v0, (v) => { v.blocks[0].props.markdown = 'person'; }).ops);
-  // An agent read v0, then wrote block b; another wrote a from v0.
+  // An agent read v0, then wrote block b, the file whole.
   const value = read(v0);
   value.blocks[1].props.markdown = 'agent';
-  const kept = externalEdit(v1, doc(value), [v0]);
+  const kept = externalEdit(v1, doc(value), [{ files: v0, then: human }]);
   assert.deepEqual(read(applyOps(v1, kept.ops)).blocks.map((b: any) => b.props.markdown), ['person', 'agent']);
-  assert.deepEqual(kept.merged, ['screens/one.json']);
-  value.blocks[0].props.markdown = 'agent over a';
-  const clash = externalEdit(v1, doc(value), [v0]);
-  assert.deepEqual(read(applyOps(v1, clash.ops)).blocks.map((b: any) => b.props.markdown), ['person', 'agent']);
-  assert.equal(clash.skipped.length, 1);
+  assert.deepEqual([kept.merged, kept.overwrote], [['screens/one.json'], []]);
+});
+
+test('external edit: rewriting what a person changed may or may not have seen it: it applies, and the person is told', () => {
+  const v0 = screen([block('a', 'one')]);
+  const v1 = applyOps(v0, change(v0, (v) => { v.blocks[0].props.markdown = 'person'; }).ops);
+  const value = read(v0);
+  value.blocks[0].props.markdown = 'agent';
+  const edit = externalEdit(v1, doc(value), [{ files: v0, then: human }]);
+  assert.equal(read(applyOps(v1, edit.ops)).blocks[0].props.markdown, 'agent');
+  assert.deepEqual(edit.overwrote.map((o) => [o.path, o.was, o.unsure]), [['blocks[a].props.markdown', 'person', true]]);
+  // Between versions an agent wrote, no one is told: an agent's second edit of its own text.
+  const again = externalEdit(v1, doc(value), [{ files: v0, then: agent }]);
+  assert.deepEqual([read(applyOps(v1, again.ops)).blocks[0].props.markdown, again.overwrote], ['agent', []]);
+});
+
+test('external edit: a stylesheet is compared by lines: a rule added after another is added, the other kept', () => {
+  const css = (text: string) => makeFiles({ 'theme/theme.css': text });
+  const v0 = css('.a { color: red; }\n');
+  const v1 = css('.a { color: red; }\n.b { color: blue; }\n');
+  const edit = externalEdit(v1, css('.a { color: red; }\n.b { color: blue; }\n.c { color: green; }\n'), [{ files: v0, then: agent }]);
+  assert.deepEqual([edit.skipped, edit.overwrote, edit.merged], [[], [], []]);
+  // Written from v0, before a person added .b: the edit of the whole file gives way and says so.
+  const stale = externalEdit(v1, css('.a { color: red; }\n.c { color: green; }\n'), [{ files: v0, then: human }]);
+  assert.deepEqual([stale.ops, stale.skipped.length, stale.merged], [[], 1, ['theme/theme.css']]);
 });

@@ -1,11 +1,13 @@
-import type { Files, Op } from '../ops/types.ts';
-import { invertOps, touchedFiles } from '../ops/apply.ts';
+import type { Files } from '../ops/types.ts';
+import { checkShape, invertOps, touchedFiles } from '../ops/apply.ts';
 import { OpError } from '../ops/errors.ts';
 import { rebase } from './rebase.ts';
 import type { Committed, Refusal, Submission } from './protocol.ts';
 
 // What the server of a project does with a submitted change (D73), pure: the room (elabora-cloud)
 // keeps the files, the head and the log, and calls this for each submission in the order they come.
+// The room sets the submission's author from the connection first (who it is, the person who
+// launched an agent): a copy's word is not taken for it.
 
 export interface RoomState {
   head: number;              // the number of the last placed change (0: none yet)
@@ -58,7 +60,7 @@ export function acceptChange(state: RoomState, submission: Submission, options: 
     ops: result.ops,
     inverse: invertOps(state.files, result.ops),
     skipped: result.skipped,
-    overwrote: [...(Array.isArray(submission.overwrote) ? submission.overwrote : []), ...result.overwrote],
+    overwrote: [...(submission.overwrote ?? []), ...result.overwrote],
     ...(submission.undoes ? { undoes: submission.undoes } : {})
   };
   return { committed, files: result.files, duplicate: false };
@@ -74,8 +76,19 @@ function malformedReason(submission: Submission): string | null {
   const author = submission.author as unknown;
   if (!author || typeof author !== 'object' || !['human', 'agent', 'external', 'system'].includes((author as { kind?: string }).kind as string)) return 'author must have a kind';
   if (submission.batch !== undefined && typeof submission.batch !== 'string') return 'batch must be a string';
-  const isOps = (ops: unknown): ops is Op[] => Array.isArray(ops) && ops.every((op) => op && typeof op === 'object' && typeof (op as Op).file === 'string');
-  if (!isOps(submission.ops) || !isOps(submission.inverse)) return 'ops and inverse must be lists of operations';
+  if (!Array.isArray(submission.ops) || !Array.isArray(submission.inverse)) return 'ops and inverse must be lists of operations';
   if (submission.ops.length !== submission.inverse.length) return 'its inverse does not match its operations';
+  for (const op of [...submission.ops, ...submission.inverse]) {
+    try {
+      checkShape(op);
+    } catch (error) {
+      if (error instanceof OpError) return error.message;
+      throw error;
+    }
+  }
+  const overwrote = submission.overwrote as unknown;
+  if (overwrote !== undefined && (!Array.isArray(overwrote) || overwrote.length > submission.ops.length * 64 || !overwrote.every((o) => o && typeof o === 'object' && typeof o.file === 'string' && typeof o.path === 'string'))) {
+    return 'overwrote must list the places its rebase overwrote';
+  }
   return null;
 }

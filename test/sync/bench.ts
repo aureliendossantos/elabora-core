@@ -7,7 +7,8 @@
 //   - no edit of a person is lost without being told: each text a person wrote (a unique token) is
 //     still there, or was replaced by someone who saw it, or the one who replaced it was told
 //     (overwrote), or its author was (skipped, refused);
-//   - an agent never replaces a person's text it had not seen.
+//   - an agent never replaces a person's text it had not seen (a file written by its own tools,
+//     when what it read is unsure, tells the person: D75).
 // The oracle reads only what actors saw and the server's log: never rebase's own bookkeeping.
 import type { Author, Files, Op } from '@elabora/core/ops/types';
 import { diffFiles } from '@elabora/core/ops/diff';
@@ -23,8 +24,8 @@ import { validateProject } from '@elabora/core/validate/index';
 import type { ProjectFiles } from '@elabora/core/project/files';
 import { SyncClient, type Outcome } from '@elabora/core/sync/client';
 import { acceptChange } from '@elabora/core/sync/server';
-import { externalEdit } from '@elabora/core/sync/external';
-import type { ClientMessage, Committed, ServerMessage } from '@elabora/core/sync/protocol';
+import { externalEdit, type Version } from '@elabora/core/sync/external';
+import type { ClientMessage, Committed, Overwrite, ServerMessage } from '@elabora/core/sync/protocol';
 import { benchCourse } from './fixture.ts';
 
 export interface BenchOptions {
@@ -70,7 +71,7 @@ interface Copy {
   down: ServerMessage[];
   online: boolean;
   actors: Actor[];
-  versions: Files[];          // the copy's earlier views, newest first (D75)
+  versions: Version[];        // the copy's earlier views and who changed each, newest first (D75)
   reads: Map<string, Files>;  // what an agent writing with its own tools read, by actor
 }
 
@@ -154,23 +155,25 @@ export function runBench(options: BenchOptions): BenchReport {
   const receive = (c: Copy, message: ServerMessage) => {
     const before = c.client.view;
     if (c.client.receive(message) === 'gap') throw new Error(`${c.name}: a gap in the changes it got`);
-    remember(c, before);
+    // Who changed what the copy shows: the change placed, or the change of its own refused.
+    const authors = message.type === 'catchup' ? message.changes.map((change) => change.author) : message.type === 'ack' || message.type === 'change' ? [message.change.author] : message.type === 'refused' ? [made.get(message.refusal.id)?.actor.author ?? { kind: 'human' }] : [];
+    remember(c, before, authors.find((author) => author.kind === 'human') ?? authors[0] ?? { kind: 'system' });
     pump(c);
   };
 
-  const remember = (c: Copy, before: Files) => {
+  const remember = (c: Copy, before: Files, then: Author) => {
     if (before === c.client.view) return;
-    c.versions.unshift(before);
+    c.versions.unshift({ files: before, then });
     c.versions.length = Math.min(c.versions.length, 64);
   };
 
-  const record = (c: Copy, actor: Actor, ops: Op[], seen: Files, written: string[], name: string, extra: { undoes?: { changes: string[] }; batch?: string } = {}) => {
+  const record = (c: Copy, actor: Actor, ops: Op[], seen: Files, written: string[], name: string, extra: { undoes?: { changes: string[] }; batch?: string; overwrote?: Overwrite[] } = {}) => {
     if (!ops.length) return;
     const id = `${c.name}-${++changes}`;
     made.set(id, { id, actor, seen, tokens: written, ops, head: c.client.pending ? -1 : c.client.head });
     const before = c.client.view;
     c.client.record({ id, at: now(), author: actor.author, command: { name, args: null }, ops, ...extra });
-    remember(c, before);
+    remember(c, before, actor.author);
     count(`change ${name}`);
     pump(c);
   };
@@ -274,13 +277,18 @@ export function runBench(options: BenchOptions): BenchReport {
     }
     const view = c.client.view;
     let ops: Op[];
+    let overwrote: Overwrite[] = [];
     if (options.external === 'current') ops = diffFiles(view, written);
     else {
       const edit = externalEdit(view, written, c.versions, actor.author);
       ops = edit.ops;
+      overwrote = edit.overwrote;
+      if (overwrote.some((o) => o.unsure)) count('file edit over a person\'s edit it may not have seen (told)');
       if (edit.skipped.length) count('file edit merged with what was written meanwhile');
+      // Written from what the copy shows: what it leaves out is an agent's edit lost (and told).
+      if (edit.skipped.length && read === view) count('file edit from a fresh read left out');
     }
-    record(c, actor, ops, read, [word], 'external');
+    record(c, actor, ops, read, [word], 'external', overwrote.length ? { overwrote } : {});
   };
 
   const deliver = (c: Copy, direction: 'up' | 'down') => {
@@ -366,7 +374,9 @@ function check(server: Server, copies: Copy[], made: Map<string, Made>, outcomes
         const by = made.get(later.id);
         const seen = by ? saw(by.seen, word) : false;
         if (seen) continue;
-        if (by && !by.actor.human) problems.push(`${later.id} (${by.actor.id}) replaced ${word} of ${change.id} without having seen it`);
+        // An agent's own file edit may not tell what it read (D75): when unsure, the person is told.
+        if (by && !by.actor.human && !later.overwrote.some((o) => o.unsure && contains(o.was, word))) problems.push(`${later.id} (${by.actor.id}) replaced ${word} of ${change.id} without having seen it`);
+        else if (by && !by.actor.human) continue;
         else if (!later.overwrote.some((o) => contains(o.was, word))) problems.push(`${later.id} replaced ${word} of ${change.id} without having seen it, and no one was told`);
       }
     }

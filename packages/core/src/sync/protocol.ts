@@ -32,6 +32,9 @@ export interface Overwrite {
   path: string;          // formatPath of the target, for messages
   was: Json | string | null; // the value, the text of a file, or null when it was absent
   by?: string;           // the change that had written it, when known
+  // A file written by an agent's own tools, from a version that may or may not have held the value
+  // (D75): told all the same.
+  unsure?: true;
 }
 
 // A change as the server placed it: its number, the operations it kept, their inverse on the head
