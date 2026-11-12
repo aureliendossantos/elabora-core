@@ -3,7 +3,7 @@ import { pointer } from '../util/json.ts';
 import { resolveBlockProps, screenBlocks, planRefs } from '../project/load.ts';
 import { latestValidated, planContentHash, planState, versionLabel } from '../project/plan-versions.ts';
 import { planDiff } from '../project/plan-diff.ts';
-import { planCourse } from '../project/plan-order.ts';
+import { itemParts, planCourse } from '../project/plan-order.ts';
 import type { PlanRef } from '../project/load.ts';
 import { instanceBehavior } from '../components/registry.ts';
 import type { CourseCheckContext, ScreenFile } from './context.ts';
@@ -133,6 +133,40 @@ export function checkPlan(ctx: CourseCheckContext): void {
 
   // Unsupported claims (E7), in the plan here, in each screen in checkScreenPlan.
   reportNeuromyth(ctx, JSON.stringify(plan), 'plan.json', plan.id);
+  checkSectionParts(ctx);
+}
+
+// A screen in a section of another part of the plan (D50): a section whose screens each cover one
+// item, all of one part, belongs to that part and follows it when the plan's parts move; a screen of
+// another part's item takes that away. A section's part is the part named as the section, else the
+// part most of its screens cover, when no other part is as frequent. Plans without parts take theirs
+// from the course: nothing to compare.
+function checkSectionParts(ctx: CourseCheckContext): void {
+  const { project, reporter, course } = ctx;
+  const parts = itemParts(project.plan);
+  if (!parts) return;
+  list(course.sections).forEach((section, sectionIndex) => {
+    if (!section || !Array.isArray(section.screens)) return;
+    const covered = section.screens.map((screen) => {
+      const covers = list(project.screens.get(screen)?.data.covers);
+      return covers.length === 1 && typeof covers[0] === 'string' ? { screen, item: covers[0], part: parts.get(covers[0]) ?? null } : null;
+    });
+    const counts = new Map<string, number>();
+    for (const entry of covered) if (entry?.part) counts.set(entry.part, (counts.get(entry.part) ?? 0) + 1);
+    if (counts.size < 2) return;
+    const title = typeof section.title === 'string' ? section.title.trim() : '';
+    const ranked = [...counts].sort((a, b) => b[1] - a[1]);
+    const own = counts.has(title) ? title : ranked[0]![1] > ranked[1]![1] ? ranked[0]![0] : null;
+    if (own === null) return;
+    covered.forEach((entry, screenIndex) => {
+      if (!entry?.part || entry.part === own) return;
+      reporter.emit('W_SCREEN_OUTSIDE_PART', {
+        file: 'course.json', path: pointer('sections', sectionIndex, 'screens', screenIndex), target: entry.screen,
+        details: { screen: entry.screen, section: section.id, sectionPart: own, item: entry.item, part: entry.part },
+        message: `Screen "${entry.screen}" is in section "${section.id}", of the plan's part « ${own} », while its item ${entry.item} is in part « ${entry.part} »: the section no longer follows its part when the plan's parts move.`
+      });
+    });
+  });
 }
 
 // What a screen does with the plan: the items it covers, the locked texts and questions it uses

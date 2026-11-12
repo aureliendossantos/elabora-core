@@ -168,6 +168,18 @@ function checkTimes(ctx: CourseCheckContext, id: string, layer: string | null): 
         if (!stopped && timing.out.at < timeline.duration - EPSILON) reporter.emit('E_ACTIVITY_LEAVES_UNANSWERED', { file, path: `${timing.out.path}/at`, target: blockId, details: { screen: id, block: blockId, leaves: timing.out.at, stops: stops.find((stop) => stop > timing.out!.at) ?? timeline.duration }, message: `Block "${blockId}" of ${where} leaves at ${seconds(timing.out.at)}, while playback goes on: learners may not have used it (playback next stops at ${seconds(stops.find((stop) => stop > timing.out!.at) ?? timeline.duration)}).` });
       }
     }
+    // A chart's item the voice brings before the chart appears (D60): it lights up unseen. The chart
+    // appears at its timing.in, else when its step opens.
+    for (const beat of timeline.beats) {
+      const block = blocks.get(beat.block);
+      if (beat.item === null || beat.problem || !block) continue;
+      const timing = timings.get(beat.block)?.in;
+      if (timing?.problem) continue;
+      // A block of the screen shows when its own step opens; a layer's at its opening.
+      const step = layer === null && typeof block.step === 'number' ? block.step : 1;
+      const appears = timing ? timing.at : segmentOf(step)?.start ?? 0;
+      if (beat.time < appears - EPSILON) reporter.emit('W_CHART_ITEM_BEFORE_BLOCK', { file, path: beat.path, target: beat.block, measured: round(beat.time), limit: round(appears), details: { screen: id, block: beat.block, item: beat.item, brought: round(beat.time), appears: round(appears) }, message: `Chart "${beat.block}" of ${where}: the voice brings its item "${beat.item}" at ${seconds(beat.time)}, before the chart appears (${seconds(appears)}${timing ? ', its timing.in' : `, when step ${step} opens`}): learners never see that item come.` });
+    }
     // Word anchors placed by estimate: once per line, on a line that has its audio.
     const estimated = new Map<string, string[]>();
     for (const moment of [...timeline.moments, ...timeline.cues.map((cue) => ({ ...cue, block: cue.event }))]) {

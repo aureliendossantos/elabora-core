@@ -424,7 +424,7 @@ Create a screen and insert it in a section. covers lists the plan items it imple
 
 ### `elabora_update_screen`
 
-Change title, covers, completeWhen, required, showTitle, layout (a screen-level component), layoutProps (its props), style (theme.styles.screen), backdrop (a theme.backdrop variant, or none), continueRevealsSteps (false: only the screen's reveal-step events reveal its steps), narration (the script: lines with id, speaker, text, step and pauseBefore; advance and seek; replaced whole) or steps (how each step opens, by number: { "2": { "opens": "answered" } }, or "explored" for a Continue locked until the blocks above are explored; replaced whole) of a screen. null removes layout, layoutProps, style, backdrop, continueRevealsSteps, steps or narration.
+Change title, covers, completeWhen, required, showTitle, layout (a screen-level component), layoutProps (its props), style (theme.styles.screen), backdrop (a theme.backdrop variant, or none), continueRevealsSteps (false: only the screen's reveal-step events reveal its steps), narration (the script: lines with id, speaker, text, step and pauseBefore; advance and seek; replaced whole) or steps (how each step opens, by number: { "2": { "opens": "answered" } }, or "explored" for a Continue locked until the blocks above are explored; replaced whole) of a screen. null removes layout, layoutProps, style, backdrop, continueRevealsSteps, steps or narration. set changes one line or field of these by its path (narration.lines[l2].text, steps.2.opens, covers[OBJ-2]) and keeps the rest; a field given whole replaces it, and the result's removed says what that took away.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -441,6 +441,7 @@ Change title, covers, completeWhen, required, showTitle, layout (a screen-level 
 | `continueRevealsSteps` | boolean \| null |  |  |
 | `steps` | object \| null |  |  |
 | `narration` | object \| null |  |  |
+| `set` | object[] |  | Fields or entries changed one by one, in order, on the element as it is; the rest stays. path: keys between dots, an entry of a list by its id in brackets (props.options[b].text, props.rows[usb].at, props.nodes[n2].options[a].next, narration.lines[l2].text, navigation.lockUntilComplete). value replaces what is there (an entry the list does not have yet joins its end), null removes it. A list without ids is given whole; an id changes with elabora_rename. |
 
 ### `elabora_delete_screen`
 
@@ -486,7 +487,7 @@ Add a block {id, type, props} (built-in type or course component) to a screen, o
 
 ### `elabora_update_block`
 
-Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), step (a block of the screen itself: the step that reveals it; null or 1: from the start), and continuity ({ key, duration? }: blocks of other screens with the same key carry on from one screen to the next, D65; null removes it; elabora_set_continuity links two blocks for you), and place (a block of the screen itself placed by hand, D72: { x, y, width, height?, z? } in shares of the placement frame, the reference window at the screen's width; in slides y from the frame's top, in scroll pages from the block's place in the page; null puts it back in the flow at its slot and rank; prefer a layout). For free-object blocks, props.props holds the declared prop values.
+Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed; a prop given, a list included, replaces it whole, and the result's removed says what that took away); set changes one answer, item, row, node or field by its path (props.options[b].correct, props.items[i2].target, props.nodes[n1].options[a].text) and keeps the rest; also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), step (a block of the screen itself: the step that reveals it; null or 1: from the start), and continuity ({ key, duration? }: blocks of other screens with the same key carry on from one screen to the next, D65; null removes it; elabora_set_continuity links two blocks for you), and place (a block of the screen itself placed by hand, D72: { x, y, width, height?, z? } in shares of the placement frame, the reference window at the screen's width; in slides y from the frame's top, in scroll pages from the block's place in the page; null puts it back in the flow at its slot and rank; prefer a layout). For free-object blocks, props.props holds the declared prop values.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -501,6 +502,7 @@ Edit a block by id (anywhere, slots included): props are merged (a prop set to n
 | `step` | integer \| null |  |  |
 | `continuity` | object \| null |  |  |
 | `place` | object \| null |  |  |
+| `set` | object[] |  | Fields or entries changed one by one, in order, on the element as it is; the rest stays. path: keys between dots, an entry of a list by its id in brackets (props.options[b].text, props.rows[usb].at, props.nodes[n2].options[a].next, narration.lines[l2].text, navigation.lockUntilComplete). value replaces what is there (an entry the list does not have yet joins its end), null removes it. A list without ids is given whole; an id changes with elabora_rename. |
 
 ### `elabora_remove_block`
 
@@ -705,7 +707,7 @@ Record the author's approval of a translated plan (translations/&lt;lang&gt;.app
 
 ### `elabora_update_course`
 
-Update course settings: title, description, version, theme (tokens), navigation, completion (reportAs, masteryScore), tracking, delivery (replaced whole: mediaQuality: high, medium or low, the media preset of the package; lms; languages: the package's languages, "all" or a list, D71; defaultLanguage: the one learners start in when their LMS gives none; languagePackages: one or each), ui labels, sections, speakers (id and name; voices chosen with elabora_voice_set), pronunciations (by language: text and say), narration (default advance and seek), presentation (mode scroll or slides, fit), sounds (the interface sounds, and the music and ambiences: background). null removes pronunciations or sounds.
+Update course settings: title, description, version, theme (tokens), navigation, completion (reportAs, masteryScore), tracking, delivery (replaced whole: mediaQuality: high, medium or low, the media preset of the package; lms; languages: the package's languages, "all" or a list, D71; defaultLanguage: the one learners start in when their LMS gives none; languagePackages: one or each), ui labels, sections, speakers (id and name; voices chosen with elabora_voice_set), pronunciations (by language: text and say), narration (default advance and seek), presentation (mode scroll or slides, fit), sounds (the interface sounds, and the music and ambiences: background). null removes pronunciations or sounds. A setting given is replaced whole, and the result's removed says what that took away; set changes one key or entry by its path (navigation.mode, delivery.mediaQuality, speakers[guide].name, sections[intro].title) and keeps the rest.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -724,6 +726,7 @@ Update course settings: title, description, version, theme (tokens), navigation,
 | `pronunciations` | object \| null |  |  |
 | `narration` | object |  |  |
 | `sounds` | object \| null |  |  |
+| `set` | object[] |  | Fields or entries changed one by one, in order, on the element as it is; the rest stays. path: keys between dots, an entry of a list by its id in brackets (props.options[b].text, props.rows[usb].at, props.nodes[n2].options[a].next, narration.lines[l2].text, navigation.lockUntilComplete). value replaces what is there (an entry the list does not have yet joins its end), null removes it. A list without ids is given whole; an id changes with elabora_rename. |
 
 ### `elabora_ignore_finding`
 
@@ -999,7 +1002,7 @@ Run the automated gates of a free object in a browser: smoke, behaviour tests, b
 
 ### `elabora_write_plan`
 
-Write the plan (plan.json, the working copy) at any time: the whole plan (plan) or a JSON Patch (RFC 6902) of it. Checked against the plan's schema before anything is written, refused with why. Before its first validation, draft it whole from what the author gave you (sources, objectives, the client's brief): the items grouped by part (items[].part), each objective with a short name of three to five words (objectives[].short), decided and question (D51). Once a version was validated, write the changes all the same and tell the author what you changed: the app marks them, and the author makes the next version and sends it. Refused when it would change a text kept « à l'identique » (lockedTexts[].verbatim): ask the author. Rewording a validated text is writing it here: every block with its textRef follows. Items moved (a move, a part changed) take the screens that cover them along in the same change (moved says which).
+Write the plan (plan.json, the working copy) at any time: the whole plan (plan) or a JSON Patch (RFC 6902) of it. Checked against the plan's schema before anything is written, refused with why. Before its first validation, draft it whole from what the author gave you (sources, objectives, the client's brief): the items grouped by part (items[].part), each objective with a short name of three to five words (objectives[].short), decided and question (D51). Once a version was validated, write the changes all the same and tell the author what you changed: the app marks them, and the author makes the next version and sends it. Refused when it would change a text kept « à l'identique » (an item's lockedTexts, items[].lockedTexts[].verbatim): ask the author. Rewording a validated text is writing it here: every block with its textRef follows. Items moved (a move, a part changed) take the screens that cover them along in the same change (moved says which).
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
