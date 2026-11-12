@@ -64,6 +64,8 @@ An agent may read a file, think, and write it long after: what it writes is the 
 - **The engine's session syncs it.** Every journal entry, in order, goes into the copy's `SyncClient`: the session's own changes, other processes' (the CLI, the MCP server), file edits no Elabora tool made (computed as in D75). The room's changes are written in the folder and journaled as the change of their author, with the command `sync`, which is never sent back. The folder is always the client's view: a change the room refused leaves it, and the refusal is told (`cloudOutcome`). Another's change that replaced a value a change of this copy wrote, unseen, is told to this copy only (`cloudReplaced`, D90).
 - **The journal names its person** (D78): in a linked folder, a person's changes carry the person's id, an agent's and a file edit's carry it as `by`.
 - **Who is there**: the room's `welcome` and `presence` messages list the copies connected; the session keeps them (`session.cloud.peers`, the `cloudStatus` event, this copy's own `client` among them). `session.linkCloud(options)` starts syncing a folder linked while its session is open (the app links an open module).
+- **Where its person is** (D91): `session.cloudWhere({ screen?, selection?, view? })`, sent at once, then at most every 150 ms, and again after each welcome.
+- **A copy ends** (D91) when the room closes it with 4003 (the membership ended) or 4004 (the project deleted), or when, kept out, the team's list says so: no reconnection, the folder unlinked with what it held, and the `cloudEnded` event.
 - **Media** are the team's: a change that writes a binary file sends what the team lacks first; a medium another copy wrote is read from the team before the folder is written.
 - **A test server only, for now**: the commands need its address (`ELABORA_CLOUD_URL` or `--api`) and refuse Elabora's hosting.
 - `scripts/cloud-sync-trial.ts` is the trial on such a server: two folders, a person through the command line, an agent through the MCP tools, files written by hand, one copy offline and back, an agent's burst timed.
@@ -85,7 +87,7 @@ A room runs commands as well as changes: a tool of the cloud sends a command's n
 | `hello { protocol, client, actor, since }` | opens a connection |
 | `submit { change }` | a submission |
 | `catchup { since }` | what came after a number |
-| `presence { screen?, selection? }` | where its author is |
+| `presence { screen?, selection?, view? }` | where its author is (`view`: D91) |
 
 | From the server | |
 |---|---|

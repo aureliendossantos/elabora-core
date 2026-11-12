@@ -6,7 +6,7 @@ import { SyncClient, type LocalChange, type Outcome } from '@elabora/core/sync/c
 import { SYNC_PROTOCOL, type ClientMessage, type Committed, type Presence, type ServerMessage } from '@elabora/core/sync/protocol';
 import type { CloudClient } from '@elabora/node/cloud/client';
 import {
-  blobsOf, commitMedia, confirmedFiles, fetchMedium, keepConfirmed, roomUrl, sendMedia, writeLink, type ProjectLink
+  blobsOf, commitMedia, confirmedFiles, fetchMedium, keepConfirmed, projectMembership, roomUrl, sendMedia, unlinkFolder, writeLink, type ProjectLink
 } from '@elabora/node/cloud/projects';
 import type { EngineEvent, ExternalNotes } from './protocol.ts';
 
@@ -26,7 +26,15 @@ export interface CloudHost {
   write(before: Files, after: Files, author: Author, batch: string | undefined, seq: number): Promise<void>;
   emit(event: EngineEvent): void;
   notes(change: string): ExternalNotes | undefined;
+  // The copy ended (D91): the session no longer syncs the folder.
+  ended(): void;
 }
+
+// Where this copy's person is (D91): the screen, the blocks chosen, the view; the room shows it to the
+// others while the connection lasts.
+export type Where = Pick<Presence, 'screen' | 'selection' | 'view'>;
+// Why a copy ended: its person is no longer in the team, or the project was deleted.
+export type CloudEnd = 'removed' | 'deleted';
 
 export interface CloudOptions {
   api: string;
@@ -38,6 +46,9 @@ export interface CloudOptions {
   // Opens the room's connection (tests give a room in memory); by default a WebSocket with the
   // session in Authorization, never in the address.
   connect?: (url: string, token: string) => RoomSocket;
+  // Whether the person still reaches the project, asked when the room would not take the connection;
+  // by default the team's list of projects (tests answer it).
+  membership?: () => Promise<'member' | CloudEnd | 'unknown'>;
 }
 
 // What the copy needs of a WebSocket.
@@ -45,11 +56,18 @@ export interface RoomSocket {
   readonly readyState: number;
   send(data: string): void;
   close(code?: number, reason?: string): void;
-  addEventListener(type: 'open' | 'close' | 'error', listener: () => void): void;
+  addEventListener(type: 'open' | 'error', listener: () => void): void;
+  addEventListener(type: 'close', listener: (event: { code?: number }) => void): void;
   addEventListener(type: 'message', listener: (event: { data: unknown }) => void): void;
 }
 
 const OPEN = 1;
+// The room's close codes (elabora-cloud C37): the person's membership ended, the project was deleted.
+const CLOSED: Record<number, CloudEnd> = { 4003: 'removed', 4004: 'deleted' };
+// How often a copy the room keeps out asks whether its person still reaches the project.
+const MEMBERSHIP_EVERY = 30_000;
+// Where the person is, sent at most so often (the last place always goes).
+const WHERE_EVERY = 150;
 
 const webSocket = (url: string, token: string): RoomSocket =>
   new (WebSocket as unknown as new (url: string, init: { headers: Record<string, string> }) => RoomSocket)(url, { headers: { Authorization: `Bearer ${token}` } });
@@ -73,6 +91,11 @@ export class SessionCloud {
   // Who is in the room: each copy connected, this one included (by the room's word).
   #peers: Presence[] = [];
   #idle: (() => void)[] = [];
+  #where: Where = {};
+  #whereSent: string | null = null;
+  #whereTimer: NodeJS.Timeout | null = null;
+  #ended: CloudEnd | null = null;
+  #askedAt = -Infinity;
 
   constructor(host: CloudHost, options: CloudOptions) {
     this.#host = host;
@@ -136,9 +159,28 @@ export class SessionCloud {
   stop(): void {
     this.#stopped = true;
     if (this.#timer) clearTimeout(this.#timer);
+    if (this.#whereTimer) clearTimeout(this.#whereTimer);
     this.#ws?.close(1000, 'closing');
     this.#ws = null;
     this.#online = false;
+  }
+
+  // Where the person is now: told to the room at once, then at most every WHERE_EVERY ms, and again
+  // after each reconnection (a presence lasts as long as its connection).
+  where(where: Where): void {
+    this.#where = where;
+    if (this.#whereTimer) return;
+    this.#tellWhere();
+    this.#whereTimer = setTimeout(() => { this.#whereTimer = null; this.#tellWhere(); }, WHERE_EVERY);
+    this.#whereTimer.unref?.();
+  }
+
+  #tellWhere(): void {
+    if (!this.#online) return;
+    const said = JSON.stringify(this.#where);
+    if (said === this.#whereSent) return;
+    this.#whereSent = said;
+    this.#send({ type: 'presence', presence: this.#where });
   }
 
   // ── the connection ──
@@ -148,6 +190,7 @@ export class SessionCloud {
     const url = roomUrl(this.#options.api, this.#link.team, this.#link.project);
     const ws = (this.#options.connect ?? webSocket)(url, this.#options.token);
     this.#ws = ws;
+    let welcomed = false;
     ws.addEventListener('open', () => {
       this.#attempt = 0;
       this.#send({ type: 'hello', protocol: SYNC_PROTOCOL, client: this.#link.client, actor: { id: this.#link.person.id, name: this.#link.person.name ?? 'Elabora', kind: 'human' }, since: this.#client.head });
@@ -158,10 +201,13 @@ export class SessionCloud {
       if (message.type === 'welcome') {
         // What came while away first (an acknowledgement lost with the connection is in it), then
         // the waiting changes: the pump follows every message received.
+        welcomed = true;
         this.#online = true;
         this.#peers = message.peers;
         this.#status();
         this.#send({ type: 'catchup', since: this.#client.head });
+        this.#whereSent = null;
+        this.#tellWhere();
         return;
       }
       // Who is there changed: nothing of the view moves.
@@ -183,9 +229,40 @@ export class SessionCloud {
       const waits = this.#options.backoff ?? [500, 1000, 2000, 5000, 10000];
       this.#timer = setTimeout(() => this.#connect(), waits[Math.min(this.#attempt++, waits.length - 1)]);
       this.#timer.unref?.();
+      // Kept out before a welcome: the person may have left the team while the module was closed.
+      if (!welcomed) void this.#askMembership();
     };
-    ws.addEventListener('close', lost);
+    ws.addEventListener('close', (event) => {
+      const end = event?.code ? CLOSED[event.code] : undefined;
+      // Closed for good by the room: offline at once, no reconnection, then the end in the queue.
+      if (end && this.#ws === ws) {
+        this.#stopped = true;
+        lost();
+        void this.#later(async () => this.#end(end));
+        return;
+      }
+      lost();
+    });
     ws.addEventListener('error', lost);
+  }
+
+  async #askMembership(): Promise<void> {
+    if (performance.now() - this.#askedAt < MEMBERSHIP_EVERY) return;
+    this.#askedAt = performance.now();
+    const said = await (this.#options.membership ?? (() => projectMembership(this.#options.client, this.#link.team, this.#link.project)))().catch(() => 'unknown' as const);
+    if (said === 'removed' || said === 'deleted') await this.#later(async () => this.#end(said));
+  }
+
+  // The copy ends (D91): no reconnection; the folder is no longer linked and keeps what the copy held,
+  // its changes not sent included; the session is told, then whoever listens.
+  #end(reason: CloudEnd): void {
+    if (this.#ended) return;
+    this.#ended = reason;
+    this.stop();
+    this.#peers = [];
+    unlinkFolder(this.#host.root);
+    this.#host.ended();
+    this.#host.emit({ type: 'cloudEnded', reason, team: this.#link.team, project: this.#link.project });
   }
 
   #send(message: ClientMessage): void {
@@ -282,6 +359,7 @@ export class SessionCloud {
   }
 
   #status(): void {
+    if (this.#ended) return;
     this.#host.emit({ type: 'cloudStatus', online: this.#online, head: this.#client.head, pending: this.#client.pending, client: this.#link.client, peers: this.#peers });
   }
 
@@ -292,6 +370,7 @@ export class SessionCloud {
   // What the copy keeps to go on after a restart: confirmed (only what changed is stored again),
   // the waiting changes, the head and the journal's last entry taken in.
   #save(): void {
+    if (this.#ended) return;
     const confirmed = this.#client.confirmed;
     const changed = new Map([...confirmed].filter(([rel, file]) => this.#saved.get(rel) !== file));
     const kept = { ...this.#link.confirmed, ...keepConfirmed(this.#host.root, changed) };

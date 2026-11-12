@@ -9,7 +9,7 @@ import { changesToUndo } from '@elabora/core/ops/batch';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
 import { CloudClient } from '@elabora/node/cloud/client';
-import { keepConfirmed, projectsApi, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
+import { keepConfirmed, linkFile, projectsApi, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { copyExample, readJSON } from '../helpers.ts';
 
@@ -29,6 +29,8 @@ class Room {
   refused = 0;
   // Copies kept out (their hello closes the connection): offline until let back in.
   readonly away = new Set<string>();
+  // Submissions taken but not answered while true (a change waiting in the copy).
+  hold = false;
   constructor(files: Files) { this.files = files; }
 
   connect = (): RoomSocket => {
@@ -46,7 +48,14 @@ class Room {
       return this.tellPresence(from);
     }
     if (message.type === 'catchup') return from.deliver({ type: 'catchup', changes: this.log.filter((change) => change.seq > message.since), head: this.head });
-    if (message.type !== 'submit') return;
+    // The room relays where a copy is, as elabora-cloud's does (screen, selection, and the view, D91).
+    if (message.type === 'presence') {
+      if (!from.presence) return;
+      const { screen, selection, view } = message.presence;
+      from.presence = { actor: from.presence.actor, client: from.presence.client, at: from.presence.at, ...(screen ? { screen } : {}), ...(selection ? { selection } : {}), ...(view ? { view } : {}) };
+      return this.tellPresence(null);
+    }
+    if (message.type !== 'submit' || this.hold) return;
     if (this.refuse && this.refuse.times-- > 0) {
       this.refused++;
       return from.deliver({ type: 'refused', refusal: { id: message.change.id, code: this.refuse.code, message: 'Send the medium first.' }, head: this.head });
@@ -72,20 +81,22 @@ class Room {
   // One copy offline until back() (its reconnections closed meanwhile).
   out(client: string): void { this.away.add(client); for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(); }
   back(client: string): void { this.away.delete(client); }
+  // A copy sent away for good: its membership ended (4003), or the project was deleted (4004).
+  end(client: string, code: 4003 | 4004): void { for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(code); }
 }
 
 class FakeSocket implements RoomSocket {
   readyState = 0;
-  readonly #listeners = new Map<string, ((event: { data: unknown }) => void)[]>();
+  readonly #listeners = new Map<string, ((event: { data: unknown; code?: number }) => void)[]>();
   readonly room: Room;
   presence: Presence | null = null;
   constructor(room: Room) { this.room = room; }
-  addEventListener(type: string, listener: (event: { data: unknown }) => void): void {
+  addEventListener(type: string, listener: (event: { data: unknown; code?: number }) => void): void {
     this.#listeners.set(type, [...(this.#listeners.get(type) ?? []), listener]);
   }
-  emit(type: string, data?: unknown): void {
+  emit(type: string, data?: unknown, code?: number): void {
     if (type === 'open') this.readyState = 1;
-    for (const listener of this.#listeners.get(type) ?? []) listener({ data });
+    for (const listener of this.#listeners.get(type) ?? []) listener({ data, ...(code ? { code } : {}) });
   }
   send(data: string): void {
     if (this.readyState !== 1) return;
@@ -95,16 +106,16 @@ class FakeSocket implements RoomSocket {
   deliver(message: ServerMessage): void {
     if (this.readyState === 1) setTimeout(() => this.emit('message', JSON.stringify(message)), 2);
   }
-  close(): void {
+  close(code?: number): void {
     if (this.readyState === 3) return;
     this.readyState = 3;
     this.room.sockets.delete(this);
     if (this.presence) this.room.tellPresence(null);
-    this.emit('close');
+    this.emit('close', undefined, code);
   }
 }
 
-async function linked(room: Room, dir: string): Promise<Session> {
+async function linked(room: Room, dir: string, membership: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'> = async () => 'member'): Promise<Session> {
   const { files } = readProjectFiles(dir);
   const link: ProjectLink = {
     format: 'elabora-cloud-project/1', api: 'http://localhost:1', team: 'tm_test', project: 'prj_test', client: `c${path.basename(dir)}`,
@@ -112,7 +123,7 @@ async function linked(room: Room, dir: string): Promise<Session> {
   };
   writeLink(dir, link);
   const session = await openProject(dir, {
-    cloud: { api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20] },
+    cloud: { api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20], membership },
     backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, debounceMs: 30
   });
   sessions.push(session);
@@ -347,3 +358,76 @@ test('a person who writes over a value written here unseen: told here, not to th
   const skipped = (outcomesA.at(-1) as { outcome?: { skipped: { by?: { kind: string } }[] } } | undefined)?.outcome?.skipped ?? [];
   assert.equal(skipped[0]?.by?.kind, 'human', JSON.stringify(outcomesA).slice(0, 1000));
 });
+
+const until = async (test: () => boolean, what: string): Promise<void> => {
+  for (let wait = 0; wait < 200 && !test(); wait++) await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.ok(test(), what);
+};
+const eventsOf = (session: Session, type: string): Record<string, unknown>[] => {
+  const seen: Record<string, unknown>[] = [];
+  session.subscribe((message) => { if (message.kind === 'event' && message.event.type === type) seen.push(message.event as unknown as Record<string, unknown>); });
+  return seen;
+};
+
+test('where a person is goes to the others, and again after a reconnection (D91)', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const clientA = a.cloud!.client;
+  const seenByB = () => b.cloud?.peers.find((peer) => peer.client === clientA);
+  a.cloudWhere({ view: 'plan' });
+  a.cloudWhere({ view: 'diapositive', screen: 'chemin', selection: ['chemin-title'] });
+  await until(() => seenByB()?.screen === 'chemin', `B sees where A is: ${JSON.stringify(seenByB())}`);
+  assert.deepEqual([seenByB()?.view, seenByB()?.selection], ['diapositive', ['chemin-title']]);
+  // The connection drops: the new presence says it again, without A moving.
+  room.drop();
+  await settled(room, a, b);
+  await until(() => seenByB()?.screen === 'chemin', 'said again after the reconnection');
+});
+
+test('a copy sent away by the room (4003) ends: the folder unlinked, its change not sent kept, no reconnection (D91)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  await settled(room, a);
+  const ended = eventsOf(a, 'cloudEnded');
+  room.hold = true;
+  await a.run('update_screen', { id: 'chemin', title: 'Pas encore envoyé' }, { kind: 'human' });
+  await until(() => a.cloud?.pending === 1, 'the change waits');
+  room.end(a.cloud!.client, 4003);
+  await until(() => ended.length === 1, 'the end is told');
+  assert.deepEqual([ended[0]?.reason, ended[0]?.team, ended[0]?.project], ['removed', 'tm_test', 'prj_test']);
+  assert.equal(a.cloud, null);
+  assert.equal(fs.existsSync(linkFile(A)), false, 'the folder is no longer linked');
+  assert.equal(screen(A, 'chemin').title, 'Pas encore envoyé', 'what was not sent stays in the folder');
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  assert.equal(room.sockets.size, 0, 'no reconnection');
+});
+
+test('a copy the room keeps out asks whether its person is still in the team: removed, it ends (D91)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  let answer: 'member' | 'removed' = 'member';
+  const a = await linked(room, A, async () => answer);
+  await settled(room, a);
+  const ended = eventsOf(a, 'cloudEnded');
+  // Kept out while away (the room no longer takes its connection), not removed yet: it keeps trying.
+  answer = 'member';
+  room.out(a.cloud!.client);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  assert.equal(ended.length, 0);
+  assert.ok(a.cloud, 'still a copy');
+  // Asked again later (the copy asks at most every 30 s): a session opened on it asks at once.
+  await a.close({ media: 'cancel' });
+  sessions.splice(sessions.indexOf(a), 1);
+  answer = 'removed';
+  const again = await linked(room, A, async () => answer);
+  const endedAgain = eventsOf(again, 'cloudEnded');
+  await until(() => endedAgain.length === 1 || !fs.existsSync(linkFile(A)), 'the end is found at the next opening');
+  assert.equal(fs.existsSync(linkFile(A)), false);
+  assert.equal(again.cloud, null);
+});
+

@@ -721,6 +721,9 @@ export type EngineEvent =
   // without having seen them (D74, D90): told to the replaced, never to the replacer. unsure: a file an
   // agent rewrote with its own tools, which may not have seen them (D75).
   | { type: 'cloudReplaced'; change: { id: string; seq: number; at: string; author: Author }; overwrote: (Overwrite & { now: Json | string | null })[] }
+  // The copy ended (D91): its person is no longer in the team (or the team went), or the project was
+  // deleted. The folder is no longer linked, and holds what the copy held.
+  | { type: 'cloudEnded'; reason: 'removed' | 'deleted'; team: string; project: string }
   // Findings that changed: screens whose list changed (removed: screens gone), the project's
   // findings when they changed, and the summary over everything.
   | { type: 'diagnostics'; screens: Record<string, Diagnostic[]>; removed: string[]; project?: Diagnostic[]; summary: Summary }

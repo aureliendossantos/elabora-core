@@ -91,11 +91,17 @@ async function sync(dir: string, watch: boolean, json: boolean): Promise<ExitCod
     if (event.type === 'cloudOutcome' && !json) console.error(`  ${'refused' in event.outcome ? `refused: ${event.outcome.refused.message}` : `${event.outcome.skipped.length} left out, ${event.outcome.overwrote.length} overwritten`} (${event.outcome.id})`);
     if (event.type === 'cloudReplaced' && !json) console.error(`  ${event.overwrote.map((overwrite) => `${overwrite.file} ${overwrite.path}`).join(', ')}: replaced by ${event.change.author.name ?? event.change.author.kind}${event.overwrote.some((overwrite) => overwrite.unsure) ? ' (perhaps)' : ''}`);
     if (event.type === 'merged' && !json) console.error(`  ${event.files.join(', ')}: merged with what was written meanwhile`);
+    if (event.type === 'cloudEnded') {
+      console.error(`✘ ${event.reason === 'removed' ? `You are no longer in team ${event.team}` : `Project ${event.project} was deleted`}: ${dir} is no longer linked, and keeps what it held.`);
+      ended?.();
+    }
     if (event.type === 'error') console.error(`✘ ${event.message}`);
   });
+  let ended: (() => void) | null = null;
   if (watch) {
     if (!json) console.log(`Syncing ${dir} with project ${cloud?.link.project} (Ctrl-C to stop).`);
     await new Promise<void>((resolve) => {
+      ended = resolve;
       for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => resolve());
     });
   } else {

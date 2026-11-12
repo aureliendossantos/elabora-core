@@ -120,6 +120,7 @@ export interface Presence {
   client: string;        // one copy of the project (a desktop app, a CLI, a connector session)
   screen?: string;
   selection?: string[];  // ids of the selected blocks
+  view?: string;         // the view a person works in (« plan », « diapositive »…), said apart from a screen (D91)
   at: string;
 }
 

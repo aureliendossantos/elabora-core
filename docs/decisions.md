@@ -94,3 +94,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D88](decisions/D88.md) | A first upload sends its media a few at a time, from a snapshot taken under the lock | 12 Nov 2026 |
 | [D89](decisions/D89.md) | A field or an entry of a list changed by its path; a value given whole says what it took away | 12 Nov 2026 |
 | [D90](decisions/D90.md) | What a copy is told when others' changes meet its own | 12 Nov 2026 |
+| [D91](decisions/D91.md) | Where a person is, and when a copy ends | 12 Nov 2026 |

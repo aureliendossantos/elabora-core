@@ -15,7 +15,7 @@ import { ensureLibrary, stagingFolder } from '../library/location.ts';
 import { getProject, type LibraryProject } from '../library/projects.ts';
 import { newProjectId, removeTree, renameWithRetries, writeProjectId } from '../library/files.ts';
 
-export { readLink, writeLink, linkFile, stampAuthor, type Person, type ProjectLink } from './link.ts';
+export { readLink, writeLink, unlinkFolder, linkFile, stampAuthor, type Person, type ProjectLink } from './link.ts';
 
 // Projects in the cloud (docs/architecture/sync.md, D73): a team's projects, each in a room that
 // orders the changes of every copy. This is the copy's side over the hosting's API (protocol
@@ -97,6 +97,17 @@ export async function removeMember(client: CloudClient, team: string, account: s
 
 export async function listProjects(client: CloudClient, team: string): Promise<ProjectView[]> {
   return (await client.request<{ projects: ProjectView[] }>('GET', `${teamPath(team)}/projects`)).projects;
+}
+
+// Whether a copy's person still reaches its project (D91), asked when the room would not take its
+// connection: removed from the team (or the team gone), the project deleted, or unknown (offline, or
+// any other answer: the copy keeps trying).
+export async function projectMembership(client: CloudClient, team: string, project: string): Promise<'member' | 'removed' | 'deleted' | 'unknown'> {
+  try {
+    return (await listProjects(client, team)).some((each) => each.id === project) ? 'member' : 'deleted';
+  } catch (error) {
+    return error instanceof CloudError && error.status === 404 && error.code === 'no-team' ? 'removed' : 'unknown';
+  }
 }
 
 export async function createProject(client: CloudClient, team: string, name: string): Promise<ProjectView> {

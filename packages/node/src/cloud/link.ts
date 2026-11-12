@@ -42,6 +42,12 @@ export function writeLink(root: string, link: ProjectLink): void {
   writeJSONFile(linkFile(root), link);
 }
 
+// The folder no longer a copy of the project (its person left the team, or the project went, D91): a
+// module of this computer, holding what the copy held, its changes not sent included.
+export function unlinkFolder(root: string): void {
+  fs.rmSync(linkFile(root), { force: true });
+}
+
 
 // The author a linked folder's journal writes (D78): the folder's person, and as the one who
 // launched them, for agents and files edited by their own tools.

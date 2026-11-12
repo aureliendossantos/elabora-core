@@ -98,7 +98,7 @@ import type { BuildOptions, BuildResult } from '@elabora/node/build';
 import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
-import { SessionCloud, type CloudOptions } from './session-cloud.ts';
+import { SessionCloud, type CloudOptions, type Where } from './session-cloud.ts';
 import { folderSnapshot, type PushSource } from '@elabora/node/cloud/projects';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type {
@@ -357,11 +357,17 @@ export class Session {
       }),
       write: (before, after, author, batch, seq) => this.#writeFromRoom(before, after, author, batch, seq),
       emit: (event) => this.#emit(event),
-      notes: (change) => this.#externalNotes.get(change)
+      notes: (change) => this.#externalNotes.get(change),
+      ended: () => { if (this.#cloud === cloud) this.#cloud = null; }
     }, options);
     this.#cloud = cloud;
     const since = options.link.journal;
     await cloud.start(this.#entries.filter((entry): entry is ChangeLike => entry.type !== 'mark' && entry.seq > since));
+  }
+
+  // Where the person is in the module (D91), shown to the others in the project's room.
+  cloudWhere(where: Where): void {
+    this.#cloud?.where(where);
   }
 
   // The copy of the project in the cloud: connected, the room's number, changes waiting, who is there,
