@@ -48,7 +48,7 @@ class Server {
 
 const markdown = (files: Files) => read(files).blocks.map((block: any) => block.props.markdown);
 
-test('an agent\'s undo through the server keeps what was edited since, and a later undo takes it back once it can (C51)', () => {
+test('an agent\'s undo through the server keeps what was edited since, and a later undo takes it back once it can', () => {
   const server = new Server();
   server.place(agent, (v) => { v.blocks[0].props.markdown = 'a1'; }, { batch: 'run' });
   server.place(agent, (v) => { v.blocks[1].props.markdown = 'b1'; }, { batch: 'run' });

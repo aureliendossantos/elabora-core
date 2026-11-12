@@ -386,6 +386,8 @@ function undoProblems(logBefore: readonly Committed[], log: readonly Committed[]
   const undoes = undo.undoes as Undoes;
   const byId = new Map(log.map((change) => [change.id, change]));
   const targets = undoes.changes.map((id) => byId.get(id)).filter((change): change is Committed => !!change);
+  // A target the log does not hold would count as undone without being so.
+  for (const id of undoes.changes) if (!byId.has(id)) problems.push(`undo ${undo.id}: its target ${id} is not in the server's log`);
   const key = (op: unknown) => JSON.stringify(op);
   for (const left of undoes.skipped ?? []) {
     const named = undoes.changes.includes(left.change) ? targets.filter((target) => target.id === left.change) : targets;

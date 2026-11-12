@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { openProject, type Session } from '@elabora/engine/session';
 import type { RoomSocket } from '@elabora/engine/session-cloud';
-import { acceptChange, type ClientMessage, type Committed, type ServerMessage } from '@elabora/core/sync/index';
+import { acceptChange, journalOf, type ClientMessage, type Committed, type ServerMessage } from '@elabora/core/sync/index';
+import { changesToUndo } from '@elabora/core/ops/batch';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
 import { CloudClient } from '@elabora/node/cloud/client';
@@ -251,4 +252,23 @@ test('a folder linked while its session is open starts syncing; each copy sees w
   sessions.splice(sessions.indexOf(a), 1);
   for (let wait = 0; wait < 80 && cloudOf(b)?.peers.length !== 1; wait++) await new Promise((resolve) => setTimeout(resolve, 25));
   assert.deepEqual(cloudOf(b)?.peers.map((peer) => peer.actor.name), ['Béa']);
+});
+
+test('an agent\'s run sent as one change, then undone whole in the folder: the room\'s log knows it undone (D87)', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const agent = { kind: 'agent' as const, name: 'claude-code' };
+  const before = room.log.length;
+  await Promise.all(Array.from({ length: 8 }, (_, n) => a.run('update_screen', { id: n % 2 ? 'chemin' : 'accueil', title: `Agent ${n}` }, agent)));
+  await settled(room, a, b);
+  const grouped = room.log.slice(before).find((change) => change.command?.name === 'changes');
+  assert.ok(grouped, 'the run went grouped');
+  await a.undoBatch(grouped.batch, { kind: 'human' });
+  await settled(room, a, b);
+  assert.notEqual(screen(B, 'chemin').title, 'Agent 7');
+  assert.deepEqual(changesToUndo(journalOf(room.log), { batch: grouped.batch }).map((change) => change.id), [], 'nothing of the run left to undo in the room\'s log');
 });
