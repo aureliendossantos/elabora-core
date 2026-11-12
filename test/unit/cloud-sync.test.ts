@@ -329,6 +329,11 @@ test('what is done in a module while its first upload runs goes to the room as i
   assert.equal(placed?.kind === 'text' && JSON.parse(placed.text).title, 'Pendant l\'envoi');
 });
 
+const until = async (test: () => boolean, what: string): Promise<void> => {
+  for (let wait = 0; wait < 200 && !test(); wait++) await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.ok(test(), what);
+};
+
 test('a person who writes over a value written here unseen: told here, not to them; an agent\'s value left out names who changed it (D90)', async () => {
   const A = copyExample();
   const B = copyExample();
@@ -353,6 +358,8 @@ test('a person who writes over a value written here unseen: told here, not to th
   room.back(clientB);
   await settled(room, a, b);
   assert.equal(screen(A, 'chemin').title, 'Titre de Béa');
+  // Told once the change is placed here, which may be a moment after the folders agree.
+  await until(() => replacedA.length > 0, 'A is told its value was replaced');
   assert.equal(replacedA.length, 1, JSON.stringify(replacedA));
   const told = replacedA[0] as { overwrote: { file: string; path: string; was: unknown; now: unknown }[]; change: { author: { kind: string } } };
   assert.deepEqual([told.overwrote[0]?.file, told.overwrote[0]?.path, told.overwrote[0]?.was, told.overwrote[0]?.now, told.change.author.kind], ['screens/chemin.json', 'title', 'Titre d\'Ada', 'Titre de Béa', 'human']);
@@ -366,14 +373,11 @@ test('a person who writes over a value written here unseen: told here, not to th
   room.back(clientA);
   await settled(room, a, b);
   assert.equal(screen(B, 'chemin').title, 'Titre de Béa, encore');
+  await until(() => outcomesA.some((each) => ((each as { outcome?: { skipped?: unknown[] } }).outcome?.skipped ?? []).length > 0), 'A\'s agent is told what was left out');
   const skipped = (outcomesA.at(-1) as { outcome?: { skipped: { by?: { kind: string } }[] } } | undefined)?.outcome?.skipped ?? [];
   assert.equal(skipped[0]?.by?.kind, 'human', JSON.stringify(outcomesA).slice(0, 1000));
 });
 
-const until = async (test: () => boolean, what: string): Promise<void> => {
-  for (let wait = 0; wait < 200 && !test(); wait++) await new Promise((resolve) => setTimeout(resolve, 25));
-  assert.ok(test(), what);
-};
 const eventsOf = (session: Session, type: string): Record<string, unknown>[] => {
   const seen: Record<string, unknown>[] = [];
   session.subscribe((message) => { if (message.kind === 'event' && message.event.type === type) seen.push(message.event as unknown as Record<string, unknown>); });
