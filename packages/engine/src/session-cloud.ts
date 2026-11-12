@@ -237,8 +237,11 @@ export class SessionCloud {
         // Another history than this copy's head belongs to (elabora-cloud C84): the room was restored to an
         // earlier time, its numbers name other changes now, a copy ahead of it included. The whole project
         // comes instead of a catch-up, whatever its head; this copy is never up to date on a number.
+        // A new link (a clone, a share) knows no epoch yet: the first welcome's is its own (were the room
+        // restored since the clone, its hello without one gets the project whole all the same).
         const epoch = message.epoch ?? '0';
-        this.#restored = this.#client.head > 0 && epoch !== (this.#link.epoch ?? '0') ? epoch : null;
+        const mine = this.#link.epoch === null ? epoch : this.#link.epoch ?? '0';
+        this.#restored = this.#client.head > 0 && epoch !== mine ? epoch : null;
         if (!this.#restored && message.epoch) this.#link.epoch = message.epoch;
         this.#status();
         if (!this.#restored) this.#send({ type: 'catchup', since: this.#client.head });

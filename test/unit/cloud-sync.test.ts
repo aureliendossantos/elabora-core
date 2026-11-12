@@ -13,7 +13,7 @@ import type { Files } from '@elabora/core/ops/types';
 import { CloudClient } from '@elabora/node/cloud/client';
 import { keepConfirmed, linkFile, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
-import { readVersion } from '@elabora/node/backups/index';
+import { listVersions, readVersion } from '@elabora/node/backups/index';
 import { putBytes, readBlob } from '@elabora/node/blobs';
 import { copyExample, readJSON } from '../helpers.ts';
 
@@ -161,11 +161,11 @@ class FakeSocket implements RoomSocket {
   }
 }
 
-async function linked(room: Room, dir: string, membership: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'> = async () => 'member', later = 300): Promise<Session> {
+async function linked(room: Room, dir: string, membership: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'> = async () => 'member', later = 300, epoch?: null): Promise<Session> {
   const { files } = readProjectFiles(dir);
   const link: ProjectLink = {
     format: 'elabora-cloud-project/1', api: 'http://localhost:1', team: 'tm_test', project: 'prj_test', client: `c${path.basename(dir)}`,
-    person: { id: 'acc_ada', name: 'Ada' }, head: room.head, confirmed: keepConfirmed(dir, files), waiting: [], journal: 0
+    person: { id: 'acc_ada', name: 'Ada' }, head: room.head, ...(epoch === null ? { epoch } : {}), confirmed: keepConfirmed(dir, files), waiting: [], journal: 0
   };
   writeLink(dir, link);
   const session = await openProject(dir, {
@@ -722,4 +722,30 @@ test('between a restored room\'s welcome and its project, a change made here wai
   await settled(room, a);
   assert.deepEqual(room.bases.slice(sent), [1], 'sent once the project came, on its number');
   assert.equal(screen(A, 'accueil').title, 'Entre les deux');
+});
+
+test('a copy made after a restore (its new link knows no epoch yet) takes the welcome\'s: no version kept, nothing said (C84)', async () => {
+  const A = copyExample();
+  for (const [rel, file] of readProjectFiles(A).files) if (file.kind === 'binary') putBytes(A, fs.readFileSync(path.join(A, rel)));
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  await settled(room, a);
+  for (const title of ['Un', 'Deux']) await a.run('update_screen', { id: 'chemin', title }, { kind: 'human' });
+  await settled(room, a);
+  room.restore(1);
+  await settled(room, a);
+  await a.close({ media: 'cancel' });
+  sessions.splice(sessions.indexOf(a), 1);
+  // A copy cloned from the restored room: its link at the room's head, of no epoch known yet (as newLink writes it).
+  const C = copyExample();
+  for (const [rel, file] of readProjectFiles(C).files) if (file.kind === 'binary') putBytes(C, fs.readFileSync(path.join(C, rel)));
+  for (const [rel, file] of room.files) if (file.kind === 'text') fs.writeFileSync(path.join(C, rel), file.text);
+  const versionsBefore = listVersions(C).length;
+  const c = await linked(room, C, async () => 'member', 300, null);
+  const told = eventsOf(c, 'cloudRestored');
+  await settled(room, c);
+  assert.equal(JSON.parse(fs.readFileSync(linkFile(C), 'utf8')).epoch, room.epoch, 'the welcome\'s epoch is its own');
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  assert.deepEqual(told, [], 'nothing said');
+  assert.equal(listVersions(C).length, versionsBefore, 'no version kept');
 });

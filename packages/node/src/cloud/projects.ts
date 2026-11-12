@@ -375,7 +375,7 @@ export async function cloneToLibrary(options: { api: string; team: string; proje
 function newLink(root: string, options: { api: string; team: string; project: string }, person: Person, head: number, files: Files, journal: number): ProjectLink {
   const link: ProjectLink = {
     format: 'elabora-cloud-project/1', api: options.api, team: options.team, project: options.project, client: newClientId(), person,
-    head, confirmed: keepConfirmed(root, files), waiting: [], journal
+    head, epoch: null, confirmed: keepConfirmed(root, files), waiting: [], journal
   };
   writeLink(root, link);
   return link;
