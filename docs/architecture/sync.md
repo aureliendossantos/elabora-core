@@ -91,7 +91,7 @@ A room runs commands as well as changes: a tool of the cloud sends a command's n
 
 | From the server | |
 |---|---|
-| `welcome { protocol, head, peers }` | |
+| `welcome { protocol, head, peers, role? }` | `role`: the person's role at the connection (D94), taken before anything waiting is sent |
 | `ack { change }`, `change { change }` | a placed change, to its copy and to the others |
 | `refused { refusal, head }` | |
 | `catchup { changes, head }`, `snapshot { head, files }` | what a copy missed |

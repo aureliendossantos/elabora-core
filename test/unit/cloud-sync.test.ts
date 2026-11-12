@@ -31,6 +31,10 @@ class Room {
   readonly away = new Set<string>();
   // Submissions taken but not answered while true (a change waiting in the copy).
   hold = false;
+  // Each copy's role in the project, by client (C37): a viewer's submissions refused; said in welcome
+  // (D94) unless sayRole is false, as a room before it.
+  readonly roles = new Map<string, 'owner' | 'editor' | 'viewer'>();
+  sayRole = true;
   constructor(files: Files) { this.files = files; }
 
   connect = (): RoomSocket => {
@@ -44,7 +48,8 @@ class Room {
     if (message.type === 'hello') {
       if (this.away.has(message.client)) return from.close();
       from.presence = { actor: message.actor, client: message.client, at: '2026-11-12T09:00:00.000Z' };
-      from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers() });
+      const role = this.roles.get(message.client);
+      from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers(), ...(role && this.sayRole ? { role } : {}) });
       return this.tellPresence(from);
     }
     if (message.type === 'catchup') return from.deliver({ type: 'catchup', changes: this.log.filter((change) => change.seq > message.since), head: this.head });
@@ -56,6 +61,7 @@ class Room {
       return this.tellPresence(null);
     }
     if (message.type !== 'submit' || this.hold) return;
+    if (from.presence && this.roles.get(from.presence.client) === 'viewer') return from.deliver({ type: 'refused', refusal: { id: message.change.id, code: 'E_SYNC_READ_ONLY', message: 'A viewer reads this project.' }, head: this.head });
     if (this.refuse && this.refuse.times-- > 0) {
       this.refused++;
       return from.deliver({ type: 'refused', refusal: { id: message.change.id, code: this.refuse.code, message: 'Send the medium first.' }, head: this.head });
@@ -82,7 +88,10 @@ class Room {
   out(client: string): void { this.away.add(client); for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(); }
   back(client: string): void { this.away.delete(client); }
   // The person's role changed while connected (D93), as the room tells its open connections.
-  role(client: string, role: 'owner' | 'editor' | 'viewer'): void { for (const socket of this.sockets) if (socket.presence?.client === client) socket.deliver({ type: 'role', role }); }
+  role(client: string, role: 'owner' | 'editor' | 'viewer'): void {
+    this.roles.set(client, role);
+    for (const socket of this.sockets) if (socket.presence?.client === client) socket.deliver({ type: 'role', role });
+  }
   // A copy sent away for good: its membership ended (4003), or the project was deleted (4004).
   end(client: string, code: 4003 | 4004): void { for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(code); }
 }
@@ -465,3 +474,77 @@ test('made a viewer, a copy keeps its changes until it writes again; a message i
   assert.equal(screen(A, 'chemin').title, 'Après le message inconnu');
 });
 
+// The role in welcome (D94): known before anything waiting is sent.
+test('opened as a viewer, a copy knows it from welcome and keeps its changes (D94)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  room.roles.set(`c${path.basename(A)}`, 'viewer');
+  const a = await linked(room, A);
+  await until(() => a.cloud?.online === true && a.cloud.role === 'viewer', 'the role from welcome');
+  const head = room.head;
+  await a.run('update_screen', { id: 'chemin', title: 'Écrit en lecteur' }, { kind: 'agent', name: 'claude-code' });
+  await until(() => a.cloud?.pending === 1, 'the change waits');
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  assert.equal(room.head, head, 'nothing sent');
+  assert.equal(room.refused, 0);
+  assert.equal(screen(A, 'chemin').title, 'Écrit en lecteur', 'kept in the folder');
+});
+
+test('demoted while offline, a copy keeps what it did meanwhile (D94)', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const clientA = a.cloud!.client;
+  const roles = eventsOf(a, 'cloudRole');
+  room.out(clientA);
+  await until(() => a.cloud?.online === false, 'offline');
+  await a.run('update_screen', { id: 'chemin', title: 'Écrit hors ligne' }, { kind: 'human' });
+  room.roles.set(clientA, 'viewer');
+  const head = room.head;
+  room.back(clientA);
+  await until(() => a.cloud?.online === true && a.cloud.role === 'viewer', 'back, a viewer');
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  assert.equal(room.head, head, 'nothing sent');
+  assert.equal(a.cloud?.pending, 1, 'kept');
+  assert.equal(screen(A, 'chemin').title, 'Écrit hors ligne');
+  assert.deepEqual(roles.map((event) => event.role), ['viewer'], 'the app told');
+});
+
+test('promoted while offline, a copy sends what it kept (D94)', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const clientA = a.cloud!.client;
+  room.role(clientA, 'viewer');
+  await until(() => a.cloud?.role === 'viewer', 'a viewer');
+  await a.run('update_screen', { id: 'chemin', title: 'Gardé' }, { kind: 'agent', name: 'claude-code' });
+  await until(() => a.cloud?.pending === 1, 'kept');
+  room.out(clientA);
+  await until(() => a.cloud?.online === false, 'offline');
+  room.roles.set(clientA, 'editor');
+  room.back(clientA);
+  await settled(room, a, b);
+  assert.equal(a.cloud?.role, 'editor');
+  assert.equal(screen(B, 'chemin').title, 'Gardé', 'sent once an editor again');
+});
+
+test('a room that does not say the role in welcome: the copy writes as before, a viewer\'s change refused (D94)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  room.sayRole = false;
+  room.roles.set(`c${path.basename(A)}`, 'viewer');
+  const a = await linked(room, A);
+  const outcomes = eventsOf(a, 'cloudOutcome');
+  await until(() => a.cloud?.online === true, 'online');
+  assert.equal(a.cloud?.role, null);
+  const before = screen(A, 'chemin').title;
+  await a.run('update_screen', { id: 'chemin', title: 'Refusé' }, { kind: 'agent', name: 'claude-code' });
+  await until(() => outcomes.some((event) => (event.outcome as { refused?: { code: string } }).refused?.code === 'E_SYNC_READ_ONLY'), 'refused, as before D94');
+  await until(() => screen(A, 'chemin').title === before, 'the refused change left the module');
+});

@@ -210,6 +210,9 @@ export class SessionCloud {
         welcomed = true;
         this.#online = true;
         this.#peers = message.peers;
+        // The person's role as the room says it at the connection (D94), before anything waiting goes:
+        // opened as a viewer, or demoted while away, the copy keeps; an editor again, it sends.
+        if (message.role) this.#takeRole(message.role);
         this.#status();
         this.#send({ type: 'catchup', since: this.#client.head });
         this.#whereSent = null;
@@ -225,13 +228,7 @@ export class SessionCloud {
       // The person's role changed (D93): a viewer's changes wait here (the room would refuse them),
       // and go once the person writes again.
       if (message.type === 'role') {
-        const was = this.#role;
-        this.#role = message.role;
-        this.#host.emit({ type: 'cloudRole', role: message.role });
-        // What waits now stays here, or goes: said with the role.
-        this.#status();
-        if (message.role === 'viewer') this.#wake();
-        else if (was === 'viewer') void this.#later(() => this.#pump());
+        this.#takeRole(message.role);
         return;
       }
       void this.#later(() => this.#receive(message));
@@ -374,6 +371,17 @@ export class SessionCloud {
       return found.found ? found.value : null;
     };
     this.#host.emit({ type: 'cloudReplaced', change: { id: change.id, seq: change.seq, at: change.at, author: change.author }, overwrote: mine.map((overwrite) => ({ ...overwrite, now: now(overwrite.file, overwrite.path) })) });
+  }
+
+  // A role the room said (D93, D94): told to the app when it changes; what waits now stays here, or
+  // goes, said with it.
+  #takeRole(role: RoomRole): void {
+    const was = this.#role;
+    this.#role = role;
+    if (was !== role) this.#host.emit({ type: 'cloudRole', role });
+    this.#status();
+    if (role === 'viewer') this.#wake();
+    else if (was === 'viewer') void this.#later(() => this.#pump());
   }
 
   #status(): void {

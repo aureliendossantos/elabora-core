@@ -140,9 +140,10 @@ export type RoomRole = 'owner' | 'editor' | 'viewer';
 
 // From the server. ack answers the copy that submitted (with the change as placed); change is the
 // same change sent to the others. role: the person's role changed while connected (D93); a copy that
-// does not know a type ignores it.
+// does not know a type ignores it. welcome's role: the person's role at the connection (D94), taken
+// before anything waiting is sent; a room before it leaves it out.
 export type ServerMessage =
-  | { type: 'welcome'; protocol: typeof SYNC_PROTOCOL; head: number; peers: Presence[] }
+  | { type: 'welcome'; protocol: typeof SYNC_PROTOCOL; head: number; peers: Presence[]; role?: RoomRole }
   | { type: 'ack'; change: Committed }
   | { type: 'refused'; refusal: Refusal; head: number }
   | { type: 'change'; change: Committed }
