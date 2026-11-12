@@ -67,6 +67,11 @@ export async function renameTeam(client: CloudClient, team: string, name: string
   return (await client.request<{ team: TeamView }>('PATCH', teamPath(team), { json: { name } })).team;
 }
 
+// Every project of the team with it, for all its members (an owner's, C40).
+export async function deleteTeam(client: CloudClient, team: string): Promise<void> {
+  await client.request('DELETE', teamPath(team), { json: { confirm: team } });
+}
+
 // No e-mail is sent; the server keeps only the address's HMAC (C36). An owner's.
 export async function inviteMember(client: CloudClient, team: string, email: string, role: TeamRole): Promise<TeamInvitation> {
   return (await client.request<{ invitation: TeamInvitation }>('POST', `${teamPath(team)}/invitations`, { json: { email, role } })).invitation;
