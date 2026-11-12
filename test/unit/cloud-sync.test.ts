@@ -43,6 +43,11 @@ class Room {
   // connection taken), and how many hellos came.
   refuseHello: { code: 4005 | 4006 | 4007; reason?: string } | null = null;
   hellos = 0;
+  // The project whole of a copy of another history, held until let go (what comes between the welcome
+  // and it), and the bases of the changes submitted.
+  holdSnapshot: (() => void) | null = null;
+  holdSnapshots = false;
+  readonly bases: number[] = [];
   // Which history the room's numbers belong to (elabora-cloud C84): "0" until restore(); the files at
   // each head, to go back to one.
   epoch = '0';
@@ -75,7 +80,8 @@ class Room {
       from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers(), epoch: this.epoch, ...(role && this.sayRole ? { role } : {}) });
       // A copy of another history (its epoch, or none once restored): the whole project, not a catch-up.
       if (message.since > 0 && (message.epoch ?? '0') !== this.epoch) {
-        from.deliver({ type: 'snapshot', head: this.head, files: [...this.files].map(([rel, file]) => (file.kind === 'text' ? { path: rel, text: file.text } : { path: rel, blob: file.hash!, size: file.size })) });
+        const give = () => from.deliver({ type: 'snapshot', head: this.head, files: [...this.files].map(([rel, file]) => (file.kind === 'text' ? { path: rel, text: file.text } : { path: rel, blob: file.hash!, size: file.size })) });
+        if (this.holdSnapshots) this.holdSnapshot = give; else give();
       }
       return this.tellPresence(from);
     }
@@ -88,6 +94,7 @@ class Room {
       return this.tellPresence(null);
     }
     if (message.type !== 'submit' || this.hold) return;
+    this.bases.push(message.change.base);
     if (from.presence && this.roles.get(from.presence.client) === 'viewer') return from.deliver({ type: 'refused', refusal: { id: message.change.id, code: 'E_SYNC_READ_ONLY', message: 'A viewer reads this project.' }, head: this.head });
     if (this.refuse && this.refuse.times-- > 0) {
       this.refused++;
@@ -694,4 +701,25 @@ test('a copy that has not changed history takes no snapshot and keeps its epoch 
   await settled(room, a);
   assert.equal(JSON.parse(fs.readFileSync(linkFile(A), 'utf8')).epoch, '0');
   assert.deepEqual(eventsOf(a, 'cloudRestored'), []);
+});
+
+test('between a restored room\'s welcome and its project, a change made here waits: it goes after, on the new history\'s number (C84)', async () => {
+  const A = copyExample();
+  for (const [rel, file] of readProjectFiles(A).files) if (file.kind === 'binary') putBytes(A, fs.readFileSync(path.join(A, rel)));
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  await settled(room, a);
+  for (const title of ['Un', 'Deux', 'Trois']) await a.run('update_screen', { id: 'chemin', title }, { kind: 'human' });
+  await settled(room, a);
+  room.holdSnapshots = true;
+  room.restore(1);
+  await until(() => room.holdSnapshot !== null && a.cloud?.online === true, 'welcomed, the project not given yet');
+  const sent = room.bases.length;
+  await a.run('update_screen', { id: 'accueil', title: 'Entre les deux' }, { kind: 'human' });
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  assert.equal(room.bases.length, sent, 'nothing sent with the old history\'s number');
+  room.holdSnapshot!();
+  await settled(room, a);
+  assert.deepEqual(room.bases.slice(sent), [1], 'sent once the project came, on its number');
+  assert.equal(screen(A, 'accueil').title, 'Entre les deux');
 });

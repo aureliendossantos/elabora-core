@@ -330,7 +330,9 @@ export class SessionCloud {
   // ── steps (in the queue) ──
 
   async #pump(): Promise<void> {
-    if (!this.#online || this.#role === 'viewer') return;
+    // Nothing goes between a restored room's welcome and its project (C84): its base would be a number of
+    // the old history.
+    if (!this.#online || this.#role === 'viewer' || this.#restored !== null) return;
     const before = this.#client.view;
     const submission = this.#client.next();
     await this.#settle(before, null);
