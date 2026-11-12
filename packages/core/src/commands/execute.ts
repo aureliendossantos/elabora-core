@@ -5,6 +5,9 @@ import { documentOf, formatJson, isJsonPath } from '../ops/json.ts';
 import type { ProjectFiles } from '../project/files.ts';
 import { CommandError, commandContext, type CommandContext, type CommandOutput } from './context.ts';
 import { schemaProblems } from './schemas.ts';
+import { namedCommand } from './table.ts';
+import { describeTarget, elementId } from '../ops/path.ts';
+import { isRecord } from '../util/values.ts';
 
 // A command run on files, without I/O (D76): files in, the change it makes out (its operations,
 // their inverse on these files, the files after). @elabora/node's executor calls it under the
@@ -34,7 +37,22 @@ export function executeCommand<Result>(files: ProjectFiles, name: string, run: (
   const after = applyOps(files, ops);
   const problems = options.skipSchemaCheck ? [] : schemaProblems(after, touchedFiles(ops));
   if (problems.length) throw new CommandError(`${name} refused: the result does not match the schema`, problems);
-  return { ops, inverse: invertOps(files, ops), after, result: output.result };
+  return { ops, inverse: invertOps(files, ops), after, result: withRemoved(name, output.result, ops) };
+}
+
+// What a change took away that its command did not name (D89): a list, an object or a value given
+// whole drops the entries and keys it left out, and the result says which (removed: their paths in
+// the journal's writing, "course.json navigation.lockUntilComplete"). A key moved within its object
+// is set again in the same change, so it is not taken away; a command made to remove (destructive)
+// says nothing more; nor does one whose result already says removed (media files) or renamed (an id
+// renamed is removed and inserted again under its new one).
+function withRemoved<Result>(name: string, result: Result, ops: readonly Op[]): Result {
+  if (namedCommand(name)?.destructive || !isRecord(result) || 'removed' in result || 'renamed' in result) return result;
+  const at = (op: Op) => ('path' in op ? describeTarget(op.file, op.op === 'insert' ? [...op.path, { id: elementId(op.value) ?? '' }] : op.path) : op.file);
+  const written = new Set(ops.filter((op) => op.op === 'set' || op.op === 'insert' || op.op === 'write').map(at));
+  for (const op of ops) if (op.op === 'move') written.add(describeTarget(op.to.file, [...op.to.path, op.path.at(-1)!]));
+  const removed = [...new Set(ops.filter((op) => (op.op === 'unset' || op.op === 'remove' || op.op === 'delete') && !written.has(at(op))).map(at))];
+  return removed.length ? { ...result, removed } : result;
 }
 
 // Operations from the files a command computed. JSON files are compared by value, so the change

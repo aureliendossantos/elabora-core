@@ -6,6 +6,10 @@ import { parseJSON } from '../util/json.ts';
 import { NARRATION_DIR } from '../narration/narration.ts';
 import type { Op } from '../ops/types.ts';
 import { keyedKind } from '../ops/path.ts';
+import { renameReferences } from './references.ts';
+import { getRegistry } from '../components/registry.ts';
+import { copyTranslations } from './translation.ts';
+import { applySet, type PathEdit } from './set-paths.ts';
 import { CommandError, Draft, allIds, anchorFor, assignFields, derivedId, insertAt, listIn, screenFile, type CommandContext, type CommandOutput, type Placement } from './context.ts';
 
 // The sections of course.json, and whether one lists a screen (a section whose list is broken
@@ -86,23 +90,20 @@ export function duplicateScreen(context: CommandContext, { id, newId, title }: D
     if (typeof layer.id === 'string') layer.id = rename(layer.id);
     walk(layer.blocks);
   }
-  const local = (value: string | undefined): string | undefined => (value !== undefined && renamed.has(value) && value !== id ? renamed.get(value) : value);
-  for (const event of objectsIn(copy.events)) {
-    if (typeof event.id === 'string') event.id = rename(event.id);
-    if (isRecord(event.on)) event.on.target = local(event.on.target);
-    for (const condition of objectsIn(event.if)) if ('visited' in condition) condition.visited = local(condition.visited);
-    for (const action of [...objectsIn(event.do), ...objectsIn(event.else)]) {
-      if ('block' in action) action.block = local(action.block);
-      if ('layer' in action) action.layer = local(action.layer);
-    }
-  }
+  for (const event of objectsIn(copy.events)) if (typeof event.id === 'string') event.id = rename(event.id);
+  // What the copy names of its own (its events, its dialogues' cues and options) names the copy's.
+  const registry = getRegistry(project);
+  renameReferences(copy, { local: (value) => (value !== id && renamed.get(value)) || value, dialogue: (type) => registry.get(type)?.behavior === 'dialogue' });
   const course = draft.json<Course>('course.json');
   const section = sectionsOf(course).find((candidate) => lists(candidate, id));
   if (!section) throw new CommandError(`Screen "${id}" is in no section of course.json`);
   insertAt(screensOf(section), copyId, { after: id });
+  // A glossary term whose link was removed from the original is not linked in the copy either.
+  for (const entry of objectsIn(course.glossary)) if (Array.isArray(entry.unlinked) && entry.unlinked.includes(id)) entry.unlinked.push(copyId);
   draft.writeJson('course.json', course);
   draft.writeJson(screenFile(copyId), copy);
   copyNarration(draft, id, copyId);
+  copyTranslations(draft, renamed, { screen: [id, copyId] });
   return { files: draft.files(), result: { screen: copyId, section: section.id, renamed: Object.fromEntries([...renamed].filter(([old]) => old !== id)) } };
 }
 
@@ -122,12 +123,16 @@ function copyNarration(draft: Draft, from: string, to: string): void {
 
 // Fields of a screen that update_screen changes; null removes one.
 export const SCREEN_FIELDS = ['title', 'covers', 'completeWhen', 'required', 'showTitle', 'layout', 'layoutProps', 'style', 'backdrop', 'continueRevealsSteps', 'steps', 'narration'] as const;
-export type UpdateScreenArgs = { id: string } & { [K in (typeof SCREEN_FIELDS)[number]]?: Screen[K] | null };
+export type UpdateScreenArgs = { id: string } & { [K in (typeof SCREEN_FIELDS)[number]]?: Screen[K] | null } & {
+  // Fields and entries of those fields changed by their path, after them (D89).
+  set?: PathEdit[];
+};
 
 export function updateScreen(context: CommandContext, args: UpdateScreenArgs): CommandOutput<Record<string, never>> {
   const draft = new Draft(context.files);
   const screen = draft.json<Screen>(screenFile(args.id));
   assignFields(screen, args, SCREEN_FIELDS);
+  applySet(screen as unknown as Record<string, unknown>, args.set, { what: `screen "${args.id}"`, fields: SCREEN_FIELDS });
   draft.writeJson(screenFile(args.id), screen);
   return { files: draft.files(), result: {} };
 }

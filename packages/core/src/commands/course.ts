@@ -3,6 +3,7 @@ import { CommandError, Draft, type CommandContext, type CommandOutput } from './
 import { codeInfo } from '../diagnostics/codes.ts';
 import { keySubject } from '../diagnostics/index.ts';
 import { isRecord } from '../util/values.ts';
+import { applySet, type PathEdit } from './set-paths.ts';
 
 // Settings of course.json that update_course replaces (sections included: reorders become moves).
 export const COURSE_FIELDS = ['title', 'description', 'version', 'durationMinutes', 'theme', 'presentation', 'navigation', 'completion', 'tracking', 'delivery', 'ui', 'sections', 'speakers', 'pronunciations', 'narration', 'sounds'] as const;
@@ -22,6 +23,8 @@ export type UpdateCourseArgs = { [K in (typeof COURSE_FIELDS)[number]]?: Course[
     'theme.tokens'?: { [token: string]: string | number | null };
     speakers?: { [id: string]: SpeakerPatch };
   };
+  // Settings and their entries changed by their path, after the others (D89).
+  set?: PathEdit[];
 };
 const REQUIRED: ReadonlySet<string> = new Set(['title', 'version', 'sections']);
 
@@ -64,6 +67,11 @@ export function updateCourseSettings(context: CommandContext, fields: UpdateCour
       }
     }
   }
+  applySet(record, fields.set, {
+    what: 'the course', fields: COURSE_FIELDS,
+    refuse: (path, value) => (path.length === 1 && value === null && REQUIRED.has(path[0] as string) ? 'a course needs it, so it cannot be removed (null).'
+      : path[0] === 'sections' && (path.length <= 2 || path[2] === 'screens') ? 'sections and their screens change with sections given whole, or with create_screen, move_screen and delete_screen; set changes a section\'s own fields (sections[<id>].title).' : null)
+  });
   draft.writeJson('course.json', course);
   return { files: draft.files(), result: {} };
 }

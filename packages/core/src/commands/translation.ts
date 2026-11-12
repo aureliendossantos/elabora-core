@@ -1,6 +1,7 @@
 import { translateUnits, translationApproval, translationApprovalAsk, translationExport } from '../i18n/translate.ts';
 import type { TranslatedText, TranslationApprovalAsk, TranslationCounts } from '../i18n/translate.ts';
 import type { TranslationApproval } from '../project/model.ts';
+import { pathsUnder } from '../project/files.ts';
 import { CommandError, Draft } from './context.ts';
 import type { CommandContext, CommandOutput } from './context.ts';
 
@@ -82,4 +83,30 @@ export function askAuthor(ask: TranslationApprovalAsk, changed = false): string 
 // The translation module throws plain errors: here they are refusals of the command.
 function refusing<T>(run: () => T): T {
   try { return run(); } catch (error) { throw error instanceof CommandError ? error : new CommandError(error instanceof Error ? error.message : String(error)); }
+}
+
+// The translations of what a copy copies (a screen, a block): each unit of the original, in every
+// language, copied under the copy's ids with its target and its state, so that the copy reads as
+// translated as its original does (a copied screen's narration audio is copied too). renamed: the
+// original's ids to the copy's; screen: the original screen's id and the copy's, when a screen is
+// copied (its units, screen.<id>.…, and the files their location notes name).
+export function copyTranslations(draft: Draft, renamed: ReadonlyMap<string, string>, { screen }: { screen?: [string, string] } = {}): void {
+  const prefixes: [string, string][] = [];
+  if (screen) {
+    for (const [old, next] of renamed) prefixes.push([`screen.${screen[0]}.layer.${old}.`, `screen.${screen[1]}.layer.${next}.`]);
+    prefixes.push([`screen.${screen[0]}.`, `screen.${screen[1]}.`]);
+  }
+  for (const [old, next] of renamed) prefixes.push([`block.${old}.`, `block.${next}.`]);
+  for (const file of pathsUnder(draft.files(), 'translations').filter((path) => path.endsWith('.xlf'))) {
+    const text = draft.text(file) ?? '';
+    const copies: string[] = [];
+    for (const [unit, id] of text.matchAll(/^[ \t]*<unit id="([^"]+)">[\s\S]*?<\/unit>\n/gm)) {
+      const prefix = prefixes.find(([old]) => id.startsWith(old));
+      const copyId = prefix && `${prefix[1]}${id.slice(prefix[0].length)}`;
+      if (!copyId || text.includes(`<unit id="${copyId}">`)) continue;
+      const copied = unit.replace(`<unit id="${id}">`, `<unit id="${copyId}">`);
+      copies.push(screen ? copied.replaceAll(`<note category="location">screens/${screen[0]}.json `, `<note category="location">screens/${screen[1]}.json `) : copied);
+    }
+    if (copies.length) draft.writeText(file, text.replace(/^([ \t]*)<\/file>/m, (end) => `${copies.join('')}${end}`));
+  }
 }

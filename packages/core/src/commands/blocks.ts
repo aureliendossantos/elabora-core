@@ -8,6 +8,8 @@ import {
   CommandError, Draft, allIds, anchorFor, derivedId, findBlock, freshId, insertAt, listAt, pruneEmptyBlocks, screenFile, segmentsOf, targetList,
   type BlockTarget, type CommandContext, type CommandOutput, type Placement
 } from './context.ts';
+import { copyTranslations } from './translation.ts';
+import { applySet, type PathEdit } from './set-paths.ts';
 
 type Props = Record<string, unknown>;
 
@@ -38,6 +40,8 @@ export interface UpdateBlockArgs {
   block: string;
   props?: Props;        // merged: keys set to null are removed
   replaceProps?: Props;
+  // Fields and entries of its props changed by their path, after props (D89).
+  set?: PathEdit[];
   hidden?: boolean;
   width?: Block['width'];
   note?: string;
@@ -66,6 +70,7 @@ export function updateBlock(context: CommandContext, args: UpdateBlockArgs): Com
   const block = listAt(screen, place.list)[place.index];
   if (args.replaceProps) block.props = args.replaceProps;
   if (args.props) block.props = mergeProps(isRecord(block.props) ? block.props : {}, args.props);
+  applySet(block as unknown as Record<string, unknown>, args.set, { what: `block "${block.id}"`, fields: ['props'] });
   if (args.hidden !== undefined) block.hidden = args.hidden;
   if (args.width !== undefined) block.width = args.width;
   if (args.note !== undefined) block.note = args.note;
@@ -194,6 +199,7 @@ export function duplicateBlock(context: CommandContext, args: DuplicateBlockArgs
   else insertAt(targetList(target, { layer, parent, screen: screenId }), duplicate, { after, position });
   draft.writeJson(place.file, source);
   if (targetFile !== place.file) draft.writeJson(targetFile, target);
+  copyTranslations(draft, renamed);
   return { files: draft.files(), result: { block: duplicate.id, screen: screenId || place.screenId, renamed: Object.fromEntries(renamed) } };
 }
 

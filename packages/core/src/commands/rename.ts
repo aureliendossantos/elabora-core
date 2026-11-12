@@ -1,4 +1,6 @@
-import type { Action, Course, CourseSection, Plan, Screen, Variable } from '../project/model.ts';
+import type { Course, CourseSection, Plan, Screen, Variable } from '../project/model.ts';
+import { renameReferences } from './references.ts';
+import { getRegistry } from '../components/registry.ts';
 import { filesIn, pathsUnder } from '../project/files.ts';
 import { screenBlocks } from '../project/load.ts';
 import { LOCK_FILE, type StateLock } from '../compile/state-model.ts';
@@ -74,6 +76,8 @@ export function renameId(context: CommandContext, { from, to }: RenameArgs): Com
     throw new CommandError(`Id "${to}" is already used in the course: choose another one.`, [], 'E_DUPLICATE_ID');
   }
   const [{ kind, screen: owner }] = places;
+  const registry = getRegistry(project);
+  const dialogue = (type: string) => registry.get(type)?.behavior === 'dialogue';
   let references = 0;
   const rename = (value: string | undefined): string | undefined => (value === from ? (references++, to) : value);
 
@@ -111,30 +115,8 @@ export function renameId(context: CommandContext, { from, to }: RenameArgs): Com
     }
     // Triggers name blocks and layers (layers of their own screen), conditions name blocks of any
     // screen, actions name screens, layers and blocks.
-    const layers = kind === 'layer' && screenId === owner;
-    const action = (a: Action) => {
-      if (kind === 'screen' && a.type === 'go-to') a.screen = rename(a.screen);
-      if (layers && (a.type === 'show-layer' || a.type === 'hide-layer')) a.layer = rename(a.layer);
-      if (kind === 'block' && (a.type === 'show-block' || a.type === 'hide-block' || a.type === 'set-object-props' || a.type === 'play-media' || a.type === 'pause-media' || a.type === 'start-dialogue' || a.type === 'goto-dialogue' || a.type === 'restart-dialogue')) a.block = rename(a.block);
-    };
-    // A dialogue's options and cues act on blocks and layers of its screen (D61).
-    for (const { block } of screenBlocks(screen)) {
-      if (block.type !== 'dialogue' || !isRecord(block.props)) continue;
-      for (const node of objectsIn(block.props.nodes as Record<string, unknown>[] | undefined)) {
-        const lines = (list: unknown) => objectsIn(list as Record<string, unknown>[] | undefined);
-        const cuesOf = (list: unknown) => lines(list).flatMap((line) => lines(line.cues));
-        const options = lines(node.options);
-        for (const holder of [...cuesOf(node.lines), ...options, ...options.flatMap((option) => cuesOf(option.reply))]) for (const a of lines(holder.do)) action(a as Action);
-      }
-    }
-    for (const event of objectsIn(screen.events)) {
-      if (isRecord(event.on) && (kind === 'block' || layers)) event.on.target = rename(event.on.target);
-      if (kind === 'block') for (const condition of objectsIn(event.if)) {
-        if ('visited' in condition) condition.visited = rename(condition.visited);
-        if ('dialogue' in condition) condition.dialogue = rename(condition.dialogue);
-      }
-      for (const a of [...objectsIn(event.do), ...objectsIn(event.else)]) action(a);
-    }
+    if (kind === 'screen') renameReferences(screen, { screen: (id) => rename(id) ?? id, dialogue });
+    if (kind === 'block' || (kind === 'layer' && screenId === owner)) renameReferences(screen, { local: (id) => rename(id) ?? id, dialogue });
     if (kind === 'screen' && screenId === from) {
       screen.id = to;
       draft.remove(file);
