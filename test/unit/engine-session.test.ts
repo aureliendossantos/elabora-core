@@ -215,6 +215,21 @@ test('the engine\'s own writes come back from the watcher and are ignored', asyn
   }
 });
 
+test('a file an agent writes from what it read before the author\'s edit keeps the edit (D75)', async () => {
+  const { dir, session, events } = await open();
+  // The agent reads the screen, the author then rewrites its title in the app.
+  const read = readJSON(dir, 'screens/accueil.json');
+  await session.run('update_screen', { id: 'accueil', title: 'Titre de l\'autrice' }, { kind: 'human' });
+  // The agent writes what it read, with its own edit of another block.
+  read.blocks[0].props.markdown = 'Texte de l\'agent';
+  fs.writeFileSync(path.join(dir, 'screens/accueil.json'), JSON.stringify(read, null, 2) + '\n');
+  const changed = await waitFor(events, isChanged('watcher'));
+  assert.deepEqual(changed.change.author, { kind: 'external' });
+  const after = readJSON(dir, 'screens/accueil.json');
+  assert.deepEqual([after.title, after.blocks[0].props.markdown], ['Titre de l\'autrice', 'Texte de l\'agent']);
+  assert.equal(session.readScreen('accueil').data.title, 'Titre de l\'autrice', 'the session holds what the disk holds');
+});
+
 test('a burst of 50 file writes gives one external change', async () => {
   const { dir, session, events } = await open({ debounceMs: 150 });
   fs.mkdirSync(path.join(dir, 'notes'));
@@ -327,7 +342,7 @@ test('a session ignores files that are not content: tool folders, temporary file
   assert.ok(![...session.files.keys()].some((rel) => rel.includes('conflicted') || rel.startsWith('dist/') || rel.endsWith('.tmp')));
 });
 
-test('backups: a named version, then a restore journaled as one system change that can be undone', async () => {
+test('backups: a named version, then a restore journaled as one change of the person who asked, undone by their ⌘Z', async () => {
   const { dir, session, events } = await open();
   const named = await session.createBackup('Avant la relecture');
   assert.equal(named?.name, 'Avant la relecture');
@@ -340,7 +355,7 @@ test('backups: a named version, then a restore journaled as one system change th
   const restored = await session.restoreBackup(named?.id as string);
   assert.equal(restored.version, named?.id);
   assert.ok(restored.before, 'the state before the restore is kept in a version');
-  assert.deepEqual(restored.change?.author, { kind: 'system' });
+  assert.deepEqual(restored.change?.author, { kind: 'human' });
   assert.equal(restored.change?.command?.name, 'restore_backup');
   assert.deepEqual([...(restored.change?.files ?? [])].sort(), ['notes.md', 'screens/chemin.json']);
   assert.equal(readJSON(dir, 'screens/chemin.json').title, original);

@@ -218,3 +218,15 @@ test('merge: a keyed array of strings merges by value: no string twice, each sid
   assert.deepEqual(mergeJson(['a', 'b'], ['a', 'x', 'b'], ['y', 'a'], 'mine').value, ['y', 'a', 'x']);
   assert.deepEqual(mergeJson(['a'], ['a', 'x'], ['x', 'a'], 'mine').value, ['a', 'x']);
 });
+
+test('external edit: a value put back as it was in an older version applies; the person who changed it since is told', () => {
+  const on = screen([], { flag: true });
+  const off = applyOps(on, change(on, (v) => { v.flag = false; }).ops);
+  const back = applyOps(off, change(off, (v) => { v.flag = true; }).ops);
+  // The agent turns it off again: what it writes equals the version after the person's first change.
+  const value = read(back);
+  value.flag = false;
+  const edit = externalEdit(back, doc(value), [{ files: off, then: human }, { files: on, then: human }]);
+  assert.equal(read(applyOps(back, edit.ops)).flag, false);
+  assert.deepEqual(edit.overwrote.map((o) => [o.path, o.was, o.unsure]), [['flag', true, true]]);
+});

@@ -4,7 +4,8 @@ import { DELIVERY_FORMATS, isDeliveryFormat } from '@elabora/core/lms/formats';
 import type { Author, ChangeLike, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
 import { readChat } from '@elabora/node/chats';
 import { diffFiles } from '@elabora/core/ops/diff';
-import { invertOps } from '@elabora/core/ops/apply';
+import { applyOps, invertOps } from '@elabora/core/ops/apply';
+import { externalEdit, recentVersions } from '@elabora/core/sync/external';
 import { isJsonPath, sameContent } from '@elabora/core/ops/json';
 import { isAiAuthor, summarizeBatches, undoneChanges } from '@elabora/core/ops/batch';
 import { projectPath } from '@elabora/core/project/files';
@@ -50,7 +51,8 @@ import * as edit from '@elabora/node/edit';
 import type { EditOptions, EditResult, Written } from '@elabora/node/edit';
 import { keepOriginalTexts } from '@elabora/node/edit/disk';
 import { withProjectLock } from '@elabora/node/journal/lock';
-import { JOURNAL_DIR, JournalError, appendChange, changeFileHashes, storeChangeBlobs, storeChangeBlobsSync } from '@elabora/node/journal/journal';
+import { JOURNAL_DIR, JournalError, appendChange, changeFileHashes, lastChanges, storeChangeBlobs, storeChangeBlobsSync } from '@elabora/node/journal/journal';
+import { writeFileAtomic } from '@elabora/node/util/fs';
 import { projectDataDir } from '@elabora/node/data-dir';
 import { syncArtefact } from '@elabora/node/project-files';
 import { agentRulesState, claudeMissing, updateAgentRules, AGENTS_FILE, CLAUDE_FILE } from '@elabora/node/agent-rules';
@@ -164,6 +166,8 @@ const SETTLE_MS = 400;
 const MAX_SETTLE_MS = 2000;
 const SYSTEM: Author = { kind: 'system' };
 const EXTERNAL: Author = { kind: 'external' };
+// How many recent changes give the versions an external edit may have been read from (D75).
+const RECENT_VERSIONS = 64;
 
 interface SessionInit {
   root: string;
@@ -1076,11 +1080,12 @@ export class Session {
   async restoreBackup(version: string, paths?: string[]): Promise<RestoreView> {
     this.#assertOpen();
     if (!findVersion(this.root, version)) throw new EngineError('not-found', `No backup version ${version}`);
-    return this.#change(SYSTEM, async () => {
+    // The change of the person who asked for it (D79): their ⌘Z takes it back.
+    return this.#change(this.author, async () => {
       const result = await restore(this.root, version, { paths, author: this.author, skip: (rel) => this.#skipInVersions(rel) });
       const updates = new Map<string, SourceFile | null>();
       for (const change of result.changes) updates.set(change.path, fileOf(await this.#readDisk(change.path)));
-      const seq = await this.#journalChange({ updates, author: SYSTEM, command: { name: 'restore_backup', args: { version, paths: paths ?? null } }, source: 'engine' });
+      const seq = await this.#journalChange({ updates, author: this.author, command: { name: 'restore_backup', args: { version, paths: paths ?? null } }, source: 'engine' });
       const before = result.before ? findVersion(this.root, result.before) : null;
       if (before?.reason === 'restore') this.#emit({ type: 'backupTaken', version: backupSummary(summarizeVersion(before)) });
       return { result, seq };
@@ -1326,34 +1331,61 @@ export class Session {
       if (disk.kind === 'file') this.#stats.set(rel, disk.info);
     }
     if (!updates.size) return;
-    const { before, after, ops, inverse, unavailable } = this.#prepareChange(updates);
+    const { before, after, ops, inverse, unavailable, merged, settled } = this.#prepareChange(updates, true);
     if (ops.length) {
       storeChangeBlobsSync(this.root, { ops, inverse, unavailable });
       keepOriginalTexts(this.root, before, ops);
       const entry = appendChange(this.root, { author: EXTERNAL, ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
       this.#sources.set(entry.seq, 'watcher');
     }
-    this.#state.update(updates);
+    for (const rel of merged) this.#writeMergedSync(rel, after.get(rel));
+    this.#state.update(settled);
     for (const rel of updates.keys()) this.#state.setBroken(rel, null);
+  }
+
+  // A file whose external edit was merged with what was written meanwhile (D75): the disk gets the
+  // merged content, the session's own write.
+  #writeMergedSync(rel: string, file: SourceFile | undefined): void {
+    const target = path.join(this.root, rel);
+    if (!file) fs.rmSync(target, { force: true });
+    else if (file.kind === 'text') writeFileAtomic(target, file.text);
+    else return;
+    this.#recordStatSync(rel);
   }
 
   // The change a set of new contents makes. A binary file another program overwrote or deleted
   // before any version or change kept its content cannot come back: the change says so
   // (unavailable), and undo will skip that part.
-  #prepareChange(updates: ReadonlyMap<string, SourceFile | null>) {
+  // A file edit no Elabora tool made (external) is computed from the version its program most likely
+  // read (D75): what was written meanwhile and the edit did not touch is kept; merged lists the
+  // files whose content is no longer what was written, which the session writes again.
+  #prepareChange(updates: ReadonlyMap<string, SourceFile | null>, external = false) {
     const before = this.#state.files;
-    const after = withUpdates(before, updates);
-    const ops = diffFiles(before, after);
+    let after: ProjectFiles = withUpdates(before, updates);
+    let ops = diffFiles(before, after);
+    let merged: string[] = [];
+    if (external && ops.length) {
+      const paths = [...updates.keys()];
+      const edit = externalEdit(before, after, recentVersions(before, lastChanges(this.root, RECENT_VERSIONS), paths), EXTERNAL);
+      ops = edit.ops;
+      merged = edit.merged;
+      // A file the edit gives as it was written keeps that text (its formatting); a merged one is
+      // the merge's.
+      const applied = applyOps(before, ops) as ProjectFiles;
+      after = withUpdates(applied, new Map([...updates].filter(([rel]) => !merged.includes(rel))));
+    }
     const inverse = invertOps(before, ops);
     const written = new Set(ops.flatMap((op) => (op.op === 'write' && 'blob' in op ? [op.blob] : [])));
     const unavailable = [...new Set(inverse.flatMap((op) => (op.op === 'write' && 'blob' in op && !written.has(op.blob) && !hasBlob(this.root, op.blob as BlobHash) ? [op.blob] : [])))];
-    return { before, after, ops, inverse, unavailable };
+    // What the state takes: the files as they are after the change (merged ones included).
+    const settled = new Map<string, SourceFile | null>([...updates.keys()].map((rel) => [rel, (after.get(rel) as SourceFile | undefined) ?? null]));
+    return { before, after, ops, inverse, unavailable, merged, settled };
   }
 
   // Journals new contents as one change: files already on disk (what another program or a job
   // wrote), and files the session writes now (write: references rewritten).
   async #journalChange(spec: { updates: Map<string, SourceFile | null>; author: Author; command?: { name: string; args: unknown }; source: ChangeSource; write?: ReadonlyMap<string, SourceFile> }): Promise<number | null> {
-    const { before, after, ops, inverse, unavailable } = this.#prepareChange(spec.updates);
+    const { before, after, ops, inverse, unavailable, merged, settled } = this.#prepareChange(spec.updates, spec.author.kind === 'external');
     let seq: number | null = null;
     if (ops.length) {
       await storeChangeBlobs(this.root, { ops, inverse, unavailable });
@@ -1366,7 +1398,8 @@ export class Session {
       this.#sources.set(entry.seq, spec.source);
       seq = entry.seq;
     }
-    this.#state.update(spec.updates);
+    for (const rel of merged) this.#writeMergedSync(rel, after.get(rel));
+    this.#state.update(settled);
     for (const rel of spec.updates.keys()) this.#state.setBroken(rel, null);
     return seq;
   }
