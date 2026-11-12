@@ -35,8 +35,8 @@ export function projectsApi(value: string | undefined = process.env.ELABORA_CLOU
   return url.origin;
 }
 
-export type { InvitationToMe, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';
-import type { InvitationToMe, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';
+export type { CoverType, InvitationToMe, ProjectCover, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';
+import type { CoverType, InvitationToMe, ProjectCover, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';
 
 export function projectsClient(api: string): CloudClient {
   return new CloudClient(api, requireCredential(api).token);
@@ -167,6 +167,26 @@ export async function sendMedia(client: CloudClient, root: string, team: string,
 
 export async function commitMedia(client: CloudClient, team: string, upload: string | null): Promise<void> {
   if (upload) await client.request('POST', `/v1/teams/${segment(team)}/uploads/${segment(upload)}/commit`);
+}
+
+// The picture of the project's card the server keeps (C77 of elabora-cloud): the app's render, sent at
+// the head it was rendered at, by an editor or an owner. A newer head replaces it, the same head too; an
+// older one is refused (409 cover-older).
+export async function putCover(client: CloudClient, team: string, project: string, head: number, image: Uint8Array, type: CoverType): Promise<ProjectCover> {
+  return (await client.request<{ cover: ProjectCover }>('PUT', `${teamPath(team)}/projects/${segment(project)}/cover?head=${head}`, { bytes: image, contentType: type })).cover;
+}
+
+// The cover's picture and its version (its ETag); null while the project has none.
+export async function readCover(client: CloudClient, team: string, project: string): Promise<{ bytes: Uint8Array; type: string; version: string | null } | null> {
+  let response: Response;
+  try {
+    response = await fetch(`${client.api}${teamPath(team)}/projects/${segment(project)}/cover`, { headers: { Authorization: `Bearer ${requireCredential(client.api).token}` }, redirect: 'error', signal: AbortSignal.timeout(60_000) });
+  } catch (error) {
+    throw new CloudError(0, 'E_CLOUD_NETWORK', `The cover of the project could not be read: ${(error as Error).message}.`);
+  }
+  if (response.status === 404) return null;
+  if (!response.ok) throw new CloudError(response.status, `http-${response.status}`, 'The cover of the project could not be read.');
+  return { bytes: new Uint8Array(await response.arrayBuffer()), type: response.headers.get('content-type') ?? 'image/jpeg', version: response.headers.get('etag')?.replace(/^W\/|"/g, '') ?? null };
 }
 
 // A medium of the project into this folder's blob store, checked against its hash.

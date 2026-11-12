@@ -50,6 +50,7 @@ export const scrubSecrets = (text: string): string => text.replace(SECRET, (foun
 export interface RequestOptions {
   json?: unknown; // a JSON body
   bytes?: Uint8Array; // raw bytes (a blob or a part)
+  contentType?: string; // the raw bytes' type (application/octet-stream when not given)
   timeoutMs?: number;
 }
 
@@ -70,7 +71,7 @@ export class CloudClient {
     let body: string | Uint8Array<ArrayBuffer> | undefined;
     if (options.bytes) {
       body = options.bytes as Uint8Array<ArrayBuffer>;
-      headers['Content-Type'] = 'application/octet-stream'; // fetch sets Content-Length from the bytes
+      headers['Content-Type'] = options.contentType ?? 'application/octet-stream'; // fetch sets Content-Length from the bytes
     } else if (options.json !== undefined) {
       body = JSON.stringify(options.json);
       headers['Content-Type'] = 'application/json';

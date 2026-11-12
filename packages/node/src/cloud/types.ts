@@ -300,7 +300,12 @@ export interface ProjectActor { kind: 'human' | 'agent' | 'external' | 'system';
 export interface ProjectView {
   id: string; team: string; name: string; createdBy?: string; createdAt?: string; updatedAt?: string;
   bytes?: number; lastChange?: { at: string; author: ProjectActor } | null; present?: { actor: ProjectActor }[]; filling?: boolean;
+  cover?: ProjectCover | null; // its card's picture, kept by the server (C77): read by its version
 }
+// The picture of a project's card the server keeps (C77 of elabora-cloud): sent by an app at the head it
+// was rendered at (source app), or made by the server (source server).
+export type CoverType = 'image/png' | 'image/jpeg' | 'image/webp';
+export interface ProjectCover { head: number; version: string; type: CoverType; bytes: number; source: 'app' | 'server'; at: string }
 // An invitation waiting for this account's address (GET /v1/teams), and one an owner sees in the team.
 export interface InvitationToMe { id: string; team: string; teamName: string; role: TeamRole; expiresAt: string }
 export interface TeamInvitation { id: string; role: TeamRole; createdAt: string; expiresAt: string }
