@@ -1,6 +1,6 @@
 # Projects in the cloud: ordering, rebase and copies
 
-How several people and agents work on one project at once: a server orders the changes of every copy, each change is rebased on what came before it, and every copy shows what the server confirmed with its own waiting changes on top. Part of the [architecture](../architecture.md); it builds on [operations](operations.md), the one language every change is written in. Decisions: [D73](../decisions/D73.md) (the server and the copies), [D74](../decisions/D74.md) (rebase), [D75](../decisions/D75.md) (files written by an agent's own tools), [D76](../decisions/D76.md) (a command run on files).
+How several people and agents work on one project at once: a server orders the changes of every copy, each change is rebased on what came before it, and every copy shows what the server confirmed with its own waiting changes on top. Part of the [architecture](../architecture.md); it builds on [operations](operations.md), the one language every change is written in. Decisions: [D73](../decisions/D73.md) (the server and the copies), [D74](../decisions/D74.md) (rebase), [D75](../decisions/D75.md) (files written by an agent's own tools), [D76](../decisions/D76.md) (a command run on files), [D77](../decisions/D77.md) (ids drawn with a random suffix), [D78](../decisions/D78.md) and [D79](../decisions/D79.md) (authors and undo by person), [D83](../decisions/D83.md) (a folder linked to a project).
 
 `@elabora/core` `sync/` holds it all, pure, without I/O: the server of a project (a room of the hosting) and every copy (the desktop engine, the CLI, later the browser) import the same functions.
 
@@ -37,10 +37,22 @@ A copy (`SyncClient`) holds the files the server confirmed, their number, and it
 - A change of others (`change`) or the acknowledgement of its own (`ack`) applies to confirmed, in number order; a gap asks for a catchup from the copy's number.
 - **Offline**, the waiting changes pile up and show at once. On reconnecting the copy says its number (`hello`), gets what came since (`catchup`), recognises its own changes among them by id, and sends the rest in order. When the server no longer keeps that far back it sends the project as it is (`snapshot`): it replaces confirmed, and the waiting changes go on top of it as on any change of others.
 - `takeOutcomes()` gives, for each change made here, whether it was placed (with what was left out or overwritten, here and on the server) or refused.
+- **An agent's run goes as one submission** (D83): the waiting changes of one AI batch by one author, rebased one after the other, up to 100 changes, 600 operations or 2 MiB, named in its command (`changes`, with their ids). A person's changes go one by one.
 
 ## Files written by an agent's own tools
 
 An agent may read a file, think, and write it long after: what it writes is the file as it read it, with its edit. Computed from the files as they are, that write would undo what was written meanwhile, in silence. A copy computes it from the version the agent most likely read instead (`externalEdit`): among the recent versions of each written file (each with who made the change after it), the one closest to what was written, JSON by value whatever the order of keys, other text by lines; then rebases it on the files as they are, as an agent's change. Where they clash, what is there now is kept, and `merged` lists the files whose content is no longer what the agent wrote, for it to read again. When several versions are as close, the newest is taken; if a person changed the file between them, what the edit replaces of theirs is reported as overwritten and `unsure` (the agent may not have seen it), so they are told.
+
+## A folder linked to a project
+
+`@elabora/node` `cloud/projects.ts` and `cloud/link.ts`, `@elabora/engine` `session-cloud.ts`; the command line's `elabora cloud teams` and `elabora cloud project create|push|clone|sync` (D83).
+
+- **The link** (`cloud-project.json` in the project's data folder): the server, team and project, this copy's id, its person, the room's number it has, what the room confirmed (by hash in the folder's blob store), the changes waiting, the journal's last entry taken in. It is all a copy needs to go on after a restart, offline or not.
+- **The engine's session syncs it.** Every journal entry, in order, goes into the copy's `SyncClient`: the session's own changes, other processes' (the CLI, the MCP server), file edits no Elabora tool made (computed as in D75). The room's changes are written in the folder and journaled as the change of their author, with the command `sync`, which is never sent back. The folder is always the client's view: a change the room refused leaves it, and the refusal is told (`cloudOutcome`).
+- **The journal names its person** (D78): in a linked folder, a person's changes carry the person's id, an agent's and a file edit's carry it as `by`.
+- **Media** are the team's: a change that writes a binary file sends what the team lacks first; a medium another copy wrote is read from the team before the folder is written.
+- **A test server only, for now**: the commands need its address (`ELABORA_CLOUD_URL` or `--api`) and refuse Elabora's hosting.
+- `scripts/cloud-sync-trial.ts` is the trial on such a server: two folders, a person through the command line, an agent through the MCP tools, files written by hand, one copy offline and back, an agent's burst timed.
 
 ## Messages
 

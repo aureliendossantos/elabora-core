@@ -56,7 +56,7 @@ export const COMMAND_ACTIVITY: Readonly<Record<string, ActivityFamily | null>> =
   'dialogue show': 'screen', 'dialogue play': 'dialogue', 'dialogue paths': 'dialogue', 'dialogue export': 'package',
   'downloads list': 'status', 'downloads install': 'download', 'downloads uninstall': 'download',
   build: 'package', test: 'package', preview: null, look: 'look', screenshot: 'look', fit: 'fit', inspect: 'check', diff: 'status', profiles: 'status',
-  'account login': null, 'account handle': null, 'account status': null, 'account logout': null, 'account ai-key': null,
+  'account login': null, 'account handle': null, 'account status': null, 'account logout': null, 'account ai-key': null, 'cloud teams': null, 'cloud project': null,
   publish: null, 'publication versions': null, 'publication withdraw': null, 'review create': null, 'review list': 'reviews', 'review link': null, 'review close': null,
   'review open': null, 'review delete': null, 'review comments': 'reviews', 'review reply': null, 'review resolve': null, 'review reopen': null,
   assets: 'design', 'theme upgrade': 'design', player: 'write-course',

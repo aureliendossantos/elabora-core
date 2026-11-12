@@ -34,7 +34,24 @@ export interface CloudOptions {
   link: ProjectLink;
   // Waits between reconnections, in milliseconds (the last repeats).
   backoff?: number[];
+  // Opens the room's connection (tests give a room in memory); by default a WebSocket with the
+  // session in Authorization, never in the address.
+  connect?: (url: string, token: string) => RoomSocket;
 }
+
+// What the copy needs of a WebSocket.
+export interface RoomSocket {
+  readonly readyState: number;
+  send(data: string): void;
+  close(code?: number, reason?: string): void;
+  addEventListener(type: 'open' | 'close' | 'error', listener: () => void): void;
+  addEventListener(type: 'message', listener: (event: { data: unknown }) => void): void;
+}
+
+const OPEN = 1;
+
+const webSocket = (url: string, token: string): RoomSocket =>
+  new (WebSocket as unknown as new (url: string, init: { headers: Record<string, string> }) => RoomSocket)(url, { headers: { Authorization: `Bearer ${token}` } });
 
 const SYNC_COMMAND = 'sync';
 // A journal entry the copy wrote from the room: never sent back.
@@ -46,7 +63,7 @@ export class SessionCloud {
   readonly #link: ProjectLink;
   readonly #client: SyncClient;
   #saved: Files;
-  #ws: WebSocket | null = null;
+  #ws: RoomSocket | null = null;
   #online = false;
   #stopped = false;
   #attempt = 0;
@@ -123,8 +140,7 @@ export class SessionCloud {
   #connect(): void {
     if (this.#stopped) return;
     const url = roomUrl(this.#options.api, this.#link.team, this.#link.project);
-    // undici's WebSocket takes headers: the session travels in Authorization, never in the address.
-    const ws = new (WebSocket as unknown as new (url: string, init: { headers: Record<string, string> }) => WebSocket)(url, { headers: { Authorization: `Bearer ${this.#options.token}` } });
+    const ws = (this.#options.connect ?? webSocket)(url, this.#options.token);
     this.#ws = ws;
     ws.addEventListener('open', () => {
       this.#attempt = 0;
@@ -134,9 +150,11 @@ export class SessionCloud {
       let message: ServerMessage;
       try { message = JSON.parse(String(event.data)) as ServerMessage; } catch { return; }
       if (message.type === 'welcome') {
+        // What came while away first (an acknowledgement lost with the connection is in it), then
+        // the waiting changes: the pump follows every message received.
         this.#online = true;
         this.#status();
-        void this.#later(() => this.#pump());
+        this.#send({ type: 'catchup', since: this.#client.head });
         return;
       }
       void this.#later(() => this.#receive(message));
@@ -157,7 +175,7 @@ export class SessionCloud {
   }
 
   #send(message: ClientMessage): void {
-    if (this.#ws?.readyState === WebSocket.OPEN) this.#ws.send(JSON.stringify(message));
+    if (this.#ws?.readyState === OPEN) this.#ws.send(JSON.stringify(message));
   }
 
   // Runs in the session's queue; a failure is said, the copy goes on.

@@ -140,6 +140,7 @@ export function runBench(options: BenchOptions): BenchReport {
     count('placed');
     if (accepted.committed.skipped.length) count('placed with skipped operations');
     if (accepted.committed.overwrote.length) count('placed over a value not seen');
+    if (accepted.committed.command?.name === 'changes') count('placed as a run of an agent\'s changes');
     for (const other of copies) {
       if (other === from) other.down.push({ type: 'ack', change: accepted.committed });
       else if (other.online) other.down.push({ type: 'change', change: accepted.committed });
@@ -372,8 +373,11 @@ function check(server: Server, copies: Copy[], made: Map<string, Made>, outcomes
       // Replaced later: by someone who saw it, or who was told.
       for (const later of server.log) {
         if (later.seq <= committed.seq || !contains(later.inverse, word) || contains(later.ops, word)) continue;
-        const by = made.get(later.id);
-        const seen = by ? saw(by.seen, word) : false;
+        // A run of an agent's changes sent as one names them (D83): what any of them saw counts.
+        const ids = later.command?.name === 'changes' ? (later.command.args as { ids: string[] }).ids : [later.id];
+        const run = ids.map((id) => made.get(id)).filter((one): one is Made => one !== undefined);
+        const by = run[0];
+        const seen = run.some((one) => saw(one.seen, word));
         if (seen) continue;
         // An agent's own file edit may not tell what it read (D75): when unsure, the person is told.
         if (by && !by.actor.human && !later.overwrote.some((o) => o.unsure && contains(o.was, word))) problems.push(`${later.id} (${by.actor.id}) replaced ${word} of ${change.id} without having seen it`);

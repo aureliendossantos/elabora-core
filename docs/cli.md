@@ -514,6 +514,24 @@ The API is https://api.elabora.studio (ELABORA_CLOUD_URL elsewhere). A tester's 
 with ELABORA_CLOUD_KEY_FILE and ELABORA_CLOUD_SPACE.
 ```
 
+## Projects in the cloud (test server)
+
+```text
+cloud teams [--api <origin>] [--json]               Your teams on the server, with their ids
+cloud project create [dir] --team <id> [--name <n>] [--api <origin>] [--json]
+                                                    A new project of the team from the course's files, the folder
+                                                    linked to it (the media first, then the files; course.json last)
+cloud project push [dir] --team <id> --project <id> [--api <origin>] [--json]
+                                                    The course's files into an empty project, the folder linked to it
+cloud project clone <dir> --team <id> --project <id> [--api <origin>] [--json]
+                                                    A project into a new folder, linked to it
+cloud project sync [dir] [--watch] [--json]         Sends the changes made in the folder (by you, by agents through
+                                                    Elabora's tools, by programs writing its files) and writes the
+                                                    others'. Without --watch: until nothing waits, then stops. With
+                                                    it: until stopped (Ctrl-C); offline, changes wait and go when the
+                                                    server is back
+```
+
 ## Design
 
 ```text

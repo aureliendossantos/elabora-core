@@ -86,3 +86,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D80](decisions/D80.md) | Validation without code generation: the format's schemas compiled by `pnpm run gen`, inline schemas read by an interpreter | 12 Nov 2026 |
 | [D81](decisions/D81.md) | The schemas a course writes: the keywords the interpreter reads, and a clear refusal for the others | 12 Nov 2026 |
 | [D82](decisions/D82.md) | Where Ajv stays, and the proof in a Worker | 12 Nov 2026 |
+| [D83](decisions/D83.md) | A folder linked to a project in the cloud: the engine's session syncs it; an agent's run goes as one change | 12 Nov 2026 |

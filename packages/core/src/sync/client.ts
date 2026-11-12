@@ -1,5 +1,6 @@
 import type { Author, FileContent, Files, Op, SkippedOp } from '../ops/types.ts';
 import { applyOps, invertOps } from '../ops/apply.ts';
+import { isAiAuthor } from '../ops/batch.ts';
 import { binaryFile, textFile } from '../ops/json.ts';
 import { rebase } from './rebase.ts';
 import type { Committed, Overwrite, Refusal, ServerMessage, Submission } from './protocol.ts';
@@ -38,7 +39,19 @@ interface Waiting {
   sent?: Submission;
   skipped: SkippedOp[];
   overwrote: Overwrite[];
+  // The submission last made of it (kept after a disconnection: its acknowledgement may come in a
+  // catchup), and how many waiting changes it holds, this one first (an agent's run, D83).
+  sentId?: string;
+  group: number;
 }
+
+// An agent's run of changes in one batch goes as one submission (D83): one round trip for many
+// small changes. Bounded by what the room takes in a change.
+const GROUP_CHANGES = 100;
+const GROUP_OPS = 600;
+const GROUP_BYTES = 2 * 1024 * 1024;
+
+const sameAuthor = (a: Author, b: Author): boolean => a.kind === b.kind && a.name === b.name && a.by === b.by && a.id === b.id;
 
 export class SyncClient {
   private confirmedFiles: Files;
@@ -64,29 +77,50 @@ export class SyncClient {
   record(change: LocalChange): void {
     if (!change.ops.length) return;
     const inverse = change.inverse ?? invertOps(this.viewFiles, change.ops);
-    this.waiting.push({ change, inverse, skipped: [], overwrote: [] });
+    this.waiting.push({ change, inverse, skipped: [], overwrote: [], group: 1 });
     this.viewFiles = applyOps(this.viewFiles, change.ops);
   }
 
   // The next submission to send, or null (one in flight already, or nothing waiting). The first
-  // waiting change is rebased on confirmed; when nothing of it is left, it ends here.
+  // waiting change is rebased on confirmed; when nothing of it is left, it ends here. The changes
+  // that follow it in the same AI batch, by the same author, go with it, rebased one after the other.
   next(): Submission | null {
     while (!this.inFlight && this.waiting.length) {
       const first = this.waiting[0];
       if (!first.sent) {
-        const placed = rebase(this.confirmedFiles, { id: first.change.id, author: first.change.author, ops: first.change.ops, inverse: first.inverse });
-        first.skipped = placed.skipped;
-        first.overwrote = [...(first.change.overwrote ?? []), ...placed.overwrote];
-        if (placed.refusal) {
-          this.settle({ id: first.change.id, refused: { id: first.change.id, ...placed.refusal }, skipped: first.skipped, overwrote: first.overwrote });
-          this.recompute();
-          continue;
+        let files = this.confirmedFiles;
+        const ops: Op[] = [];
+        let count = 0;
+        let bytes = 0;
+        for (const item of this.waiting) {
+          if (count && (!isAiAuthor(first.change.author) || !first.change.batch || item.change.batch !== first.change.batch || !sameAuthor(item.change.author, first.change.author)
+            || item.change.undoes || count >= GROUP_CHANGES || ops.length + item.change.ops.length > GROUP_OPS || bytes + JSON.stringify(item.change.ops).length > GROUP_BYTES)) break;
+          const placed = rebase(files, { id: item.change.id, author: item.change.author, ops: item.change.ops, inverse: item.inverse });
+          if (placed.refusal) {
+            if (count) break; // it goes on its own, after the run
+            this.settle({ id: item.change.id, refused: { id: item.change.id, ...placed.refusal }, skipped: placed.skipped, overwrote: placed.overwrote });
+            this.recompute();
+            break;
+          }
+          item.skipped = placed.skipped;
+          item.overwrote = [...(item.change.overwrote ?? []), ...placed.overwrote];
+          files = placed.files;
+          ops.push(...placed.ops);
+          bytes += JSON.stringify(item.change.ops).length;
+          count++;
         }
-        const { id, at, author, batch, command, undoes } = first.change;
+        if (!count) continue;
+        const run = this.waiting.slice(0, count);
+        const { at, author, batch, command, undoes } = first.change;
+        const overwrote = run.flatMap((item) => item.overwrote);
+        first.group = count;
+        first.sentId = count > 1 ? `${first.change.id}+${count - 1}` : first.change.id;
         first.sent = {
-          id, base: this.headSeq, at, author, ops: placed.ops, inverse: invertOps(this.confirmedFiles, placed.ops),
-          ...(batch ? { batch } : {}), ...(command ? { command } : {}), ...(undoes ? { undoes } : {}),
-          ...(first.overwrote.length ? { overwrote: first.overwrote } : {})
+          id: first.sentId, base: this.headSeq, at, author, ops, inverse: invertOps(this.confirmedFiles, ops),
+          ...(batch ? { batch } : {}),
+          ...(count > 1 ? { command: { name: 'changes', args: { ids: run.map((item) => item.change.id), commands: run.map((item) => item.change.command?.name ?? null) } } } : command ? { command } : {}),
+          ...(undoes ? { undoes } : {}),
+          ...(overwrote.length ? { overwrote } : {})
         };
       }
       this.inFlight = true;
@@ -110,9 +144,12 @@ export class SyncClient {
         return 'ok';
       case 'refused': {
         const first = this.waiting[0];
-        if (!first || first.change.id !== message.refusal.id) return 'ok';
+        if (!first || (first.change.id !== message.refusal.id && first.sentId !== message.refusal.id)) return 'ok';
         this.inFlight = false;
-        this.settle({ id: first.change.id, refused: message.refusal, skipped: first.skipped, overwrote: first.overwrote });
+        for (let i = 0, count = first.group; i < count && this.waiting.length; i++) {
+          const item = this.waiting[0];
+          this.settle({ id: item.change.id, refused: { ...message.refusal, id: item.change.id }, skipped: item.skipped, overwrote: item.overwrote });
+        }
         this.recompute();
         return 'ok';
       }
@@ -146,6 +183,7 @@ export class SyncClient {
     item.sent = undefined;
   }
 
+
   // The changes waiting, oldest first, each with its inverse: what a copy keeps to go on after a
   // restart (a new client from confirmed and head, then record each again).
   waitingChanges(): LocalChange[] {
@@ -158,12 +196,13 @@ export class SyncClient {
   }
 
   private placed(change: Committed): 'ok' | 'gap' {
+    const first = this.waiting[0];
+    const own = first !== undefined && (change.id === first.change.id || change.id === first.sentId);
     if (change.seq <= this.headSeq) {
       // Its own change, acknowledged again (sent twice, or already in a snapshot): it ends here.
-      const first = this.waiting[0];
-      if (first && first.change.id === change.id) {
+      if (own) {
         this.inFlight = false;
-        this.settle({ id: change.id, placed: change, skipped: [...first.skipped, ...change.skipped], overwrote: change.overwrote });
+        this.settleRun(change);
         this.recompute();
       }
       return 'ok';
@@ -171,13 +210,24 @@ export class SyncClient {
     if (change.seq !== this.headSeq + 1) return 'gap';
     this.confirmedFiles = applyOps(this.confirmedFiles, change.ops);
     this.headSeq = change.seq;
-    const first = this.waiting[0];
-    if (first && first.change.id === change.id) {
+    if (own) {
       this.inFlight = false;
-      this.settle({ id: change.id, placed: change, skipped: [...first.skipped, ...change.skipped], overwrote: change.overwrote });
+      this.settleRun(change);
     } else if (first?.sent && !this.inFlight) this.unprepare(first); // prepared on an older head
     this.recompute();
     return 'ok';
+  }
+
+  // The waiting changes a placed submission held: what the room left out or overwrote is the first's.
+  private settleRun(change: Committed): void {
+    // A run sent under its own id holds its group; the first change alone, under its id, only itself.
+    const first = this.waiting[0];
+    const count = change.id === first.sentId ? first.group : 1;
+    if (count !== first.group) this.unprepare(first);
+    for (let i = 0; i < count && this.waiting.length; i++) {
+      const item = this.waiting[0];
+      this.settle({ id: item.change.id, placed: change, skipped: i ? item.skipped : [...item.skipped, ...change.skipped], overwrote: i ? [] : change.overwrote });
+    }
   }
 
   private settle(outcome: Outcome): void {
@@ -188,9 +238,11 @@ export class SyncClient {
   // The view, from confirmed and the waiting changes.
   private recompute(): void {
     let files = this.confirmedFiles;
-    for (const item of this.waiting) {
+    for (let i = 0; i < this.waiting.length; i++) {
+      const item = this.waiting[i];
       const change = item.sent ?? { ...item.change, inverse: item.inverse };
       files = rebase(files, { id: item.change.id, author: item.change.author, ops: change.ops, inverse: change.inverse }).files;
+      if (item.sent) i += item.group - 1; // the run it holds
     }
     this.viewFiles = files;
   }
