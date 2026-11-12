@@ -250,7 +250,21 @@ export function screenSpeaks(project: Project, screenId: string): boolean {
 // lines have a generated voice (AI Act, art. 50), the media blocks marked generated, the author's
 // credits, then the credits its voices ask for. A narration not generated yet whose speakers have a
 // voice of a voice tool counts as generated: it will be.
-export function aboutCourse(project: Project, { language, credits: authorCredits }: { language?: string; credits?: readonly string[] } = {}): AboutData {
+// Kept per project and language when the author's credits are the course's own: every screen rendered
+// asks for them (the bars' « IA et crédits »), and a course of 200 screens read 200 times. A project is
+// never edited in place, so an edit gives a project with its own entry. Callers read the answer only.
+const aboutOf = new WeakMap<Project, Map<string, AboutData>>();
+export function aboutCourse(project: Project, options: { language?: string; credits?: readonly string[] } = {}): AboutData {
+  if (options.credits) return findAbout(project, options);
+  let byLanguage = aboutOf.get(project);
+  if (!byLanguage) { byLanguage = new Map(); aboutOf.set(project, byLanguage); }
+  const key = options.language ?? '';
+  let known = byLanguage.get(key);
+  if (!known) { known = findAbout(project, options); byLanguage.set(key, known); }
+  return known;
+}
+
+function findAbout(project: Project, { language, credits: authorCredits }: { language?: string; credits?: readonly string[] }): AboutData {
   const course = project.course;
   const voices = new Set<string>();
   let voiced = false;

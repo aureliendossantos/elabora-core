@@ -10,6 +10,10 @@ import { build } from '@elabora/node/build';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
 import { compileCourseData } from '@elabora/core/compile/course-data';
 import { renderScreen, translatedProject } from '@elabora/core/render/screen';
+import { aboutCourse } from '@elabora/core/player/config';
+import { createProjectFiles, textFile } from '@elabora/core/project/files';
+import { loadProject } from '@elabora/core/project/load';
+import { snapshotOfExample } from '../validation-corpus.ts';
 import { Renderer } from '@elabora/engine/render';
 import { extractUnits } from '@elabora/core/i18n/units';
 import { DEFAULT_PLAYER, packageLanguages, playerConfig } from '@elabora/core/player/config';
@@ -469,4 +473,20 @@ test('the engine\'s renders carry the bars of the course as it is now: another s
   writeJSON(dir, 'screens/chemin.json', chemin);
   renderer.invalidate(['screens/chemin.json']);
   assert.equal(outlineTitle(renderer.render(loadProjectFromDir(dir), { screen: 'accueil' })), 'Le trajet d\'une impression', 'the memoised render of accueil takes the new outline');
+});
+
+test('the course\'s AI mentions and credits follow each edit: every project, every language, its own answer', () => {
+  const files = snapshotOfExample('clockwork');
+  const project = loadProject(createProjectFiles(files), { root: '' });
+  assert.equal(aboutCourse(project).ai, undefined);
+  assert.equal(aboutCourse(project).ai, undefined);
+  const screen = [...files.keys()].find((file) => /^screens\/.+\.json$/.test(file))!;
+  const data = JSON.parse((files.get(screen) as { text: string }).text);
+  data.blocks.find((block: { type: string }) => block.type === 'image' || block.type === 'text').props.generated = true;
+  files.set(screen, textFile(JSON.stringify(data)));
+  const edited = loadProject(createProjectFiles(files), { root: '' });
+  assert.deepEqual(aboutCourse(edited).ai, { media: ['image'] });
+  assert.equal(aboutCourse(project).ai, undefined, 'the first project keeps its own answer');
+  assert.deepEqual(aboutCourse(edited, { credits: ['Photo: A. Writer'] }).credits, ['Photo: A. Writer']);
+  assert.equal(aboutCourse(edited).credits, undefined, 'the author\'s credits of one call are not kept for the next');
 });
