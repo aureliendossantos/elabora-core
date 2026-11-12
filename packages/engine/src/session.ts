@@ -99,7 +99,7 @@ import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
 import type {
-  BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, FileEntry, FileView,
+  BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, ExternalNotes, FileEntry, FileView,
   FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, BatchCloseReason, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
   RequestResult, RequestType, ResponseMessage, RestoreView, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
 } from './protocol.ts';
@@ -208,6 +208,7 @@ export class Session {
   readonly #queue = new WriteQueue();
   readonly #listeners = new Set<(message: EventMessage) => void>();
   readonly #stats: Map<string, FileInfo>; // size and time of each file when last read, for rescans
+  readonly #externalNotes = new Map<string, ExternalNotes>(); // D75, by change id
   readonly #monitor: SessionMonitor;
   readonly #activity: SessionActivity;
   readonly #sources = new Map<number, ChangeSource>(); // journal entries the session appended, by sequence number
@@ -1331,12 +1332,13 @@ export class Session {
       if (disk.kind === 'file') this.#stats.set(rel, disk.info);
     }
     if (!updates.size) return;
-    const { before, after, ops, inverse, unavailable, merged, settled } = this.#prepareChange(updates, true);
+    const { before, after, ops, inverse, unavailable, merged, settled, notes } = this.#prepareChange(updates, true);
     if (ops.length) {
       storeChangeBlobsSync(this.root, { ops, inverse, unavailable });
       keepOriginalTexts(this.root, before, ops);
       const entry = appendChange(this.root, { author: EXTERNAL, ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
       this.#sources.set(entry.seq, 'watcher');
+      this.#noteExternal(entry.id, notes);
     }
     for (const rel of merged) this.#writeMergedSync(rel, after.get(rel));
     this.#state.update(settled);
@@ -1364,11 +1366,13 @@ export class Session {
     let after: ProjectFiles = withUpdates(before, updates);
     let ops = diffFiles(before, after);
     let merged: string[] = [];
+    let notes: ExternalNotes | null = null;
     if (external && ops.length) {
       const paths = [...updates.keys()];
       const edit = externalEdit(before, after, recentVersions(before, lastChanges(this.root, RECENT_VERSIONS), paths), EXTERNAL);
       ops = edit.ops;
       merged = edit.merged;
+      if (edit.merged.length || edit.skipped.length || edit.overwrote.length) notes = { files: edit.merged, skipped: edit.skipped, overwrote: edit.overwrote };
       // A file the edit gives as it was written keeps that text (its formatting); a merged one is
       // the merge's.
       const applied = applyOps(before, ops) as ProjectFiles;
@@ -1379,13 +1383,26 @@ export class Session {
     const unavailable = [...new Set(inverse.flatMap((op) => (op.op === 'write' && 'blob' in op && !written.has(op.blob) && !hasBlob(this.root, op.blob as BlobHash) ? [op.blob] : [])))];
     // What the state takes: the files as they are after the change (merged ones included).
     const settled = new Map<string, SourceFile | null>([...updates.keys()].map((rel) => [rel, (after.get(rel) as SourceFile | undefined) ?? null]));
-    return { before, after, ops, inverse, unavailable, merged, settled };
+    return { before, after, ops, inverse, unavailable, merged, settled, notes };
+  }
+
+  // What a file edit no Elabora tool made left out or replaced (D75), kept by its change and told.
+  #noteExternal(change: string, notes: ExternalNotes | null): void {
+    if (!notes) return;
+    this.#externalNotes.set(change, notes);
+    if (this.#externalNotes.size > 200) this.#externalNotes.delete(this.#externalNotes.keys().next().value as string);
+    this.#emit({ type: 'merged', change, ...notes });
+  }
+
+  // What an external change left out or replaced, by its id (a project in the cloud tells the others).
+  externalNotes(change: string): ExternalNotes | undefined {
+    return this.#externalNotes.get(change);
   }
 
   // Journals new contents as one change: files already on disk (what another program or a job
   // wrote), and files the session writes now (write: references rewritten).
   async #journalChange(spec: { updates: Map<string, SourceFile | null>; author: Author; command?: { name: string; args: unknown }; source: ChangeSource; write?: ReadonlyMap<string, SourceFile> }): Promise<number | null> {
-    const { before, after, ops, inverse, unavailable, merged, settled } = this.#prepareChange(spec.updates, spec.author.kind === 'external');
+    const { before, after, ops, inverse, unavailable, merged, settled, notes } = this.#prepareChange(spec.updates, spec.author.kind === 'external');
     let seq: number | null = null;
     if (ops.length) {
       await storeChangeBlobs(this.root, { ops, inverse, unavailable });
@@ -1397,6 +1414,7 @@ export class Session {
       const entry = appendChange(this.root, { author: spec.author, ...(spec.command ? { command: spec.command } : {}), ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
       this.#sources.set(entry.seq, spec.source);
       seq = entry.seq;
+      this.#noteExternal(entry.id, notes);
     }
     for (const rel of merged) this.#writeMergedSync(rel, after.get(rel));
     this.#state.update(settled);

@@ -62,3 +62,16 @@ test('an inverse left out stays in force: undoing the batch again undoes it once
   const [settled] = edit.historyBatches(dir).filter((b) => b.id === batch.id);
   assert.deepEqual([settled.undone, settled.partly], [true, false]);
 });
+
+test('the agents of two people never share a batch: my ⌘Z takes back my agent\'s work only', () => {
+  const dir = copyExample();
+  const before = text(dir, 'chemin-regle');
+  const mine: Author = { kind: 'agent', name: 'claude-code', by: 'ada' };
+  const theirs: Author = { kind: 'agent', name: 'claude-code', by: 'bob' };
+  write(dir, 'chemin-regle', 'my agent', mine);
+  write(dir, 'chemin-intro', 'their agent', theirs);
+  const batches = edit.historyBatches(dir).filter((b) => b.ai);
+  assert.equal(batches.length, 2);
+  edit.undo(dir, undefined, { author: { kind: 'human', id: 'ada' }, autoVersion: false, validate: false });
+  assert.deepEqual([text(dir, 'chemin-regle'), text(dir, 'chemin-intro')], [before, 'their agent']);
+});

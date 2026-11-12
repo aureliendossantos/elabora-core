@@ -1,6 +1,7 @@
 import type { Diagnostic, Summary } from '@elabora/core/diagnostics/index';
 import type { Author, Op, SkippedOp } from '@elabora/core/ops/types';
 import type { BatchSummary } from '@elabora/core/ops/batch';
+import type { Overwrite } from '@elabora/core/sync/protocol';
 import type { DeliveryFormat } from '@elabora/core/lms/formats';
 import type { Screen, Variable } from '@elabora/core/project/model';
 import type { Anchor } from '@elabora/format';
@@ -185,6 +186,8 @@ export interface ChangeView {
 // process: the CLI, the MCP server), the watcher (files written by a program that is not an Elabora
 // tool, journaled as external), or a media job the engine ran.
 export type ChangeSource = 'engine' | 'journal' | 'watcher' | 'media';
+
+export interface ExternalNotes { files: string[]; skipped: SkippedOp[]; overwrote: Overwrite[] }
 
 export interface ScreenOutline {
   id: string;
@@ -702,6 +705,11 @@ export type ResponseMessage =
 export type EngineEvent =
   // A change was journaled (or an undo), by the engine or found in the journal or on disk.
   | { type: 'changed'; source: ChangeSource; change: ChangeView }
+  // A file an agent wrote with its own tools, computed from the version it most likely read (D75):
+  // files whose content is not what it wrote (the merge was written instead), the operations of its
+  // edit left out (someone wrote there since), the values it replaced that a person had written
+  // since that version (unsure: it may not have seen them).
+  | ({ type: 'merged'; change: string } & ExternalNotes)
   // Findings that changed: screens whose list changed (removed: screens gone), the project's
   // findings when they changed, and the summary over everything.
   | { type: 'diagnostics'; screens: Record<string, Diagnostic[]>; removed: string[]; project?: Diagnostic[]; summary: Summary }

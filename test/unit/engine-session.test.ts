@@ -228,6 +228,9 @@ test('a file an agent writes from what it read before the author\'s edit keeps t
   const after = readJSON(dir, 'screens/accueil.json');
   assert.deepEqual([after.title, after.blocks[0].props.markdown], ['Titre de l\'autrice', 'Texte de l\'agent']);
   assert.equal(session.readScreen('accueil').data.title, 'Titre de l\'autrice', 'the session holds what the disk holds');
+  // The merge is told: the file is not what the agent wrote.
+  const merged = await waitFor(events, (event): event is Extract<EngineEvent, { type: 'merged' }> => event.type === 'merged');
+  assert.deepEqual([merged.change, merged.files], [changed.change.id, ['screens/accueil.json']]);
 });
 
 test('a burst of 50 file writes gives one external change', async () => {

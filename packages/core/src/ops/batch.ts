@@ -22,7 +22,8 @@ export function assignBatch(previous: JournalEntry | undefined, next: { id: stri
   if (next.author.chat && turn) return turn;
   // An agent outside the chat never joins a turn; a file written by no Elabora tool (external) joins
   // the AI work just before it, a turn included.
-  if (!previous || previous.type === 'mark' || !isAiAuthor(previous.author) || (next.author.kind === 'agent' && previous.author.chat !== next.author.chat)) return next.id;
+  // Nor the work of an agent another person launched (D78).
+  if (!previous || previous.type === 'mark' || !isAiAuthor(previous.author) || previous.author.by !== next.author.by || (next.author.kind === 'agent' && previous.author.chat !== next.author.chat)) return next.id;
   return Date.parse(next.at) - Date.parse(previous.at) < BATCH_IDLE_MS ? previous.batch : next.id;
 }
 

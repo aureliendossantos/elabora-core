@@ -2,7 +2,7 @@ import path from 'node:path';
 import type { Author, ChangeLike, JournalEntry, SkippedOp } from '@elabora/core/ops/types';
 import { invertOps, touchedFiles } from '@elabora/core/ops/apply';
 import { undoChanges } from '@elabora/core/ops/undo';
-import { changesToUndo, lastAiBatch, lastStep, redoStep, summarizeBatches, undoneChanges, type BatchSummary } from '@elabora/core/ops/batch';
+import { belongsTo, changesToUndo, lastAiBatch, lastStep, redoStep, summarizeBatches, undoneChanges, type BatchSummary } from '@elabora/core/ops/batch';
 import { CommandError } from '@elabora/core/commands/index';
 import { hasBlob, type BlobHash } from '../blobs.ts';
 import { withProjectLockSync, readJournal, appendUndo, appendMark as appendJournalMark, detectAuthor, CHAT_ID } from '../journal/index.ts';
@@ -63,7 +63,8 @@ export function undo(dir: string, seq?: number, options: EditOptions = {}): Undo
     if (!step) throw new CommandError('Nothing to undo');
     target = step.change;
     if (step.batch) {
-      const changes = changesToUndo(entries, { batch: step.batch });
+      // The batch's changes of this person's (their agents'), never another's that joined it.
+      const changes = changesToUndo(entries, { batch: step.batch }).filter((change) => belongsTo(change.author, author));
       return { changes, undoes: { batch: step.batch, changes: changes.map((c) => c.id) }, name: 'undo_batch', args: { batch: step.batch }, step: true };
     }
     return { changes: changesToUndo(entries, { change: target.id }), undoes: { changes: [target.id] }, name: 'undo', args: { seq: target.seq }, step: true };
