@@ -282,3 +282,14 @@ export interface PublishCheck {
   rule: string | null;
   target: string | null;
 }
+
+// ── teams and projects (protocol version 10, « Teams, projects and rooms ») ──
+
+export type TeamRole = 'owner' | 'editor' | 'viewer';
+export interface TeamView { id: string; name: string; role?: TeamRole; seats?: number; storageBytes?: number; createdAt?: string; updatedAt?: string }
+export interface ProjectView { id: string; team: string; name: string; createdBy?: string; createdAt?: string; updatedAt?: string }
+// An invitation waiting for this account's address (GET /v1/teams), and one an owner sees in the team.
+export interface InvitationToMe { id: string; team: string; teamName: string; role: TeamRole; expiresAt: string }
+export interface TeamInvitation { id: string; role: TeamRole; createdAt: string; expiresAt: string }
+export interface TeamMember { account: string; name: string; role: TeamRole; joinedAt: string }
+export interface TeamDetails { team: TeamView; members: TeamMember[]; invitations?: TeamInvitation[] }
