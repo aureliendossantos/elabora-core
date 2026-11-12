@@ -262,6 +262,10 @@ export interface AccountSession {
   lastUsedAt: string;
   expiresAt: string;
   current: boolean;
+  // A session the consent of the connector opened (C72 of elabora-cloud): the client the consent page
+  // named, its domain (verified: its own; else its redirect's host), the scopes allowed, when. null
+  // for a device signed in by hand; absent from a server before it.
+  connector?: { client: string; domain: string; verified: boolean; scopes: string[]; grantedAt: string } | null;
 }
 
 // What an account's erasure took (DELETE /v1/account): everything of it.
