@@ -372,9 +372,9 @@ export class Session {
 
   // The copy of the project in the cloud: connected, the room's number, changes waiting, who is there,
   // the team and project (null: not linked).
-  get cloud(): { online: boolean; head: number; pending: number; client: string; team: string; project: string; peers: readonly Presence[]; settled: () => Promise<void> } | null {
+  get cloud(): { online: boolean; head: number; pending: number; client: string; team: string; project: string; peers: readonly Presence[]; role: 'owner' | 'editor' | 'viewer' | null; settled: () => Promise<void> } | null {
     const cloud = this.#cloud;
-    return cloud && { online: cloud.online, head: cloud.head, pending: cloud.pending, client: cloud.link.client, team: cloud.link.team, project: cloud.link.project, peers: cloud.peers, settled: () => cloud.settled() };
+    return cloud && { online: cloud.online, head: cloud.head, pending: cloud.pending, client: cloud.link.client, team: cloud.link.team, project: cloud.link.project, peers: cloud.peers, role: cloud.role, settled: () => cloud.settled() };
   }
 
   // What the room changed in the view, written in the folder and journaled as the change of its

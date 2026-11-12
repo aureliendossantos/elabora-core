@@ -135,8 +135,12 @@ export type ClientMessage =
   | { type: 'catchup'; since: number }
   | { type: 'presence'; presence: Omit<Presence, 'actor' | 'client' | 'at'> };
 
+// A member's role in the project's team (elabora-cloud C36): an owner, an editor writes, a viewer reads.
+export type RoomRole = 'owner' | 'editor' | 'viewer';
+
 // From the server. ack answers the copy that submitted (with the change as placed); change is the
-// same change sent to the others.
+// same change sent to the others. role: the person's role changed while connected (D93); a copy that
+// does not know a type ignores it.
 export type ServerMessage =
   | { type: 'welcome'; protocol: typeof SYNC_PROTOCOL; head: number; peers: Presence[] }
   | { type: 'ack'; change: Committed }
@@ -145,6 +149,7 @@ export type ServerMessage =
   | { type: 'catchup'; changes: Committed[]; head: number }
   | { type: 'snapshot'; head: number; files: SnapshotFile[] }
   | { type: 'presence'; peers: Presence[] }
+  | { type: 'role'; role: RoomRole }
   | { type: 'error'; code: string; message: string };
 
 // A file of a snapshot: text whole, binary by the hash of its content (sent apart, as a blob).

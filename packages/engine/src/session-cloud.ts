@@ -3,7 +3,7 @@ import { lookup, parsePath } from '@elabora/core/ops/path';
 import { sameContent } from '@elabora/core/ops/json';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { SyncClient, type LocalChange, type Outcome } from '@elabora/core/sync/client';
-import { SYNC_PROTOCOL, type ClientMessage, type Committed, type Presence, type ServerMessage } from '@elabora/core/sync/protocol';
+import { SYNC_PROTOCOL, type ClientMessage, type Committed, type Presence, type RoomRole, type ServerMessage } from '@elabora/core/sync/protocol';
 import type { CloudClient } from '@elabora/node/cloud/client';
 import {
   blobsOf, commitMedia, confirmedFiles, fetchMedium, keepConfirmed, projectMembership, roomUrl, sendMedia, unlinkFolder, writeLink, type ProjectLink
@@ -96,6 +96,8 @@ export class SessionCloud {
   #whereTimer: NodeJS.Timeout | null = null;
   #ended: CloudEnd | null = null;
   #askedAt = -Infinity;
+  // The person's role as the room last said it (D93): null until it says one.
+  #role: RoomRole | null = null;
 
   constructor(host: CloudHost, options: CloudOptions) {
     this.#host = host;
@@ -113,6 +115,7 @@ export class SessionCloud {
   get view(): Files { return this.#client.view; }
   get peers(): readonly Presence[] { return this.#peers; }
   get link(): Readonly<ProjectLink> { return this.#link; }
+  get role(): RoomRole | null { return this.#role; }
 
   // Journal entries the copy has not taken in yet (made while no session synced), then a check that
   // the folder is the view: what differs goes as a file edit no Elabora tool made.
@@ -150,9 +153,10 @@ export class SessionCloud {
     this.#later(() => this.#pump());
   }
 
-  // Resolves once nothing waits and nothing is in flight, the copy online.
+  // Resolves once nothing waits and nothing is in flight, the copy online; for a viewer, once online
+  // (its changes wait until it writes again, D93).
   settled(): Promise<void> {
-    if (this.#online && !this.#client.pending) return Promise.resolve();
+    if (this.#online && (!this.#client.pending || this.#role === 'viewer')) return Promise.resolve();
     return new Promise((resolve) => this.#idle.push(resolve));
   }
 
@@ -216,6 +220,16 @@ export class SessionCloud {
         this.#status();
         return;
       }
+      // The person's role changed (D93): a viewer's changes wait here (the room would refuse them),
+      // and go once the person writes again.
+      if (message.type === 'role') {
+        const was = this.#role;
+        this.#role = message.role;
+        this.#host.emit({ type: 'cloudRole', role: message.role });
+        if (message.role === 'viewer') this.#wake();
+        else if (was === 'viewer') void this.#later(() => this.#pump());
+        return;
+      }
       void this.#later(() => this.#receive(message));
     });
     const lost = () => {
@@ -277,7 +291,7 @@ export class SessionCloud {
   // ── steps (in the queue) ──
 
   async #pump(): Promise<void> {
-    if (!this.#online) return;
+    if (!this.#online || this.#role === 'viewer') return;
     const before = this.#client.view;
     const submission = this.#client.next();
     await this.#settle(before, null);

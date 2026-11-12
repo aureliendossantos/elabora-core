@@ -96,6 +96,7 @@ A room runs commands as well as changes: a tool of the cloud sends a command's n
 | `refused { refusal, head }` | |
 | `catchup { changes, head }`, `snapshot { head, files }` | what a copy missed |
 | `presence { peers }` | who is there: an `Actor` (a person, or an agent with the person who launched it) per copy |
+| `role { role }` | the person's role changed while connected (D93): a viewer's changes wait in the copy |
 
 **Authors.** A change's author is the `Author` of [operations](operations.md), with, in a project in the cloud, `id` (a person's stable id, their account) and, for an agent, `by` (the person who launched it). The rule of rebase depends on the author's kind, so the server sets the author from the connection, never from what a copy says.
 

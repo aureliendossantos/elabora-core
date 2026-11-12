@@ -96,3 +96,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D90](decisions/D90.md) | What a copy is told when others' changes meet its own: who replaced a value written here, who kept one an agent wrote over, why a change was refused | 12 Nov 2026 |
 | [D91](decisions/D91.md) | Where a person is, and when a copy ends: the view in the presence, the room's close codes, the folder unlinked | 12 Nov 2026 |
 | [D92](decisions/D92.md) | Two warnings: a chart's item brought before its chart appears, a screen in a section of another part of the plan | 12 Nov 2026 |
+| [D93](decisions/D93.md) | A role changed while connected: the room says it, the copy takes it | 12 Nov 2026 |

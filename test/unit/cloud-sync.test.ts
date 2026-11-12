@@ -81,6 +81,8 @@ class Room {
   // One copy offline until back() (its reconnections closed meanwhile).
   out(client: string): void { this.away.add(client); for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(); }
   back(client: string): void { this.away.delete(client); }
+  // The person's role changed while connected (D93), as the room tells its open connections.
+  role(client: string, role: 'owner' | 'editor' | 'viewer'): void { for (const socket of this.sockets) if (socket.presence?.client === client) socket.deliver({ type: 'role', role }); }
   // A copy sent away for good: its membership ended (4003), or the project was deleted (4004).
   end(client: string, code: 4003 | 4004): void { for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(code); }
 }
@@ -429,5 +431,34 @@ test('a copy the room keeps out asks whether its person is still in the team: re
   await until(() => endedAgain.length === 1 || !fs.existsSync(linkFile(A)), 'the end is found at the next opening');
   assert.equal(fs.existsSync(linkFile(A)), false);
   assert.equal(again.cloud, null);
+});
+
+test('made a viewer, a copy keeps its changes until it writes again; a message it does not know changes nothing (D93)', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const roles = eventsOf(a, 'cloudRole');
+  const clientA = a.cloud!.client;
+  room.role(clientA, 'viewer');
+  await until(() => a.cloud?.role === 'viewer', 'the copy takes the role');
+  assert.deepEqual(roles.map((event) => event.role), ['viewer']);
+  const head = room.head;
+  await a.run('update_screen', { id: 'chemin', title: 'Écrit en lecteur' }, { kind: 'agent', name: 'claude-code' });
+  await until(() => a.cloud?.pending === 1, 'the change waits');
+  await a.cloud!.settled();
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  assert.equal(room.head, head, 'nothing sent while a viewer');
+  // An editor again: what waited goes.
+  room.role(clientA, 'editor');
+  await settled(room, a, b);
+  assert.equal(screen(B, 'chemin').title, 'Écrit en lecteur');
+  // A copy older than a message ignores it: the client's default, and the session goes on.
+  for (const socket of room.sockets) if (socket.presence?.client === clientA) socket.deliver({ type: 'novelty' } as unknown as ServerMessage);
+  await b.run('update_screen', { id: 'chemin', title: 'Après le message inconnu' }, { kind: 'human' });
+  await settled(room, a, b);
+  assert.equal(screen(A, 'chemin').title, 'Après le message inconnu');
 });
 
