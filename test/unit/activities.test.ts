@@ -18,7 +18,8 @@ import { projectMarkdown } from '@elabora/core/project/markdown';
 import { lessonMdExport } from '@elabora/core/interop/lesson-md';
 import { extractUnits, invariants } from '@elabora/core/i18n/units';
 import { labelsFor, labelLanguages } from '@elabora/player/labels';
-import { copyExample, readJSON, writeJSON, writeFixture, codes } from '../helpers.ts';
+import path from 'node:path';
+import { ROOT, copyExample, readJSON, writeJSON, writeFixture, codes } from '../helpers.ts';
 import { addActivities } from '../activities-fixture.ts';
 
 // The activities of D63 (fill-in, sort, reflection) and the quiz on pictures: grading, saved state,
@@ -279,6 +280,10 @@ test('checks: E_FILLIN_NO_BLANK, E_SORT_TARGET, W_ACTIVITY_NO_FEEDBACK, E_QUIZ_P
     'classer-categories /blocks/1/props/targets', 'classer-ordre /blocks/2/props/items',
     'classer-paires /blocks/0/props/items/0/target', 'classer-paires /blocks/0/props/targets'
   ]);
+  // Each fault says its own fix: the target to point at, the count to reach.
+  const fixes = validateDir(dir).diagnostics.filter((d) => d.code === 'E_SORT_TARGET').map((d) => d.fix ?? '');
+  assert.equal(new Set(fixes).size, fixes.length, fixes.join('\n'));
+  assert.ok(fixes.some((fix) => /^Point item "[^"]+" at one of .+, or add a target "nulle-part"\.$/.test(fix)), fixes.join('\n'));
   assert.deepEqual(found('E_IMAGE_ALT_MISSING'), ['classer-categories /blocks/1/props/items/0/alt']);
   assert.deepEqual(found('W_ACTIVITY_NO_FEEDBACK'), ['classer-ordre /blocks/2/props/feedback', 'trous-mots /blocks/2/props']);
   edit('activites-images', (blocks) => {
@@ -313,6 +318,15 @@ test('forks keep their behaviour: hooks of fill-in, sort and reflection checked 
   for (const id of ['fill-in', 'sort', 'reflection']) assert.equal(registry.get(id)!.behavior, id);
 });
 
+// The review of a course in English reads in English around its words.
+test('exports: the client view of a course in English says its labels in English', () => {
+  const project = loadProjectFromDir(path.join(ROOT, 'examples/coffee-in-brief'));
+  const client = projectMarkdown(project, { audience: 'client' });
+  assert.match(client, /^## Objectives$/m);
+  assert.match(client, /Reflection: |Decision: /);
+  assert.doesNotMatch(client, /Réflexion|Réponse d’expert|Décision|Classer|Calque|Objectifs|Texte à trous|Mots en trop/);
+});
+
 // ── exports and translation ──
 test('exports: the client view, the agent view and LESSON.md give each activity as text', () => {
   const { project } = activityCourse();
@@ -322,7 +336,7 @@ test('exports: the client view, the agent view and LESSON.md give each activity 
   assert.match(client, /- Tout est lent → Débit saturé/);
   assert.match(client, /- \*\*Matériel\*\* : Routeur, Câble/);
   assert.match(client, /1\. Regarder le voyant de la carte/);
-  assert.match(client, /Réponse d'expert : _J’aurais d’abord regardé/);
+  assert.match(client, /Réponse d’expert : _J’aurais d’abord regardé/);
   const agent = projectMarkdown(project, { audience: 'agent', screen: 'activites-trous' });
   assert.match(agent, /fill-in `trous-mots`: fill-in \(bank, 3 blanks\): On teste d’abord le \[\[câble\]\]/);
   const lesson = lessonMdExport(project);

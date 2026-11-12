@@ -74,3 +74,21 @@ test('set refuses an id, a field its command does not change, an entry the list 
   refused('update_course', { set: [{ path: 'sections[threat]', value: null }] }, /sections/);
   refused('update_course', { set: [{ path: 'sections[threat].screens', value: [] }] }, /sections/);
 });
+
+test('a dialogue node written again records only what changed, whatever the order of its keys', () => {
+  const node = blockOf(phishing, 'screens/practice.json', 'bank-call').props.nodes[0];
+  const reversed = (value: unknown): unknown => Array.isArray(value) ? value.map(reversed)
+    : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).reverse().map(([key, each]) => [key, reversed(each)])) : value;
+  const written = reversed(node) as { options: { id: string; text: string }[] };
+  written.options[1]!.text = 'Hold on, I will call you back.';
+  const { ops } = run(phishing, 'set_dialogue_node', { block: 'bank-call', node: written });
+  assert.deepEqual(ops, [{ op: 'set', file: 'screens/practice.json', path: ['blocks', { id: 'bank-call' }, 'props', 'nodes', { id: node.id }, 'options', { id: node.options[1].id }, 'text'], value: 'Hold on, I will call you back.' }]);
+});
+
+test('a prop given whole in another order of keys records only what changed', () => {
+  const quiz = blockOf(phishing, 'screens/clicked.json', 'clicked-quiz').props;
+  const options = quiz.options.map((option: Record<string, unknown>) => Object.fromEntries(Object.entries(option).reverse()));
+  options[0].feedback = 'Yes: call at once.';
+  const { ops } = run(phishing, 'update_block', { block: 'clicked-quiz', props: { options } });
+  assert.deepEqual(ops.map((op) => [op.op, 'path' in op ? op.path.slice(-2) : null]), [['set', [{ id: 'call' }, 'feedback']]]);
+});
