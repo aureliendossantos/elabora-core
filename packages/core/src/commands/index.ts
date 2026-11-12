@@ -33,3 +33,4 @@ export { addResource, RESOURCES_FOLDER, type AddResourceArgs, type AddResourceRe
 export { settleImportReport, IMPORT_REPORT, type SettleImportReportArgs } from './import-report.ts';
 export { setContinuity, type SetContinuityArgs } from './continuity.ts';
 export { convertBlock, conversionsFor, conversionTargets, type ConvertBlockArgs, type ConvertBlockResult, type ConvertTarget, type ConversionList, type ConversionTarget, type RefusedConversion } from './convert.ts';
+export { executeCommand, opsBetween, type ExecuteOptions, type Executed } from './execute.ts';
