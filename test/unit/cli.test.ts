@@ -221,6 +221,18 @@ test('history groups changes by batch of AI work; undo keeps what changed since;
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+test('MCP: a setting given whole says what it took away; set changes one key (D89)', async () => {
+  const dir = copyExample();
+  const client = await connectMcp(dir, 'test-agent');
+  const free = await callJSON(client, 'elabora_update_course', { navigation: { mode: 'free' } });
+  assert.deepEqual(free.removed, ['course.json navigation.lockUntilComplete']);
+  const locked = await callJSON(client, 'elabora_update_course', { set: [{ path: 'navigation.lockUntilComplete', value: true }] });
+  assert.equal(locked.removed, undefined);
+  assert.deepEqual(readJSON(dir, 'course.json').navigation, { mode: 'free', lockUntilComplete: true });
+  await client.close();
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('MCP: writes are journaled as the client, return their change, and undo by change or batch', async () => {
   const dir = copyExample();
   const client = await connectMcp(dir, 'test-agent');

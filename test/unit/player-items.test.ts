@@ -222,7 +222,7 @@ test('« Relier les termes aux écrans »: computed when a screen is compiled, t
   assert.equal(fs.readFileSync(path.join(dir, 'plan.json'), 'utf8'), plan);
 });
 
-test('a link written by hand wins in its screen; « Retirer ce lien » and its way back; the option off; a screen renamed or deleted', () => {
+test('a link written by hand wins in its screen; « Retirer ce lien » and its way back; the option off; a screen renamed, duplicated or deleted', () => {
   const dir = copyExample();
   addText(dir, 'accueil', 'accueil-note', 'Le routeur, puis [le routeur du siège](glossary:routeur).');
   assert.deepEqual(termLinks(screenHtml(compiled(dir), 'accueil'), 'routeur'), ['le routeur du siège']);
@@ -239,6 +239,10 @@ test('a link written by hand wins in its screen; « Retirer ce lien » and its w
   edit.rename(dir, { from: 'accueil', to: 'accueil-ticket' });
   assert.deepEqual(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, ['accueil-ticket']);
   assert.ok(!validateDir(dir).diagnostics.some((d) => d.severity === 'error'));
+  // A screen duplicated: the copy has no link either.
+  const copy = edit.duplicateScreen(dir, { id: 'accueil-ticket' }).screen;
+  assert.deepEqual(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, ['accueil-ticket', copy]);
+  edit.deleteScreen(dir, { id: copy });
   // Linked again: the first time in the screen.
   edit.updatePlayer(dir, { relinkTerm: { term: 'routeur', screen: 'accueil-ticket' } });
   assert.equal(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, undefined);

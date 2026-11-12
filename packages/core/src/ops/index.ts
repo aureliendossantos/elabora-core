@@ -5,7 +5,7 @@ export type {
 } from './types.ts';
 export { OpError, type OpErrorCode } from './errors.ts';
 export { formatJson, textFile, jsonFile, binaryFile, makeFiles, documentOf, sameContent, isJsonPath, cloneJson, sameJson, equalJson } from './json.ts';
-export { keyedKind, elementId, lookup, formatPath, describeTarget, type KeyedKind, type Lookup } from './path.ts';
+export { keyedKind, elementId, lookup, formatPath, parsePath, describeTarget, type KeyedKind, type Lookup } from './path.ts';
 export { applyOps, invertOps, touchedFiles } from './apply.ts';
 export { diffFiles, diffDocuments } from './diff.ts';
 export { undoChanges, type UndoResult, type UndoOptions } from './undo.ts';

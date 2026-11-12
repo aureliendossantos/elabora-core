@@ -116,3 +116,14 @@ test('rename: waivers of the plan that name the id follow it, and the plan\'s di
   assert.ok(result.files.includes('plan.json'));
   assert.equal(readJSON(dir, 'plan.json').waivers[0].target, 'chemin-impression');
 });
+
+test('rename: a layer that an event waits on (a cue of its timeline) and a dialogue opens follows in both', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/phishing-by-numbers'));
+  const practice = readJSON(dir, 'screens/practice.json');
+  practice.events = [{ id: 'email-read', on: { type: 'timeline.ended', layer: 'the-email' }, do: [{ type: 'hide-layer', layer: 'the-email' }] }];
+  writeJSON(dir, 'screens/practice.json', practice);
+  edit.rename(dir, { from: 'the-email', to: 'the-letter' });
+  const screen = readJSON(dir, 'screens/practice.json');
+  assert.deepEqual([screen.events[0].on.layer, screen.events[0].do[0].layer], ['the-letter', 'the-letter']);
+  assert.deepEqual([...new Set(JSON.stringify(screen.blocks).match(/"layer":"[^"]*"/g))], ['"layer":"the-letter"']);
+});

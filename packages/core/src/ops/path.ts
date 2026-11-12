@@ -79,6 +79,28 @@ export function formatPath(path: readonly Segment[]): string {
   return out;
 }
 
+// The path formatPath writes, read back (D89): keys between dots, an element of a keyed array by
+// its id in brackets (props.options[b].text). null when the text is not one: an empty key, a bracket
+// left open, a key or an id holding a dot or a bracket.
+export function parsePath(text: string): Segment[] | null {
+  const key = /[^.[\]]+/y;
+  const id = /\[([^.[\]]+)\]/y;
+  const path: Segment[] = [];
+  let at = 0;
+  while (at < text.length) {
+    const element = text[at] === '[';
+    if (element && !path.length) return null;
+    if (!element && path.length && text[at++] !== '.') return null;
+    const pattern = element ? id : key;
+    pattern.lastIndex = at;
+    const match = pattern.exec(text);
+    if (!match) return null;
+    path.push(element ? { id: match[1]! } : match[0]);
+    at = pattern.lastIndex;
+  }
+  return path.length ? path : null;
+}
+
 export function describeTarget(file: string, path: readonly Segment[]): string {
   return path.length ? `${file} ${formatPath(path)}` : file;
 }

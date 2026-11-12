@@ -114,6 +114,42 @@ test('a screen duplicated: after it in its section, new ids for its blocks, laye
   assert.equal(validateDir(dir).summary.errors, 0);
 });
 
+test('a screen with a dialogue duplicated: the dialogue\'s actions open and close the copy\'s layer, its texts translated as the source\'s', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/phishing-by-numbers'));
+  // An event of the screen that waits for its dialogue's ending and starts it again.
+  const practice = readJSON(dir, 'screens/practice.json');
+  practice.events = [{ id: 'call-again', on: { type: 'dialogue.ended', target: 'bank-call' }, if: [{ dialogue: 'bank-call', ending: 'at-risk' }], do: [{ type: 'restart-dialogue', block: 'bank-call' }] }];
+  writeJSON(dir, 'screens/practice.json', practice);
+  const result = edit.duplicateScreen(dir, { id: 'practice' });
+  const layer = result.renamed['the-email'];
+  const dialogue = result.renamed['bank-call'];
+  const [event] = readJSON(dir, `screens/${result.screen}.json`).events;
+  assert.deepEqual([event.on.target, event.if[0].dialogue, event.do[0].block], [dialogue, dialogue, dialogue]);
+  const actions = JSON.stringify(readJSON(dir, `screens/${result.screen}.json`).blocks).match(/"layer":"[^"]*"/g);
+  assert.ok(actions?.length, 'the dialogue acts on a layer');
+  assert.deepEqual([...new Set(actions)], [`"layer":"${layer}"`]);
+  assert.equal(validateDir(dir).summary.errors, 0);
+  // The copy's texts, translated as the source's (its audio is copied too).
+  const rows = translationTable(loadProjectFromDir(dir), 'fr').rows;
+  const ofScreen = (screen: string) => rows.filter((row) => row.screen === screen);
+  const copied = ofScreen(result.screen);
+  assert.equal(copied.length, ofScreen('practice').length);
+  assert.ok(copied.length > 5);
+  for (const row of ofScreen('practice')) {
+    const copy = copied.find((candidate) => candidate.source === row.source && candidate.id !== row.id);
+    assert.deepEqual([copy?.status, copy?.target], [row.status, row.target], row.id);
+  }
+});
+
+test('a block duplicated: its copy\'s texts translated as its original\'s', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/phishing-by-numbers'));
+  const result = edit.duplicateBlock(dir, { block: 'clicked-quiz' });
+  const rows = translationTable(loadProjectFromDir(dir), 'fr').rows;
+  const of = (block: string) => rows.filter((row) => row.block === block);
+  assert.ok(of('clicked-quiz').length > 3);
+  assert.deepEqual(of(result.block).map((row) => [row.source, row.status, row.target]), of('clicked-quiz').map((row) => [row.source, row.status, row.target]));
+});
+
 test('a screen created with a layout of the course: its props written, its first block in the layout\'s default slot', () => {
   const dir = copyExample(path.join(ROOT, 'examples/medieval-charts'));
   const first = readJSON(dir, 'course.json').sections[0];
