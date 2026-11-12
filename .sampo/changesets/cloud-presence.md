@@ -1,4 +1,5 @@
 ---
+npm/elabora: minor (Added)
 npm/@elabora/engine: minor (Added)
 ---
 

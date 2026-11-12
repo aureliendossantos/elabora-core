@@ -1,4 +1,5 @@
 ---
+npm/elabora: minor (Added)
 npm/@elabora/core: minor (Added)
 npm/@elabora/cli: patch (Changed)
 ---
