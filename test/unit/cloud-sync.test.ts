@@ -27,6 +27,8 @@ class Room {
   // The next submissions refused with this code (a room that could not find a medium).
   refuse: { code: 'E_SYNC_BLOB_MISSING'; times: number } | null = null;
   refused = 0;
+  // Copies kept out (their hello closes the connection): offline until let back in.
+  readonly away = new Set<string>();
   constructor(files: Files) { this.files = files; }
 
   connect = (): RoomSocket => {
@@ -38,6 +40,7 @@ class Room {
 
   receive(from: FakeSocket, message: ClientMessage): void {
     if (message.type === 'hello') {
+      if (this.away.has(message.client)) return from.close();
       from.presence = { actor: message.actor, client: message.client, at: '2026-11-12T09:00:00.000Z' };
       from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers() });
       return this.tellPresence(from);
@@ -66,6 +69,9 @@ class Room {
 
   // The connection drops; the copy reconnects by itself.
   drop(): void { for (const socket of [...this.sockets]) socket.close(); }
+  // One copy offline until back() (its reconnections closed meanwhile).
+  out(client: string): void { this.away.add(client); for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(); }
+  back(client: string): void { this.away.delete(client); }
 }
 
 class FakeSocket implements RoomSocket {
@@ -299,4 +305,45 @@ test('what is done in a module while its first upload runs goes to the room as i
   assert.deepEqual([sent?.author.kind, sent?.command?.name], ['human', 'update_screen']);
   const placed = room.files.get('screens/chemin.json');
   assert.equal(placed?.kind === 'text' && JSON.parse(placed.text).title, 'Pendant l\'envoi');
+});
+
+test('a person who writes over a value written here unseen: told here, not to them; an agent\'s value left out names who changed it (D90)', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const events = (session: Session, type: string) => {
+    const seen: Record<string, unknown>[] = [];
+    session.subscribe((message) => { if (message.kind === 'event' && message.event.type === type) seen.push(message.event as unknown as Record<string, unknown>); });
+    return seen;
+  };
+  const replacedA = events(a, 'cloudReplaced');
+  const replacedB = events(b, 'cloudReplaced');
+  const outcomesA = events(a, 'cloudOutcome');
+  // B offline writes the title A wrote meanwhile, without having seen it: B's value wins, A is told.
+  const clientB = b.cloud!.client;
+  room.out(clientB);
+  await a.run('update_screen', { id: 'chemin', title: 'Titre d\'Ada' }, { kind: 'human' });
+  await settled(room, a);
+  await b.run('update_screen', { id: 'chemin', title: 'Titre de Béa' }, { kind: 'human' });
+  room.back(clientB);
+  await settled(room, a, b);
+  assert.equal(screen(A, 'chemin').title, 'Titre de Béa');
+  assert.equal(replacedA.length, 1, JSON.stringify(replacedA));
+  const told = replacedA[0] as { overwrote: { file: string; path: string; was: unknown }[]; change: { author: { kind: string } } };
+  assert.deepEqual([told.overwrote[0]?.file, told.overwrote[0]?.path, told.overwrote[0]?.was, told.change.author.kind], ['screens/chemin.json', 'title', 'Titre d\'Ada', 'human']);
+  assert.equal(replacedB.length, 0, 'the one who replaced is not told');
+  // A's agent, offline, writes the title B writes meanwhile: the agent's value gives way, and says to whom.
+  const clientA = a.cloud!.client;
+  room.out(clientA);
+  await b.run('update_screen', { id: 'chemin', title: 'Titre de Béa, encore' }, { kind: 'human' });
+  await settled(room, b);
+  await a.run('update_screen', { id: 'chemin', title: 'Titre de l\'agent' }, { kind: 'agent', name: 'claude-code' });
+  room.back(clientA);
+  await settled(room, a, b);
+  assert.equal(screen(B, 'chemin').title, 'Titre de Béa, encore');
+  const skipped = (outcomesA.at(-1) as { outcome?: { skipped: { by?: { kind: string } }[] } } | undefined)?.outcome?.skipped ?? [];
+  assert.equal(skipped[0]?.by?.kind, 'human', JSON.stringify(outcomesA).slice(0, 1000));
 });

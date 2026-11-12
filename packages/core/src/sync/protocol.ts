@@ -93,6 +93,18 @@ export interface Refusal {
   id: string;
   code: RefusalCode;
   message: string;
+  // E_SYNC_INVALID: the errors the change would have added, whole (D90), so that the copy can say why
+  // in its author's words and where to look. A room may leave them out.
+  diagnostics?: RefusalDiagnostic[];
+}
+
+export interface RefusalDiagnostic {
+  code: string;
+  severity: 'error' | 'warning' | 'info';
+  file?: string;
+  path?: string;
+  message: string;
+  fix?: string;
 }
 
 // Who is there, and where: a person, or an agent with the person who launched it.

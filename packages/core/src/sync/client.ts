@@ -47,6 +47,9 @@ interface Waiting {
   group: number;
   // Times the room could not find a medium it writes (E_SYNC_BLOB_MISSING): sent again after it.
   mediaTries?: number;
+  // How many of the others' changes the client had taken in when it was made: those after it are
+  // what it was not made on, and its rebase names their authors in what it leaves out (D90).
+  seen: number;
 }
 
 // An agent's run of changes in one batch goes as one submission (D83): one round trip for many
@@ -66,6 +69,8 @@ export class SyncClient {
   private inFlight = false;
   private viewFiles: Files;
   private readonly outcomes: Outcome[] = [];
+  // The others' changes taken in while changes of this copy wait (D90); emptied when none waits.
+  private others: Committed[] = [];
 
   constructor(files: Files, head: number) {
     this.confirmedFiles = files;
@@ -83,7 +88,7 @@ export class SyncClient {
   record(change: LocalChange): void {
     if (!change.ops.length) return;
     const inverse = change.inverse ?? invertOps(this.viewFiles, change.ops);
-    this.waiting.push({ change, inverse, skipped: [], overwrote: [], group: 1 });
+    this.waiting.push({ change, inverse, skipped: [], overwrote: [], group: 1, seen: this.others.length });
     this.viewFiles = applyOps(this.viewFiles, change.ops);
   }
 
@@ -102,7 +107,7 @@ export class SyncClient {
         for (const item of this.waiting) {
           if (count && (!isAiAuthor(first.change.author) || !first.change.batch || first.change.undoes || item.change.batch !== first.change.batch || !sameAuthor(item.change.author, first.change.author)
             || item.change.undoes || count >= GROUP_CHANGES || ops.length + item.change.ops.length > GROUP_OPS || bytes + JSON.stringify(item.change.ops).length > GROUP_BYTES)) break;
-          const placed = rebase(files, { id: item.change.id, author: item.change.author, ops: item.change.ops, inverse: item.inverse });
+          const placed = rebase(files, { id: item.change.id, author: item.change.author, ops: item.change.ops, inverse: item.inverse }, this.others.slice(item.seen));
           if (placed.refusal) {
             if (count) break; // it goes on its own, after the run
             this.settle({ id: item.change.id, refused: { id: item.change.id, ...placed.refusal }, skipped: placed.skipped, overwrote: placed.overwrote });
@@ -228,7 +233,10 @@ export class SyncClient {
     if (own) {
       this.inFlight = false;
       this.settleRun(change);
-    } else if (first?.sent && !this.inFlight) this.unprepare(first); // prepared on an older head
+    } else {
+      if (this.waiting.length) this.others.push(change);
+      if (first?.sent && !this.inFlight) this.unprepare(first); // prepared on an older head
+    }
     this.recompute();
     return 'ok';
   }
@@ -248,6 +256,7 @@ export class SyncClient {
   private settle(outcome: Outcome): void {
     this.waiting.shift();
     this.outcomes.push(outcome);
+    if (!this.waiting.length) this.others = [];
   }
 
   // The view, from confirmed and the waiting changes.

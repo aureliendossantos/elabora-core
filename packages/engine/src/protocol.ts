@@ -717,6 +717,10 @@ export type EngineEvent =
   | { type: 'cloudStatus'; online: boolean; head: number; pending: number; client: string; peers: Presence[] }
   // A change made here that the room placed with operations left out or values overwritten, or refused.
   | { type: 'cloudOutcome'; outcome: Outcome }
+  // Someone else's change, placed by the room, replaced values a change of this copy had written
+  // without having seen them (D74, D90): told to the replaced, never to the replacer. unsure: a file an
+  // agent rewrote with its own tools, which may not have seen them (D75).
+  | { type: 'cloudReplaced'; change: { id: string; seq: number; at: string; author: Author }; overwrote: Overwrite[] }
   // Findings that changed: screens whose list changed (removed: screens gone), the project's
   // findings when they changed, and the summary over everything.
   | { type: 'diagnostics'; screens: Record<string, Diagnostic[]>; removed: string[]; project?: Diagnostic[]; summary: Summary }

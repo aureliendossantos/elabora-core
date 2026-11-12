@@ -240,6 +240,7 @@ export class SessionCloud {
     if (said === 'media' && message.type === 'refused') this.#uploads.delete(message.refusal.id);
     const placed = message.type === 'change' || message.type === 'ack' ? message.change : message.type === 'catchup' ? message.changes.at(-1) ?? null : null;
     await this.#settle(before, placed);
+    if (placed && message.type !== 'ack' && !placed.id.startsWith(`${this.#link.client}.`)) this.#replaced(placed);
     if (message.type === 'ack' && this.#uploads.has(message.change.id)) {
       await commitMedia(this.#options.client, this.#link.team, this.#uploads.get(message.change.id) ?? null);
       this.#uploads.delete(message.change.id);
@@ -259,8 +260,13 @@ export class SessionCloud {
   }
 
   #tell(outcome: Outcome): void {
-    if ('refused' in outcome) this.#host.emit({ type: 'error', context: 'syncing with the project in the cloud', message: `A change made here was refused by the project: ${outcome.refused.message}` });
     if (outcome.skipped.length || outcome.overwrote.length || 'refused' in outcome) this.#host.emit({ type: 'cloudOutcome', outcome });
+  }
+
+  // Another's change that replaced values written here, unseen (D90): the values of this copy's changes.
+  #replaced(change: Committed): void {
+    const mine = change.overwrote.filter((overwrite) => overwrite.by?.startsWith(`${this.#link.client}.`));
+    if (mine.length) this.#host.emit({ type: 'cloudReplaced', change: { id: change.id, seq: change.seq, at: change.at, author: change.author }, overwrote: mine });
   }
 
   #status(): void {

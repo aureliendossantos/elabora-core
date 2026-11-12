@@ -73,6 +73,8 @@ export interface SkippedOp {
   op: Op;
   reason: 'changed' | 'missing' | 'conflict' | 'unavailable';
   message: string;
+  // Who changed the value since, when a rebase knows it (D90): « Inès l'a changé pendant que Claude travaillait ».
+  by?: Author;
 }
 
 // Journal lines (.elabora/journal/<yyyy-mm>.jsonl).

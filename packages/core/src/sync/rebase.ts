@@ -135,7 +135,8 @@ function mergeInto(run: Run, op: Op, file: string, path: Segment[], base: Json |
     // What was left out, place by place: the rest of the value applied.
     merged.conflicts.forEach((conflict, i) => {
       const left: Op = conflict.mine === undefined ? { op: 'unset', file, path: places[i] } : { op: 'set', file, path: places[i], value: cloneJson(conflict.mine) };
-      run.skipped.push({ change: run.change.id, op: left, reason: 'changed', message: `${describeTarget(file, places[i])}: changed since` });
+      const by = writerOf(run, file, places[i]);
+      run.skipped.push({ change: run.change.id, op: left, reason: 'changed', message: `${describeTarget(file, places[i])}: changed since`, ...(by ? { by } : {}) });
     });
     return;
   }
@@ -153,7 +154,14 @@ function apply(run: Run, op: Op): void {
 }
 
 function skip(run: Run, op: Op, message: string, reason: SkippedOp['reason'] = 'changed'): void {
-  run.skipped.push({ change: run.change.id, op, reason, message });
+  const by = reason === 'changed' ? writerOf(run, op.file, 'path' in op ? op.path : []) : undefined;
+  run.skipped.push({ change: run.change.id, op, reason, message, ...(by ? { by } : {}) });
+}
+
+// The author of the change that last wrote a place since the change's base (D90).
+function writerOf(run: Run, file: string, path: readonly Segment[]): Author | undefined {
+  const id = lastWriter(run.since, file, path);
+  return id === undefined ? undefined : run.since.find((change) => change.id === id)?.author;
 }
 
 // A person's operation applied over a value they had not seen.

@@ -89,6 +89,7 @@ async function sync(dir: string, watch: boolean, json: boolean): Promise<ExitCod
     if (message.kind !== 'event') return;
     const event = message.event;
     if (event.type === 'cloudOutcome' && !json) console.error(`  ${'refused' in event.outcome ? `refused: ${event.outcome.refused.message}` : `${event.outcome.skipped.length} left out, ${event.outcome.overwrote.length} overwritten`} (${event.outcome.id})`);
+    if (event.type === 'cloudReplaced' && !json) console.error(`  ${event.overwrote.map((overwrite) => `${overwrite.file} ${overwrite.path}`).join(', ')}: replaced by ${event.change.author.name ?? event.change.author.kind}${event.overwrote.some((overwrite) => overwrite.unsure) ? ' (perhaps)' : ''}`);
     if (event.type === 'merged' && !json) console.error(`  ${event.files.join(', ')}: merged with what was written meanwhile`);
     if (event.type === 'error') console.error(`✘ ${event.message}`);
   });

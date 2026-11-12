@@ -93,3 +93,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D87](decisions/D87.md) | An undo carries what it left out, through a project's server | 12 Nov 2026 |
 | [D88](decisions/D88.md) | A first upload sends its media a few at a time, from a snapshot taken under the lock | 12 Nov 2026 |
 | [D89](decisions/D89.md) | A field or an entry of a list changed by its path; a value given whole says what it took away | 12 Nov 2026 |
+| [D90](decisions/D90.md) | What a copy is told when others' changes meet its own | 12 Nov 2026 |
