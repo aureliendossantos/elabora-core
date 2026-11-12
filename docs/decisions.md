@@ -88,3 +88,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D82](decisions/D82.md) | Where Ajv stays, and the proof in a Worker | 12 Nov 2026 |
 | [D83](decisions/D83.md) | A folder linked to a project in the cloud: the engine's session syncs it; an agent's run goes as one change | 12 Nov 2026 |
 | [D84](decisions/D84.md) | The commands by name, with the schema of their arguments, in the core | 12 Nov 2026 |
+| [D85](decisions/D85.md) | A room's refusals are named in the protocol | 12 Nov 2026 |

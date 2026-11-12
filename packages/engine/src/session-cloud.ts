@@ -221,7 +221,10 @@ export class SessionCloud {
       for (const hash of blobsOf(message.change.ops)) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, hash);
     }
     if (message.type === 'catchup') for (const change of message.changes) for (const hash of blobsOf(change.ops)) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, hash);
-    if (this.#client.receive(message) === 'gap') this.#send({ type: 'catchup', since: this.#client.head });
+    const said = this.#client.receive(message);
+    if (said === 'gap') this.#send({ type: 'catchup', since: this.#client.head });
+    // The room could not find a medium of the change: its media are sent again before it (D85).
+    if (said === 'media' && message.type === 'refused') this.#uploads.delete(message.refusal.id);
     const placed = message.type === 'change' || message.type === 'ack' ? message.change : message.type === 'catchup' ? message.changes.at(-1) ?? null : null;
     await this.#settle(before, placed);
     if (message.type === 'ack' && this.#uploads.has(message.change.id)) {

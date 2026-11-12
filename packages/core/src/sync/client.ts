@@ -43,6 +43,8 @@ interface Waiting {
   // catchup), and how many waiting changes it holds, this one first (an agent's run, D83).
   sentId?: string;
   group: number;
+  // Times the room could not find a medium it writes (E_SYNC_BLOB_MISSING): sent again after it.
+  mediaTries?: number;
 }
 
 // An agent's run of changes in one batch goes as one submission (D83): one round trip for many
@@ -50,6 +52,8 @@ interface Waiting {
 const GROUP_CHANGES = 100;
 const GROUP_OPS = 600;
 const GROUP_BYTES = 2 * 1024 * 1024;
+// A change whose medium the room could not find goes again this many times, its media sent first.
+const MEDIA_TRIES = 3;
 
 const sameAuthor = (a: Author, b: Author): boolean => a.kind === b.kind && a.name === b.name && a.by === b.by && a.id === b.id;
 
@@ -130,8 +134,10 @@ export class SyncClient {
   }
 
   // A message of the server. Returns 'gap' when a change is missing before this one: ask for a
-  // catchup from head. A snapshot (the server no longer keeps that far back) replaces confirmed.
-  receive(message: ServerMessage): 'ok' | 'gap' {
+  // catchup from head; 'media' when the room could not find a medium the change in flight writes:
+  // send its media again, then next() gives the same submission (D85). A snapshot (the server no
+  // longer keeps that far back) replaces confirmed.
+  receive(message: ServerMessage): 'ok' | 'gap' | 'media' {
     switch (message.type) {
       case 'ack':
       case 'change':
@@ -146,6 +152,10 @@ export class SyncClient {
         const first = this.waiting[0];
         if (!first || (first.change.id !== message.refusal.id && first.sentId !== message.refusal.id)) return 'ok';
         this.inFlight = false;
+        if (message.refusal.code === 'E_SYNC_BLOB_MISSING' && (first.mediaTries ?? 0) < MEDIA_TRIES) {
+          first.mediaTries = (first.mediaTries ?? 0) + 1;
+          return 'media';
+        }
         for (let i = 0, count = first.group; i < count && this.waiting.length; i++) {
           const item = this.waiting[0];
           this.settle({ id: item.change.id, refused: { ...message.refusal, id: item.change.id }, skipped: item.skipped, overwrote: item.overwrote });

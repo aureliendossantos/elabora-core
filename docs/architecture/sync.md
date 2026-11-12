@@ -1,6 +1,6 @@
 # Projects in the cloud: ordering, rebase and copies
 
-How several people and agents work on one project at once: a server orders the changes of every copy, each change is rebased on what came before it, and every copy shows what the server confirmed with its own waiting changes on top. Part of the [architecture](../architecture.md); it builds on [operations](operations.md), the one language every change is written in. Decisions: [D73](../decisions/D73.md) (the server and the copies), [D74](../decisions/D74.md) (rebase), [D75](../decisions/D75.md) (files written by an agent's own tools), [D76](../decisions/D76.md) (a command run on files), [D77](../decisions/D77.md) (ids drawn with a random suffix), [D78](../decisions/D78.md) and [D79](../decisions/D79.md) (authors and undo by person), [D83](../decisions/D83.md) (a folder linked to a project), [D84](../decisions/D84.md) (the commands by name).
+How several people and agents work on one project at once: a server orders the changes of every copy, each change is rebased on what came before it, and every copy shows what the server confirmed with its own waiting changes on top. Part of the [architecture](../architecture.md); it builds on [operations](operations.md), the one language every change is written in. Decisions: [D73](../decisions/D73.md) (the server and the copies), [D74](../decisions/D74.md) (rebase), [D75](../decisions/D75.md) (files written by an agent's own tools), [D76](../decisions/D76.md) (a command run on files), [D77](../decisions/D77.md) (ids drawn with a random suffix), [D78](../decisions/D78.md) and [D79](../decisions/D79.md) (authors and undo by person), [D83](../decisions/D83.md) (a folder linked to a project), [D84](../decisions/D84.md) (the commands by name), [D85](../decisions/D85.md) (refusals named).
 
 `@elabora/core` `sync/` holds it all, pure, without I/O: the server of a project (a room of the hosting) and every copy (the desktop engine, the CLI, later the browser) import the same functions.
 
@@ -15,6 +15,19 @@ A project in the cloud has one server, which holds its files (the head), a log o
 5. numbers it, computes its inverse on head, and sends it to the copy that submitted it (`ack`) and to the others (`change`).
 
 A placed change (`Committed`) carries what it kept and what it did not: `skipped`, the operations left out (an agent's value over a person's, an element gone), and `overwrote`, the values a person's operation replaced without having seen them, so that whoever wrote them is told. A refused change (`Refusal`) applies nothing.
+
+**Refusals** (`RefusalCode`, D85). `acceptChange` gives four: `E_SYNC_ID_TAKEN`, `E_SYNC_INVALID`, `E_SYNC_BASE` and `E_SYNC_MALFORMED` (it is not a change). A room checks more before it, and names it:
+
+| Code | Why |
+|---|---|
+| `E_SYNC_READ_ONLY` | its author may read the project, not change it |
+| `E_SYNC_PATH` | it names a file the project may not hold: a path that is not relative, under `.elabora/`, not in Unicode NFC, or another file's in another case |
+| `E_SYNC_TOO_LARGE` | over the room's limits: operations in a change, a text written whole (send it as a medium) |
+| `E_SYNC_TOO_MANY_FILES` | the project would hold more files than the room allows |
+| `E_SYNC_BLOB_MISSING` | it writes a medium the room cannot find: the copy sends its media again, then the same change, up to three times |
+| `E_SYNC_ID_USED` | another author's change has its id |
+
+Every other refusal ends the change on the copy: it leaves the view and its author is told.
 
 ## Rebase
 

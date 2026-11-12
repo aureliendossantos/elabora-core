@@ -230,3 +230,26 @@ test('external edit: a value put back as it was in an older version applies; the
   assert.equal(read(applyOps(back, edit.ops)).flag, false);
   assert.deepEqual(edit.overwrote.map((o) => [o.path, o.was, o.unsure]), [['flag', true, true]]);
 });
+
+test('client: a medium the room could not find is sent again with the same change, a few times; other refusals end it', () => {
+  const base = screen([block('a', 'one')]);
+  const client = new SyncClient(base, 0);
+  const value = read(base);
+  value.blocks[0].props.markdown = 'with a picture';
+  client.record({ id: 'p1', at: '2026-11-12T20:00:00.000Z', author: human, ops: diffFiles(base, doc(value)) });
+  const refuse = (code: 'E_SYNC_BLOB_MISSING' | 'E_SYNC_READ_ONLY') => client.receive({ type: 'refused', refusal: { id: 'p1', code, message: code }, head: 0 });
+  for (let tries = 0; tries < 3; tries++) {
+    assert.equal(client.next()?.id, 'p1');
+    assert.equal(refuse('E_SYNC_BLOB_MISSING'), 'media');
+    assert.equal(client.pending, 1);
+  }
+  assert.equal(client.next()?.id, 'p1');
+  assert.equal(refuse('E_SYNC_BLOB_MISSING'), 'ok');
+  assert.deepEqual([client.pending, client.takeOutcomes().map((o) => 'refused' in o && o.refused.code)], [0, ['E_SYNC_BLOB_MISSING']]);
+  assert.deepEqual(client.view, base);
+  // A viewer's change ends at once.
+  client.record({ id: 'p2', at: '2026-11-12T20:00:00.000Z', author: human, ops: diffFiles(base, doc(value)) });
+  assert.equal(client.next()?.id, 'p2');
+  assert.equal(client.receive({ type: 'refused', refusal: { id: 'p2', code: 'E_SYNC_READ_ONLY', message: 'A viewer reads this project.' }, head: 0 }), 'ok');
+  assert.equal(client.pending, 0);
+});

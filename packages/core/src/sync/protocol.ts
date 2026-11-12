@@ -54,14 +54,32 @@ export interface Committed {
   undoes?: { batch?: string; changes: string[] };
 }
 
-// A change the server did not place: nothing of it applies.
-//   E_SYNC_ID_TAKEN   it inserts an id another change took meanwhile
-//   E_SYNC_INVALID    the project would not validate
-//   E_SYNC_BASE       its base is older than what the server keeps, or newer than its head
-//   E_SYNC_MALFORMED  it is not a change
+// A change the server did not place: nothing of it applies. acceptChange's codes:
+//   E_SYNC_ID_TAKEN        it inserts an id another change took meanwhile
+//   E_SYNC_INVALID         the project would not validate
+//   E_SYNC_BASE            its base is older than what the server keeps, or newer than its head
+//   E_SYNC_MALFORMED       it is not a change
+// The room's, for what it checks before acceptChange (D85; acceptChange never returns them):
+//   E_SYNC_READ_ONLY       its author may read the project, not change it
+//   E_SYNC_PATH            it names a file the project may not hold (a path that is not relative,
+//                          under .elabora/, not in Unicode NFC, or another file's in another case)
+//   E_SYNC_TOO_LARGE       over the room's limits: operations in a change, a text written whole
+//   E_SYNC_TOO_MANY_FILES  the project would hold more files than the room allows
+//   E_SYNC_BLOB_MISSING    it writes a medium the room cannot find: send the medium, then the same
+//                          change again (the copy does, a few times)
+//   E_SYNC_ID_USED         another author's change has its id
+export type RefusalCode =
+  | 'E_SYNC_ID_TAKEN' | 'E_SYNC_INVALID' | 'E_SYNC_BASE' | 'E_SYNC_MALFORMED'
+  | 'E_SYNC_READ_ONLY' | 'E_SYNC_PATH' | 'E_SYNC_TOO_LARGE' | 'E_SYNC_TOO_MANY_FILES' | 'E_SYNC_BLOB_MISSING' | 'E_SYNC_ID_USED';
+
+export const REFUSAL_CODES: readonly RefusalCode[] = Object.freeze([
+  'E_SYNC_ID_TAKEN', 'E_SYNC_INVALID', 'E_SYNC_BASE', 'E_SYNC_MALFORMED',
+  'E_SYNC_READ_ONLY', 'E_SYNC_PATH', 'E_SYNC_TOO_LARGE', 'E_SYNC_TOO_MANY_FILES', 'E_SYNC_BLOB_MISSING', 'E_SYNC_ID_USED'
+]);
+
 export interface Refusal {
   id: string;
-  code: 'E_SYNC_ID_TAKEN' | 'E_SYNC_INVALID' | 'E_SYNC_BASE' | 'E_SYNC_MALFORMED';
+  code: RefusalCode;
   message: string;
 }
 
