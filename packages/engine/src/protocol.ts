@@ -2,6 +2,7 @@ import type { Diagnostic, Summary } from '@elabora/core/diagnostics/index';
 import type { Author, Op, SkippedOp } from '@elabora/core/ops/types';
 import type { BatchSummary } from '@elabora/core/ops/batch';
 import type { Overwrite } from '@elabora/core/sync/protocol';
+import type { Outcome } from '@elabora/core/sync/client';
 import type { DeliveryFormat } from '@elabora/core/lms/formats';
 import type { Screen, Variable } from '@elabora/core/project/model';
 import type { Anchor } from '@elabora/format';
@@ -185,7 +186,7 @@ export interface ChangeView {
 // Who made a change the engine reports: the engine itself (a request), the journal (another
 // process: the CLI, the MCP server), the watcher (files written by a program that is not an Elabora
 // tool, journaled as external), or a media job the engine ran.
-export type ChangeSource = 'engine' | 'journal' | 'watcher' | 'media';
+export type ChangeSource = 'engine' | 'journal' | 'watcher' | 'media' | 'cloud';
 
 export interface ExternalNotes { files: string[]; skipped: SkippedOp[]; overwrote: Overwrite[] }
 
@@ -710,6 +711,11 @@ export type EngineEvent =
   // edit left out (someone wrote there since), the values it replaced that a person had written
   // since that version (unsure: it may not have seen them).
   | ({ type: 'merged'; change: string } & ExternalNotes)
+  // A project in the cloud (D83): whether the copy is connected, the room's number it has, and how
+  // many changes made here wait for the room.
+  | { type: 'cloudStatus'; online: boolean; head: number; pending: number }
+  // A change made here that the room placed with operations left out or values overwritten, or refused.
+  | { type: 'cloudOutcome'; outcome: Outcome }
   // Findings that changed: screens whose list changed (removed: screens gone), the project's
   // findings when they changed, and the summary over everything.
   | { type: 'diagnostics'; screens: Record<string, Diagnostic[]>; removed: string[]; project?: Diagnostic[]; summary: Summary }

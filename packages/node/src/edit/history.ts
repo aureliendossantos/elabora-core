@@ -5,7 +5,7 @@ import { undoChanges } from '@elabora/core/ops/undo';
 import { belongsTo, changesToUndo, lastAiBatch, lastStep, redoStep, summarizeBatches, undoneChanges, type BatchSummary } from '@elabora/core/ops/batch';
 import { CommandError } from '@elabora/core/commands/index';
 import { hasBlob, type BlobHash } from '../blobs.ts';
-import { withProjectLockSync, readJournal, appendUndo, appendMark as appendJournalMark, detectAuthor, CHAT_ID } from '../journal/index.ts';
+import { withProjectLockSync, readJournal, appendUndo, appendMark as appendJournalMark, detectAuthor, journalAuthor, CHAT_ID } from '../journal/index.ts';
 import { changedOnDisk, restoreOriginalTexts } from './disk.ts';
 import { commit, conflict, editResult, pruneAfter, snapshotFor, translateErrors, type EditOptions, type EditResult } from './executor.ts';
 import { takeAutoVersion, type AutoVersion } from './auto-version.ts';
@@ -50,7 +50,7 @@ export interface UndoResult extends EditResult {
 // redoes). Parts of the change whose targets were edited since are kept and reported in skipped;
 // they stay in force.
 export function undo(dir: string, seq?: number, options: EditOptions = {}): UndoResult {
-  const author = options.author ?? detectAuthor();
+  const author = journalAuthor(dir, options.author ?? detectAuthor());
   let target: ChangeLike | undefined;
   const result = undoAll(dir, (entries) => {
     if (seq !== undefined) {
@@ -76,7 +76,7 @@ export function undo(dir: string, seq?: number, options: EditOptions = {}): Undo
 
 // Undoes the author's last undo again (⇧⌘Z), while no change of theirs came after it.
 export function redo(dir: string, options: EditOptions = {}): UndoResult {
-  const author = options.author ?? detectAuthor();
+  const author = journalAuthor(dir, options.author ?? detectAuthor());
   let target: ChangeLike | undefined;
   const result = undoAll(dir, (entries) => {
     target = redoStep(entries, author) ?? undefined;

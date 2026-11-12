@@ -21,6 +21,8 @@ export interface LocalChange {
   undoes?: { batch?: string; changes: string[] };
   // What it replaced that its author may not have seen (an agent's file edit, D75): told to whoever wrote it.
   overwrote?: Overwrite[];
+  // Its inverse on the view, when the caller has it (a journal's): what the change replaced.
+  inverse?: Op[];
 }
 
 // The end of a change made here: placed (with what it left out or overwrote, here and on the
@@ -61,7 +63,7 @@ export class SyncClient {
   // A change made here, computed on the view. Its effect shows at once.
   record(change: LocalChange): void {
     if (!change.ops.length) return;
-    const inverse = invertOps(this.viewFiles, change.ops);
+    const inverse = change.inverse ?? invertOps(this.viewFiles, change.ops);
     this.waiting.push({ change, inverse, skipped: [], overwrote: [] });
     this.viewFiles = applyOps(this.viewFiles, change.ops);
   }
@@ -142,6 +144,12 @@ export class SyncClient {
   // until then: its acknowledgement may come first (in a catchup), for the submission already sent.
   private unprepare(item: Waiting): void {
     item.sent = undefined;
+  }
+
+  // The changes waiting, oldest first, each with its inverse: what a copy keeps to go on after a
+  // restart (a new client from confirmed and head, then record each again).
+  waitingChanges(): LocalChange[] {
+    return this.waiting.map(({ change, inverse }) => ({ ...change, inverse }));
   }
 
   // Outcomes of the changes made here, oldest first, since the last call.

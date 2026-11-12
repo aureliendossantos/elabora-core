@@ -67,7 +67,7 @@ export class CloudClient {
   async request<T = unknown>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (this.#token) headers.Authorization = `Bearer ${this.#token}`;
-    let body: BodyInit | undefined;
+    let body: string | Uint8Array<ArrayBuffer> | undefined;
     if (options.bytes) {
       body = options.bytes as Uint8Array<ArrayBuffer>;
       headers['Content-Type'] = 'application/octet-stream'; // fetch sets Content-Length from the bytes

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { DELIVERY_FORMATS, isDeliveryFormat } from '@elabora/core/lms/formats';
-import type { Author, ChangeLike, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
+import type { Author, ChangeLike, Files, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
 import { readChat } from '@elabora/node/chats';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { applyOps, invertOps } from '@elabora/core/ops/apply';
@@ -56,7 +56,7 @@ import { writeFileAtomic } from '@elabora/node/util/fs';
 import { projectDataDir } from '@elabora/node/data-dir';
 import { syncArtefact } from '@elabora/node/project-files';
 import { agentRulesState, claudeMissing, updateAgentRules, AGENTS_FILE, CLAUDE_FILE } from '@elabora/node/agent-rules';
-import { hasBlob } from '@elabora/node/blobs';
+import { copyBlobTo, hasBlob } from '@elabora/node/blobs';
 import type { BlobHash } from '@elabora/node/blobs';
 import { createVersion, listVersions, restore } from '@elabora/node/backups/index';
 import { findVersion, newestVersionTime, summarize as summarizeVersion } from '@elabora/node/backups/store';
@@ -98,6 +98,7 @@ import type { BuildOptions, BuildResult } from '@elabora/node/build';
 import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
+import { SessionCloud, type CloudOptions } from './session-cloud.ts';
 import type {
   BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, ExternalNotes, FileEntry, FileView,
   FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, BatchCloseReason, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
@@ -150,6 +151,8 @@ export interface OpenOptions {
   // migrates first, as the CLI does), auto (migrated on open, after the open version), never
   // (writes are refused).
   migrate?: 'ask' | 'auto' | 'never';
+  // A folder linked to a project in the cloud (D83): the session syncs it with the project's room.
+  cloud?: CloudOptions;
 }
 
 // Running media jobs at close: cancel them (default: an interrupted conversion of a dropped file is
@@ -209,6 +212,7 @@ export class Session {
   readonly #listeners = new Set<(message: EventMessage) => void>();
   readonly #stats: Map<string, FileInfo>; // size and time of each file when last read, for rescans
   readonly #externalNotes = new Map<string, ExternalNotes>(); // D75, by change id
+  #cloud: SessionCloud | null = null;
   readonly #monitor: SessionMonitor;
   readonly #activity: SessionActivity;
   readonly #sources = new Map<number, ChangeSource>(); // journal entries the session appended, by sequence number
@@ -306,6 +310,67 @@ export class Session {
       timer.unref();
       this.#timers.push(timer);
     }
+    if (this.#options.cloud) await this.#startCloud(this.#options.cloud);
+  }
+
+  // ── a project in the cloud (D83) ───────────────────────────────────
+
+  async #startCloud(options: CloudOptions): Promise<void> {
+    const cloud = new SessionCloud({
+      root: this.root,
+      files: () => this.#state.files,
+      step: (work) => this.#queue.run(async () => {
+        try {
+          return await this.#locked(async () => {
+            await this.#syncWithDisk();
+            try {
+              return await work();
+            } finally {
+              await this.#recordOwn();
+            }
+          });
+        } finally {
+          await this.#afterChange();
+        }
+      }),
+      write: (before, after, author, batch, seq) => this.#writeFromRoom(before, after, author, batch, seq),
+      emit: (event) => this.#emit(event),
+      notes: (change) => this.#externalNotes.get(change)
+    }, options);
+    this.#cloud = cloud;
+    const since = options.link.journal;
+    await cloud.start(this.#entries.filter((entry): entry is ChangeLike => entry.type !== 'mark' && entry.seq > since));
+  }
+
+  // The copy of the project in the cloud: connected, the room's number, changes waiting (null: not linked).
+  get cloud(): { online: boolean; head: number; pending: number; settled: () => Promise<void> } | null {
+    const cloud = this.#cloud;
+    return cloud && { online: cloud.online, head: cloud.head, pending: cloud.pending, settled: () => cloud.settled() };
+  }
+
+  // What the room changed in the view, written in the folder and journaled as the change of its
+  // author (never sent back: its command is sync).
+  async #writeFromRoom(before: ProjectFiles | Files, after: Files, author: Author, batch: string | undefined, seq: number): Promise<void> {
+    const updates = new Map<string, SourceFile | null>();
+    const write = new Map<string, SourceFile>();
+    for (const rel of new Set([...before.keys(), ...after.keys()])) {
+      const file = after.get(rel);
+      if (before.get(rel) === file || (file && sameContent(before.get(rel), file))) continue;
+      const target = path.join(this.root, ...rel.split('/'));
+      if (!file) {
+        fs.rmSync(target, { force: true });
+        updates.set(rel, null);
+      } else if (file.kind === 'text') {
+        const source = toSourceFile(this.root, rel, file) as SourceFile;
+        updates.set(rel, source);
+        write.set(rel, source);
+      } else {
+        await copyBlobTo(this.root, file.hash as BlobHash, target);
+        updates.set(rel, fileOf(await this.#readDisk(rel)));
+      }
+    }
+    if (!updates.size) return;
+    await this.#journalChange({ updates, author, command: { name: 'sync', args: { seq } }, source: 'cloud', write, ...(batch ? { batch } : {}) });
   }
 
   // Ends the session: stops the voices' jobs (what they said stays), reconciles what changed last,
@@ -315,6 +380,7 @@ export class Session {
     this.#closing ??= (async () => {
       // The voices stop first: a line being said when the author leaves is not paid for nothing.
       this.#voice.close();
+      this.#cloud?.stop();
       this.#monitor.stop();
       this.#activity.stop();
       for (const timer of [...this.#timers, this.#batchTimer, this.#versionTimer]) if (timer) clearTimeout(timer);
@@ -1197,6 +1263,7 @@ export class Session {
     const foreign = entries.filter((entry) => !this.#sources.has(entry.seq));
     if (foreign.length) await this.#applyForeign(foreign);
     this.#record(entries);
+    if (this.#cloud) for (const entry of entries) if (entry.type !== 'mark') this.#cloud.take(entry);
     for (const entry of entries) {
       if (entry.type !== 'mark') this.#emit({ type: 'changed', source: this.#sources.get(entry.seq) ?? 'journal', change: changeView(entry) });
       this.#sources.delete(entry.seq);
@@ -1401,8 +1468,8 @@ export class Session {
 
   // Journals new contents as one change: files already on disk (what another program or a job
   // wrote), and files the session writes now (write: references rewritten).
-  async #journalChange(spec: { updates: Map<string, SourceFile | null>; author: Author; command?: { name: string; args: unknown }; source: ChangeSource; write?: ReadonlyMap<string, SourceFile> }): Promise<number | null> {
-    const { before, after, ops, inverse, unavailable, merged, settled, notes } = this.#prepareChange(spec.updates, spec.author.kind === 'external');
+  async #journalChange(spec: { updates: Map<string, SourceFile | null>; author: Author; command?: { name: string; args: unknown }; source: ChangeSource; write?: ReadonlyMap<string, SourceFile>; batch?: string }): Promise<number | null> {
+    const { before, after, ops, inverse, unavailable, merged, settled, notes } = this.#prepareChange(spec.updates, spec.author.kind === 'external' && spec.source !== 'cloud');
     let seq: number | null = null;
     if (ops.length) {
       await storeChangeBlobs(this.root, { ops, inverse, unavailable });
@@ -1411,7 +1478,7 @@ export class Session {
         if (file.kind === 'text') await this.store.write(rel, file.text);
         await this.#readDisk(rel);
       }
-      const entry = appendChange(this.root, { author: spec.author, ...(spec.command ? { command: spec.command } : {}), ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
+      const entry = appendChange(this.root, { author: spec.author, ...(spec.command ? { command: spec.command } : {}), ...(spec.batch ? { batch: spec.batch } : {}), ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
       this.#sources.set(entry.seq, spec.source);
       seq = entry.seq;
       this.#noteExternal(entry.id, notes);

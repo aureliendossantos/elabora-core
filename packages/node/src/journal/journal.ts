@@ -6,6 +6,7 @@ import { assignBatch } from '@elabora/core/ops/batch';
 import { touchedFiles } from '@elabora/core/ops/apply';
 import { blobPath, hasBlob, hashBytes, putBytes, putFileSnapshot, BLOBS_TMP_DIR, type BlobHash } from '../blobs.ts';
 import { projectDataDir } from '../data-dir.ts';
+import { readLink, stampAuthor } from '../cloud/link.ts';
 import { copyFileCloneSync } from '../util/copy-sync.ts';
 import { withProjectLockSync, type LockOptions } from './lock.ts';
 
@@ -39,6 +40,9 @@ export interface NewChange {
   // is not an Elabora tool, before anything kept it): the change is journaled all the same, and undo
   // skips the inverse writes naming them (reason unavailable).
   unavailable?: string[];
+  // The batch, when it is given (a change of a project in the cloud keeps the room's): otherwise drawn
+  // from the previous entry.
+  batch?: string;
 }
 
 export interface NewUndo extends NewChange {
@@ -55,17 +59,26 @@ export interface AppendOptions {
 
 export function appendChange(dir: string, change: NewChange, options: AppendOptions = {}): ChangeEntry {
   assertBlobs(dir, change);
-  return append(dir, options, (head, previous, root): ChangeEntry => ({
-    type: 'change', ...head, author: change.author, batch: assignBatch(previous, { ...head, author: change.author }, chatTurn(root, change.author, head.at)),
+  return append(dir, options, (head, previous, root): ChangeEntry => {
+    const author = journalAuthor(root, change.author);
+    return {
+    type: 'change', ...head, author, batch: change.batch ?? assignBatch(previous, { ...head, author }, chatTurn(root, author, head.at)),
     ...(change.command ? { command: change.command } : {}), ops: change.ops, inverse: change.inverse, files: change.files,
     ...(change.unavailable?.length ? { unavailable: change.unavailable } : {})
-  }));
+    };
+  });
+}
+
+// The author a folder's journal writes: in a folder linked to a project in the cloud, with its
+// person, as the one who launched an agent or a file edit (D78).
+export function journalAuthor(root: string, author: Author): Author {
+  return stampAuthor(author, readLink(root)?.person);
 }
 
 export function appendUndo(dir: string, undo: NewUndo, options: AppendOptions = {}): UndoEntry {
   assertBlobs(dir, undo);
   return append(dir, options, (head, previous, root): UndoEntry => ({
-    type: 'undo', ...head, author: undo.author, batch: assignBatch(previous, { ...head, author: undo.author }, chatTurn(root, undo.author, head.at)),
+    type: 'undo', ...head, author: journalAuthor(root, undo.author), batch: assignBatch(previous, { ...head, author: journalAuthor(root, undo.author) }, chatTurn(root, undo.author, head.at)),
     ...(undo.command ? { command: undo.command } : {}), undoes: undo.undoes, skipped: undo.skipped,
     ops: undo.ops, inverse: undo.inverse, files: undo.files, ...(undo.unavailable?.length ? { unavailable: undo.unavailable } : {})
   }));
