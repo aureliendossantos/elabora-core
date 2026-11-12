@@ -12,7 +12,8 @@ import { requireCredential } from './credentials.ts';
 import { sendBlobs } from './blob-upload.ts';
 import { linkFile, readLink, writeLink, type Person, type ProjectLink } from './link.ts';
 import { ensureLibrary, stagingFolder } from '../library/location.ts';
-import { getProject, type LibraryProject } from '../library/projects.ts';
+import { getProject, readCourseInfo, type LibraryProject } from '../library/projects.ts';
+import { dataLocation } from '../data-dir.ts';
 import { newProjectId, removeTree, renameWithRetries, writeProjectId } from '../library/files.ts';
 
 export { readLink, writeLink, unlinkFolder, linkFile, stampAuthor, type Person, type ProjectLink } from './link.ts';
@@ -315,8 +316,9 @@ export async function cloneProject(dir: string, options: { api: string; team: st
 }
 
 // A project of the cloud as a module of the library (app, Lin 54): made in a staging folder under a
-// new library id, then moved in by one rename; nothing is left of it when the download fails. A
-// copy that keeps no link (« Dupliquer dans Mes modules ») drops it once in.
+// new library id, then moved in by one rename; nothing is left of it when the download fails, or when
+// its module does not read (E_PROJECT_UNREADABLE). A copy that keeps no link (« Dupliquer dans Mes
+// modules ») drops it once in.
 export async function cloneToLibrary(options: { api: string; team: string; project: string }, { linked = true, onProgress }: { linked?: boolean; onProgress?: (progress: { receivedBytes: number; totalBytes: number }) => void } = {}): Promise<LibraryProject> {
   const root = ensureLibrary();
   const staging = stagingFolder(root);
@@ -325,6 +327,14 @@ export async function cloneToLibrary(options: { api: string; team: string; proje
     const id = newProjectId(root);
     writeProjectId(dir, id);
     await cloneProject(dir, options, { onProgress });
+    // A project whose module does not read (its course.json missing or broken) does not enter the
+    // library: it would open as an empty module. Nothing of it stays here, its data neither.
+    const course = readCourseInfo(dir);
+    if (course.error) {
+      const data = dataLocation(dir);
+      if (!data.inProject) await removeTree(data.dir);
+      throw new CloudError(0, 'E_PROJECT_UNREADABLE', `The project's module cannot be read: ${course.error}`);
+    }
     if (!linked) fs.rmSync(linkFile(dir), { force: true });
     await renameWithRetries(dir, path.join(root, id));
     return getProject(id);
