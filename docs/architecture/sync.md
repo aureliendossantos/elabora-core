@@ -1,6 +1,6 @@
 # Projects in the cloud: ordering, rebase and copies
 
-How several people and agents work on one project at once: a server orders the changes of every copy, each change is rebased on what came before it, and every copy shows what the server confirmed with its own waiting changes on top. Part of the [architecture](../architecture.md); it builds on [operations](operations.md), the one language every change is written in. Decisions: [D73](../decisions/D73.md) (the server and the copies), [D74](../decisions/D74.md) (rebase), [D75](../decisions/D75.md) (files written by an agent's own tools), [D76](../decisions/D76.md) (a command run on files), [D77](../decisions/D77.md) (ids drawn with a random suffix), [D78](../decisions/D78.md) and [D79](../decisions/D79.md) (authors and undo by person), [D83](../decisions/D83.md) (a folder linked to a project).
+How several people and agents work on one project at once: a server orders the changes of every copy, each change is rebased on what came before it, and every copy shows what the server confirmed with its own waiting changes on top. Part of the [architecture](../architecture.md); it builds on [operations](operations.md), the one language every change is written in. Decisions: [D73](../decisions/D73.md) (the server and the copies), [D74](../decisions/D74.md) (rebase), [D75](../decisions/D75.md) (files written by an agent's own tools), [D76](../decisions/D76.md) (a command run on files), [D77](../decisions/D77.md) (ids drawn with a random suffix), [D78](../decisions/D78.md) and [D79](../decisions/D79.md) (authors and undo by person), [D83](../decisions/D83.md) (a folder linked to a project), [D84](../decisions/D84.md) (the commands by name).
 
 `@elabora/core` `sync/` holds it all, pure, without I/O: the server of a project (a room of the hosting) and every copy (the desktop engine, the CLI, later the browser) import the same functions.
 
@@ -53,6 +53,10 @@ An agent may read a file, think, and write it long after: what it writes is the 
 - **Media** are the team's: a change that writes a binary file sends what the team lacks first; a medium another copy wrote is read from the team before the folder is written.
 - **A test server only, for now**: the commands need its address (`ELABORA_CLOUD_URL` or `--api`) and refuse Elabora's hosting.
 - `scripts/cloud-sync-trial.ts` is the trial on such a server: two folders, a person through the command line, an agent through the MCP tools, files written by hand, one copy offline and back, an agent's burst timed.
+
+## Commands by name
+
+A room runs commands as well as changes: a tool of the cloud sends a command's name and arguments, the room runs it on its head (`executeCommand`, D76) and places the result as a change of the tool's author. `@elabora/core` `commands/table.ts` is the list (D84): the commands that need nothing but the project's files, each with the JSON Schema of its arguments, what a tool says of it, whether it removes content or is a person's only, and the function that runs it. `namedCommand(name)` finds one by its own name only. The schema is what a tool may send; the command checks its arguments itself and refuses with `CommandError`.
 
 ## Messages
 

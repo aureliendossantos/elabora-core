@@ -6,7 +6,7 @@ import { findDialogue, dialogueBlocks, projectDialogue } from '@elabora/core/dia
 import { dialogueScript, formatScript } from '@elabora/core/dialogue/script';
 import { playDialogue, formatPlay, dialoguePaths, formatPaths } from '@elabora/core/dialogue/play';
 import type { Project } from '@elabora/core/project/model';
-import { defineTool, editResult, errorResult, objectSchema, SLUG, textResult } from './tool.ts';
+import { defineTool, fromCommand, editResult, errorResult, objectSchema, SLUG, textResult } from './tool.ts';
 
 // Dialogues (docs/decisions.md D61): read as a script, played and listed by the player's own walk,
 // exported for the client; one node written whole. The dialogue is a block: elabora_add_block and
@@ -75,15 +75,12 @@ export const exportDialogueTool = defineTool({
 
 export const setDialogueNodeTool = defineTool({
   name: 'elabora_set_dialogue_node',
-  description: 'Write one node of a dialogue block whole, in one undoable change: a new node (after: a node id, first: at the start; default: at the end), or the node with the same id replaced in place (moved with after or first). A node: { "id", "title"?, "lines": [{ "id", "speaker"?, "text", "expression"?, "cues"? }], "prompt"?, "options": [{ "id", "text", "label"?, "quality", "reply"?, "feedback"?, "points"?, "next"?, "retry"?, … }], "next"?, "end"? } (elabora_get_schema dialogue). To add an option or a line, write its node again with it. The findings say what is left to fix (a next to a node that does not exist).',
-  inputSchema: objectSchema({ block: BLOCK, node: { type: 'object', description: 'The node, with its id.' }, after: { ...SLUG, description: 'Add (or move) it after this node.' }, first: { type: 'boolean', description: 'Add (or move) it first.' } }, ['block', 'node']),
+  ...fromCommand('set_dialogue_node'),
   handler: (args, { root, author }) => editResult(setDialogueNode(root, args, { author }))
 });
 
 export const removeDialogueNodeTool = defineTool({
   name: 'elabora_remove_dialogue_node',
-  destructive: true,
-  description: 'Remove one node of a dialogue block, in one undoable change. What went to it (a next, an option\'s next, a start) is left for you to fix: the findings name it (E_DIALOGUE_TARGET).',
-  inputSchema: objectSchema({ block: BLOCK, node: { ...SLUG, description: 'The node\'s id.' } }, ['block', 'node']),
+  ...fromCommand('remove_dialogue_node'),
   handler: (args, { root, author }) => editResult(removeDialogueNode(root, args, { author }))
 });

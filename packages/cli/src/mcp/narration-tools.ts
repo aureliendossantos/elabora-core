@@ -7,8 +7,7 @@ import type { TranscriptionEstimate } from '@elabora/node/transcribe/index';
 import { addNarrationLineFromAudio, setNarrationTextFromAudio, transcribeNarrationLine } from '@elabora/node/narration/from-audio';
 import { timelineReport, formatTimeline, narratedScreens, formatNarratedScreens } from '@elabora/core/narration/report';
 import { setBlockTiming } from '@elabora/node/edit';
-import type { MomentPatch } from '@elabora/core/commands/index';
-import { defineTool, editResult, errorResult, formatValue, LINE_ID, objectSchema, SLUG, textResult } from './tool.ts';
+import { defineTool, fromCommand, editResult, errorResult, LINE_ID, objectSchema, SLUG, textResult } from './tool.ts';
 
 // Narration (docs/decisions.md D24): the timeline of a narrated screen as text, a recorded voice for
 // a line, and lines made from recordings (D46). The script itself is the screen's narration.lines,
@@ -68,15 +67,9 @@ export const alignNarrationTool = defineTool({
   }
 });
 
-const MOMENT = formatValue<MomentPatch | null>()({
-  type: ['object', 'null'],
-  description: 'A moment and its effect: { "at": <anchor>, "effect": "rise", "duration": 0.5, "direction": "left" }. Anchors: { "line": "l2" } (the line starts), { "line": "l2", "edge": "end" }, { "line": "l2", "word": "imprimante" } (the voice says that word; a few words work too; occurrence: 2 for its second time; offset: 0.3 seconds after, negative before); on a screen without narration { "seconds": 1.5 } from the start of the block\'s step ({ "seconds": 1.5, "step": 2 }); { "step": 2 } or { "step": 2, "edge": "end" }. Effects: none, fade (default), rise, slide, zoom, wipe, draw, or the theme\'s (course.json theme.effects). Fields set to null go back to their default; the whole moment null removes it.'
-});
-
 export const setTiming = defineTool({
   name: 'elabora_set_timing',
-  description: 'When a block comes (in) and goes (out) on its screen\'s timeline, with an effect, in one undoable change: the blocks of a narrated screen appear as the voice names them, anchored to a line or a word of the narration (the anchor holds when the voice is generated again or translated); a screen without narration times them in seconds. Without in a block shows with its step, without out it stays until the end. A timed block keeps its place while it is not there (nothing moves). The contents of a stack (type stack) follow one another: give each its in. Read the result\'s diagnostics (E_TIMELINE_ANCHOR_MISSING, W_TEXT_TOO_FAST, E_ACTIVITY_LEAVES_UNANSWERED…), then elabora_timeline and elabora_look at the anchor.',
-  inputSchema: objectSchema({ block: SLUG, in: MOMENT, out: MOMENT }, ['block']),
+  ...fromCommand('set_block_timing'),
   handler(args, { root, author }) {
     return editResult(setBlockTiming(root, { block: args.block, ...(args.in !== undefined ? { in: args.in } : {}), ...(args.out !== undefined ? { out: args.out } : {}) }, { author }));
   }

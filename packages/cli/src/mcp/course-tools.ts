@@ -9,8 +9,7 @@ import { exportPlanDocument } from '@elabora/node/plan-document';
 import { withCourseLanguage } from '@elabora/node/translate';
 import { changeSeq, keptEdits } from '../commands/history.ts';
 import { validateProject } from '@elabora/core/validate/index';
-import type { PatchOperation } from '@elabora/format';
-import { agentFindings, defineTool, editResult, errorResult, formatValue, objectSchema, textResult, LANGUAGE, PROFILES, SLUG } from './tool.ts';
+import { agentFindings, defineTool, fromCommand, editResult, errorResult, objectSchema, textResult, LANGUAGE, PROFILES, SLUG } from './tool.ts';
 
 // Reading the course, validating it, writing the plan, and the history of edits.
 
@@ -115,8 +114,7 @@ export const history = defineTool({
 
 export const writePlan = defineTool({
   name: 'elabora_write_plan',
-  description: 'Write the plan (plan.json, the working copy) at any time: the whole plan (plan) or a JSON Patch (RFC 6902) of it. Checked against the plan\'s schema before anything is written, refused with why. Before its first validation, draft it whole from what the author gave you (sources, objectives, the client\'s brief): the items grouped by part (items[].part), each objective with a short name of three to five words (objectives[].short), decided and question (D51). Once a version was validated, write the changes all the same and tell the author what you changed: the app marks them, and the author makes the next version and sends it. Refused when it would change a text kept « à l\'identique » (lockedTexts[].verbatim): ask the author. Rewording a validated text is writing it here: every block with its textRef follows. Items moved (a move, a part changed) take the screens that cover them along in the same change (moved says which).',
-  inputSchema: objectSchema({ plan: { type: 'object', description: 'The whole plan.json (id, title, objectives, items…).' }, patch: { type: 'array', items: formatValue<PatchOperation>()({ type: 'object' }), minItems: 1, description: 'A JSON Patch of the plan as it is.' } }),
+  ...fromCommand('write_plan'),
   handler: (args, { root, author }) => editResult(edit.writePlan(root, { ...(args.plan ? { plan: args.plan } : {}), ...(args.patch ? { patch: args.patch } : {}) }, { author }))
 });
 

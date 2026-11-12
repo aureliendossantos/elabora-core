@@ -4,71 +4,22 @@ import { MULTIPLE_OF_PRECISION } from '@elabora/format';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { Author } from '@elabora/core/ops/types';
 import type { EditResult } from '@elabora/node/edit';
+import type { ArgumentsOf, InputSchema } from '@elabora/core/commands/arguments';
+import { NAMED_COMMANDS, type CommandName } from '@elabora/core/commands/table';
 
 // An MCP tool: its public interface (name, description, input schema, hints) and its handler. The
-// type of the handler's arguments follows from the input schema, which ajv checks before the
-// handler runs: what agents may send and what the handler reads cannot drift apart.
+// type of the handler's arguments follows from the input schema (@elabora/core/commands/arguments),
+// which ajv checks before the handler runs: what agents may send and what the handler reads cannot
+// drift apart.
+export { formatValue, objectSchema, SLUG, LINE_ID, PLAN_ID, LANGUAGE, type ArgumentsOf, type InputSchema, type PropertySchema } from '@elabora/core/commands/arguments';
 
-type TypeName = 'string' | 'integer' | 'number' | 'boolean' | 'object' | 'array' | 'null';
-
-// The JSON Schema keywords tool inputs use; others (pattern, minimum, description…) do not change the type.
-export interface PropertySchema {
-  readonly type?: TypeName | readonly TypeName[];
-  readonly enum?: readonly unknown[];
-  readonly properties?: { readonly [name: string]: PropertySchema };
-  readonly required?: readonly string[];
-  readonly items?: PropertySchema;
-  readonly [keyword: string]: unknown;
+// A tool that is a command of the core's table (D84), its arguments as they are: its description,
+// its schema and its hint come from the table, which the tools of a project in the cloud share.
+export function fromCommand<const Name extends CommandName>(name: Name): { description: string; inputSchema: (typeof NAMED_COMMANDS)[Name]['args']; destructive: boolean } {
+  const entry = NAMED_COMMANDS[name];
+  return { description: entry.description, inputSchema: entry.args, destructive: 'destructive' in entry && entry.destructive === true };
 }
 
-export interface InputSchema<Properties extends { readonly [name: string]: PropertySchema } = { readonly [name: string]: PropertySchema }, Required extends string = string> {
-  readonly type: 'object';
-  readonly properties: Properties;
-  readonly required: readonly Required[];
-  readonly additionalProperties: false;
-}
-
-// The arguments of a tool input: an object of its properties, each with its JSON Schema type.
-type Simplify<T> = { [Key in keyof T]: T[Key] } & {};
-type ObjectOf<Properties, Required> = Simplify<
-  { -readonly [Key in keyof Properties as Key extends Required ? Key : never]: ValueOf<Properties[Key]> } &
-  { -readonly [Key in keyof Properties as Key extends Required ? never : Key]?: ValueOf<Properties[Key]> }
->;
-type ValueOfType<Name, Schema> =
-  Name extends 'string' ? string
-  : Name extends 'integer' | 'number' ? number
-  : Name extends 'boolean' ? boolean
-  : Name extends 'null' ? null
-  : Name extends 'array' ? (Schema extends { readonly items: infer Items } ? ValueOf<Items>[] : unknown[])
-  : Name extends 'object' ? (Schema extends { readonly properties: infer Properties } ? ObjectOf<Properties, Schema extends { readonly required: readonly (infer Key)[] } ? Key : never> : Record<string, unknown>)
-  : never;
-type ValueOf<Schema> =
-  Schema extends FormatTyped<infer Value> ? (unknown extends Value ? JsonValueOf<Schema> : Exclude<Value, undefined>) : JsonValueOf<Schema>;
-type JsonValueOf<Schema> =
-  Schema extends { readonly enum: readonly (infer Value)[] } ? Value
-  : Schema extends { readonly type: infer Name } ? ValueOfType<Name extends readonly (infer Each)[] ? Each : Name, Schema>
-  : unknown;
-export type ArgumentsOf<Schema> = ValueOf<Schema>;
-
-// A value an edit checks against the format's schemas (a block, an event, the theme…): ajv only
-// checks its JSON type here and the edit refuses a result that does not match the format, so the
-// argument has the format's type. Nothing is added to the schema.
-declare const FORMAT_TYPE: unique symbol;
-type FormatTyped<Value> = { readonly [FORMAT_TYPE]?: Value };
-export const formatValue = <Value>() => <const Schema extends PropertySchema>(schema: Schema): Schema & FormatTyped<Value> => schema;
-
-// The input of a tool: these properties and no others.
-export function objectSchema<const Properties extends { readonly [name: string]: PropertySchema }, const Required extends keyof Properties & string = never>(properties: Properties, required: readonly Required[] = []): InputSchema<Properties, Required> {
-  return { type: 'object', properties, required, additionalProperties: false };
-}
-
-// Shared property schemas.
-export const SLUG = { type: 'string', pattern: '^[a-z][a-z0-9-]{0,47}$' } as const;
-// A voiced line's id: a line's (narration.lines[].id, a dialogue's line) or an answer the learner's voice says,
-// "<node>.<option>" (optionLineId), as elabora_voice_estimate lists them.
-export const LINE_ID = { type: 'string', pattern: '^[a-z][a-z0-9-]{0,47}(\\.[a-z][a-z0-9-]{0,47})?$' } as const;
-export const PLAN_ID = { type: 'string', pattern: '^[A-Z][A-Z0-9_-]{0,31}$' } as const;
-export const LANGUAGE = { type: 'string', pattern: '^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$', description: 'A BCP 47 tag: en, de, pt-BR.' } as const;
 export const PROFILES = { type: 'array', items: { type: 'string' }, description: 'LMS profile ids (elabora_list_profiles). Default: course.json delivery.lms, else ["unknown"]: no LMS chosen, the strictest values, and package limits only warn.' } as const;
 
 export interface ToolContext {
