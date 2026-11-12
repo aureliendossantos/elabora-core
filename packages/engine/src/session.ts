@@ -99,6 +99,7 @@ import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
 import { SessionCloud, type CloudOptions } from './session-cloud.ts';
+import type { Presence } from '@elabora/core/sync/protocol';
 import type {
   BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, ExternalNotes, FileEntry, FileView,
   FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, BatchCloseReason, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
@@ -315,6 +316,14 @@ export class Session {
 
   // ── a project in the cloud (D83) ───────────────────────────────────
 
+  // A folder just linked to a project (elabora cloud project create, push or clone did it, or the
+  // app): the open session starts syncing it, as if it had been opened with options.cloud.
+  async linkCloud(options: CloudOptions): Promise<void> {
+    this.#assertOpen();
+    if (this.#cloud) throw new Error('This session already syncs a project in the cloud.');
+    await this.#startCloud(options);
+  }
+
   async #startCloud(options: CloudOptions): Promise<void> {
     const cloud = new SessionCloud({
       root: this.root,
@@ -342,10 +351,11 @@ export class Session {
     await cloud.start(this.#entries.filter((entry): entry is ChangeLike => entry.type !== 'mark' && entry.seq > since));
   }
 
-  // The copy of the project in the cloud: connected, the room's number, changes waiting (null: not linked).
-  get cloud(): { online: boolean; head: number; pending: number; settled: () => Promise<void> } | null {
+  // The copy of the project in the cloud: connected, the room's number, changes waiting, who is there,
+  // the team and project (null: not linked).
+  get cloud(): { online: boolean; head: number; pending: number; client: string; team: string; project: string; peers: readonly Presence[]; settled: () => Promise<void> } | null {
     const cloud = this.#cloud;
-    return cloud && { online: cloud.online, head: cloud.head, pending: cloud.pending, settled: () => cloud.settled() };
+    return cloud && { online: cloud.online, head: cloud.head, pending: cloud.pending, client: cloud.link.client, team: cloud.link.team, project: cloud.link.project, peers: cloud.peers, settled: () => cloud.settled() };
   }
 
   // What the room changed in the view, written in the folder and journaled as the change of its

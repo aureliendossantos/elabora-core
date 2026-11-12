@@ -5,6 +5,7 @@ import path from 'node:path';
 import { openProject, type Session } from '@elabora/engine/session';
 import type { RoomSocket } from '@elabora/engine/session-cloud';
 import { acceptChange, type ClientMessage, type Committed, type ServerMessage } from '@elabora/core/sync/index';
+import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
 import { CloudClient } from '@elabora/node/cloud/client';
 import { keepConfirmed, projectsApi, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
@@ -35,7 +36,11 @@ class Room {
   };
 
   receive(from: FakeSocket, message: ClientMessage): void {
-    if (message.type === 'hello') return from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: [] });
+    if (message.type === 'hello') {
+      from.presence = { actor: message.actor, client: message.client, at: '2026-11-12T09:00:00.000Z' };
+      from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers() });
+      return this.tellPresence(from);
+    }
     if (message.type === 'catchup') return from.deliver({ type: 'catchup', changes: this.log.filter((change) => change.seq > message.since), head: this.head });
     if (message.type !== 'submit') return;
     if (this.refuse && this.refuse.times-- > 0) {
@@ -53,6 +58,11 @@ class Room {
     from.deliver({ type: 'ack', change: accepted.committed });
   }
 
+  peers(): Presence[] { return [...this.sockets].flatMap((socket) => (socket.presence ? [socket.presence] : [])); }
+  tellPresence(except: FakeSocket | null): void {
+    for (const other of this.sockets) if (other !== except) other.deliver({ type: 'presence', peers: this.peers() });
+  }
+
   // The connection drops; the copy reconnects by itself.
   drop(): void { for (const socket of [...this.sockets]) socket.close(); }
 }
@@ -61,6 +71,7 @@ class FakeSocket implements RoomSocket {
   readyState = 0;
   readonly #listeners = new Map<string, ((event: { data: unknown }) => void)[]>();
   readonly room: Room;
+  presence: Presence | null = null;
   constructor(room: Room) { this.room = room; }
   addEventListener(type: string, listener: (event: { data: unknown }) => void): void {
     this.#listeners.set(type, [...(this.#listeners.get(type) ?? []), listener]);
@@ -81,6 +92,7 @@ class FakeSocket implements RoomSocket {
     if (this.readyState === 3) return;
     this.readyState = 3;
     this.room.sockets.delete(this);
+    if (this.presence) this.room.tellPresence(null);
     this.emit('close');
   }
 }
@@ -204,4 +216,37 @@ test('an undo in a linked folder sends what it left out, and the room keeps it (
   assert.ok(undo?.undoes, JSON.stringify(undo));
   assert.equal(undo?.undoes?.skipped?.length, 1, JSON.stringify(undo?.undoes));
   assert.ok(undo?.undoes?.changes.every((id) => room.log.some((change) => change.id === id)), 'its targets as the room knows them');
+});
+
+test('a folder linked while its session is open starts syncing; each copy sees who is there', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  // B is open before it is linked (the app links an open module).
+  const b = await openProject(B, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, debounceMs: 30 });
+  sessions.push(b);
+  assert.equal(b.cloud, null);
+  const { files } = readProjectFiles(B);
+  const link: ProjectLink = {
+    format: 'elabora-cloud-project/1', api: 'http://localhost:1', team: 'tm_test', project: 'prj_test', client: 'cB2',
+    person: { id: 'acc_bea', name: 'Béa' }, head: room.head, confirmed: keepConfirmed(B, files), waiting: [], journal: 0
+  };
+  writeLink(B, link);
+  const statuses: { peers: Presence[]; client: string }[] = [];
+  b.subscribe((message) => { if (message.kind === 'event' && message.event.type === 'cloudStatus') statuses.push(message.event); });
+  await b.linkCloud({ api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20] });
+  await settled(room, a, b);
+  await a.run('update_screen', { id: 'chemin', title: 'Après le lien' }, { kind: 'human' });
+  await settled(room, a, b);
+  assert.equal(screen(B, 'chemin').title, 'Après le lien');
+  assert.deepEqual(b.cloud?.peers.map((peer) => peer.actor.name).sort(), ['Ada', 'Béa']);
+  assert.equal(statuses.at(-1)?.client, 'cB2');
+  assert.deepEqual([b.cloud?.team, b.cloud?.project], ['tm_test', 'prj_test']);
+  await assert.rejects(b.linkCloud({ api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect }), /already syncs/);
+  // A leaves: B sees it go.
+  await a.close({ media: 'cancel' });
+  sessions.splice(sessions.indexOf(a), 1);
+  for (let wait = 0; wait < 80 && b.cloud?.peers.length !== 1; wait++) await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.deepEqual(b.cloud?.peers.map((peer) => peer.actor.name), ['Béa']);
 });

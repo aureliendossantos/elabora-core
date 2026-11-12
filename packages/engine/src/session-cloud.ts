@@ -2,7 +2,7 @@ import type { Author, ChangeLike, Files } from '@elabora/core/ops/types';
 import { sameContent } from '@elabora/core/ops/json';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { SyncClient, type LocalChange, type Outcome } from '@elabora/core/sync/client';
-import { SYNC_PROTOCOL, type ClientMessage, type Committed, type ServerMessage } from '@elabora/core/sync/protocol';
+import { SYNC_PROTOCOL, type ClientMessage, type Committed, type Presence, type ServerMessage } from '@elabora/core/sync/protocol';
 import type { CloudClient } from '@elabora/node/cloud/client';
 import {
   blobsOf, commitMedia, confirmedFiles, fetchMedium, keepConfirmed, roomUrl, sendMedia, writeLink, type ProjectLink
@@ -69,6 +69,8 @@ export class SessionCloud {
   #attempt = 0;
   #timer: NodeJS.Timeout | null = null;
   readonly #uploads = new Map<string, string | null>(); // submission id → its media upload
+  // Who is in the room: each copy connected, this one included (by the room's word).
+  #peers: Presence[] = [];
   #idle: (() => void)[] = [];
 
   constructor(host: CloudHost, options: CloudOptions) {
@@ -85,6 +87,8 @@ export class SessionCloud {
   get head(): number { return this.#client.head; }
   get pending(): number { return this.#client.pending; }
   get view(): Files { return this.#client.view; }
+  get peers(): readonly Presence[] { return this.#peers; }
+  get link(): Readonly<ProjectLink> { return this.#link; }
 
   // Journal entries the copy has not taken in yet (made while no session synced), then a check that
   // the folder is the view: what differs goes as a file edit no Elabora tool made.
@@ -154,8 +158,15 @@ export class SessionCloud {
         // What came while away first (an acknowledgement lost with the connection is in it), then
         // the waiting changes: the pump follows every message received.
         this.#online = true;
+        this.#peers = message.peers;
         this.#status();
         this.#send({ type: 'catchup', since: this.#client.head });
+        return;
+      }
+      // Who is there changed: nothing of the view moves.
+      if (message.type === 'presence') {
+        this.#peers = message.peers;
+        this.#status();
         return;
       }
       void this.#later(() => this.#receive(message));
@@ -164,6 +175,7 @@ export class SessionCloud {
       if (this.#ws !== ws) return;
       this.#ws = null;
       this.#online = false;
+      this.#peers = [];
       this.#client.disconnected();
       this.#status();
       if (this.#stopped) return;
@@ -252,7 +264,7 @@ export class SessionCloud {
   }
 
   #status(): void {
-    this.#host.emit({ type: 'cloudStatus', online: this.#online, head: this.#client.head, pending: this.#client.pending });
+    this.#host.emit({ type: 'cloudStatus', online: this.#online, head: this.#client.head, pending: this.#client.pending, client: this.#link.client, peers: this.#peers });
   }
 
   #wake(): void {
