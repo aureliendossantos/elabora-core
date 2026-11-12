@@ -1,12 +1,13 @@
 import path from 'node:path';
 import { CloudError } from '@elabora/node/cloud/client';
-import { cloneProject, cloudSessionOptions, createProject, listTeams, projectsApi, projectsClient, pushFolder, readLink } from '@elabora/node/cloud/projects';
+import { cloneProject, cloudSessionOptions, createProject, listTeams, projectsApi, projectsClient, pushFolder, readLink, teamsOffered } from '@elabora/node/cloud/projects';
 import { defineCommand, errorMessage, printJson } from './command.ts';
 import type { CommandGroup, ExitCode } from './command.ts';
 
 // Projects in the cloud from the command line (docs/architecture/sync.md, D83): a folder linked to a
-// project of a team, kept in sync with its room by a session of the engine. On a test server only
-// for now: its address is given (ELABORA_CLOUD_URL or --api), never Elabora's hosting by default.
+// project of a team, kept in sync with its room by a session of the engine. On the account's server
+// (ELABORA_CLOUD_URL or --api, else Elabora's hosting) once it says it has teams (GET /v1, elabora-cloud
+// C80): a test server for now. A server without them is said so in words, never by its refusal.
 
 const HELP = `  cloud teams [--api <origin>] [--json]               Your teams on the server, with their ids
   cloud project create [dir] --team <id> [--name <n>] [--api <origin>] [--json]
@@ -33,12 +34,19 @@ async function failures(json: boolean, run: () => Promise<ExitCode>): Promise<Ex
   }
 }
 
+// The server's address, once it says it has teams; otherwise said in words, an error.
+async function teamsApi(flag: string | undefined): Promise<string> {
+  const api = projectsApi(flag);
+  if (!(await teamsOffered(api))) throw new CloudError(0, 'E_CLOUD_NO_TEAMS', `${new URL(api).host} has no teams yet: they are on a test server for now (give its address: --api or ELABORA_CLOUD_URL).`);
+  return api;
+}
+
 const teams = defineCommand({
   name: 'cloud teams',
   flags: { api: 'string', json: 'boolean' },
   run: ({ positionals, flags }) => failures(flags.json, async () => {
     if (positionals.length) { console.error('Usage: elabora cloud teams [--api <origin>] [--json]'); return 2; }
-    const list = await listTeams(projectsClient(projectsApi(flags.api ?? undefined)));
+    const list = await listTeams(projectsClient(await teamsApi(flags.api ?? undefined)));
     if (flags.json) { printJson({ teams: list }); return 0; }
     if (!list.length) console.log('No team yet.');
     for (const team of list) console.log(`${team.id}  ${team.name}${team.role ? `  (${team.role})` : ''}`);
@@ -56,7 +64,7 @@ const project = defineCommand({
     switch (action) {
       case 'create':
       case 'push': {
-        const api = projectsApi(flags.api ?? undefined);
+        const api = await teamsApi(flags.api ?? undefined);
         if (!flags.team || (action === 'push' && !flags.project)) { console.error(`Usage: elabora cloud project ${action} [dir] --team <id>${action === 'push' ? ' --project <id>' : ''}`); return 2; }
         const id = action === 'create' ? (await createProject(projectsClient(api), flags.team, flags.name ?? path.basename(dir))).id : flags.project as string;
         const pushed = await pushFolder(dir, { api, team: flags.team, project: id });
@@ -64,7 +72,7 @@ const project = defineCommand({
         return 0;
       }
       case 'clone': {
-        const api = projectsApi(flags.api ?? undefined);
+        const api = await teamsApi(flags.api ?? undefined);
         if (!flags.team || !flags.project || !rest[0]) { console.error('Usage: elabora cloud project clone <dir> --team <id> --project <id>'); return 2; }
         const link = await cloneProject(dir, { api, team: flags.team, project: flags.project });
         say(`✔ Project ${link.project} at ${link.head} in ${dir}, linked to it.`, { ok: true, project: link.project, head: link.head, dir });
