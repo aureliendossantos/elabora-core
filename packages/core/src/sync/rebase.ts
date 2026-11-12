@@ -126,7 +126,11 @@ function mergeInto(run: Run, op: Op, file: string, path: Segment[], base: Json |
   if (!merged.conflicts.length) return;
   const places = merged.conflicts.map((conflict) => [...path, ...conflict.path]);
   if (run.ai) {
-    run.skipped.push({ change: run.change.id, op, reason: 'changed', message: `${places.map((p) => describeTarget(file, p)).join(', ')}: changed since` });
+    // What was left out, place by place: the rest of the value applied.
+    merged.conflicts.forEach((conflict, i) => {
+      const left: Op = conflict.mine === undefined ? { op: 'unset', file, path: places[i] } : { op: 'set', file, path: places[i], value: cloneJson(conflict.mine) };
+      run.skipped.push({ change: run.change.id, op: left, reason: 'changed', message: `${describeTarget(file, places[i])}: changed since` });
+    });
     return;
   }
   merged.conflicts.forEach((conflict, i) => run.overwrote.push(overwritten(run, file, places[i], conflict.head ?? null)));

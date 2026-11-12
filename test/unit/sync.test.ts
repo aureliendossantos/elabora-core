@@ -190,3 +190,31 @@ test('external edit: a stylesheet is compared by lines: a rule added after anoth
   const stale = externalEdit(v1, css('.a { color: red; }\n.c { color: green; }\n'), [{ files: v0, then: human }]);
   assert.deepEqual([stale.ops, stale.skipped.length, stale.merged], [[], 1, ['theme/theme.css']]);
 });
+
+test('client: its own change acknowledged at or below its number (already in a snapshot) ends; what its rebase left out is still told', () => {
+  const base = screen([block('a', 'one')]);
+  const client = new SyncClient(base, 0);
+  const value = read(base);
+  value.blocks.push(block('n', 'mine'));
+  value.blocks[0].props.markdown = 'edited';
+  client.record({ id: 'w1', at: '2026-11-12T20:00:00.000Z', author: human, ops: diffFiles(base, doc(value)) });
+  // Another's change removed block a before w1 left: the copy's own rebase leaves its edit out.
+  const other = acceptChange({ head: 0, files: base, log: [] }, { ...change(base, (v) => { v.blocks = [block('b', 'two')]; }, human, 'o1'), base: 0, at: '2026-11-12T20:00:00.000Z' });
+  assert.ok('committed' in other);
+  client.receive({ type: 'change', change: other.committed });
+  const sent = client.next() as Submission;
+  const placed = acceptChange({ head: 1, files: other.files, log: [other.committed] }, sent);
+  assert.ok('committed' in placed);
+  client.disconnected();
+  // The server already holds w1 in the snapshot it sends; then acknowledges w1 again.
+  const files = [...placed.files].map(([path, content]) => ({ path, text: (content as { text: string }).text }));
+  client.receive({ type: 'snapshot', head: 2, files });
+  client.receive({ type: 'ack', change: placed.committed });
+  assert.equal(client.pending, 0);
+  assert.deepEqual(client.takeOutcomes().map((o) => [o.id, o.skipped.map((s) => s.reason)]), [['w1', ['missing']]]);
+});
+
+test('merge: a keyed array of strings merges by value: no string twice, each side\'s additions and removals kept', () => {
+  assert.deepEqual(mergeJson(['a', 'b'], ['a', 'x', 'b'], ['y', 'a'], 'mine').value, ['y', 'a', 'x']);
+  assert.deepEqual(mergeJson(['a'], ['a', 'x'], ['x', 'a'], 'mine').value, ['a', 'x']);
+});

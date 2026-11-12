@@ -1,7 +1,7 @@
 import type { Author, FileContent, Files, Json, JsonObject, Op, SkippedOp } from '../ops/types.ts';
 import { invertOps, openWorkspace, readDocument } from '../ops/apply.ts';
 import { diffFiles } from '../ops/diff.ts';
-import { cloneJson, documentOf, isObject, jsonFile, sameContent, setKey } from '../ops/json.ts';
+import { cloneJson, documentOf, isObject, jsonFile, sameContent, sameJson, setKey } from '../ops/json.ts';
 import { formatPath, lookup } from '../ops/path.ts';
 import { isAiAuthor } from '../ops/batch.ts';
 import { rebase } from './rebase.ts';
@@ -66,7 +66,7 @@ export function externalEdit(current: Files, written: Files, versions: readonly 
       overwrote.push({ file: skipped.op.file, path: formatPath(path), was: found.found ? cloneJson(found.value) : content?.kind === 'text' ? content.text : null, unsure: true });
     }
   }
-  const merged = paths.filter((path) => !sameContent(placed.files.get(path), written.get(path)) && !sameText(placed.files.get(path), written.get(path)));
+  const merged = paths.filter((path) => !sameContent(placed.files.get(path), written.get(path)) && !sameText(path, placed.files.get(path), written.get(path)));
   return { ops: placed.ops, skipped: placed.skipped, overwrote, merged };
 }
 
@@ -137,11 +137,8 @@ function sorted(value: Json): Json {
 }
 
 // The same document in another formatting is the same file for the program that wrote it.
-function sameText(a: FileContent | undefined, b: FileContent | undefined): boolean {
-  if (!a || !b || a.kind !== 'text' || b.kind !== 'text') return false;
-  try {
-    return JSON.stringify(JSON.parse(a.text)) === JSON.stringify(JSON.parse(b.text));
-  } catch {
-    return false;
-  }
+function sameText(path: string, a: FileContent | undefined, b: FileContent | undefined): boolean {
+  const x = documentOf(path, a);
+  const y = documentOf(path, b);
+  return x !== undefined && y !== undefined && sameJson(x, y);
 }

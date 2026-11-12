@@ -77,6 +77,7 @@ export class SyncClient {
         first.overwrote = [...(first.change.overwrote ?? []), ...placed.overwrote];
         if (placed.refusal) {
           this.settle({ id: first.change.id, refused: { id: first.change.id, ...placed.refusal }, skipped: first.skipped, overwrote: first.overwrote });
+          this.recompute();
           continue;
         }
         const { id, at, author, batch, command, undoes } = first.change;
@@ -137,11 +138,10 @@ export class SyncClient {
     if (this.waiting[0]) this.unprepare(this.waiting[0]);
   }
 
-  // A prepared change goes back to how it was made: it is rebased again before it is sent.
+  // A prepared change is rebased again before it is sent. What its last rebase left out stays
+  // until then: its acknowledgement may come first (in a catchup), for the submission already sent.
   private unprepare(item: Waiting): void {
     item.sent = undefined;
-    item.skipped = [];
-    item.overwrote = [];
   }
 
   // Outcomes of the changes made here, oldest first, since the last call.
@@ -150,7 +150,16 @@ export class SyncClient {
   }
 
   private placed(change: Committed): 'ok' | 'gap' {
-    if (change.seq <= this.headSeq) return 'ok';
+    if (change.seq <= this.headSeq) {
+      // Its own change, acknowledged again (sent twice, or already in a snapshot): it ends here.
+      const first = this.waiting[0];
+      if (first && first.change.id === change.id) {
+        this.inFlight = false;
+        this.settle({ id: change.id, placed: change, skipped: [...first.skipped, ...change.skipped], overwrote: change.overwrote });
+        this.recompute();
+      }
+      return 'ok';
+    }
     if (change.seq !== this.headSeq + 1) return 'gap';
     this.confirmedFiles = applyOps(this.confirmedFiles, change.ops);
     this.headSeq = change.seq;

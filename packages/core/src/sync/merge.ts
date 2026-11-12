@@ -35,7 +35,8 @@ function merge(base: Json | undefined, head: Json | undefined, mine: Json | unde
   if (Array.isArray(base) && Array.isArray(head) && Array.isArray(mine)) {
     const kinds = [keyedKind(base), keyedKind(head), keyedKind(mine)];
     if (kinds.every((kind) => kind === 'objects' || kind === 'empty') && kinds.some((kind) => kind === 'objects')) return mergeKeyed(base, head, mine, wins, path, conflicts);
-    if (kinds.every((kind) => kind !== 'objects')) {
+    if (kinds.every((kind) => kind === 'strings' || kind === 'empty') && kinds.some((kind) => kind === 'strings')) return mergeStrings(base as string[], head as string[], mine as string[]);
+    if (kinds.every((kind) => kind === null || kind === 'empty')) {
       if (base.length === head.length && base.length === mine.length) {
         return base.map((element, i) => merge(element, head[i], mine[i], wins, [...path, String(i)], conflicts) ?? null);
       }
@@ -61,6 +62,19 @@ function mergeSequence(base: Json[], head: Json[], mine: Json[]): Json[] | null 
   const headFirst = h.from < m.from || (h.from === m.from && (empty(h) || !empty(m)));
   const [first, second] = headFirst ? [h, m] : [m, h];
   return [...base.slice(0, first.from), ...first.elements, ...base.slice(first.to, second.from), ...second.elements, ...base.slice(second.to)].map(cloneJson);
+}
+
+// A keyed array of strings (a section's screens) by value: what one side removed goes, what one
+// side added goes after the string it follows on that side, in head's order.
+function mergeStrings(base: string[], head: string[], mine: string[]): string[] {
+  const removed = new Set([...base.filter((id) => !head.includes(id) || !mine.includes(id))]);
+  const out = head.filter((id) => !removed.has(id));
+  let previous: string | null = null;
+  for (const id of mine) {
+    if (!out.includes(id) && !removed.has(id)) out.splice(previous === null ? 0 : out.indexOf(previous) + 1, 0, id);
+    if (out.includes(id)) previous = id;
+  }
+  return out;
 }
 
 interface Stretch { from: number; to: number; elements: Json[] }
