@@ -78,7 +78,7 @@ function prepare(root: Schema): WeakMap<object, RegExp> {
 
 // Pattern-properties regexps, by pattern.
 const reCache = new Map<string, RegExp>();
-const re = (p: string) => { let r = reCache.get(p); if (!r) { r = new RegExp(p, 'u'); reCache.set(p, r); } return r; };
+const re = (p: string) => { let r = reCache.get(p); if (!r) { if (reCache.size >= 500) reCache.clear(); r = new RegExp(p, 'u'); reCache.set(p, r); } return r; };
 
 interface Ctx { root: Schema; regexps: WeakMap<object, RegExp> }
 
