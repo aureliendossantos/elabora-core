@@ -10,7 +10,7 @@ export interface UndoResult {
   files: Files;         // the files once ops are applied
 }
 
-type Problem = Pick<SkippedOp, 'reason' | 'message'>;
+export type Problem = Pick<SkippedOp, 'reason' | 'message'>;
 
 export interface UndoOptions {
   // Whether the content a binary write restores is kept (in the blob store): the previous content
@@ -61,9 +61,10 @@ function restorable(op: Op, unavailable: readonly string[] | undefined, options:
 const changed = (message: string): Problem => ({ reason: 'changed', message });
 const missing = (message: string): Problem => ({ reason: 'missing', message });
 
-// Whether the target of a forward operation still holds what it wrote: undo works backwards, so
-// the later operations of the change are already undone when this one is checked.
-function check(workspace: Workspace, op: Op): Problem | null {
+// Whether the target of an operation holds what it writes. Undo asks it of a forward operation (is
+// what the change wrote still there?), working backwards so the later operations of the change are
+// already undone; rebase asks it of an inverse (is the value the change replaced still there?).
+export function check(workspace: Workspace, op: Op): Problem | null {
   switch (op.op) {
     case 'set': {
       const found = lookup(readDocument(workspace, op.file), op.path);
@@ -115,7 +116,7 @@ function check(workspace: Workspace, op: Op): Problem | null {
 
 // An anchor removed since cannot place an element: it goes last instead. A key anchor removed
 // since is dropped: the key is appended.
-function reanchor(workspace: Workspace, op: Op): Op {
+export function reanchor(workspace: Workspace, op: Op): Op {
   if ((op.op === 'insert' || op.op === 'move') && op.after !== null) {
     const file = op.op === 'insert' ? op.file : op.to.file;
     const path = op.op === 'insert' ? op.path : op.to.path;

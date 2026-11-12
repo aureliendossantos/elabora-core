@@ -43,6 +43,7 @@ Read these pages on GitHub, on [elabora.studio/en/docs/developers](https://elabo
 
 - [Architecture](architecture.md): goals and constraints, the packages and what each may import, the project model; the contract every change follows.
 - [Operations, journal and identifiers](architecture/operations.md): changes as operations with an author, a batch and an inverse; the project lock and journal; permanent ids, renames and format migrations.
+- [Projects in the cloud](architecture/sync.md): the server that orders changes, rebase, the protocol `elabora-sync/1`, copies offline and back, the convergence bench.
 - [Media](architecture/media.md): imports and canonical formats, quality presets, the encoder, narration audio, voices and word times, and how media reach packages.
 - [Delivery targets and hosting](architecture/delivery.md): the SCORM and web targets of one build, review builds, and the client of Elabora's hosting.
 - [The plan and its versions](architecture/plan.md): the plan as a working copy, versions frozen by a person, what changed between them, and the plan's document.

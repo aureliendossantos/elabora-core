@@ -71,6 +71,7 @@ The CLI may use synchronous helpers for convenience; the engine uses the async i
 ## Subsystems
 
 - [Operations, journal and identifiers](architecture/operations.md): How every change to a course becomes an operation with an author, a batch and an inverse; the project lock and journal; permanent ids, renaming and format migrations.
+- [Projects in the cloud](architecture/sync.md): A server per project orders the changes of every copy; rebase, the protocol `elabora-sync/1`, a copy offline and back, files written by an agent's own tools, the convergence bench.
 - [Media](architecture/media.md): How images, audio, video and narration enter a course, the canonical formats and quality presets, the encoder, and how media reach packages and previews.
 - [Delivery targets and hosting](architecture/delivery.md): The SCORM 1.2 and web targets of one build, and the core as the client of Elabora's hosting.
 - [The plan and its versions](architecture/plan.md): The plan as a working copy, the versions a person freezes, what changed between them, and the plan's document.

@@ -38,8 +38,10 @@ export type FileContent = TextFile | BinaryFile;
 export type Files = ReadonlyMap<string, FileContent>;
 
 // chat: the conversation of Elabora's own chat the agent writes in (ELABORA_CHAT): its changes join
-// the batch of that conversation's current turn.
-export interface Author { kind: 'human' | 'agent' | 'external' | 'system'; name?: string; chat?: string }
+// the batch of that conversation's current turn. In a project in the cloud (D73), id is a person's
+// stable id (their account), and an agent's by is the id of the person who launched it; the server
+// sets both from the connection, never from what a copy says.
+export interface Author { kind: 'human' | 'agent' | 'external' | 'system'; name?: string; chat?: string; id?: string; by?: string }
 
 // Hashes (sha256:…) of a touched file before and after a change; null when it did not exist.
 export interface FileHash { path: string; before: string | null; after: string | null }

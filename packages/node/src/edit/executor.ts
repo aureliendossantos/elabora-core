@@ -1,10 +1,10 @@
 import path from 'node:path';
-import type { Author, ChangeLike, FileHash, Files, Op, TextFile } from '@elabora/core/ops/types';
-import { applyOps, invertOps, touchedFiles } from '@elabora/core/ops/apply';
-import { diffFiles } from '@elabora/core/ops/diff';
-import { documentOf, formatJson, isJsonPath, sameContent } from '@elabora/core/ops/json';
+import type { Author, ChangeLike, FileHash, Files, Op } from '@elabora/core/ops/types';
+import { touchedFiles } from '@elabora/core/ops/apply';
+import { sameContent } from '@elabora/core/ops/json';
 import { OpError } from '@elabora/core/ops/errors';
-import { CommandError, commandContext, schemaProblems, type CommandContext, type CommandDiagnostic, type CommandOutput } from '@elabora/core/commands/index';
+import { CommandError, type CommandContext, type CommandDiagnostic, type CommandOutput } from '@elabora/core/commands/index';
+import { executeCommand } from '@elabora/core/commands/execute';
 import { textFile, type ProjectFiles } from '@elabora/core/project/files';
 import { validateProject } from '@elabora/core/validate/index';
 import { readProjectFiles, loadProjectFromDir } from '../project-reader.ts';
@@ -16,10 +16,10 @@ import { takeAutoVersion, pruneAfterVersion, type AutoVersion } from './auto-ver
 import type { VersionReason } from '../backups/index.ts';
 import { migrateIfOutdated, type FormatMigrationRef } from './migrate.ts';
 
-// Runs a command as a change (docs/architecture/operations.md): under the
-// project lock, reads the snapshot, runs the command, turns its output into operations, refuses a
-// result that does not match the schemas, checks that the files it touches did not change on disk
-// meanwhile, keeps what undo needs, writes the files and journals the change. Then validates.
+// Runs a command as a change (docs/architecture/operations.md): under the project lock, reads the
+// snapshot, runs the command on it (executeCommand of @elabora/core: its operations, refused when
+// the result does not match the schemas, and their inverse), checks that the files it touches did
+// not change on disk meanwhile, keeps what undo needs, writes the files and journals the change. Then validates.
 // A course in an older format is migrated first, as its own change (migrate.ts); one in a newer
 // format is refused (E_FORMAT_NEWER).
 
@@ -98,12 +98,8 @@ export function runCommand<Result extends object>(dir: string, spec: CommandSpec
     let stale: string[] = [];
     for (let attempt = 1; ; attempt++) {
       const before = snapshotFor(root, options, stale);
-      const output = spec.run(commandContext(before, { root, author }));
-      const ops = output.ops ?? opsBetween(before, output.files);
-      if (!ops.length) return { entry: null, ops, result: output.result, written: { before, after: before } };
-      const after = applyOps(before, ops);
-      const problems = spec.migratesFormat ? [] : schemaProblems(after, touchedFiles(ops));
-      if (problems.length) throw new CommandError(`${spec.name} refused: the result does not match the schema`, problems);
+      const { ops, inverse, after, result } = executeCommand(before, spec.name, spec.run, { root, author, skipSchemaCheck: spec.migratesFormat });
+      if (!ops.length) return { entry: null, ops, result, written: { before, after: before } };
       if (attempt === 1 && options.autoVersion !== false) backup = takeAutoVersion(root, author, before, spec.versionReason);
       options.beforeWrite?.(attempt);
       const changed = changedOnDisk(root, before, touchedFiles(ops));
@@ -111,10 +107,9 @@ export function runCommand<Result extends object>(dir: string, spec: CommandSpec
         if (attempt < ATTEMPTS) { stale = changed; continue; }
         throw conflict(changed);
       }
-      const inverse = invertOps(before, ops);
       const entry = commit(root, { before, after, ops, inverse, sources: spec.sources }, (files) =>
         appendChange(root, { author, command: { name: spec.name, args: spec.args }, ops, inverse, files }));
-      return { entry, ops, result: output.result, written: { before, after } };
+      return { entry, ops, result, written: { before, after } };
     }
   }, { timeoutMs: options.lockTimeoutMs }));
   pruneAfter(root, backup);
@@ -169,21 +164,6 @@ export function editResult(root: string, op: string, entry: ChangeLike | null, o
 // journal takes it). A nested edit leaves it to the outer one.
 export function pruneAfter(root: string, backup: AutoVersion | null): void {
   if (backup && !isProjectLockHeld(root)) pruneAfterVersion(root);
-}
-
-// Operations from the files a command computed. JSON files are compared by value, so the change
-// says what changed; a JSON file the command was given as text in another formatting (an agent's
-// write_object_file) is written as given, whole.
-export function opsBetween(before: ProjectFiles, after: ProjectFiles): Op[] {
-  const verbatim = new Set<string>();
-  for (const [rel, file] of after) {
-    if (file === before.get(rel) || file.kind !== 'text' || !isJsonPath(rel)) continue;
-    const value = documentOf(rel, file);
-    if (value !== undefined && formatJson(value) !== file.text) verbatim.add(rel);
-  }
-  if (!verbatim.size) return diffFiles(before, after);
-  const others = (files: ProjectFiles): Files => new Map([...files].filter(([rel]) => !verbatim.has(rel)));
-  return [...diffFiles(others(before), others(after)), ...[...verbatim].map((rel): Op => ({ op: 'write', file: rel, text: (after.get(rel) as TextFile).text }))];
 }
 
 export function conflict(paths: readonly string[]): CommandError {

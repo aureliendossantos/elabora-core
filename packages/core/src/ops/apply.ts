@@ -224,8 +224,8 @@ export function contentOp(file: string, content: FileContent, op?: Op): Op {
   return { op: 'write', file, blob: hash };
 }
 
-// Operations come from agents and from the journal: check their shape before trusting it.
-function checkShape(op: Op): void {
+// Operations come from agents, the journal and the network: check their shape before trusting it.
+export function checkShape(op: Op): void {
   const invalid = (why: string) => new OpError('E_OP_INVALID', `Invalid operation: ${why}`, op);
   if (!op || typeof op !== 'object') throw invalid('not an object');
   if (typeof op.file !== 'string' || !op.file) throw invalid('file must be a project path');

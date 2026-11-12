@@ -1,0 +1,108 @@
+// The protocol of a project in the cloud, elabora-sync/1 (docs/architecture/sync.md, D73): a server
+// per project orders the changes of every copy. Plain data, safe to serialise as JSON; the room
+// (elabora-cloud) and the clients (desktop, CLI) import these types and the functions of this folder.
+import type { Author, Op, SkippedOp } from '../ops/types.ts';
+import type { Json } from '../ops/types.ts';
+
+export const SYNC_PROTOCOL = 'elabora-sync/1';
+
+// A change a copy submits: computed on the files confirmed at base (the server's number of the last
+// change it had), with the inverse of its operations on those files. The inverse is what rebase
+// reads the values of before from: the server recomputes its own once the change is placed.
+export interface Submission {
+  id: string;            // chosen by the copy, unique: a submission sent twice is placed once
+  base: number;          // the server's number the change was computed on
+  at: string;
+  author: Author;
+  batch?: string;        // AI work: the batch it joins, chosen by the copy that ran the agent
+  command?: { name: string; args: unknown };
+  ops: Op[];
+  inverse: Op[];         // inverse[k] undoes ops[ops.length - 1 - k], on the files at base
+  // An undo: the changes it undoes. What it could not undo is in the committed change's skipped.
+  undoes?: { batch?: string; changes: string[] };
+  // What the copy's own rebase of the change overwrote (it was made before the copy got changes of
+  // others): passed on with the change, so that whoever wrote those values is told.
+  overwrote?: Overwrite[];
+}
+
+// An operation that rebase applied over a value written by a change its author had not seen (a
+// person's edit wins: the last written). was: what it replaced, so that the one who wrote it is told.
+export interface Overwrite {
+  file: string;
+  path: string;          // formatPath of the target, for messages
+  was: Json | string | null; // the value, the text of a file, or null when it was absent
+  by?: string;           // the change that had written it, when known
+  // A file written by an agent's own tools, from a version that may or may not have held the value
+  // (D75): told all the same.
+  unsure?: true;
+}
+
+// A change as the server placed it: its number, the operations it kept, their inverse on the head
+// they applied to, and what it left out or overwrote.
+export interface Committed {
+  seq: number;
+  id: string;
+  base: number;
+  at: string;
+  author: Author;
+  batch: string;
+  command?: { name: string; args: unknown };
+  ops: Op[];
+  inverse: Op[];
+  skipped: SkippedOp[];  // operations of the submission left out (an agent's value over a person's…)
+  overwrote: Overwrite[];
+  undoes?: { batch?: string; changes: string[] };
+}
+
+// A change the server did not place: nothing of it applies.
+//   E_SYNC_ID_TAKEN   it inserts an id another change took meanwhile
+//   E_SYNC_INVALID    the project would not validate
+//   E_SYNC_BASE       its base is older than what the server keeps, or newer than its head
+//   E_SYNC_MALFORMED  it is not a change
+export interface Refusal {
+  id: string;
+  code: 'E_SYNC_ID_TAKEN' | 'E_SYNC_INVALID' | 'E_SYNC_BASE' | 'E_SYNC_MALFORMED';
+  message: string;
+}
+
+// Who is there, and where: a person, or an agent with the person who launched it.
+export interface Actor {
+  id: string;            // stable: a person's account, or an agent's id under that person
+  name: string;
+  kind: 'human' | 'agent';
+  by?: string;           // an agent: the id of the person who launched it
+}
+
+export interface Presence {
+  actor: Actor;
+  client: string;        // one copy of the project (a desktop app, a CLI, a connector session)
+  screen?: string;
+  selection?: string[];  // ids of the selected blocks
+  at: string;
+}
+
+// ── messages ─────────────────────────────────────────────────────────
+
+// From a copy. hello opens a connection: since is the number of the last change the copy has, and
+// the server answers with what came after (catchup), or with the whole project when it no longer
+// keeps that far back (snapshot).
+export type ClientMessage =
+  | { type: 'hello'; protocol: typeof SYNC_PROTOCOL; client: string; actor: Actor; since: number }
+  | { type: 'submit'; change: Submission }
+  | { type: 'catchup'; since: number }
+  | { type: 'presence'; presence: Omit<Presence, 'actor' | 'client' | 'at'> };
+
+// From the server. ack answers the copy that submitted (with the change as placed); change is the
+// same change sent to the others.
+export type ServerMessage =
+  | { type: 'welcome'; protocol: typeof SYNC_PROTOCOL; head: number; peers: Presence[] }
+  | { type: 'ack'; change: Committed }
+  | { type: 'refused'; refusal: Refusal; head: number }
+  | { type: 'change'; change: Committed }
+  | { type: 'catchup'; changes: Committed[]; head: number }
+  | { type: 'snapshot'; head: number; files: SnapshotFile[] }
+  | { type: 'presence'; peers: Presence[] }
+  | { type: 'error'; code: string; message: string };
+
+// A file of a snapshot: text whole, binary by the hash of its content (sent apart, as a blob).
+export type SnapshotFile = { path: string; text: string } | { path: string; blob: string; size?: number };
