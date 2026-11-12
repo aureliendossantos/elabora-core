@@ -2,7 +2,7 @@ import path from 'node:path';
 import type { Author, ChangeLike, JournalEntry, SkippedOp } from '@elabora/core/ops/types';
 import { invertOps, touchedFiles } from '@elabora/core/ops/apply';
 import { undoChanges } from '@elabora/core/ops/undo';
-import { changesToUndo, lastAiBatch, summarizeBatches, undoneChanges, type BatchSummary } from '@elabora/core/ops/batch';
+import { changesToUndo, lastAiBatch, lastStep, redoStep, summarizeBatches, undoneChanges, type BatchSummary } from '@elabora/core/ops/batch';
 import { CommandError } from '@elabora/core/commands/index';
 import { hasBlob, type BlobHash } from '../blobs.ts';
 import { withProjectLockSync, readJournal, appendUndo, appendMark as appendJournalMark, detectAuthor, CHAT_ID } from '../journal/index.ts';
@@ -45,40 +45,59 @@ export interface UndoResult extends EditResult {
   skipped: SkippedOp[];      // what was kept because it changed since
 }
 
-// Undoes the last change that is not undone yet, or the change with this sequence number (an undo
-// too: undoing an undo redoes). Parts of the change whose targets were edited since are kept and
-// reported in skipped.
+// Undoes the author's last step (D79: their last change no undo targeted yet, or the whole batch of
+// an agent they launched), or the change with this sequence number (an undo too: undoing an undo
+// redoes). Parts of the change whose targets were edited since are kept and reported in skipped;
+// they stay in force.
 export function undo(dir: string, seq?: number, options: EditOptions = {}): UndoResult {
+  const author = options.author ?? detectAuthor();
   let target: ChangeLike | undefined;
   const result = undoAll(dir, (entries) => {
-    const undone = undoneChanges(entries);
     if (seq !== undefined) {
       target = entries.find((entry): entry is ChangeLike => entry.type !== 'mark' && entry.seq === seq);
       if (!target) throw new CommandError(`No edit ${seq} in the journal`);
-      if (undone.has(target.id)) throw new CommandError(`Edit ${seq} is already undone`);
-    } else {
-      target = [...entries].reverse().find((entry): entry is ChangeLike => entry.type === 'change' && !undone.has(entry.id));
-      if (!target) throw new CommandError('Nothing to undo');
+      if (undoneChanges(entries).has(target.id)) throw new CommandError(`Edit ${seq} is already undone`);
+      return { changes: changesToUndo(entries, { change: target.id }), undoes: { changes: [target.id] }, name: 'undo', args: { seq: target.seq } };
     }
-    return { changes: [target], undoes: { changes: [target.id] }, name: 'undo', args: { seq: target.seq } };
-  }, options);
+    const step = lastStep(entries, author);
+    if (!step) throw new CommandError('Nothing to undo');
+    target = step.change;
+    if (step.batch) {
+      const changes = changesToUndo(entries, { batch: step.batch });
+      return { changes, undoes: { batch: step.batch, changes: changes.map((c) => c.id) }, name: 'undo_batch', args: { batch: step.batch }, step: true };
+    }
+    return { changes: changesToUndo(entries, { change: target.id }), undoes: { changes: [target.id] }, name: 'undo', args: { seq: target.seq }, step: true };
+  }, { ...options, author });
+  const { undoneSeqs, ...rest } = result;
   const undoneChange = target as ChangeLike;
-  return { ...result, op: nameOf(undoneChange), undone: undoneChange.seq };
+  return { ...rest, op: nameOf(undoneChange), undone: undoneSeqs.length > 1 ? undoneSeqs : undoneChange.seq };
+}
+
+// Undoes the author's last undo again (⇧⌘Z), while no change of theirs came after it.
+export function redo(dir: string, options: EditOptions = {}): UndoResult {
+  const author = options.author ?? detectAuthor();
+  let target: ChangeLike | undefined;
+  const result = undoAll(dir, (entries) => {
+    target = redoStep(entries, author) ?? undefined;
+    if (!target) throw new CommandError('Nothing to redo');
+    return { changes: [target], undoes: { changes: [target.id] }, name: 'undo', args: { seq: target.seq } };
+  }, { ...options, author });
+  const { undoneSeqs: _seqs, ...rest } = result;
+  return { ...rest, op: 'redo', undone: (target as ChangeLike).seq };
 }
 
 // Undoes a batch (« Annuler le travail de l'IA »): by default the last AI batch not undone yet.
 export function undoBatch(dir: string, batch?: string, options: EditOptions = {}): UndoResult & { batch: string } {
   let id = '';
-  let seqs: number[] = [];
   const result = undoAll(dir, (entries) => {
     id = batch ?? lastAiBatch(entries)?.id ?? '';
     if (!id) throw new CommandError('No AI work to undo');
     const changes = changesToUndo(entries, { batch: id });
     if (!changes.length) throw new CommandError(entries.some((e) => e.type !== 'mark' && e.batch === id) ? `Batch ${id} is already undone` : `No batch ${id} in the journal`);
-    seqs = changes.map((c) => c.seq).reverse();
-    return { changes, undoes: { batch: id, changes: changes.map((c) => c.id) }, name: 'undo_batch', args: { batch: id } };
+    return { changes, undoes: { batch: id, changes: changes.map((c) => c.id) }, name: 'undo_batch', args: { batch: id }, step: batch === undefined };
   }, options);
-  return { ...result, batch: id, undone: seqs };
+  const { undoneSeqs, ...rest } = result;
+  return { ...rest, batch: id, undone: undoneSeqs };
 }
 
 // Written when the user asks the AI for something: closes the current batch and labels the next.
@@ -93,6 +112,7 @@ const ATTEMPTS = 3;
 
 interface UndoTarget {
   changes: ChangeLike[]; // newest first
+  step?: boolean;        // chosen as the author's step, not named by the caller
   undoes: { batch?: string; changes: string[] };
   name: string;
   args: unknown;
@@ -100,21 +120,27 @@ interface UndoTarget {
 
 // Chooses what to undo from the journal under the lock (two undos at once never undo the same
 // change twice), then undoes it as a change.
-function undoAll(dir: string, select: (entries: JournalEntry[]) => UndoTarget, options: EditOptions): UndoResult {
+function undoAll(dir: string, select: (entries: JournalEntry[]) => UndoTarget, options: EditOptions): UndoResult & { undoneSeqs: number[] } {
   const root = path.resolve(dir);
   const author = options.author ?? detectAuthor();
   let backup: AutoVersion | null = null;
   let name = 'undo';
+  let undoneSeqs: number[] = [];
   const { entry, ops, skipped, written } = translateErrors(() => withProjectLockSync(root, () => {
-    const { changes, undoes, name: command, args } = select(readJournal(root));
+    const { changes, undoes, name: command, args, step } = select(readJournal(root));
     name = command;
+    undoneSeqs = changes.map((c) => c.seq).reverse();
     let stale: string[] = [];
     for (let attempt = 1; ; attempt++) {
       const before = snapshotFor(root, options, stale);
       const undone = undoChanges(before, changes, { canRestore: (hash) => hasBlob(root, hash as BlobHash) });
       if (!undone.ops.length) {
         const why = undone.skipped.map((s) => s.message).join('; ');
-        throw new CommandError(why ? `Nothing could be undone: ${why}` : 'Nothing to undo');
+        // A step (⌘Z, the last AI work) whose every part was changed since is still taken, as an
+        // undo that writes nothing and says what it kept: the next step goes further back (D79).
+        if (!why || !step) throw new CommandError(why ? `Nothing could be undone: ${why}` : 'Nothing to undo');
+        const entry = appendUndo(root, { author, command: { name: command, args }, ops: [], inverse: [], files: [], undoes, skipped: undone.skipped });
+        return { entry, ops: [], skipped: undone.skipped, written: { before, after: before } };
       }
       const after = restoreOriginalTexts(root, undone.files, changes, undone.ops);
       if (attempt === 1 && options.autoVersion !== false) backup = takeAutoVersion(root, author, before);
@@ -131,6 +157,6 @@ function undoAll(dir: string, select: (entries: JournalEntry[]) => UndoTarget, o
     }
   }, { timeoutMs: options.lockTimeoutMs }));
   pruneAfter(root, backup);
-  return { ...editResult(root, name, entry, ops, backup, options, written), undone: [], skipped };
+  return { ...editResult(root, name, entry, ops, backup, options, written), undone: [], skipped, undoneSeqs };
 }
 

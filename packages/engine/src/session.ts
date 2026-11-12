@@ -421,6 +421,7 @@ export class Session {
       }
       case 'undo': return this.undo(request.params.seq);
       case 'undoBatch': return this.undoBatch(request.params.batch);
+      case 'redo': return this.redo();
       case 'history': return this.history(request.params.limit, { ops: request.params.ops });
       case 'mark': return this.mark(request.params.request, this.author, request.params.chat);
       case 'endTurn': return this.endTurn(request.params);
@@ -952,9 +953,17 @@ export class Session {
     }).then(({ result, change }) => this.#runResult(result.op ?? name, result, change));
   }
 
+  // ⌘Z without seq: the author's last step (D79): their last change, or the batch of an agent they launched.
   async undo(seq?: number, author: Author = this.author): Promise<UndoView> {
     this.#assertOpen();
     return this.#change(author, async () => this.#committed(edit.undo(this.root, seq, this.#editOptions(author))))
+      .then(({ result, change }) => ({ ...this.#runResult('undo', result, change), undone: [result.undone].flat(), skipped: result.skipped }));
+  }
+
+  // ⇧⌘Z: the author's last undo undone again, while no change of theirs came after it (D79).
+  async redo(author: Author = this.author): Promise<UndoView> {
+    this.#assertOpen();
+    return this.#change(author, async () => this.#committed(edit.redo(this.root, this.#editOptions(author))))
       .then(({ result, change }) => ({ ...this.#runResult('undo', result, change), undone: [result.undone].flat(), skipped: result.skipped }));
   }
 
@@ -1759,7 +1768,7 @@ const TURN_RESUME_MS = 24 * 60 * 60 * 1000;
 // refused as bad-request).
 const REQUEST_TYPES: Record<RequestType, true> = {
   summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
-  translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, undoBatch: true, history: true, mark: true, endTurn: true,
+  translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, redo: true, undoBatch: true, history: true, mark: true, endTurn: true,
   diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
   renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, packageWeights: true, close: true, narration: true, voices: true,
   installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,

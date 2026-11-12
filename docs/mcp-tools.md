@@ -1187,7 +1187,7 @@ Run the asset generators (generators/*.mjs) and record their provenance: figures
 
 ### `elabora_undo`
 
-Undo the last change made through Elabora tools or by an agent; or one change (change: its id or seq from elabora_history or a write result; an undo too, which redoes it); or a batch of AI work (batch: its id, or true for the last one). What was edited since is kept and listed in skipped.
+Undo your own last change (never the author's or another agent's); or one change (change: its id or seq from elabora_history or a write result; an undo too, which redoes it); or a batch of AI work (batch: its id, or true for the last one). What was edited since is kept and listed in skipped.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|

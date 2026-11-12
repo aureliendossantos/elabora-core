@@ -21,7 +21,7 @@ import { resolveFont, type FontRequest } from '../fonts/index.ts';
 // { ok, op, undo, change, files, diagnostics, summary, …what the command reports }.
 
 export { EditError, runCommand, type EditOptions, type EditResult, type ChangeRef, type Written } from './executor.ts';
-export { history, historyBatches, undo, undoBatch, appendMark, type HistoryEntry, type UndoResult } from './history.ts';
+export { history, historyBatches, undo, redo, undoBatch, appendMark, type HistoryEntry, type UndoResult } from './history.ts';
 export { migrateProject, migrateIfOutdated, type MigrateOptions, type MigrateResult, type FormatMigrationRef } from './migrate.ts';
 export { addResource, titleFromName } from './resources.ts';
 export { COMPONENT_FILES } from '@elabora/core/commands/index';

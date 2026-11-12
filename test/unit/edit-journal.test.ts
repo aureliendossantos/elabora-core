@@ -191,8 +191,10 @@ test('undoing the AI batch keeps a later human edit; the undo can be undone', ()
   assert.equal(screen.blocks.find((b: { id: string }) => b.id === 'chemin-ia').props.markdown, 'Note humaine', 'the note the human rewrote stays');
   assert.deepEqual(r.skipped.map((s) => s.reason), ['changed']);
   assert.match(r.skipped[0].message, /blocks\[chemin-ia\]: changed since/);
-  assert.throws(() => edit.undoBatch(dir, batches[0].id), /already undone/);
-  assert.deepEqual(edit.history(dir).map((h) => [h.op, h.undone]), [['update_screen', true], ['add_block', true], ['update_block', false], ['undo_batch', false]]);
+  // What was kept stays in force (D79): the batch is undone in part, and undoing it again tries that part.
+  assert.throws(() => edit.undoBatch(dir, batches[0].id), /Nothing could be undone: .*blocks\[chemin-ia\]: changed since/);
+  assert.deepEqual(edit.history(dir).map((h) => [h.op, h.undone]), [['update_screen', true], ['add_block', false], ['update_block', false], ['undo_batch', false]]);
+  assert.deepEqual(edit.historyBatches(dir).map((b) => [b.undone, b.partly]), [[false, true], [false, false], [false, false]]);
 
   // Undoing the undo redoes the AI title.
   edit.undo(dir, r.undo as number);

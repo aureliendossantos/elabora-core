@@ -594,7 +594,10 @@ export interface Requests {
   screenTranslation: { params: { screen: string; language: string }; result: ScreenTranslation };
   buildTranslation: { params: TranslationBuildParams; result: TranslationBuildView };
   run: { params: RunParams; result: RunResult };
+  // Without seq: the author's last step, their change or the batch of an agent they launched (D79).
   undo: { params: { seq?: number }; result: UndoView };
+  // The author's last undo undone again, while no change of theirs came after it.
+  redo: { params: Record<string, never>; result: UndoView };
   undoBatch: { params: { batch?: string }; result: UndoView };
   history: { params: { limit?: number; ops?: boolean }; result: HistoryView };
   // chat: a turn of Elabora's chat begins (its id is the mark's); endTurn ends it.

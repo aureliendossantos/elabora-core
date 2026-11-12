@@ -9,5 +9,5 @@ export { keyedKind, elementId, lookup, formatPath, describeTarget, type KeyedKin
 export { applyOps, invertOps, touchedFiles } from './apply.ts';
 export { diffFiles, diffDocuments } from './diff.ts';
 export { undoChanges, type UndoResult, type UndoOptions } from './undo.ts';
-export { BATCH_IDLE_MS, isAiAuthor, assignBatch, undoneChanges, changesToUndo, summarizeBatches, lastAiBatch, type BatchSummary } from './batch.ts';
+export { BATCH_IDLE_MS, isAiAuthor, assignBatch, undoState, undoneChanges, changesToUndo, summarizeBatches, lastAiBatch, belongsTo, lastStep, redoStep, type BatchSummary, type UndoState } from './batch.ts';
 

@@ -68,7 +68,7 @@ History (changes made through Elabora and by agents, in batches of AI work)
   history [dir] --chats [--limit 20] [--json]         List the turns of Elabora's chat: the tools refused to the agent (file
                                                       edits, shell), what it did instead, what each turn cost, and
                                                       whether refusals call for a new Elabora tool
-  undo [dir]                                          Undo the last change made through Elabora tools or by an agent
+  undo [dir]                                          Undo your last step: your change, or an agent's batch you ran
   undo [dir] --change <id|seq>                        Undo one change (undoing an undo redoes it)
   undo [dir] --batch [<id>]                           Undo a batch of AI work (default: the last one). Later changes stay,
                                                       and are listed

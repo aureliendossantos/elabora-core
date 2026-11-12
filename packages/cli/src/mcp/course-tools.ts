@@ -144,7 +144,7 @@ export const exportPlanDocumentTool = defineTool({
 
 export const undo = defineTool({
   name: 'elabora_undo',
-  description: 'Undo the last change made through Elabora tools or by an agent; or one change (change: its id or seq from elabora_history or a write result; an undo too, which redoes it); or a batch of AI work (batch: its id, or true for the last one). What was edited since is kept and listed in skipped.',
+  description: 'Undo your own last change (never the author\'s or another agent\'s); or one change (change: its id or seq from elabora_history or a write result; an undo too, which redoes it); or a batch of AI work (batch: its id, or true for the last one). What was edited since is kept and listed in skipped.',
   inputSchema: objectSchema({ change: { type: ['string', 'integer'], description: 'Id or seq of the change to undo.' }, batch: { type: ['string', 'boolean'], description: 'Id of the batch to undo, or true for the last batch of AI work.' } }),
   handler(args, { root, author }) {
     if (args.change !== undefined && args.batch !== undefined) return errorResult('Give change or batch, not both.');
