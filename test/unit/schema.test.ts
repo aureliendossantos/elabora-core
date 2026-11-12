@@ -1,10 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getAjv, validateSchema, BLOCK_TYPES, getSchema } from '@elabora/format/schemas';
+import { validateSchema, BLOCK_TYPES, getSchema } from '@elabora/format/schemas';
+import { SCHEMAS } from '@elabora/format/schemas.generated';
 import { listProfiles } from '@elabora/core/lms/profiles';
+import { registryAjv } from '../../scripts/reference-ajv.ts';
 
 test('every schema compiles in strict mode', () => {
-  getAjv();
+  registryAjv(Object.values(SCHEMAS));
   for (const t of BLOCK_TYPES) assert.ok(getSchema(`blocks/${t}`), t);
 });
 
@@ -19,7 +21,7 @@ test('a built-in block\'s settings name their section among the editor\'s (x-gro
 });
 
 test('a setting keeps its place in its section: x-advanced is gone from the vocabulary', () => {
-  assert.throws(() => getAjv().compile({ type: 'object', properties: { ratio: { type: 'number', 'x-advanced': true } } }), /x-advanced/);
+  assert.throws(() => registryAjv(Object.values(SCHEMAS)).compile({ type: 'object', properties: { ratio: { type: 'number', 'x-advanced': true } } }), /x-advanced/);
 });
 
 test('every LMS profile matches the profile schema', () => {

@@ -37,6 +37,12 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.19.1
+      ajv:
+        specifier: 8.20.0
+        version: 8.20.0
+      ajv-formats:
+        specifier: ^3.0.1
+        version: 3.0.1(ajv@8.20.0)
       sampo:
         specifier: 0.22.0
         version: 0.22.0
@@ -122,14 +128,7 @@ importers:
 
   packages/fonts: {}
 
-  packages/format:
-    dependencies:
-      ajv:
-        specifier: 8.20.0
-        version: 8.20.0
-      ajv-formats:
-        specifier: ^3.0.1
-        version: 3.0.1(ajv@8.20.0)
+  packages/format: {}
 
   packages/node:
     dependencies:

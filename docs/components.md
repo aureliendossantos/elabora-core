@@ -32,7 +32,7 @@ components/ratio-card/
 }
 ```
 
-`props` is a JSON Schema of type object. Strings take an **`x-kind`**:
+`props` is a JSON Schema of type object. The keywords Elabora reads are `type`, `enum`, `const`, `properties`, `required`, `additionalProperties`, `patternProperties`, `propertyNames`, `unevaluatedProperties`, the bounds of numbers, strings, arrays and objects, `uniqueItems`, `items`, `prefixItems`, `pattern`, `format: "color"`, `allOf`, `anyOf`, `oneOf`, `not`, `if`/`then`/`else` and `$ref` to `#/$defs/…`; a schema that uses `contains`, `dependentRequired`, `dependentSchemas`, `unevaluatedItems`, `$anchor` or `$dynamicRef` does not compile, and the error names the keyword ([D81](decisions/D81.md)). Strings take an **`x-kind`**:
 
 | x-kind | Value | In a template |
 |---|---|---|

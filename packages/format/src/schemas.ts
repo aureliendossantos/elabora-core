@@ -1,13 +1,14 @@
-import { Ajv2020 } from 'ajv/dist/2020.js';
-import type { ErrorObject, ValidateFunction } from 'ajv/dist/2020.js';
-import formats from 'ajv-formats';
 import type { JsonSchema } from './json-schema.ts';
 import type { Block, BuiltinBlock, BuiltinBlockType } from './types.generated.ts';
 import { BLOCK_TYPES, LAYOUT_TYPES, FORMAT_VERSION, SCHEMA_VERSION, SCHEMAS } from './schemas.generated.ts';
 import type { BuiltinLayoutType, SchemaName } from './schemas.generated.ts';
+import { VALIDATORS } from './validators.generated.ts';
+import { compileInterpreted } from './inline-schema.ts';
+import { MULTIPLE_OF_PRECISION } from './validator-runtime.ts';
+import type { ErrorObject, ValidateFunction } from './validator-runtime.ts';
 
 export type { BuiltinLayoutType, ErrorObject, SchemaName, ValidateFunction };
-export { FORMAT_VERSION, SCHEMA_VERSION };
+export { FORMAT_VERSION, MULTIPLE_OF_PRECISION, SCHEMA_VERSION };
 // What a course declares (course.json format): its major and minor version. The schemas have a
 // patch version of their own (SCHEMA_VERSION, D64): additive changes publish a new one.
 export const FORMAT = `elabora/${FORMAT_VERSION}` as const;
@@ -39,36 +40,12 @@ export function isBuiltinBlock(block: Block): block is BuiltinBlock {
   return isBuiltinBlockType(block.type);
 }
 
-// ajv-formats is CommonJS: its default import is module.exports, whose default is the plugin itself.
-const addFormats = formats.default;
-
-// Annotation keywords used by editors and agents; validators ignore them.
-// x-kind tells templates and editors how to treat a string: text, markdown, tex, asset, token.
-// x-group names a setting's section in the inspector.
-const X_KEYWORDS = ['x-ai-instructions', 'x-category', 'x-translatable', 'x-group', 'x-editable-by', 'x-control', 'x-token', 'x-object-id', 'x-asset-type', 'x-plan-locked', 'x-kind', 'x-token-prefix', 'x-item-label', 'x-text-on', 'x-slots'];
-
 // A schema violation, phrased so an agent can fix the value: path is a JSON Pointer in the data.
 export interface SchemaError {
   path: string;
   keyword: string;
   message: string;
   schemaPath: string;
-}
-
-// multipleOf with decimals (a slider's step of 0.05): 0.6 / 0.05 is 11.999… in floating point, so ajv
-// compares the quotient with an integer to this many decimals.
-export const MULTIPLE_OF_PRECISION = 9;
-
-let ajv: Ajv2020 | undefined;
-
-export function getAjv(): Ajv2020 {
-  if (ajv) return ajv;
-  ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true, verbose: false, multipleOfPrecision: MULTIPLE_OF_PRECISION });
-  addFormats(ajv);
-  ajv.addFormat('color', /^#[0-9A-Fa-f]{6}$/);
-  ajv.addVocabulary(X_KEYWORDS);
-  for (const schema of Object.values(SCHEMAS)) ajv.addSchema(schema);
-  return ajv;
 }
 
 // name: 'course' | 'plan' | 'screen' | 'blocks/quiz' | 'object-manifest' …; undefined for other names.
@@ -82,35 +59,26 @@ export function schemaId(name: SchemaName): string {
   return `${SCHEMA_BASE}${name}.schema.json`;
 }
 
-const validators = new Map<SchemaName, ValidateFunction>();
-
+// Validates data against one of the format's schemas: the validators were compiled when `pnpm run gen`
+// ran (D80), so nothing here generates code and the same function runs in Node, a browser and a Worker.
 export function validateSchema(name: SchemaName, data: unknown): SchemaError[] {
-  const a = getAjv();
-  let v = validators.get(name);
-  if (!v) {
-    v = a.getSchema(schemaId(name));
-    if (!v) throw new Error(`Unknown schema ${name}`);
-    validators.set(name, v);
-  }
-  if (v(data)) return [];
-  return simplifyErrors(v.errors || []);
+  const validate: ValidateFunction | undefined = Object.hasOwn(VALIDATORS, name) ? VALIDATORS[name] : undefined;
+  if (!validate) throw new Error(`Unknown schema ${name}`);
+  if (validate(data)) return [];
+  return simplifyErrors(validate.errors || []);
 }
 
-// Compile an arbitrary (sub)schema, for manifest-declared props and states. Validators are cached
-// by schema text (components are recompiled at every load); the cache is bounded so a long-running
-// MCP server does not grow.
-let inlineAjv: Ajv2020 | undefined;
+// Compile an arbitrary (sub)schema, for manifest-declared props and states, with the interpreter of
+// inline-schema.ts. Validators are cached by schema text (components are recompiled at every load); the
+// cache is bounded so a long-running MCP server does not grow. A schema that is invalid, or uses a
+// keyword the interpreter does not know, throws an Error that says why.
 const inlineCache = new Map<string, ValidateFunction>();
 export function compileInline(schema: JsonSchema | boolean): ValidateFunction {
   const key = JSON.stringify(schema);
   const cached = inlineCache.get(key);
   if (cached) return cached;
-  if (!inlineAjv || inlineCache.size >= 500) {
-    inlineCache.clear();
-    inlineAjv = new Ajv2020({ allErrors: true, strict: false, allowUnionTypes: true, multipleOfPrecision: MULTIPLE_OF_PRECISION });
-    inlineAjv.addFormat('color', /^#[0-9A-Fa-f]{6}$/);
-  }
-  const v = inlineAjv.compile(schema);
+  if (inlineCache.size >= 500) inlineCache.clear();
+  const v = compileInterpreted(schema);
   inlineCache.set(key, v);
   return v;
 }
