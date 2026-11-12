@@ -31,7 +31,7 @@ export interface BenchOptions {
   seed: number;
   steps?: number;
   // How a copy turns a file written by an agent's own tools into a change: from the version it
-  // most likely read (D75), or from the files as they are (before D75: #8).
+  // most likely read (D75), or from the files as they are (before D75: a stale write undid what was written meanwhile).
   external?: 'closest-version' | 'current';
   // Only copy A acts and no copy goes offline: the generator alone, without concurrency.
   solo?: boolean;
@@ -135,7 +135,6 @@ export function runBench(options: BenchOptions): BenchReport {
     server.head = accepted.committed.seq;
     server.files = accepted.files;
     server.log.push(accepted.committed);
-    if ((globalThis as { BENCH_DEBUG?: boolean }).BENCH_DEBUG) console.log(JSON.stringify({ seq: accepted.committed.seq, id: accepted.committed.id, base: accepted.committed.base, author: accepted.committed.author.kind, command: accepted.committed.command?.name, ops: accepted.committed.ops, skipped: accepted.committed.skipped.map((s) => s.message), overwrote: accepted.committed.overwrote, inverse: accepted.committed.inverse }).slice(0, 1500));
     count('placed');
     if (accepted.committed.skipped.length) count('placed with skipped operations');
     if (accepted.committed.overwrote.length) count('placed over a value not seen');
@@ -254,7 +253,7 @@ export function runBench(options: BenchOptions): BenchReport {
     const screens = [...project.screens.values()];
     const roll = rng.next();
     if (roll < 0.15) {
-      // course.json rewritten with its keys in another order (#7) and a new title.
+      // course.json rewritten with its keys in another order and a new title.
       const course = read.get('course.json');
       if (course?.kind !== 'text') return;
       const doc = JSON.parse(course.text) as Record<string, unknown>;

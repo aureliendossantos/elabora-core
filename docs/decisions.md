@@ -76,3 +76,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D70](decisions/D70.md) | The author approves a translated plan through their agent, who asks first | 5 Nov 2026 |
 | [D71](decisions/D71.md) | The package's languages are the author's choice; a translation not approved goes in with a warning | 6 Nov 2026 |
 | [D72](decisions/D72.md) | Blocks placed by hand: the flow first, a place where the author drops it, back in the flow below the minimum window | 6 Nov 2026 |
+| [D73](decisions/D73.md) | Projects in the cloud: a server per project orders the changes, each copy shows what it confirmed with its own changes on top | 12 Nov 2026 |
+| [D74](decisions/D74.md) | Rebase: the value before decides; a person's value wins, an agent's gives way; whole values merge three ways first | 12 Nov 2026 |
+| [D75](decisions/D75.md) | A file written by an agent's own tools is computed from the version it most likely read | 12 Nov 2026 |
+| [D76](decisions/D76.md) | A command runs on files in the core: files in, its change out | 12 Nov 2026 |

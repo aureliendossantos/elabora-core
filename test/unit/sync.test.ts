@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { applyOps, invertOps, makeFiles, diffFiles, type Author, type Files, type Op } from '@elabora/core/ops/index';
-import { rebase, mergeJson, acceptChange, SyncClient, type Committed, type Submission } from '@elabora/core/sync/index';
+import { rebase, mergeJson, acceptChange, SyncClient, type Committed, type RoomState, type Submission } from '@elabora/core/sync/index';
 import { externalEdit } from '@elabora/core/sync/external';
 
 // The rules of rebase (D74), the server's placing (D73) and a copy's model, case by case. The
@@ -116,7 +116,7 @@ test('client: what it shows is confirmed with its waiting changes rebased on top
   assert.equal(sent?.id, 'm1');
   assert.equal(client.next(), null);
   // Another copy's change, placed first: block b edited.
-  let state = { head: 0, files: base, log: [] as Committed[] };
+  let state: RoomState = { head: 0, files: base, log: [] };
   const other = acceptChange(state, { ...change(base, (v) => { v.blocks[1].props.markdown = 'theirs'; v.blocks.push(block('c', 'three')); }, human, 'o1'), base: 0, at: '2026-11-12T20:00:00.000Z' });
   assert.ok('committed' in other);
   state = { head: 1, files: other.files, log: [other.committed] };

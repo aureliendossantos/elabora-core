@@ -1,0 +1,66 @@
+# Projects in the cloud: ordering, rebase and copies
+
+How several people and agents work on one project at once: a server orders the changes of every copy, each change is rebased on what came before it, and every copy shows what the server confirmed with its own waiting changes on top. Part of the [architecture](../architecture.md); it builds on [operations](operations.md), the one language every change is written in. Decisions: [D73](../decisions/D73.md) (the server and the copies), [D74](../decisions/D74.md) (rebase), [D75](../decisions/D75.md) (files written by an agent's own tools), [D76](../decisions/D76.md) (a command run on files).
+
+`@elabora/core` `sync/` holds it all, pure, without I/O: the server of a project (a room of the hosting) and every copy (the desktop engine, the CLI, later the browser) import the same functions.
+
+## The server orders
+
+A project in the cloud has one server, which holds its files (the head), a log of placed changes numbered from 1, and who is connected. A copy sends a **submission**: a change computed on the files it had at `base` (the number of the last change it got), with its operations, their inverse on those files, its author and its batch. The server (`acceptChange`):
+
+1. places a submission once: one it already placed (by `id`; its acknowledgement was lost) is acknowledged again;
+2. refuses a `base` newer than its head or older than the log it keeps (`E_SYNC_BASE`: the copy starts again from the project as it is);
+3. rebases the change on its head (below);
+4. validates the result (the room's validation is given to it: `validate`) and refuses a change after which the project has an error it did not have (`E_SYNC_INVALID`);
+5. numbers it, computes its inverse on head, and sends it to the copy that submitted it (`ack`) and to the others (`change`).
+
+A placed change (`Committed`) carries what it kept and what it did not: `skipped`, the operations left out (an agent's value over a person's, an element gone), and `overwrote`, the values a person's operation replaced without having seen them, so that whoever wrote them is told. A refused change (`Refusal`) applies nothing.
+
+## Rebase
+
+`rebase(head, change, since)` replays the change's operations on head, one by one, and compares the value each one replaces (read from its inverse: the value at base) with what head holds there:
+
+| What head holds | A person's operation | An agent's, or a file edit no Elabora tool made |
+|---|---|---|
+| The value at base | applies | applies |
+| Another value | applies (the last written wins); the value it replaced goes in `overwrote` | left out, reported in `skipped`; head keeps the value |
+
+- **Values that are objects or arrays merge three ways first** (`mergeJson`): what only one side changed comes from that side; only the places both changed are decided by the table. Objects merge key by key, keyed arrays element by element, arrays without ids of one length position by position, and otherwise stretch by stretch (two additions at the end both go in). A JSON file written whole as text merges as a value; a text file (CSS, JS) is one value.
+- **Structure.** An insertion whose anchor is gone goes last. Removing an element that is gone, or moving one that is no longer where the change found it, is left out. Removing an element someone changed since follows the table. Inserting an id another change took meanwhile refuses the whole change (`E_SYNC_ID_TAKEN`): its other operations may address that element by its id.
+- `since` (the changes placed after the base) only says who wrote a value that was overwritten (`Overwrite.by`).
+
+## A copy
+
+A copy (`SyncClient`) holds the files the server confirmed, their number, and its own changes the server has not placed yet, oldest first. What it shows, and writes in its folder, is always computed again from those two: confirmed, then each waiting change rebased on top. Nothing is patched in place, so that every copy ends with the server's bytes.
+
+- **One change in flight.** The first waiting change is rebased on confirmed just before it is sent, so its base is exact and the server meets only others' changes. What that rebase left out or overwrote goes with the change (`Submission.overwrote`), and in the outcome its author is shown.
+- A change of others (`change`) or the acknowledgement of its own (`ack`) applies to confirmed, in number order; a gap asks for a catchup from the copy's number.
+- **Offline**, the waiting changes pile up and show at once. On reconnecting the copy says its number (`hello`), gets what came since (`catchup`, or the whole project as a `snapshot` when the server no longer keeps that far back), recognises its own changes among them by id, and sends the rest in order.
+- `takeOutcomes()` gives, for each change made here, whether it was placed (with what was left out or overwritten, here and on the server) or refused.
+
+## Files written by an agent's own tools
+
+An agent may read a file, think, and write it long after: what it writes is the file as it read it, with its edit. Computed from the files as they are, that write would undo what was written meanwhile, in silence. A copy computes it from the version the agent most likely read instead (`externalEdit`): among the recent versions of each written file, the one closest to what was written (by value, whatever the order of keys), the oldest of those as close; then rebases it on the files as they are, as an agent's change. Where they clash, what is there now is kept, and `merged` lists the files whose content is no longer what the agent wrote, for it to read again.
+
+## Messages
+
+`elabora-sync/1` (`protocol.ts`), JSON over a WebSocket:
+
+| From a copy | |
+|---|---|
+| `hello { protocol, client, actor, since }` | opens a connection |
+| `submit { change }` | a submission |
+| `catchup { since }` | what came after a number |
+| `presence { screen?, selection? }` | where its author is |
+
+| From the server | |
+|---|---|
+| `welcome { protocol, head, peers }` | |
+| `ack { change }`, `change { change }` | a placed change, to its copy and to the others |
+| `refused { refusal, head }` | |
+| `catchup { changes, head }`, `snapshot { head, files }` | what a copy missed |
+| `presence { peers }` | who is there: an `Actor` (a person, or an agent with the person who launched it) per copy |
+
+## The convergence bench
+
+`test/unit/sync-convergence.test.ts` draws, from a seed, two copies of a small course, a server in memory, people and agents running the core's commands, agents writing files with their own tools (from what they read earlier), undos, and one copy going offline and back. Each draw affirms that every copy and the server end with the same files, that the project validates, that no text a person wrote is lost unless the one who replaced it had seen it or someone was told, and that an agent never replaces a person's text it had not seen. Seeds that once failed are kept as fixed cases; `ELABORA_SYNC_DRAWS=5000` runs more draws.

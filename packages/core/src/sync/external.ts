@@ -1,7 +1,7 @@
-import type { Author, FileContent, Files, Op, SkippedOp } from '../ops/types.ts';
+import type { Author, FileContent, Files, Json, JsonObject, Op, SkippedOp } from '../ops/types.ts';
 import { invertOps } from '../ops/apply.ts';
 import { diffFiles } from '../ops/diff.ts';
-import { sameContent } from '../ops/json.ts';
+import { documentOf, isObject, jsonFile, sameContent, setKey } from '../ops/json.ts';
 import { rebase } from './rebase.ts';
 import type { Overwrite } from './protocol.ts';
 
@@ -64,9 +64,22 @@ function closestVersion(path: string, written: FileContent | undefined, versions
   return best?.content;
 }
 
+// How far apart two versions are: the size of the operations between them, JSON compared by value
+// (keys in one order: a program that rewrote a file with its keys in another order did not change them).
 function distance(path: string, from: FileContent | undefined, to: FileContent | undefined): number {
-  const pick = (content: FileContent | undefined) => new Map(content ? [[path, content]] : []);
+  const pick = (content: FileContent | undefined) => {
+    const doc = documentOf(path, content);
+    return new Map(content ? [[path, doc === undefined ? content : jsonFile(sorted(doc))]] : []);
+  };
   return JSON.stringify(diffFiles(pick(from), pick(to))).length;
+}
+
+function sorted(value: Json): Json {
+  if (Array.isArray(value)) return value.map(sorted);
+  if (!isObject(value)) return value;
+  const out: JsonObject = {};
+  for (const key of Object.keys(value).sort()) setKey(out, key, sorted(value[key]));
+  return out;
 }
 
 // The same document in another formatting is the same file for the program that wrote it.

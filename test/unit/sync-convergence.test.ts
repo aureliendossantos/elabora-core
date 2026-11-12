@@ -11,7 +11,8 @@ const FAILED = [
   31, // an agent's stale file write over a person's edit of the same field: both versions as close (D75 takes the oldest)
   23, // two people adding a pronunciation at once: the copy's own rebase overwrote, and the other was not told
   48, // two removals emptied a screen's blocks: the server refuses what does not validate
-  140 // two copies duplicating a block drew the same id (#4)
+  140, // two copies duplicating a block drew the same id: the server refused the second
+  3834 // an agent rewrote course.json with its keys in another order: every version looked as far (D75 compares values)
 ];
 
 const failures = (seeds: Iterable<number>, options: { external?: 'closest-version' | 'current'; solo?: boolean } = {}) => {
@@ -32,7 +33,7 @@ test('sync bench: copies converge, the project validates, no edit of a person is
   assert.deepEqual(failures([...FAILED, ...range(1000, DRAWS)]), []);
 });
 
-test('sync bench: a file written from what an agent read long before is merged from that version (#8, D75)', () => {
+test('sync bench: a file written from what an agent read long before is merged from that version (D75)', () => {
   // Computed from the files as they are, the same writes undo people's edits in silence: the bench sees it.
   assert.ok(failures(range(1, 60), { external: 'current' }).some((failure) => failure.includes('-files) replaced')));
 });
