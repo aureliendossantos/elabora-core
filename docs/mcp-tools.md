@@ -468,12 +468,12 @@ Copy a screen after it in its section: its blocks, layers and events get new ids
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `id` | string | yes |  |
-| `newId` | string |  | The copy's id (default: &lt;id&gt;-copy). |
+| `newId` | string |  | The copy's id (default: &lt;id&gt;-copy-&lt;random suffix&gt;). |
 | `title` | string |  | The copy's title. |
 
 ### `elabora_add_block`
 
-Add a block {id, type, props} (built-in type or course component) to a screen, one of its layers, or the slots of a component instance (parent + block.slot). Read elabora_get_schema(&lt;type&gt;) first. Component instances may carry blocks (their slot contents). Without an id the block gets a free one (&lt;screen&gt;-&lt;type&gt;), returned as block.
+Add a block {id, type, props} (built-in type or course component) to a screen, one of its layers, or the slots of a component instance (parent + block.slot). Read elabora_get_schema(&lt;type&gt;) first. Component instances may carry blocks (their slot contents). Without an id the block gets one (&lt;screen&gt;-&lt;type&gt;-&lt;random suffix&gt;), returned as block.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -540,7 +540,7 @@ Duplicate a block (a component instance copies the blocks of its slots): new ids
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `block` | string | yes |  |
-| `id` | string |  | Id of the copy (default &lt;id&gt;-copy). |
+| `id` | string |  | Id of the copy (default &lt;id&gt;-copy-&lt;random suffix&gt;). |
 | `screen` | string |  |  |
 | `layer` | string |  |  |
 | `parent` | string |  |  |

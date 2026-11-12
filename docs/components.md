@@ -220,7 +220,7 @@ Video, audio and free objects are rendered by code: place them in slots, do not 
 
 ## 7. Duplicate, detach, move
 
-- `elabora block duplicate <block>` (MCP `elabora_duplicate_block`): a copy of the instance and of the blocks of its slots, with new ids (`<id>-copy`), after the original or at a given place. Learner state never carries over: copies are new activities.
+- `elabora block duplicate <block>` (MCP `elabora_duplicate_block`): a copy of the instance and of the blocks of its slots, with new ids (`<id>-copy-<suffix>`, one random suffix for the copy, D77), after the original or at a given place. Learner state never carries over: copies are new activities.
 - `elabora block detach <block>` (`elabora_detach_block`): replaces the instance with its fallback, then the blocks of its slots. The first block keeps the id, so events and learner state still point at it. Undoable like every edit.
 - `elabora_move_block` with `parent` and `slot` moves blocks into and out of slots; `elabora_add_block` with `parent` adds into a slot.
 

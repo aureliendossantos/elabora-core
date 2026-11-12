@@ -52,7 +52,7 @@ export const moveScreen = defineTool({
 
 export const addBlock = defineTool({
   name: 'elabora_add_block',
-  description: 'Add a block {id, type, props} (built-in type or course component) to a screen, one of its layers, or the slots of a component instance (parent + block.slot). Read elabora_get_schema(<type>) first. Component instances may carry blocks (their slot contents). Without an id the block gets a free one (<screen>-<type>), returned as block.',
+  description: 'Add a block {id, type, props} (built-in type or course component) to a screen, one of its layers, or the slots of a component instance (parent + block.slot). Read elabora_get_schema(<type>) first. Component instances may carry blocks (their slot contents). Without an id the block gets one (<screen>-<type>-<random suffix>), returned as block.',
   inputSchema: objectSchema({ screen: SLUG, block: formatValue<AddBlockArgs['block']>()({ type: 'object', properties: { id: SLUG, type: SLUG, props: { type: 'object' }, blocks: { type: 'array', items: { type: 'object' } }, hidden: { type: 'boolean' }, width: BLOCK_WIDTH, slot: { type: 'string', description: 'Slot of the screen layout, or of the parent component instance.' }, style: { type: 'string', description: 'Named style of the type (theme.styles or the component styles).' }, optional: { type: 'boolean', description: 'Extra the learner may skip (a transcript, more detail): not waited for by steps that open once explored nor by interactions-done.' } }, required: ['type', 'props'] }), layer: SLUG, parent: { ...SLUG, description: 'Component instance receiving the block in one of its slots.' }, after: SLUG, position: { type: 'integer', minimum: 0 } }, ['screen', 'block']),
   handler: (args, { root, author }) => editResult(edit.addBlock(root, args, { author }))
 });
@@ -96,7 +96,7 @@ export const arrangeScreen = defineTool({
 export const duplicateBlock = defineTool({
   name: 'elabora_duplicate_block',
   description: 'Duplicate a block (a component instance copies the blocks of its slots): new ids, same content, inserted after the original unless a target is given.',
-  inputSchema: objectSchema({ block: SLUG, id: { ...SLUG, description: 'Id of the copy (default <id>-copy).' }, screen: SLUG, layer: SLUG, parent: SLUG, after: SLUG, position: { type: 'integer', minimum: 0 } }, ['block']),
+  inputSchema: objectSchema({ block: SLUG, id: { ...SLUG, description: 'Id of the copy (default <id>-copy-<random suffix>).' }, screen: SLUG, layer: SLUG, parent: SLUG, after: SLUG, position: { type: 'integer', minimum: 0 } }, ['block']),
   handler: (args, { root, author }) => editResult(edit.duplicateBlock(root, args, { author }))
 });
 
@@ -154,7 +154,7 @@ export const removeEvent = defineTool({
 export const duplicateScreen = defineTool({
   name: 'elabora_duplicate_screen',
   description: 'Copy a screen after it in its section: its blocks, layers and events get new ids (those named after the screen follow the copy\'s id), and the copy\'s events point at its own blocks and layers. The copy keeps the original\'s title unless given one.',
-  inputSchema: objectSchema({ id: SLUG, newId: { ...SLUG, description: 'The copy\'s id (default: <id>-copy).' }, title: { type: 'string', description: 'The copy\'s title.' } }, ['id']),
+  inputSchema: objectSchema({ id: SLUG, newId: { ...SLUG, description: 'The copy\'s id (default: <id>-copy-<random suffix>).' }, title: { type: 'string', description: 'The copy\'s title.' } }, ['id']),
   handler: (args, { root, author }) => editResult(edit.duplicateScreen(root, args, { author }))
 });
 
