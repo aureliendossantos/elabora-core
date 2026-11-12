@@ -31,8 +31,14 @@ export function projectsApi(value: string | undefined = process.env.ELABORA_CLOU
   return url.origin;
 }
 
-export interface TeamView { id: string; name: string; role?: string }
-export interface ProjectView { id: string; team: string; name: string }
+export type TeamRole = 'owner' | 'editor' | 'viewer';
+export interface TeamView { id: string; name: string; role?: TeamRole; seats?: number; storageBytes?: number; createdAt?: string; updatedAt?: string }
+export interface ProjectView { id: string; team: string; name: string; createdBy?: string; createdAt?: string; updatedAt?: string }
+// An invitation waiting for this account's address (GET /v1/teams), and one an owner sees in the team.
+export interface InvitationToMe { id: string; team: string; teamName: string; role: TeamRole; expiresAt: string }
+export interface TeamInvitation { id: string; role: TeamRole; createdAt: string; expiresAt: string }
+export interface TeamMember { account: string; name: string; role: TeamRole; joinedAt: string }
+export interface TeamDetails { team: TeamView; members: TeamMember[]; invitations?: TeamInvitation[] }
 
 export function projectsClient(api: string): CloudClient {
   return new CloudClient(api, requireCredential(api).token);
@@ -40,15 +46,64 @@ export function projectsClient(api: string): CloudClient {
 
 export async function whoAmI(client: CloudClient): Promise<Person> {
   const { account } = await client.request<{ account: { id: string; handle: string | null; displayName: string | null } }>('GET', '/v1/account');
-  return { id: account.id, name: account.displayName ?? account.handle };
+  return { id: account.id, name: account.displayName ?? account.handle ?? null };
 }
 
 export async function listTeams(client: CloudClient): Promise<TeamView[]> {
-  return (await client.request<{ teams: TeamView[] }>('GET', '/v1/teams')).teams;
+  return (await teamsAndInvitations(client)).teams;
+}
+
+// The account's teams, and the invitations waiting for its address.
+export async function teamsAndInvitations(client: CloudClient): Promise<{ teams: TeamView[]; invitations: InvitationToMe[] }> {
+  const answer = await client.request<{ teams: TeamView[]; invitations?: InvitationToMe[] }>('GET', '/v1/teams');
+  return { teams: answer.teams, invitations: answer.invitations ?? [] };
+}
+
+const teamPath = (team: string): string => `/v1/teams/${segment(team)}`;
+
+// A team, its members (by name, never an address) and, for an owner, its pending invitations.
+export async function teamDetails(client: CloudClient, team: string): Promise<TeamDetails> {
+  return client.request<TeamDetails>('GET', teamPath(team));
+}
+
+export async function renameTeam(client: CloudClient, team: string, name: string): Promise<TeamView> {
+  return (await client.request<{ team: TeamView }>('PATCH', teamPath(team), { json: { name } })).team;
+}
+
+// No e-mail is sent; the server keeps only the address's HMAC (C36). An owner's.
+export async function inviteMember(client: CloudClient, team: string, email: string, role: TeamRole): Promise<TeamInvitation> {
+  return (await client.request<{ invitation: TeamInvitation }>('POST', `${teamPath(team)}/invitations`, { json: { email, role } })).invitation;
+}
+
+// Revoked by an owner, or declined by the invited account.
+export async function dropInvitation(client: CloudClient, team: string, invitation: string): Promise<void> {
+  await client.request('DELETE', `${teamPath(team)}/invitations/${segment(invitation)}`);
+}
+
+export async function acceptInvitation(client: CloudClient, team: string, invitation: string): Promise<TeamView> {
+  return (await client.request<{ team: TeamView }>('POST', `${teamPath(team)}/invitations/${segment(invitation)}/accept`)).team;
+}
+
+export async function setMemberRole(client: CloudClient, team: string, account: string, role: TeamRole): Promise<TeamMember> {
+  return (await client.request<{ member: TeamMember }>('PATCH', `${teamPath(team)}/members/${segment(account)}`, { json: { role } })).member;
+}
+
+// By an owner, or by the member themself (leaving the team).
+export async function removeMember(client: CloudClient, team: string, account: string): Promise<void> {
+  await client.request('DELETE', `${teamPath(team)}/members/${segment(account)}`);
+}
+
+export async function listProjects(client: CloudClient, team: string): Promise<ProjectView[]> {
+  return (await client.request<{ projects: ProjectView[] }>('GET', `${teamPath(team)}/projects`)).projects;
 }
 
 export async function createProject(client: CloudClient, team: string, name: string): Promise<ProjectView> {
-  return (await client.request<{ project: ProjectView }>('POST', `/v1/teams/${segment(team)}/projects`, { json: { name } })).project;
+  return (await client.request<{ project: ProjectView }>('POST', `${teamPath(team)}/projects`, { json: { name } })).project;
+}
+
+// For every member, with its media and history: an owner's (C40).
+export async function deleteProject(client: CloudClient, team: string, project: string): Promise<void> {
+  await client.request('DELETE', `${teamPath(team)}/projects/${segment(project)}`, { json: { confirm: project } });
 }
 
 export async function projectFiles(client: CloudClient, team: string, project: string): Promise<{ head: number; files: SnapshotFile[] }> {
