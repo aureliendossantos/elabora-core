@@ -96,6 +96,14 @@ export async function removeMember(client: CloudClient, team: string, account: s
   await client.request('DELETE', `${teamPath(team)}/members/${segment(account)}`);
 }
 
+// A project renamed (elabora-cloud C78): its name is its module's title, so with a course.json the room
+// places update_course { title } in the person's name, in the journal, undoable (change: its number;
+// none when the title was that already); without one, the name given at its making changes. An editor's
+// or an owner's.
+export async function renameProject(client: CloudClient, team: string, project: string, name: string): Promise<{ project: ProjectView; change?: number }> {
+  return client.request<{ project: ProjectView; change?: number }>('PATCH', `${teamPath(team)}/projects/${segment(project)}`, { json: { name } });
+}
+
 export async function listProjects(client: CloudClient, team: string): Promise<ProjectView[]> {
   return (await client.request<{ projects: ProjectView[] }>('GET', `${teamPath(team)}/projects`)).projects;
 }

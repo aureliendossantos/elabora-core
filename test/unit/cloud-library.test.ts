@@ -34,6 +34,13 @@ const server = http.createServer(async (request, response) => {
     covers.set(cover[1]!, kept);
     return answer(200, { cover: { head: kept.head, version: `v${kept.head}`, type: kept.type, bytes: kept.bytes.length, source: 'app', at: new Date().toISOString() } });
   }
+  const renamed = /^\/v1\/teams\/tm_test\/projects\/(prj_\w+)$/.exec(request.url ?? '');
+  if (renamed && request.method === 'PATCH') {
+    let text = '';
+    for await (const chunk of request) text += String(chunk);
+    const name = (JSON.parse(text) as { name: string }).name;
+    return answer(200, { project: { id: renamed[1], team: 'tm_test', name }, ...(name === 'Lisible' ? {} : { change: 4 }) });
+  }
   if (cover && request.method === 'GET') {
     const kept = covers.get(cover[1]!);
     if (!kept) return answer(404, { error: { code: 'no-cover', message: 'No cover yet.' } });
@@ -48,7 +55,7 @@ const server = http.createServer(async (request, response) => {
 await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
 const api = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 process.env.ELABORA_CLOUD_URL = api;
-const { cloneToLibrary, projectsClient, putCover, readCover } = await import('@elabora/node/cloud/projects');
+const { cloneToLibrary, projectsClient, putCover, readCover, renameProject } = await import('@elabora/node/cloud/projects');
 after(() => { server.close(); fs.rmSync(work, { recursive: true, force: true }); });
 
 const kept = (dir: string) => (fs.existsSync(dir) ? fs.readdirSync(dir).filter((name) => !name.startsWith('.')) : []);
@@ -70,4 +77,11 @@ test('a project\'s cover: none at first, then sent with its type at a head, read
   assert.deepEqual([sent.head, sent.version, covers.get('prj_good')?.type, [...covers.get('prj_good')!.bytes]], [3, 'v3', 'image/jpeg', [...picture]]);
   const read = await readCover(client, 'tm_test', 'prj_good');
   assert.deepEqual([read?.type, read?.version, [...read!.bytes]], ['image/jpeg', 'v3', [...picture]]);
+});
+
+test('a project renamed: its name sent, the project and the change the room placed back; none when the title was that already (C78)', async () => {
+  const client = projectsClient(api);
+  const renamed = await renameProject(client, 'tm_test', 'prj_good', 'Lisible, autrement');
+  assert.deepEqual([renamed.project.name, renamed.change], ['Lisible, autrement', 4]);
+  assert.equal((await renameProject(client, 'tm_test', 'prj_good', 'Lisible')).change, undefined);
 });
