@@ -102,8 +102,9 @@ export function lastStep(entries: readonly JournalEntry[], person: Author): { ch
   const state = undoState(entries);
   const sorted = [...entries].sort((a, b) => b.seq - a.seq);
   for (const entry of sorted) {
-    // The lock a build writes is no step to take back.
-    if (entry.type !== 'change' || state.attempted.has(entry.id) || !entry.ops.length || entry.command?.name === 'build' || !belongsTo(entry.author, person)) continue;
+    // The lock a build writes is no step to take back, nor what a project's room wrote in the
+    // folder (command sync, D83): a change made here is its own entry.
+    if (entry.type !== 'change' || state.attempted.has(entry.id) || !entry.ops.length || entry.command?.name === 'build' || entry.command?.name === 'sync' || !belongsTo(entry.author, person)) continue;
     return isAiAuthor(entry.author) && !isAiAuthor(person) ? { change: entry, batch: entry.batch } : { change: entry };
   }
   return null;

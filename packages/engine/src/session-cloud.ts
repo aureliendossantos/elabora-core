@@ -195,11 +195,26 @@ export class SessionCloud {
       if (!this.#client.pending) this.#wake();
       return;
     }
-    if (!this.#uploads.has(submission.id)) this.#uploads.set(submission.id, await sendMedia(this.#options.client, this.#host.root, this.#link.team, blobsOf(submission.ops)));
+    if (!this.#uploads.has(submission.id)) {
+      try {
+        this.#uploads.set(submission.id, await sendMedia(this.#options.client, this.#host.root, this.#link.team, blobsOf(submission.ops)));
+      } catch (error) {
+        // Not sent: tried again shortly, as after a lost connection.
+        this.#client.disconnected();
+        const timer = setTimeout(() => void this.#later(() => this.#pump()), 2000);
+        timer.unref?.();
+        throw error;
+      }
+    }
     this.#send({ type: 'submit', change: submission });
   }
 
   async #receive(message: ServerMessage): Promise<void> {
+    // A catchup's changes one by one: each is journaled as its own author's.
+    if (message.type === 'catchup' && message.changes.length > 1) {
+      for (const change of message.changes) await this.#receive({ ...message, changes: [change] });
+      return;
+    }
     const before = this.#client.view;
     if (message.type === 'snapshot') for (const file of message.files) if ('blob' in file) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, file.blob);
     if ((message.type === 'change' || message.type === 'ack') && blobsOf(message.change.ops).length) {
