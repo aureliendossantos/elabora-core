@@ -446,8 +446,11 @@ test('made a viewer, a copy keeps its changes until it writes again; a message i
   await until(() => a.cloud?.role === 'viewer', 'the copy takes the role');
   assert.deepEqual(roles.map((event) => event.role), ['viewer']);
   const head = room.head;
+  const statuses = eventsOf(a, 'cloudStatus');
   await a.run('update_screen', { id: 'chemin', title: 'Écrit en lecteur' }, { kind: 'agent', name: 'claude-code' });
   await until(() => a.cloud?.pending === 1, 'the change waits');
+  // The window is told, without any other message from the room.
+  await until(() => statuses.at(-1)?.pending === 1, 'its status says the change waits');
   await a.cloud!.settled();
   await new Promise((resolve) => setTimeout(resolve, 150));
   assert.equal(room.head, head, 'nothing sent while a viewer');

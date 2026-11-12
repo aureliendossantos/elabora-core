@@ -150,6 +150,8 @@ export class SessionCloud {
       ...(unsure.length ? { overwrote: unsure } : {})
     };
     this.#client.record(change);
+    // The window knows at once that a change waits (its cloud says it), before the room's answer.
+    this.#status();
     this.#later(() => this.#pump());
   }
 
@@ -226,6 +228,8 @@ export class SessionCloud {
         const was = this.#role;
         this.#role = message.role;
         this.#host.emit({ type: 'cloudRole', role: message.role });
+        // What waits now stays here, or goes: said with the role.
+        this.#status();
         if (message.role === 'viewer') this.#wake();
         else if (was === 'viewer') void this.#later(() => this.#pump());
         return;
