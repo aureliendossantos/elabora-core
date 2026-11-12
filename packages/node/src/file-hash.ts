@@ -14,12 +14,15 @@ export const HASH_CACHE_FILE = path.join('cache', 'hashes.json'); // in projectD
 
 const cachePath = (projectDir: string) => path.join(projectDataDir(projectDir), HASH_CACHE_FILE);
 
-// Read in chunks: a 300 MB video is never held in memory.
+// Read in chunks: a 300 MB video is never held in memory. One buffer serves every call (the hash is
+// synchronous, so no two calls share it at once): a module's 300 pictures hashed on opening leave no
+// 300 MB of garbage behind, a megabyte each.
+let scratch: Buffer | null = null;
 export function hashFileSync(file: string): FileHash {
   const h = crypto.createHash('sha256');
   const fd = fs.openSync(file, 'r');
   try {
-    const buf = Buffer.allocUnsafe(1 << 20);
+    const buf = (scratch ??= Buffer.allocUnsafe(1 << 20));
     for (let n = fs.readSync(fd, buf, 0, buf.length, null); n > 0; n = fs.readSync(fd, buf, 0, buf.length, null)) h.update(buf.subarray(0, n));
   } finally {
     fs.closeSync(fd);

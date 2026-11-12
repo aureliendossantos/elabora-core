@@ -220,7 +220,8 @@ test('binary files brought in by an edit are undone and redone from the blob sto
   assert.ok(fs.readFileSync(path.join(dir, 'components/badge/fonts/badge.woff2')).equals(font));
   const entry = changes(dir)[0];
   assert.ok(entry.ops.some((op) => op.op === 'write' && 'blob' in op && op.blob === hashBytes(font)), 'the journal names the font by its hash');
-  edit.undo(dir);
+  // The agent's own step, whoever runs the tests (CLAUDECODE would make them claude-code).
+  edit.undo(dir, undefined, { author: agent });
   assert.ok(!fs.existsSync(path.join(dir, 'components/badge/fonts/badge.woff2')));
   edit.undo(dir, 2);
   assert.ok(fs.readFileSync(path.join(dir, 'components/badge/fonts/badge.woff2')).equals(font), 'restored from the blob store');
