@@ -10,7 +10,10 @@ import { lastEntry } from '../journal/journal.ts';
 import { CloudClient, CloudError, segment } from './client.ts';
 import { requireCredential } from './credentials.ts';
 import { sendBlobs } from './blob-upload.ts';
-import { readLink, writeLink, type Person, type ProjectLink } from './link.ts';
+import { linkFile, readLink, writeLink, type Person, type ProjectLink } from './link.ts';
+import { ensureLibrary, stagingFolder } from '../library/location.ts';
+import { getProject, type LibraryProject } from '../library/projects.ts';
+import { newProjectId, removeTree, renameWithRetries, writeProjectId } from '../library/files.ts';
 
 export { readLink, writeLink, linkFile, stampAuthor, type Person, type ProjectLink } from './link.ts';
 
@@ -265,24 +268,53 @@ export async function pushFolder(dir: string, options: { api: string; team: stri
   return { link, changes: chunks.length, files: files.size, media: media.length };
 }
 
-// A project of the cloud into a new folder, linked to it.
-export async function cloneProject(dir: string, options: { api: string; team: string; project: string }): Promise<ProjectLink> {
+// A project of the cloud into a new folder, linked to it: its media four at a time (D88), reported
+// by bytes as they arrive.
+export async function cloneProject(dir: string, options: { api: string; team: string; project: string }, { onProgress }: { onProgress?: (progress: { receivedBytes: number; totalBytes: number }) => void } = {}): Promise<ProjectLink> {
   const root = path.resolve(dir);
-  if (fs.existsSync(root) && fs.readdirSync(root).length) throw new CloudError(0, 'E_CLOUD_NOT_EMPTY', `${root} is not empty: clone into a new folder.`);
+  // Its .elabora/ only (the library's id, written first so that the link goes with it).
+  if (fs.existsSync(root) && fs.readdirSync(root).some((entry) => entry !== '.elabora')) throw new CloudError(0, 'E_CLOUD_NOT_EMPTY', `${root} is not empty: clone into a new folder.`);
   const client = projectsClient(options.api);
-  const person = await whoAmI(client);
-  const remote = await projectFiles(client, options.team, options.project);
+  const [person, remote] = await Promise.all([whoAmI(client), projectFiles(client, options.team, options.project)]);
   fs.mkdirSync(root, { recursive: true });
+  const media = remote.files.filter((file): file is Extract<SnapshotFile, { blob: string }> => 'blob' in file);
+  const totalBytes = media.reduce((sum, file) => sum + (file.size ?? 0), 0);
+  let receivedBytes = 0;
+  onProgress?.({ receivedBytes, totalBytes });
+  const queue = [...new Map(media.map((file) => [file.blob, file])).values()];
+  await Promise.all(Array.from({ length: Math.min(4, queue.length) }, async () => {
+    for (let next = queue.shift(); next; next = queue.shift()) {
+      await fetchMedium(client, root, options.team, next.blob);
+      receivedBytes += next.size ?? 0;
+      onProgress?.({ receivedBytes, totalBytes });
+    }
+  }));
   for (const file of remote.files) {
     const target = path.join(root, ...file.path.split('/'));
     fs.mkdirSync(path.dirname(target), { recursive: true });
     if ('text' in file) fs.writeFileSync(target, file.text);
-    else {
-      await fetchMedium(client, root, options.team, file.blob);
-      await copyBlobTo(root, file.blob as BlobHash, target);
-    }
+    else await copyBlobTo(root, file.blob as BlobHash, target);
   }
   return newLink(root, options, person, remote.head, snapshotToFiles(remote.files), lastEntry(root)?.seq ?? 0);
+}
+
+// A project of the cloud as a module of the library (app, Lin 54): made in a staging folder under a
+// new library id, then moved in by one rename; nothing is left of it when the download fails. A
+// copy that keeps no link (« Dupliquer dans Mes modules ») drops it once in.
+export async function cloneToLibrary(options: { api: string; team: string; project: string }, { linked = true, onProgress }: { linked?: boolean; onProgress?: (progress: { receivedBytes: number; totalBytes: number }) => void } = {}): Promise<LibraryProject> {
+  const root = ensureLibrary();
+  const staging = stagingFolder(root);
+  try {
+    const dir = path.join(staging, 'project');
+    const id = newProjectId(root);
+    writeProjectId(dir, id);
+    await cloneProject(dir, options, { onProgress });
+    if (!linked) fs.rmSync(linkFile(dir), { force: true });
+    await renameWithRetries(dir, path.join(root, id));
+    return getProject(id);
+  } finally {
+    await removeTree(staging);
+  }
 }
 
 function newLink(root: string, options: { api: string; team: string; project: string }, person: Person, head: number, files: Files, journal: number): ProjectLink {
