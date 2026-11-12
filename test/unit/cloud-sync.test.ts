@@ -113,12 +113,18 @@ async function linked(room: Room, dir: string): Promise<Session> {
   return session;
 }
 
+// Every copy has the room's head and sends nothing, and its folder is written: a copy's head moves
+// when it takes a change in, the folder in the same step of its queue a moment later, so the head
+// alone says the change arrived, not that the folder holds it. flush() waits behind that step.
 async function settled(room: Room, ...copies: Session[]): Promise<void> {
   const started = Date.now();
+  const caughtUp = () => copies.every((copy) => copy.cloud?.online && copy.cloud.head === room.head && !copy.cloud.pending);
   for (;;) {
-    if (copies.every((copy) => copy.cloud?.online && copy.cloud.head === room.head && !copy.cloud.pending)) return;
     if (Date.now() - started > 20_000) throw new Error(`not settled: room ${room.head}, ${copies.map((copy) => JSON.stringify({ ...copy.cloud })).join(' ')}`);
-    await new Promise((resolve) => setTimeout(resolve, 25));
+    if (caughtUp()) {
+      await Promise.all(copies.map((copy) => copy.flush()));
+      if (caughtUp()) return;
+    } else await new Promise((resolve) => setTimeout(resolve, 25));
   }
 }
 
