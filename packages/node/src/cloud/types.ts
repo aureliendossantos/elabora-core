@@ -286,8 +286,17 @@ export interface PublishCheck {
 // ── teams and projects (protocol version 10, « Teams, projects and rooms ») ──
 
 export type TeamRole = 'owner' | 'editor' | 'viewer';
-export interface TeamView { id: string; name: string; role?: TeamRole; seats?: number; storageBytes?: number; createdAt?: string; updatedAt?: string }
-export interface ProjectView { id: string; team: string; name: string; createdBy?: string; createdAt?: string; updatedAt?: string }
+// usage: what the team's media hold beside the limit storageBytes (a team's own GET, C72 of elabora-cloud).
+export interface TeamView { id: string; name: string; role?: TeamRole; seats?: number; storageBytes?: number; usage?: { storageBytes: number }; createdAt?: string; updatedAt?: string }
+// Who acts in a project: a person, or an agent of a person (by).
+export interface ProjectActor { kind: 'human' | 'agent' | 'external' | 'system'; id: string; name: string; by?: string }
+// A project as the team's list gives it, read where its room wrote it (C69, C70 of elabora-cloud): its
+// files' and media's bytes, its last change and who made it, who is connected, and filling while it
+// never held a course.json (its maker may still delete it). A row from before may lack them.
+export interface ProjectView {
+  id: string; team: string; name: string; createdBy?: string; createdAt?: string; updatedAt?: string;
+  bytes?: number; lastChange?: { at: string; author: ProjectActor } | null; present?: { actor: ProjectActor }[]; filling?: boolean;
+}
 // An invitation waiting for this account's address (GET /v1/teams), and one an owner sees in the team.
 export interface InvitationToMe { id: string; team: string; teamName: string; role: TeamRole; expiresAt: string }
 export interface TeamInvitation { id: string; role: TeamRole; createdAt: string; expiresAt: string }
