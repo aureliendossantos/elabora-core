@@ -13,9 +13,5 @@
     "./package.json": "./package.json",
     "./schemas/*": "./schemas/*",
     "./*": "./src/*.ts"
-  },
-  "dependencies": {
-    "ajv": "8.20.0",
-    "ajv-formats": "^3.0.1"
   }
 }

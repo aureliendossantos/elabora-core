@@ -10,7 +10,6 @@ export {
   isBuiltinLayoutType,
   isBuiltinType,
   isBuiltinBlock,
-  getAjv,
   MULTIPLE_OF_PRECISION,
   getSchema,
   schemaId,

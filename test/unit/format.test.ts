@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateFormatFiles } from '../../scripts/gen-format.ts';
-import { BLOCK_TYPES, FORMAT, compileInline, derefSchema, getAjv, getSchema, isBuiltinBlockType, schemaId, validateSchema } from '@elabora/format';
+import { BLOCK_TYPES, FORMAT, compileInline, derefSchema, getSchema, isBuiltinBlockType, schemaId, validateSchema } from '@elabora/format';
 import type { JsonSchema, SchemaName } from '@elabora/format';
 import { SCHEMAS } from '@elabora/format/schemas.generated';
+import { registryAjv } from '../../scripts/reference-ajv.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const EXAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/planetary-gearset');
@@ -21,7 +22,7 @@ test('generated format modules are up to date (pnpm run gen)', () => {
 });
 
 test('every schema compiles in strict mode under its id', () => {
-  const ajv = getAjv();
+  const ajv = registryAjv(Object.values(SCHEMAS));
   const names = Object.keys(SCHEMAS) as SchemaName[];
   assert.ok(names.includes('course') && names.includes('blocks/quiz') && names.includes('object-manifest'));
   for (const name of names) {
