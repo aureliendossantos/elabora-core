@@ -28,6 +28,8 @@ export interface CloudHost {
   notes(change: string): ExternalNotes | undefined;
   // The copy ended (D91): the session no longer syncs the folder.
   ended(): void;
+  // Elabora's version of the folder as it is, named (its local backups): what a restored room replaces.
+  version(name: string): Promise<string | null>;
 }
 
 // Where this copy's person is (D91): the screen, the blocks chosen, the view; the room shows it to the
@@ -49,6 +51,8 @@ export interface CloudOptions {
   backoff?: number[];
   // The wait before trying again a room that kept the copy out for its storage or its connections.
   later?: number;
+  // The name of the version kept before a restored room's project replaces the copy's (the app's words).
+  restoredVersion?: string;
   // Opens the room's connection (tests give a room in memory); by default a WebSocket with the
   // session in Authorization, never in the address.
   connect?: (url: string, token: string) => RoomSocket;
@@ -69,6 +73,7 @@ export interface RoomSocket {
 
 const OPEN = 1;
 // The room's close codes (elabora-cloud C37): the person's membership ended, the project was deleted.
+// 4008, the room just restored to an earlier time (elabora-cloud C84), is any other drop: connect again.
 const CLOSED: Record<number, CloudEnd> = { 4003: 'removed', 4004: 'deleted' };
 const HELD: Record<number, CloudHeld> = { 4005: 'outdated', 4006: 'storage-newer', 4007: 'full' };
 // About a minute, as the room's Retry-After says for its storage (60 s).
@@ -106,6 +111,9 @@ export class SessionCloud {
   #ended: CloudEnd | null = null;
   // Kept out for now by the room (its protocol, for an app older than it).
   #held: { reason: CloudHeld; protocol: string | null } | null = null;
+  // The room was restored to an earlier time since this copy's head (elabora-cloud C84): its epoch, taken
+  // once its whole project (snapshot) replaced the copy's.
+  #restored: string | null = null;
   #askedAt = -Infinity;
   // The person's role as the room last said it (D93): null until it says one.
   #role: RoomRole | null = null;
@@ -211,7 +219,7 @@ export class SessionCloud {
     let welcomed = false;
     ws.addEventListener('open', () => {
       this.#attempt = 0;
-      this.#send({ type: 'hello', protocol: SYNC_PROTOCOL, client: this.#link.client, actor: { id: this.#link.person.id, name: this.#link.person.name ?? 'Elabora', kind: 'human' }, since: this.#client.head });
+      this.#send({ type: 'hello', protocol: SYNC_PROTOCOL, client: this.#link.client, actor: { id: this.#link.person.id, name: this.#link.person.name ?? 'Elabora', kind: 'human' }, since: this.#client.head, ...(this.#link.epoch ? { epoch: this.#link.epoch } : {}) });
     });
     ws.addEventListener('message', (event) => {
       let message: ServerMessage;
@@ -226,8 +234,14 @@ export class SessionCloud {
         // The person's role as the room says it at the connection (D94), before anything waiting goes:
         // opened as a viewer, or demoted while away, the copy keeps; an editor again, it sends.
         if (message.role) this.#takeRole(message.role);
+        // Another history than this copy's head belongs to (elabora-cloud C84): the room was restored to an
+        // earlier time, its numbers name other changes now, a copy ahead of it included. The whole project
+        // comes instead of a catch-up, whatever its head; this copy is never up to date on a number.
+        const epoch = message.epoch ?? '0';
+        this.#restored = this.#client.head > 0 && epoch !== (this.#link.epoch ?? '0') ? epoch : null;
+        if (!this.#restored && message.epoch) this.#link.epoch = message.epoch;
         this.#status();
-        this.#send({ type: 'catchup', since: this.#client.head });
+        if (!this.#restored) this.#send({ type: 'catchup', since: this.#client.head });
         this.#whereSent = null;
         this.#tellWhere();
         return;
@@ -347,6 +361,10 @@ export class SessionCloud {
     }
     const before = this.#client.view;
     if (message.type === 'snapshot') for (const file of message.files) if ('blob' in file) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, file.blob);
+    // A restored room's project replaces this copy's: what the copy had is kept first, in Elabora's
+    // versions of the module; what it had not sent goes again on top, as after any snapshot.
+    const restored = message.type === 'snapshot' ? this.#restored : null;
+    const version = restored !== null ? await this.#host.version(this.#options.restoredVersion ?? 'Before the project was restored') : null;
     if ((message.type === 'change' || message.type === 'ack') && blobsOf(message.change.ops).length) {
       for (const hash of blobsOf(message.change.ops)) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, hash);
     }
@@ -362,7 +380,12 @@ export class SessionCloud {
       await commitMedia(this.#options.client, this.#link.team, this.#uploads.get(message.change.id) ?? null);
       this.#uploads.delete(message.change.id);
     }
+    if (restored !== null) {
+      this.#link.epoch = restored;
+      this.#restored = null;
+    }
     this.#save();
+    if (restored !== null) this.#host.emit({ type: 'cloudRestored', version });
     await this.#pump();
   }
 

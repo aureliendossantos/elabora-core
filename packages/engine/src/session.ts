@@ -358,7 +358,8 @@ export class Session {
       write: (before, after, author, batch, seq) => this.#writeFromRoom(before, after, author, batch, seq),
       emit: (event) => this.#emit(event),
       notes: (change) => this.#externalNotes.get(change),
-      ended: () => { if (this.#cloud === cloud) this.#cloud = null; }
+      ended: () => { if (this.#cloud === cloud) this.#cloud = null; },
+      version: (name) => this.#takeVersion('restore', { name, author: SYSTEM })
     }, options);
     this.#cloud = cloud;
     const since = options.link.journal;

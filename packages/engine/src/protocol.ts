@@ -725,6 +725,9 @@ export type EngineEvent =
   // The copy ended (D91): its person is no longer in the team (or the team went), or the project was
   // deleted. The folder is no longer linked, and holds what the copy held.
   | { type: 'cloudEnded'; reason: 'removed' | 'deleted'; team: string; project: string }
+  // The room was restored to an earlier time (elabora-cloud C84): its project replaced the copy's, what the
+  // copy had kept first in the version named (its id; null when none could be taken).
+  | { type: 'cloudRestored'; version: string | null }
   // The person's role in the project's team changed while connected (D93): a viewer's changes wait
   // in the copy; an editor's or an owner's go.
   | { type: 'cloudRole'; role: 'owner' | 'editor' | 'viewer' }

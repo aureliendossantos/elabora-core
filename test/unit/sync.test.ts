@@ -119,6 +119,19 @@ test('client: a snapshot (the server no longer keeps that far back) replaces con
   assert.deepEqual([client.head, client.next()?.base, client.next()], [40, 40, null]);
 });
 
+test('client: a snapshot below its number (a room restored to an earlier time, elabora-cloud C84) is taken whole; the number goes down, and the room\'s next change is placed, not taken for one it has', () => {
+  const base = screen([block('a', 'one')]);
+  const client = new SyncClient(base, 10);
+  const restored = screen([block('a', 'restored')]);
+  client.receive({ type: 'snapshot', head: 4, files: [{ path: 'screens/one.json', text: (restored.get('screens/one.json') as { text: string }).text }] });
+  assert.deepEqual([client.head, read(client.view).blocks[0].props.markdown], [4, 'restored']);
+  const made = change(restored, (v) => { v.blocks[0].props.markdown = 'five'; }, human, 'r5');
+  const placed = acceptChange({ head: 4, files: restored, log: [] }, { ...made, base: 4, at: '2026-11-12T22:00:00.000Z' });
+  assert.ok('committed' in placed);
+  assert.equal(client.receive({ type: 'change', change: placed.committed }), 'ok');
+  assert.deepEqual([client.head, read(client.view).blocks[0].props.markdown], [5, 'five']);
+});
+
 test('client: what it shows is confirmed with its waiting changes rebased on top; one in flight; a change of others in between', () => {
   const base = screen([block('a', 'one'), block('b', 'two')]);
   const client = new SyncClient(base, 0);

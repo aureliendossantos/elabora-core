@@ -13,6 +13,8 @@ import type { Files } from '@elabora/core/ops/types';
 import { CloudClient } from '@elabora/node/cloud/client';
 import { keepConfirmed, linkFile, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
+import { readVersion } from '@elabora/node/backups/index';
+import { putBytes, readBlob } from '@elabora/node/blobs';
 import { copyExample, readJSON } from '../helpers.ts';
 
 // A folder linked to a project in the cloud (D83): two engine sessions on two copies, kept in sync
@@ -41,7 +43,20 @@ class Room {
   // connection taken), and how many hellos came.
   refuseHello: { code: 4005 | 4006 | 4007; reason?: string } | null = null;
   hellos = 0;
-  constructor(files: Files) { this.files = files; }
+  // Which history the room's numbers belong to (elabora-cloud C84): "0" until restore(); the files at
+  // each head, to go back to one.
+  epoch = '0';
+  readonly at = new Map<number, Files>();
+  constructor(files: Files) { this.files = files; this.at.set(0, files); }
+  // Back to an earlier head, as the administrator restores a room to a time: its later changes leave,
+  // its epoch changes, every connection closes with 4008.
+  restore(head: number): void {
+    this.files = this.at.get(head)!;
+    this.head = head;
+    this.log = this.log.filter((change) => change.seq <= head);
+    this.epoch = `e${this.at.size}-${head}`;
+    for (const socket of [...this.sockets]) socket.close(4008);
+  }
 
   connect = (): RoomSocket => {
     const socket = new FakeSocket(this);
@@ -57,7 +72,11 @@ class Room {
       if (this.away.has(message.client)) return from.close();
       from.presence = { actor: message.actor, client: message.client, at: '2026-11-12T09:00:00.000Z' };
       const role = this.roles.get(message.client);
-      from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers(), ...(role && this.sayRole ? { role } : {}) });
+      from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers(), epoch: this.epoch, ...(role && this.sayRole ? { role } : {}) });
+      // A copy of another history (its epoch, or none once restored): the whole project, not a catch-up.
+      if (message.since > 0 && (message.epoch ?? '0') !== this.epoch) {
+        from.deliver({ type: 'snapshot', head: this.head, files: [...this.files].map(([rel, file]) => (file.kind === 'text' ? { path: rel, text: file.text } : { path: rel, blob: file.hash!, size: file.size })) });
+      }
       return this.tellPresence(from);
     }
     if (message.type === 'catchup') return from.deliver({ type: 'catchup', changes: this.log.filter((change) => change.seq > message.since), head: this.head });
@@ -80,6 +99,7 @@ class Room {
       this.head = accepted.committed.seq;
       this.files = accepted.files;
       this.log.push(accepted.committed);
+      this.at.set(this.head, this.files);
       for (const other of this.sockets) if (other !== from) other.deliver({ type: 'change', change: accepted.committed });
     }
     from.deliver({ type: 'ack', change: accepted.committed });
@@ -628,4 +648,50 @@ test('a room whose storage is newer than its server (4006): the copy keeps its c
   await settled(room, a);
   const placed = room.files.get('screens/chemin.json');
   assert.equal(placed?.kind === 'text' && JSON.parse(placed.text).title, 'Écrit pendant la mise à niveau');
+});
+
+test('a copy ahead of a restored room (C84): the whole project replaces its own even below its head; what it had is kept in a version, said once; what it had not sent goes on top', async () => {
+  const [A, B] = [copyExample(), copyExample()];
+  // The media a snapshot names, here already (the hosting's room would give them).
+  for (const dir of [A, B]) for (const [rel, file] of readProjectFiles(dir).files) if (file.kind === 'binary') putBytes(dir, fs.readFileSync(path.join(dir, rel)));
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  const restored = eventsOf(a, 'cloudRestored');
+  for (const title of ['Un', 'Deux', 'Trois']) await a.run('update_screen', { id: 'chemin', title }, { kind: 'human' });
+  await settled(room, a, b);
+  assert.equal(room.head, 3);
+  // A offline: what it does waits. Meanwhile the room goes back to 1, and B takes it further than A was.
+  room.out(a.cloud!.client);
+  await until(() => a.cloud?.online === false, 'A offline');
+  await a.run('update_screen', { id: 'accueil', title: 'Écrit hors ligne' }, { kind: 'human' });
+  room.restore(1);
+  await settled(room, b);
+  assert.equal(screen(B, 'chemin').title, 'Un', 'B, ahead too, took the restored project');
+  for (const title of ['Quatre', 'Cinq', 'Six', 'Sept']) await b.run('update_screen', { id: 'chemin', title }, { kind: 'human' });
+  await settled(room, b);
+  assert.equal(room.head, 5, 'the room\'s new history goes past where A was');
+  room.back(a.cloud!.client);
+  await settled(room, a, b);
+  assert.equal(screen(A, 'chemin').title, 'Sept', 'A has the room\'s project, not a catch-up from 3');
+  assert.equal(screen(B, 'accueil').title, 'Écrit hors ligne', 'what A had not sent went on top');
+  assert.equal(JSON.parse(fs.readFileSync(linkFile(A), 'utf8')).epoch, room.epoch, 'the room\'s new epoch, kept with its head');
+  assert.equal(restored.length, 1, 'said once');
+  const kept = readVersion(A, String(restored[0]?.version));
+  assert.equal(kept.name, 'Before the project was restored', 'what A had, in a version of the module');
+  assert.equal(JSON.parse(readBlob(A, kept.files['screens/chemin.json']!.hash).toString('utf8')).title, 'Trois', 'with its confirmed changes the room no longer has');
+});
+
+test('a copy that has not changed history takes no snapshot and keeps its epoch (C84)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  await settled(room, a);
+  await a.run('update_screen', { id: 'chemin', title: 'Un' }, { kind: 'human' });
+  await settled(room, a);
+  room.drop();
+  await settled(room, a);
+  assert.equal(JSON.parse(fs.readFileSync(linkFile(A), 'utf8')).epoch, '0');
+  assert.deepEqual(eventsOf(a, 'cloudRestored'), []);
 });

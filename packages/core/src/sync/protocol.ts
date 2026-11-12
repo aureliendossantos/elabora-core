@@ -128,9 +128,10 @@ export interface Presence {
 
 // From a copy. hello opens a connection: since is the number of the last change the copy has, and
 // the server answers with what came after (catchup), or with the whole project when it no longer
-// keeps that far back (snapshot).
+// keeps that far back (snapshot). epoch: which history since belongs to, as the room last said it
+// (elabora-cloud C84); a room restored to an earlier time since answers with the whole project.
 export type ClientMessage =
-  | { type: 'hello'; protocol: typeof SYNC_PROTOCOL; client: string; actor: Actor; since: number }
+  | { type: 'hello'; protocol: typeof SYNC_PROTOCOL; client: string; actor: Actor; since: number; epoch?: string }
   | { type: 'submit'; change: Submission }
   | { type: 'catchup'; since: number }
   | { type: 'presence'; presence: Omit<Presence, 'actor' | 'client' | 'at'> };
@@ -141,9 +142,10 @@ export type RoomRole = 'owner' | 'editor' | 'viewer';
 // From the server. ack answers the copy that submitted (with the change as placed); change is the
 // same change sent to the others. role: the person's role changed while connected (D93); a copy that
 // does not know a type ignores it. welcome's role: the person's role at the connection (D94), taken
-// before anything waiting is sent; a room before it leaves it out.
+// before anything waiting is sent; a room before it leaves it out. welcome's epoch: which history the
+// room's numbers belong to, "0" until the room is restored to an earlier time (elabora-cloud C84).
 export type ServerMessage =
-  | { type: 'welcome'; protocol: typeof SYNC_PROTOCOL; head: number; peers: Presence[]; role?: RoomRole }
+  | { type: 'welcome'; protocol: typeof SYNC_PROTOCOL; head: number; peers: Presence[]; role?: RoomRole; epoch?: string }
   | { type: 'ack'; change: Committed }
   | { type: 'refused'; refusal: Refusal; head: number }
   | { type: 'change'; change: Committed }

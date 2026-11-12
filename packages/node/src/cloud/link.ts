@@ -21,6 +21,7 @@ export interface ProjectLink {
   client: string;          // this copy, unique: prefixes the ids of the changes it sends
   person: Person;          // who works in this folder: the journal names them (D78)
   head: number;            // the room's number of the last change confirmed here
+  epoch?: string;          // the room's history that number belongs to (elabora-cloud C84; none: "0")
   confirmed: Record<string, string>; // path → text:<hash> or blob:<hash> in the blob store, at head
   waiting: LocalChange[];  // changes made here the room has not placed yet, oldest first
   journal: number;         // the last journal entry the copy took in
