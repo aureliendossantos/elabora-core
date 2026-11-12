@@ -332,8 +332,8 @@ test('a person who writes over a value written here unseen: told here, not to th
   await settled(room, a, b);
   assert.equal(screen(A, 'chemin').title, 'Titre de Béa');
   assert.equal(replacedA.length, 1, JSON.stringify(replacedA));
-  const told = replacedA[0] as { overwrote: { file: string; path: string; was: unknown }[]; change: { author: { kind: string } } };
-  assert.deepEqual([told.overwrote[0]?.file, told.overwrote[0]?.path, told.overwrote[0]?.was, told.change.author.kind], ['screens/chemin.json', 'title', 'Titre d\'Ada', 'human']);
+  const told = replacedA[0] as { overwrote: { file: string; path: string; was: unknown; now: unknown }[]; change: { author: { kind: string } } };
+  assert.deepEqual([told.overwrote[0]?.file, told.overwrote[0]?.path, told.overwrote[0]?.was, told.overwrote[0]?.now, told.change.author.kind], ['screens/chemin.json', 'title', 'Titre d\'Ada', 'Titre de Béa', 'human']);
   assert.equal(replacedB.length, 0, 'the one who replaced is not told');
   // A's agent, offline, writes the title B writes meanwhile: the agent's value gives way, and says to whom.
   const clientA = a.cloud!.client;

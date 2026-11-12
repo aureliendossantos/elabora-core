@@ -1,5 +1,5 @@
 import type { Diagnostic, Summary } from '@elabora/core/diagnostics/index';
-import type { Author, Op, SkippedOp } from '@elabora/core/ops/types';
+import type { Author, Json, Op, SkippedOp } from '@elabora/core/ops/types';
 import type { BatchSummary } from '@elabora/core/ops/batch';
 import type { Overwrite, Presence } from '@elabora/core/sync/protocol';
 import type { Outcome } from '@elabora/core/sync/client';
@@ -720,7 +720,7 @@ export type EngineEvent =
   // Someone else's change, placed by the room, replaced values a change of this copy had written
   // without having seen them (D74, D90): told to the replaced, never to the replacer. unsure: a file an
   // agent rewrote with its own tools, which may not have seen them (D75).
-  | { type: 'cloudReplaced'; change: { id: string; seq: number; at: string; author: Author }; overwrote: Overwrite[] }
+  | { type: 'cloudReplaced'; change: { id: string; seq: number; at: string; author: Author }; overwrote: (Overwrite & { now: Json | string | null })[] }
   // Findings that changed: screens whose list changed (removed: screens gone), the project's
   // findings when they changed, and the summary over everything.
   | { type: 'diagnostics'; screens: Record<string, Diagnostic[]>; removed: string[]; project?: Diagnostic[]; summary: Summary }

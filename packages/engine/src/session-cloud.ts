@@ -1,4 +1,5 @@
-import type { Author, ChangeLike, Files } from '@elabora/core/ops/types';
+import type { Author, ChangeLike, Files, Json } from '@elabora/core/ops/types';
+import { lookup, parsePath } from '@elabora/core/ops/path';
 import { sameContent } from '@elabora/core/ops/json';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { SyncClient, type LocalChange, type Outcome } from '@elabora/core/sync/client';
@@ -263,10 +264,21 @@ export class SessionCloud {
     if (outcome.skipped.length || outcome.overwrote.length || 'refused' in outcome) this.#host.emit({ type: 'cloudOutcome', outcome });
   }
 
-  // Another's change that replaced values written here, unseen (D90): the values of this copy's changes.
+  // Another's change that replaced values written here, unseen (D90): the values of this copy's changes,
+  // with what holds the place now (the view's, for « Comparer »).
   #replaced(change: Committed): void {
     const mine = change.overwrote.filter((overwrite) => overwrite.by?.startsWith(`${this.#link.client}.`));
-    if (mine.length) this.#host.emit({ type: 'cloudReplaced', change: { id: change.id, seq: change.seq, at: change.at, author: change.author }, overwrote: mine });
+    if (!mine.length) return;
+    const now = (file: string, path: string): Json | string | null => {
+      const content = this.#client.view.get(file);
+      if (!content || content.kind !== 'text') return null;
+      const segments = path ? parsePath(path) : [];
+      if (!segments) return null;
+      if (!segments.length) return content.json ?? content.text;
+      const found = lookup(content.json, segments);
+      return found.found ? found.value : null;
+    };
+    this.#host.emit({ type: 'cloudReplaced', change: { id: change.id, seq: change.seq, at: change.at, author: change.author }, overwrote: mine.map((overwrite) => ({ ...overwrite, now: now(overwrite.file, overwrite.path) })) });
   }
 
   #status(): void {
