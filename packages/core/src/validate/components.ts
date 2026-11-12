@@ -45,7 +45,7 @@ export function propsValidator(component: ComponentDescriptor): PropsValidator {
   return validator;
 }
 
-// A schema without its x-* annotations, for ajv.
+// A schema without its x-* annotations, for compileInline.
 function withoutAnnotations(schema: Record<string, unknown>): JsonSchema {
   const out: JsonSchema = {};
   for (const [key, value] of Object.entries(schema)) if (!key.startsWith('x-')) out[key] = annotationsRemoved(value);
@@ -53,14 +53,14 @@ function withoutAnnotations(schema: Record<string, unknown>): JsonSchema {
 }
 const annotationsRemoved = (value: unknown): unknown => (Array.isArray(value) ? value.map(annotationsRemoved) : isRecord(value) ? withoutAnnotations(value) : value);
 
-const ajvErrors = (validate: ValidateFunction) => (validate.errors || []).filter((e: ErrorObject) => e.keyword !== 'if').map((e: ErrorObject) => ({ path: e.instancePath, message: e.keyword === 'additionalProperties' ? `unknown property "${e.params.additionalProperty}"` : e.keyword === 'enum' ? `must be one of ${JSON.stringify(e.params.allowedValues)}` : e.message }));
+const schemaErrors = (validate: ValidateFunction) => (validate.errors || []).filter((e: ErrorObject) => e.keyword !== 'if').map((e: ErrorObject) => ({ path: e.instancePath, message: e.keyword === 'additionalProperties' ? `unknown property "${e.params.additionalProperty}"` : e.keyword === 'enum' ? `must be one of ${JSON.stringify(e.params.allowedValues)}` : e.message }));
 
 // Props of an instance against its component's schema (none when the schema does not compile:
 // the definition reports it).
 function propsErrors(component: ComponentDescriptor, props: unknown): { path: string; message: string | undefined }[] {
   const validate = propsValidator(component);
   if (validate.error !== undefined || validate(props)) return [];
-  return ajvErrors(validate);
+  return schemaErrors(validate);
 }
 
 // Definitions of the course components (components/<id>/).

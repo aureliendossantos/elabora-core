@@ -11,6 +11,9 @@ import { isDateTime } from '@elabora/format/validator-runtime';
 import { inlineAjv, registryAjv } from '../../scripts/reference-ajv.ts';
 import { seededRandom, mutate } from '../mutations.ts';
 import { breakData, describeErrors, generate } from '../schema-fuzz.ts';
+import { createProjectFiles, textFile } from '@elabora/core/project/files';
+import { loadProject } from '@elabora/core/project/load';
+import { validateProject } from '@elabora/core/validate/index';
 import { EXAMPLES_DIR, exampleNames, snapshotOfExample } from '../validation-corpus.ts';
 
 // The validators of the format are Ajv's, compiled when `pnpm run gen` ran, and compileInline is an
@@ -205,4 +208,26 @@ test('format date-time is the one Ajv checks', () => {
     if (reference(text)) valid++;
   }
   assert.ok(valid > 3 && valid < strings.length);
+});
+
+// An author who writes a keyword the interpreter does not read is told, where a schema that does not compile is always told.
+test('validateProject names the keyword when a component or an object uses one the interpreter lacks (D81)', () => {
+  const edit = (files: Map<string, any>, file: string, change: (json: any) => void) => {
+    const json = JSON.parse(files.get(file).text);
+    change(json);
+    files.set(file, textFile(JSON.stringify(json, null, 2)));
+  };
+  const diagnostics = (files: Map<string, any>) => validateProject(loadProject(createProjectFiles(files), { root: '' })).diagnostics;
+
+  const component = snapshotOfExample('canal-locks');
+  edit(component, 'components/lock-stage/component.json', (json) => { json.props.properties.arrangement.contains = { const: 'stack' }; });
+  const found = diagnostics(component).filter((d) => d.code === 'E_COMPONENT_SCHEMA' && /does not compile/.test(d.message));
+  assert.equal(found.length, 1, JSON.stringify(found));
+  assert.match(found[0]!.message, /keyword "contains" is not supported/);
+
+  const object = snapshotOfExample('clockwork');
+  edit(object, 'objects/clockwork/object.manifest.json', (json) => { json.props.properties.stage.dependentRequired = { stage: ['bigTeeth'] }; });
+  const foundInObject = diagnostics(object).filter((d) => d.code === 'E_SCHEMA' && /does not compile/.test(d.message));
+  assert.ok(foundInObject.length >= 1, 'no diagnostic');
+  assert.match(foundInObject[0]!.message, /keyword "dependentRequired" is not supported/);
 });
