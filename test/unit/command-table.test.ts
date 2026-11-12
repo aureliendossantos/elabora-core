@@ -8,6 +8,7 @@ import { commandContext, executeCommand } from '@elabora/core/commands/index';
 import { setPlanVoiceover } from '@elabora/core/commands/plan';
 import { translationTable } from '@elabora/core/i18n/translate';
 import type { ProjectFiles } from '@elabora/core/project/files';
+import type { Files } from '@elabora/core/ops/types';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { ROOT } from '../helpers.ts';
 
@@ -45,13 +46,13 @@ test('the table has the commands a room runs, no more, each with a schema that c
 });
 
 test('each command takes what its schema allows: a course edited through the table, nulls included', () => {
-  let files: ProjectFiles = readProjectFiles(path.join(ROOT, 'examples/canal-locks')).files;
+  let files: Files = readProjectFiles(path.join(ROOT, 'examples/canal-locks')).files;
   const run = (name: string, args: Record<string, unknown>) => {
     const entry = namedCommand(name);
     assert.ok(entry, name);
     const validate = ajv.compile(entry.args);
     assert.ok(validate(args), `${name} ${JSON.stringify(args)}: ${ajv.errorsText(validate.errors)}`);
-    const executed = executeCommand(files, name, (context) => entry.run(context, args), { author: PERSON, now: new Date('2026-11-12T08:00:00Z') });
+    const executed = executeCommand(files as ProjectFiles, name, (context) => entry.run(context, args), { author: PERSON, now: new Date('2026-11-12T08:00:00Z') });
     files = executed.after;
     return executed;
   };
@@ -83,7 +84,7 @@ test('each command takes what its schema allows: a course edited through the tab
 
   // Translations: a language started, a text translated, a translated plan approved by a person.
   run('export_translation', { to: 'de' });
-  const unit = translationTable(commandContext(files).project(), 'de').rows[0]!.id;
+  const unit = translationTable(commandContext(files as ProjectFiles).project(), 'de').rows[0]!.id;
   run('translate_text', { language: 'de', unit, target: 'Schleusen', state: 'translated' });
   run('translate_text', { language: 'de', texts: [{ unit, target: null }] });
   refused('translate_text', { language: 'de', texts: [] });
@@ -99,7 +100,7 @@ test('each command takes what its schema allows: a course edited through the tab
 
   // A screen's script from its plan item's voice-over.
   const item = json<{ covers: string[] }>('screens/lock-lab.json').covers[0]!;
-  files = executeCommand(files, 'set_plan_voiceover', (context) => setPlanVoiceover(context, { item, lines: [{ text: 'Fill the chamber, then open the gate.' }] }), { author: PERSON }).after;
+  files = executeCommand(files as ProjectFiles, 'set_plan_voiceover', (context) => setPlanVoiceover(context, { item, lines: [{ text: 'Fill the chamber, then open the gate.' }] }), { author: PERSON }).after;
   run('narration_from_plan', { screen: 'lock-lab', replace: true });
 
   // A dialogue's node written whole, then another removed; the speaker leaves.
