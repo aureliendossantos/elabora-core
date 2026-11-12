@@ -851,22 +851,31 @@ test('ZIP reader: streams what the writer wrote, refuses entries that lie about 
 
 test('archives: a 50 MB video is streamed through export and import (peak memory stays low)', () => {
   const library = tempDir('elabora-library-');
+  // The same module without the video, then with it: what the video adds to the peak is measured,
+  // not where the process's peak happened to be before (the validator's garbage, the GC's timing).
+  const without = example('diagnostic-reseau');
   const project = example('diagnostic-reseau');
   fs.mkdirSync(path.join(project, 'assets', 'video'), { recursive: true });
   const video = path.join(project, 'assets', 'video', 'x.mp4');
   const handle = fs.openSync(video, 'w');
   for (let i = 0; i < 50; i++) fs.writeSync(handle, crypto.randomBytes(1024 * 1024));
   fs.closeSync(handle);
-  const out = path.join(tempDir('elabora-archive-'), 'big.elabora');
-  const report = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', `
+  const outDir = tempDir('elabora-archive-');
+  const report = JSON.parse(execFileSync(process.execPath, ['--expose-gc', '--input-type=module', '-e', `
     const library = await import(${JSON.stringify(moduleUrl('packages/node/src/library/index.ts'))});
-    const { validateDir } = await import(${JSON.stringify(moduleUrl('packages/node/src/project-reader.ts'))});
-    // The validator's schemas and templates are loaded once (about 25 MB): not part of streaming.
-    validateDir(${JSON.stringify(project)});
-    const baseline = process.resourceUsage().maxRSS * 1024;
-    const exported = await library.exportProject(${JSON.stringify(project)}, ${JSON.stringify(out)});
-    const result = await library.importArchive(${JSON.stringify(out)});
-    console.log(JSON.stringify({ baseline, peak: process.resourceUsage().maxRSS * 1024, size: exported.size, imported: result.project.path }));
+    const peak = () => process.resourceUsage().maxRSS * 1024;
+    const round = async (project, out) => {
+      globalThis.gc();
+      const exported = await library.exportProject(project, out);
+      // A copy: the library holds the course already after the first round.
+      const result = await library.importArchive(out, { onExisting: 'copy' });
+      return { size: exported.size, imported: result.project.path };
+    };
+    // Everything an export and an import load and keep, without the video.
+    await round(${JSON.stringify(without)}, ${JSON.stringify(path.join(outDir, 'small.elabora'))});
+    const baseline = peak();
+    const big = await round(${JSON.stringify(project)}, ${JSON.stringify(path.join(outDir, 'big.elabora'))});
+    console.log(JSON.stringify({ baseline, peak: peak(), ...big }));
   `], { env: { ...process.env, ELABORA_LIBRARY: library, ELABORA_DATA_DIR: '' } }).toString());
   assert.equal(sha(path.join(report.imported, 'assets', 'video', 'x.mp4')), sha(video));
   assert.ok(report.size > 50 * 1024 * 1024);
