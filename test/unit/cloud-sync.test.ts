@@ -226,7 +226,9 @@ test('a folder linked while its session is open starts syncing; each copy sees w
   // B is open before it is linked (the app links an open module).
   const b = await openProject(B, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, debounceMs: 30 });
   sessions.push(b);
-  assert.equal(b.cloud, null);
+  // Read through a function: an assertion on the getter would narrow it for what follows.
+  const cloudOf = (session: Session) => session.cloud;
+  assert.equal(cloudOf(b), null);
   const { files } = readProjectFiles(B);
   const link: ProjectLink = {
     format: 'elabora-cloud-project/1', api: 'http://localhost:1', team: 'tm_test', project: 'prj_test', client: 'cB2',
@@ -240,13 +242,13 @@ test('a folder linked while its session is open starts syncing; each copy sees w
   await a.run('update_screen', { id: 'chemin', title: 'Après le lien' }, { kind: 'human' });
   await settled(room, a, b);
   assert.equal(screen(B, 'chemin').title, 'Après le lien');
-  assert.deepEqual(b.cloud?.peers.map((peer) => peer.actor.name).sort(), ['Ada', 'Béa']);
+  assert.deepEqual(cloudOf(b)?.peers.map((peer) => peer.actor.name).sort(), ['Ada', 'Béa']);
   assert.equal(statuses.at(-1)?.client, 'cB2');
-  assert.deepEqual([b.cloud?.team, b.cloud?.project], ['tm_test', 'prj_test']);
+  assert.deepEqual([cloudOf(b)?.team, cloudOf(b)?.project], ['tm_test', 'prj_test']);
   await assert.rejects(b.linkCloud({ api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect }), /already syncs/);
   // A leaves: B sees it go.
   await a.close({ media: 'cancel' });
   sessions.splice(sessions.indexOf(a), 1);
-  for (let wait = 0; wait < 80 && b.cloud?.peers.length !== 1; wait++) await new Promise((resolve) => setTimeout(resolve, 25));
-  assert.deepEqual(b.cloud?.peers.map((peer) => peer.actor.name), ['Béa']);
+  for (let wait = 0; wait < 80 && cloudOf(b)?.peers.length !== 1; wait++) await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.deepEqual(cloudOf(b)?.peers.map((peer) => peer.actor.name), ['Béa']);
 });
