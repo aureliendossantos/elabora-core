@@ -288,12 +288,18 @@ test('steps scroll follows the words: the figure changes once a step\'s words cr
       }
       const steps = await frame.$$eval(`${block} [data-t-reveal]`, (nodes) => nodes.map((node) => node.getAttribute('data-t-reveal')!));
       assert.deepEqual(steps, ['hopper', 'drum', 'burner', 'cooling']);
-      // Scrolls the window so that a step's room or words start by pixels above the middle of the window.
-      const place = (step: string, part: 'room' | 'words', by: number) => frame.evaluate(({ block, step, part, by }) => {
+      // Scrolls the window so that a step's room or words start by pixels above the middle of the window,
+      // and waits for that scroll's scrollend: a key pressed before it comes is lost (a loaded runner
+      // gives it late, CI's macOS on 13 Nov 2026).
+      // (The page's timers are on the test's clock: the wait's limit is on this side.)
+      const place = (step: string, part: 'room' | 'words', by: number) => Promise.race([frame.evaluate(({ block, step, part, by }) => {
         const node = document.querySelector(`${block} [data-t-reveal="${step}"]`)!;
         const top = (part === 'room' ? node : node.querySelector('.t-steps-words')!).getBoundingClientRect().top;
+        const start = scrollY;
+        const ended = new Promise<void>((resolve) => addEventListener('scrollend', () => resolve(), { once: true }));
         window.scrollBy(0, top - innerHeight / 2 + by);
-      }, { block, step, part, by });
+        return scrollY === start ? undefined : ended;
+      }, { block, step, part, by }), new Promise<void>((resolve) => setTimeout(resolve, 10000))]);
       // The step current once the observers have told, and the region the figure outlines.
       const current = async (step: string) => {
         await frame.waitForFunction(({ block, step }) => document.querySelector(block)!.getAttribute('data-t-current') === step, { block, step }, { timeout: 10000 })
