@@ -22,9 +22,9 @@ const HELP = `  cloud teams [--api <origin>] [--json]               Your teams o
                                                       others'. Without --watch: until nothing waits, then stops. With
                                                       it: until stopped (Ctrl-C); offline, changes wait and go when the
                                                       server is back
-  On the account's server (ELABORA_CLOUD_URL, --api, or Elabora's hosting) once its GET /v1 says it has teams (a
-  test server for now). Before one that does not, cloud teams and cloud project create, push and clone say so and
-  exit with an error.`;
+  These commands use the account's server: --api, ELABORA_CLOUD_URL or Elabora's hosting. Teams run on a test
+  server for now. On a server without teams, cloud teams and cloud project create, push and clone say so and exit
+  with an error.`;
 
 async function failures(json: boolean, run: () => Promise<ExitCode>): Promise<ExitCode> {
   try {
@@ -40,7 +40,7 @@ async function failures(json: boolean, run: () => Promise<ExitCode>): Promise<Ex
 // The server's address, once it says it has teams; otherwise said in words, an error.
 async function teamsApi(flag: string | undefined): Promise<string> {
   const api = projectsApi(flag);
-  if (!(await teamsOffered(api))) throw new CloudError(0, 'E_CLOUD_NO_TEAMS', `${new URL(api).host} has no teams yet: they are on a test server for now (give its address: --api or ELABORA_CLOUD_URL).`);
+  if (!(await teamsOffered(api))) throw new CloudError(0, 'E_CLOUD_NO_TEAMS', `${new URL(api).host} has no teams yet. Teams run on a test server for now: give its address with --api or ELABORA_CLOUD_URL.`);
   return api;
 }
 
@@ -71,14 +71,14 @@ const project = defineCommand({
         if (!flags.team || (action === 'push' && !flags.project)) { console.error(`Usage: elabora cloud project ${action} [dir] --team <id>${action === 'push' ? ' --project <id>' : ''}`); return 2; }
         const id = action === 'create' ? (await createProject(projectsClient(api), flags.team, flags.name ?? path.basename(dir))).id : flags.project as string;
         const pushed = await pushFolder(dir, { api, team: flags.team, project: id });
-        say(`✔ ${pushed.files} file(s) in project ${id} (${pushed.changes} change(s), ${pushed.media} medium/media); ${dir} is linked to it.`, { ok: true, project: id, head: pushed.link.head, files: pushed.files, changes: pushed.changes, media: pushed.media });
+        say(`✔ Sent ${pushed.files} file(s), ${pushed.media} of them media, to project ${id} in ${pushed.changes} change(s). ${dir} is linked to it.`, { ok: true, project: id, head: pushed.link.head, files: pushed.files, changes: pushed.changes, media: pushed.media });
         return 0;
       }
       case 'clone': {
         const api = await teamsApi(flags.api ?? undefined);
         if (!flags.team || !flags.project || !rest[0]) { console.error('Usage: elabora cloud project clone <dir> --team <id> --project <id>'); return 2; }
         const link = await cloneProject(dir, { api, team: flags.team, project: flags.project });
-        say(`✔ Project ${link.project} at ${link.head} in ${dir}, linked to it.`, { ok: true, project: link.project, head: link.head, dir });
+        say(`✔ Cloned project ${link.project} at change ${link.head} into ${dir}. The folder is linked to it.`, { ok: true, project: link.project, head: link.head, dir });
         return 0;
       }
       case 'sync':
@@ -102,9 +102,9 @@ async function sync(dir: string, watch: boolean, json: boolean): Promise<ExitCod
     if (event.type === 'cloudOutcome' && !json) console.error(`  ${'refused' in event.outcome ? `refused: ${event.outcome.refused.message}` : `${event.outcome.skipped.length} left out, ${event.outcome.overwrote.length} overwritten`} (${event.outcome.id})`);
     if (event.type === 'cloudReplaced' && !json) console.error(`  ${event.overwrote.map((overwrite) => `${overwrite.file} ${overwrite.path}`).join(', ')}: replaced by ${event.change.author.name ?? event.change.author.kind}${event.overwrote.some((overwrite) => overwrite.unsure) ? ' (perhaps)' : ''}`);
     if (event.type === 'merged' && !json) console.error(`  ${event.files.join(', ')}: merged with what was written meanwhile`);
-    if (event.type === 'cloudRole' && !json) console.error(`  your role is now ${event.role}${event.role === 'viewer' ? ': changes made here wait until you write again' : ''}`);
+    if (event.type === 'cloudRole' && !json) console.error(`  your role is now ${event.role}${event.role === 'viewer' ? ': changes made here wait until you can edit again' : ''}`);
     if (event.type === 'cloudEnded') {
-      console.error(`✘ ${event.reason === 'removed' ? `You are no longer in team ${event.team}` : `Project ${event.project} was deleted`}: ${dir} is no longer linked, and keeps what it held.`);
+      console.error(`✘ ${event.reason === 'removed' ? `You are no longer in team ${event.team}` : `Project ${event.project} was deleted`}. ${dir} is no longer linked to it and keeps its files.`);
       ended?.();
     }
     if (event.type === 'error') console.error(`✘ ${event.message}`);
@@ -128,7 +128,7 @@ async function sync(dir: string, watch: boolean, json: boolean): Promise<ExitCod
   const { head, pending } = status();
   await session.close({ media: 'cancel' });
   if (json) printJson({ ok: true, head, pending });
-  else console.log(`✔ At ${head}${pending ? `, ${pending} change(s) waiting` : ''}.`);
+  else console.log(`✔ At change ${head}${pending ? `, ${pending} change(s) waiting` : ''}.`);
   return 0;
 }
 
