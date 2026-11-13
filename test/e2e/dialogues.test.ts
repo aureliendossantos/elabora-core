@@ -442,7 +442,10 @@ test('going back from the debrief: where the thread goes on, the choice taken ba
     assert.deepEqual(await moments(), ['appel-marc:back:revisit']);
     const again = await until(page, 'appel-marc', 'choosing');
     assert.equal(again.node, 'ticket');
-    await page.waitForTimeout(300);
+    // What came after leaves in a fade, removed 200 ms after the move by a timer of the page: waited
+    // for in the page, where a loaded runner runs it late (300 ms on this side were not enough on
+    // CI's macOS, 13 Nov 2026).
+    await page.waitForFunction(() => !document.querySelector('[data-block="appel-marc"] .is-leaving'));
     const thread = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('[data-block="appel-marc"] [data-t-log] > .t-dialogue-row')].map((row) => row.dataset.line ?? row.dataset.role));
     assert.deepEqual(thread.slice(-2), ['n1', 'marker'], 'the marker right after what is kept');
     assert.equal(await wrap.locator('.t-dialogue-marker').innerText(), 'Vous reprenez ici');

@@ -158,6 +158,15 @@ test('a session resumed in the middle of the chain mounts the object with its st
     await go(page, 'two');
     await probeFrame(page).click('button');
     await page.waitForFunction(() => (window as PlayerWindow).__elabora.engine.getVar('probed') === 1);
+    // The object's state is saved after its event (the player asks the frame for it), then written in
+    // the tab's data: the page is opened again once the tab holds it, not when the event is known (a
+    // loaded runner reloaded in between, CI on 13 Nov 2026).
+    await page.waitForFunction(() => {
+      const elabora = (window as PlayerWindow).__elabora;
+      const saved = (elabora.engine as unknown as { objectSavedState(block: string): { clicks?: number } | null }).objectSavedState('two-scene');
+      const tab = JSON.parse(sessionStorage.getItem(`elabora:${elabora.course.id}`) ?? '{}') as Record<string, string>;
+      return saved?.clicks === 1 && tab['cmi.suspend_data'] === elabora.state().suspendData;
+    });
     // The standalone adapter keeps the data in the tab: the page is opened again on screen two.
     await reload();
     assert.equal(await page.evaluate(() => (window as PlayerWindow).__elabora.screen), 'two');

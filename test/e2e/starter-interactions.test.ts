@@ -332,10 +332,17 @@ test('steps scroll follows the words: the figure changes once a step\'s words cr
       await frame.click(`${block} [data-t-reveal="hopper"] .t-steps-title`);
       // Each key or wheel turn scrolls smoothly; the next waits for its scrollend. A key pressed while
       // the scroll before it still moves can be lost on Linux (CI, 3 runs of 7 on 6 Nov 2026).
+      // Only a scrollend away from where it was counts: the one of the scroll before (place's, given
+      // late by a loaded runner) once ended the wait before the key had moved anything (CI's macOS,
+      // 13 Nov 2026).
       const scrolls = async (what: string, act: () => Promise<void>) => {
         const before = await frame.evaluate(() => {
-          (window as unknown as { scrolled: Promise<number> }).scrolled = new Promise((resolve) => addEventListener('scrollend', () => resolve(scrollY), { once: true }));
-          return scrollY;
+          const start = scrollY;
+          (window as unknown as { scrolled: Promise<number> }).scrolled = new Promise((resolve) => {
+            const ended = () => { if (scrollY === start) return; removeEventListener('scrollend', ended); resolve(scrollY); };
+            addEventListener('scrollend', ended);
+          });
+          return start;
         });
         await act();
         const after = await Promise.race([frame.evaluate(() => (window as unknown as { scrolled: Promise<number> }).scrolled), new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000))]);
