@@ -294,7 +294,14 @@ export interface PublishCheck {
 
 export type TeamRole = 'owner' | 'editor' | 'viewer';
 // usage: what the team's media hold beside the limit storageBytes (a team's own GET, C72 of elabora-cloud).
-export interface TeamView { id: string; name: string; role?: TeamRole; seats?: number; storageBytes?: number; usage?: { storageBytes: number }; createdAt?: string; updatedAt?: string }
+// seats, storageBytes and usage.storageBytes are its organisation's once the server has organisations
+// (elabora-cloud C88), with seatsFree, the seats free in it as the server counts them (an editor of any of
+// its teams holds one, a viewer none, an invitation one until accepted), and usage.teamStorageBytes, this
+// team's alone. A server before them gives neither.
+export interface TeamView {
+  id: string; name: string; role?: TeamRole; seats?: number; seatsFree?: number; org?: { id: string; name: string };
+  storageBytes?: number; usage?: { storageBytes: number; teamStorageBytes?: number }; createdAt?: string; updatedAt?: string;
+}
 // Who acts in a project: a person, or an agent of a person (by).
 export interface ProjectActor { kind: 'human' | 'agent' | 'external' | 'system'; id: string; name: string; by?: string }
 // A project as the team's list gives it, read where its room wrote it (C69, C70 of elabora-cloud): its
