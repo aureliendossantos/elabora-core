@@ -44,8 +44,18 @@ export function projectsClient(api: string): CloudClient {
 }
 
 export async function whoAmI(client: CloudClient): Promise<Person> {
-  const { account } = await client.request<{ account: { id: string; handle: string | null; displayName: string | null } }>('GET', '/v1/account');
-  return { id: account.id, name: account.displayName ?? account.handle ?? null };
+  return (await accountForTeams(client)).person;
+}
+
+// The account, and how many teams it may own (its `teams` limit; none on a server that says nothing).
+export async function accountForTeams(client: CloudClient): Promise<{ person: Person; teamsAllowed: number }> {
+  const { account, limits } = await client.request<{ account: { id: string; handle: string | null; displayName: string | null }; limits?: { teams?: number } }>('GET', '/v1/account');
+  return { person: { id: account.id, name: account.displayName ?? account.handle ?? null }, teamsAllowed: limits?.teams ?? 0 };
+}
+
+// A new team, the caller its owner (C36): within the account's `teams` limit, else 403 quota-teams.
+export async function createTeam(client: CloudClient, name: string): Promise<TeamView> {
+  return (await client.request<{ team: TeamView }>('POST', '/v1/teams', { json: { name } })).team;
 }
 
 export async function listTeams(client: CloudClient): Promise<TeamView[]> {

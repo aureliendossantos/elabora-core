@@ -10,8 +10,8 @@ import { acceptChange, journalOf, type ClientMessage, type Committed, type Serve
 import { changesToUndo } from '@elabora/core/ops/batch';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
-import { CloudClient } from '@elabora/node/cloud/client';
-import { keepConfirmed, linkFile, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
+import { CloudClient, CloudError } from '@elabora/node/cloud/client';
+import { accountForTeams, createTeam, keepConfirmed, linkFile, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { listVersions, readVersion } from '@elabora/node/backups/index';
 import { putBytes, readBlob } from '@elabora/node/blobs';
@@ -214,6 +214,39 @@ test('projects in the cloud are on the account\'s server, which says whether it 
     assert.equal(await teamsOffered(api), false);
     said = { service: 'elabora-cloud', protocol: 9 };
     assert.equal(await teamsOffered(api), false, 'a server that says nothing has no teams');
+  } finally {
+    server.close();
+  }
+});
+
+test('an account creates a team within its `teams` limit, which the account says (C36); a server that says none allows none', async () => {
+  let limits: Record<string, unknown> | undefined = { storageBytes: 1, publicPublications: 3, openReviews: 3, indexing: false, teams: 1 };
+  let owned = 0;
+  const server = http.createServer((request, response) => {
+    response.setHeader('content-type', 'application/json');
+    if (request.url === '/v1/account') return response.end(JSON.stringify({ account: { id: 'acc_1', handle: 'claire', displayName: 'Claire' }, ...(limits ? { limits } : {}) }));
+    if (request.url === '/v1/teams' && request.method === 'POST') {
+      let body = '';
+      request.on('data', (chunk) => { body += chunk; });
+      request.on('end', () => {
+        if (owned >= ((limits?.teams as number | undefined) ?? 0)) { response.statusCode = 403; return response.end(JSON.stringify({ error: { code: 'quota-teams', message: 'Teams are not open to this account yet.' } })); }
+        owned++;
+        response.statusCode = 201;
+        response.end(JSON.stringify({ team: { id: 'tm_1', name: (JSON.parse(body) as { name: string }).name, role: 'owner', seats: 25, storageBytes: 1 } }));
+      });
+      return;
+    }
+    response.statusCode = 404;
+    response.end('{}');
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const client = new CloudClient(`http://127.0.0.1:${(server.address() as AddressInfo).port}`, 'eas_test');
+  try {
+    assert.deepEqual(await accountForTeams(client), { person: { id: 'acc_1', name: 'Claire' }, teamsAllowed: 1 });
+    assert.deepEqual(await createTeam(client, 'Atelier Nord'), { id: 'tm_1', name: 'Atelier Nord', role: 'owner', seats: 25, storageBytes: 1 });
+    await assert.rejects(createTeam(client, 'Studio Lumen'), (error: unknown) => error instanceof CloudError && error.status === 403 && error.code === 'quota-teams');
+    limits = undefined;
+    assert.equal((await accountForTeams(client)).teamsAllowed, 0, 'a server that says no limit allows none');
   } finally {
     server.close();
   }

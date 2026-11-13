@@ -55,6 +55,9 @@ export interface AccountLimits {
   publicPublications: number;
   openReviews: number;
   indexing: boolean;
+  // How many teams the account may own (elabora-cloud C36: 0 by default, opened by the administrator per
+  // account); absent from a server before teams.
+  teams?: number;
 }
 
 export interface AccountUsage {
