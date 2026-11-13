@@ -54,7 +54,13 @@ export class FakeCloud {
   url = '';
 
   async start(): Promise<string> {
-    this.#server = http.createServer((request, response) => { this.#handle(request, response).catch((error: unknown) => this.#send(response, 500, { error: { code: 'fake', message: String(error) } })); });
+    // A connection per request, closed after its answer: no connection kept open that this server
+    // could close while the client takes it again, the likeliest reading of the ECONNRESET seen on
+    // Windows runners (the MCP's review list, 6 and 13 Nov 2026; never on a Mac).
+    this.#server = http.createServer((request, response) => {
+      response.shouldKeepAlive = false;
+      this.#handle(request, response).catch((error: unknown) => this.#send(response, 500, { error: { code: 'fake', message: String(error) } }));
+    });
     await new Promise<void>((resolve) => this.#server!.listen(0, '127.0.0.1', resolve));
     this.url = `http://127.0.0.1:${(this.#server.address() as AddressInfo).port}`;
     return this.url;
