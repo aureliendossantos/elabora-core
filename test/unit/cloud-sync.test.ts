@@ -107,14 +107,16 @@ class Room {
       this.files = accepted.files;
       this.log.push(accepted.committed);
       this.at.set(this.head, this.files);
-      for (const other of this.sockets) if (other !== from) other.deliver({ type: 'change', change: accepted.committed });
+      for (const other of this.sockets) if (other !== from && other.presence) other.deliver({ type: 'change', change: accepted.committed });
     }
     from.deliver({ type: 'ack', change: accepted.committed });
   }
 
   peers(): Presence[] { return [...this.sockets].flatMap((socket) => (socket.presence ? [socket.presence] : [])); }
+  // To the connections whose hello the room read, as elabora-cloud's room does (a connection still
+  // opening, or one about to be refused, hears nothing: a change of another history would land on its head).
   tellPresence(except: FakeSocket | null): void {
-    for (const other of this.sockets) if (other !== except) other.deliver({ type: 'presence', peers: this.peers() });
+    for (const other of this.sockets) if (other !== except && other.presence) other.deliver({ type: 'presence', peers: this.peers() });
   }
 
   // The connection drops; the copy reconnects by itself.
