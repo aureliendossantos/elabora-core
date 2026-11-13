@@ -279,7 +279,7 @@ export async function folderSnapshot(dir: string): Promise<PushSource> {
   const { files } = readProjectFiles(root);
   const out = new Map<string, FileContent>();
   for (const [rel, file] of files) {
-    if (rel.normalize('NFC') !== rel) throw new CloudError(0, 'E_CLOUD_PATH', `${rel}: its name is not in Unicode NFC; rename it before the upload.`);
+    if (rel.normalize('NFC') !== rel) throw new CloudError(0, 'E_CLOUD_PATH', `${rel}: its name is not in Unicode NFC; rename it before the upload.`, { file: rel });
     if (file.kind === 'text') out.set(rel, file);
     else {
       const stored = await putFileSnapshot(root, path.join(root, rel));

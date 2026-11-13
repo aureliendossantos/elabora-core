@@ -11,7 +11,7 @@ import { changesToUndo } from '@elabora/core/ops/batch';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
 import { CloudClient, CloudError } from '@elabora/node/cloud/client';
-import { accountForTeams, cloudOffers, createTeam, keepConfirmed, linkFile, listOrgs, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
+import { accountForTeams, cloudOffers, createTeam, folderSnapshot, keepConfirmed, linkFile, listOrgs, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { listVersions, readVersion } from '@elabora/node/backups/index';
 import { putBytes, readBlob } from '@elabora/node/blobs';
@@ -270,6 +270,14 @@ test('an account creates a team within its `teams` limit, which the account says
   } finally {
     server.close();
   }
+});
+
+test('a file whose name is not in NFC is refused before any upload, named in the refusal\'s details for the app\'s words', async () => {
+  const dir = copyExample();
+  const name = 'assets/Ce\u0301line.png'; // é as e and its accent, as some archives write it
+  fs.mkdirSync(path.join(dir, 'assets'), { recursive: true });
+  fs.writeFileSync(path.join(dir, name), 'x');
+  await assert.rejects(folderSnapshot(dir), (error: unknown) => error instanceof CloudError && error.code === 'E_CLOUD_PATH' && (error.details as { file?: string }).file === name);
 });
 
 test('two linked folders stay the same: a person\'s edit, a file an agent writes, offline and back, an agent\'s run sent as one', async () => {
