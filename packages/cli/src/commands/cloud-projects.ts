@@ -21,7 +21,10 @@ const HELP = `  cloud teams [--api <origin>] [--json]               Your teams o
                                                       Elabora's tools, by programs writing its files) and writes the
                                                       others'. Without --watch: until nothing waits, then stops. With
                                                       it: until stopped (Ctrl-C); offline, changes wait and go when the
-                                                      server is back`;
+                                                      server is back
+  On the account's server (ELABORA_CLOUD_URL, --api, or Elabora's hosting) once its GET /v1 says it has teams (a
+  test server for now). Before one that does not, cloud teams and cloud project create, push and clone say so and
+  exit with an error.`;
 
 async function failures(json: boolean, run: () => Promise<ExitCode>): Promise<ExitCode> {
   try {

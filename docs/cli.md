@@ -516,10 +516,6 @@ with ELABORA_CLOUD_KEY_FILE and ELABORA_CLOUD_SPACE.
 
 ## Projects in the cloud (test server)
 
-On the account's server (`ELABORA_CLOUD_URL`, `--api`, or Elabora's hosting) once its `GET /v1` says `teams: true`
-(elabora-cloud C80): a test server for now. Before a server that says `false` (Elabora's hosting today),
-`cloud teams` and `cloud project create|push|clone` say it has no teams yet and exit with an error.
-
 ```text
 cloud teams [--api <origin>] [--json]               Your teams on the server, with their ids
 cloud project create [dir] --team <id> [--name <n>] [--api <origin>] [--json]
@@ -534,6 +530,9 @@ cloud project sync [dir] [--watch] [--json]         Sends the changes made in th
                                                     others'. Without --watch: until nothing waits, then stops. With
                                                     it: until stopped (Ctrl-C); offline, changes wait and go when the
                                                     server is back
+On the account's server (ELABORA_CLOUD_URL, --api, or Elabora's hosting) once its GET /v1 says it has teams (a
+test server for now). Before one that does not, cloud teams and cloud project create, push and clone say so and
+exit with an error.
 ```
 
 ## Design
