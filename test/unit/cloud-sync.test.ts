@@ -678,7 +678,9 @@ test('an app older than the room (4005): the copy keeps its changes and does not
 test('a project whose connections are all taken (4007): the copy keeps its changes and tries again later, not in a loop; then they go (C83)', async () => {
   const A = copyExample();
   const room = new Room(readProjectFiles(A).files);
-  const a = await linked(room, A, async () => 'member', 1500);
+  // Its next try a minute later: a window of a few hundred milliseconds holds none, however slow the
+  // runner (with 1.5 s, a Windows runner's change and wait held the next try, twice, 13 Nov 2026).
+  const a = await linked(room, A, async () => 'member', 60_000);
   await settled(room, a);
   room.refuseHello = { code: 4007 };
   room.drop();
@@ -687,7 +689,9 @@ test('a project whose connections are all taken (4007): the copy keeps its chang
   await a.run('update_screen', { id: 'chemin', title: 'Écrit pendant que c\'est plein' }, { kind: 'human' });
   await new Promise((resolve) => setTimeout(resolve, 300));
   assert.equal(room.hellos, hellos, 'not in a loop: tried again later');
+  // Asked (the app's « Réessayer »), it tries again at once, and its changes go.
   room.refuseHello = null;
+  a.cloudRetry();
   await settled(room, a);
   assert.equal(a.cloud?.held, null);
   const placed = room.files.get('screens/chemin.json');
