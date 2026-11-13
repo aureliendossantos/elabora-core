@@ -20,6 +20,8 @@ export class SessionActivity {
   #reading: Promise<void> | null = null;
   #again = false;
   #unwatch: (() => void) | null = null;
+  // Read from start on: before it, the file's end is not known yet, and all of it would be news.
+  #started = false;
 
   constructor(init: { root: string; emit: (event: EngineEvent) => void; reportError: (error: unknown, context: string) => void }) {
     this.#root = init.root;
@@ -36,6 +38,7 @@ export class SessionActivity {
       this.#ino = stat.ino;
       this.#lastAt = readActivity(this.#root, { limit: 1 })[0]?.at ?? '';
     }
+    this.#started = true;
     if (!watch) return;
     try {
       const watcher = fs.watch(path.dirname(this.#file), (_event, name) => {
@@ -48,8 +51,11 @@ export class SessionActivity {
     }
   }
 
-  // The file changed: reads what was appended (one read at a time, one more if it changed meanwhile).
+  // The file changed, or the session's rescan asks (what the watcher missed): reads what was appended
+  // since the last read (one read at a time, one more if it changed meanwhile), so a line seen by
+  // both is sent once.
   poke(): Promise<void> {
+    if (!this.#started) return Promise.resolve();
     if (this.#reading) {
       this.#again = true;
       return this.#reading;
@@ -94,6 +100,7 @@ export class SessionActivity {
   }
 
   stop(): void {
+    this.#started = false;
     this.#unwatch?.();
     this.#unwatch = null;
   }

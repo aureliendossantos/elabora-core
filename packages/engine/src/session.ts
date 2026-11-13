@@ -260,8 +260,9 @@ export class Session {
     this.#canvas = new SessionCanvas({ root: this.root, project, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
-    this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError });
     this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
+    // The rescan reads the agents' activity too: a line its watcher missed shows at the next one.
+    this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError, onRescan: () => void this.#activity.poke() });
     for (const [rel, file] of init.state.files) {
       if (file.kind !== 'binary' || !file.media) continue;
       this.#mediaChecked.set(rel, file.hash ?? '');

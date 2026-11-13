@@ -21,14 +21,18 @@ export class SessionMonitor {
   readonly #closing: () => boolean;
   readonly #refresh: () => Promise<void>;
   readonly #reportError: (error: unknown, context: string) => void;
+  readonly #onRescan: () => void;
 
-  constructor(init: { store: SessionStore; journalDir: string; options: OpenOptions; closing: () => boolean; refresh: () => Promise<void>; reportError: (error: unknown, context: string) => void }) {
+  // onRescan: at each rescan, for what is read beside the folder (the agents' activity, whose
+  // watcher, like any, misses what FSEvents drops under load).
+  constructor(init: { store: SessionStore; journalDir: string; options: OpenOptions; closing: () => boolean; refresh: () => Promise<void>; reportError: (error: unknown, context: string) => void; onRescan?: () => void }) {
     this.#store = init.store;
     this.#journalDir = init.journalDir;
     this.#options = init.options;
     this.#closing = init.closing;
     this.#refresh = init.refresh;
     this.#reportError = init.reportError;
+    this.#onRescan = init.onRescan ?? (() => {});
   }
 
   get needsRescan(): boolean { return this.#rescanNeeded; }
@@ -83,6 +87,7 @@ export class SessionMonitor {
         this.#rescanNeeded = true;
         this.#journalDirty = true;
         this.schedule();
+        this.#onRescan();
       }, rescanMs);
       timer.unref();
       this.#interval = timer;

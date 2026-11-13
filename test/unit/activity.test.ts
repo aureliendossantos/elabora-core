@@ -135,7 +135,8 @@ test('the file keeps its last day, half its size at most, once past its size', (
 test('the session sends what agents append, and gives what was there before', async () => {
   const dir = course();
   await callAgentTool('elabora_overview', {}, { root: dir, author: agent });
-  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
+  // Its rescan on: a line FSEvents drops under load (a CI runner's, 13 Nov 2026) comes with the next.
+  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 500 });
   sessions.push(session);
   const events: EngineEvent[] = [];
   session.subscribe(({ event }) => events.push(event));
@@ -145,4 +146,38 @@ test('the session sends what agents append, and gives what was there before', as
   const sent = () => events.flatMap((event) => (event.type === 'activity' ? event.entries : []));
   while (sent().filter((entry) => entry.op === 'elabora_get_screen').length < 2 && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 25));
   assert.deepEqual(sent().map((entry) => [entry.phase, entry.op, entry.family, entry.screen]), [['start', 'elabora_get_screen', 'screen', 'chemin'], ['end', 'elabora_get_screen', 'screen', 'chemin']]);
+});
+
+// What a watcher misses (FSEvents drops events under load, and Node says nothing of it): the
+// session's rescan reads the activity too, and a line is sent once, whoever saw it first.
+const line = (id: string): ActivityEntry => ({ at: new Date().toISOString(), id, phase: 'start', op: 'elabora_look', family: 'look', author: agent, screen: 'chemin' });
+const activitySent = (events: EngineEvent[]) => events.flatMap((event) => (event.type === 'activity' ? event.entries : [])).map((entry) => entry.id);
+const waitFor = async (done: () => boolean) => { const deadline = Date.now() + 5000; while (!done() && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20)); };
+
+test('a line no watcher reports comes with the session\'s next rescan', async () => {
+  const dir = course();
+  // No watcher at all: the rescan alone.
+  const session = await openProject(dir, { watch: false, backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 100 });
+  sessions.push(session);
+  const events: EngineEvent[] = [];
+  session.subscribe(({ event }) => events.push(event));
+  recordActivity(dir, line('missed'));
+  await waitFor(() => activitySent(events).length > 0);
+  assert.deepEqual(activitySent(events), ['missed']);
+});
+
+test('a line the watcher reported is not sent again by the rescan', async () => {
+  const dir = course();
+  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 100 });
+  sessions.push(session);
+  const events: EngineEvent[] = [];
+  session.subscribe(({ event }) => events.push(event));
+  recordActivity(dir, line('first'));
+  await waitFor(() => activitySent(events).length > 0);
+  // Several rescans later, and one more line: each once.
+  await new Promise((resolve) => setTimeout(resolve, 450));
+  recordActivity(dir, line('second'));
+  await waitFor(() => activitySent(events).includes('second'));
+  await new Promise((resolve) => setTimeout(resolve, 450));
+  assert.deepEqual(activitySent(events), ['first', 'second']);
 });
