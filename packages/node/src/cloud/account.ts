@@ -12,6 +12,8 @@ export interface ServiceInfo {
   protocol: number;
   // The server has teams and their projects' rooms (elabora-cloud C80); absent on an older server.
   teams?: boolean;
+  // Its teams belong to organisations (elabora-cloud C88): GET /v1/orgs, a team created in one; absent elsewhere.
+  orgs?: boolean;
   accounts: { signup: 'open' | 'closed'; codeLength: number; codeSeconds: number; attempts: number; sessionDays: number };
 }
 

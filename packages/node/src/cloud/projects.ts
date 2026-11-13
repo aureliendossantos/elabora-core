@@ -33,11 +33,17 @@ export function projectsApi(value: string | undefined = process.env.ELABORA_CLOU
 // Whether a server has teams and their projects' rooms: its GET /v1 says teams: true (elabora-cloud C80).
 // Elabora's hosting says false today; a server that says nothing has none either.
 export async function teamsOffered(api: string): Promise<boolean> {
-  return (await new CloudClient(api).request<ServiceInfo>('GET', '/v1')).teams === true;
+  return (await cloudOffers(api)).teams;
 }
 
-export type { CoverType, InvitationToMe, ProjectCover, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';
-import type { CoverType, InvitationToMe, ProjectCover, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';
+// What a server has of teams: teams (C80), and organisations they belong to (orgs, C88).
+export async function cloudOffers(api: string): Promise<{ teams: boolean; orgs: boolean }> {
+  const said = await new CloudClient(api).request<ServiceInfo>('GET', '/v1');
+  return { teams: said.teams === true, orgs: said.teams === true && said.orgs === true };
+}
+
+export type { CoverType, InvitationToMe, OrgView, ProjectCover, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';
+import type { CoverType, InvitationToMe, OrgView, ProjectCover, ProjectView, TeamDetails, TeamInvitation, TeamMember, TeamRole, TeamView } from './types.ts';
 
 export function projectsClient(api: string): CloudClient {
   return new CloudClient(api, requireCredential(api).token);
@@ -53,9 +59,17 @@ export async function accountForTeams(client: CloudClient): Promise<{ person: Pe
   return { person: { id: account.id, name: account.displayName ?? account.handle ?? null }, teamsAllowed: limits?.teams ?? 0 };
 }
 
-// A new team, the caller its owner (C36): within the account's `teams` limit, else 403 quota-teams.
-export async function createTeam(client: CloudClient, name: string): Promise<TeamView> {
-  return (await client.request<{ team: TeamView }>('POST', '/v1/teams', { json: { name } })).team;
+// A new team, the caller its owner (C36). Without org, within the account's `teams` limit, else 403
+// quota-teams (on a server with organisations, in the one the account owns, made for it if none). In an
+// organisation (C88), as its setting lets the account (else 403 team-creation-closed), within its seats
+// (403 quota-seats) and its 50 teams (403 quota-org-teams).
+export async function createTeam(client: CloudClient, name: string, org?: string): Promise<TeamView> {
+  return (await client.request<{ team: TeamView }>('POST', '/v1/teams', { json: org ? { name, org } : { name } })).team;
+}
+
+// The account's organisations (GET /v1/orgs, C88): on a server that says orgs.
+export async function listOrgs(client: CloudClient): Promise<OrgView[]> {
+  return (await client.request<{ orgs: OrgView[] }>('GET', '/v1/orgs')).orgs;
 }
 
 export async function listTeams(client: CloudClient): Promise<TeamView[]> {

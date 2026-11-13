@@ -302,6 +302,10 @@ export interface TeamView {
   id: string; name: string; role?: TeamRole; seats?: number; seatsFree?: number; org?: { id: string; name: string };
   storageBytes?: number; usage?: { storageBytes: number; teamStorageBytes?: number }; createdAt?: string; updatedAt?: string;
 }
+// An organisation of the account (GET /v1/orgs, elabora-cloud C88): one it owns, manages (admin) or is in a
+// team of (member); seat: it holds one there; canCreateTeam: the organisation's setting lets it create a
+// team there (POST /v1/teams { name, org }), its bounds (a seat free, 50 teams) answering by their refusals.
+export interface OrgView { id: string; name: string; role?: 'owner' | 'admin' | 'member'; seat?: boolean; teams?: number; canCreateTeam?: boolean }
 // Who acts in a project: a person, or an agent of a person (by).
 export interface ProjectActor { kind: 'human' | 'agent' | 'external' | 'system'; id: string; name: string; by?: string }
 // A project as the team's list gives it, read where its room wrote it (C69, C70 of elabora-cloud): its

@@ -11,7 +11,7 @@ import { changesToUndo } from '@elabora/core/ops/batch';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
 import { CloudClient, CloudError } from '@elabora/node/cloud/client';
-import { accountForTeams, createTeam, keepConfirmed, linkFile, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
+import { accountForTeams, cloudOffers, createTeam, keepConfirmed, linkFile, listOrgs, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { listVersions, readVersion } from '@elabora/node/backups/index';
 import { putBytes, readBlob } from '@elabora/node/blobs';
@@ -216,25 +216,39 @@ test('projects in the cloud are on the account\'s server, which says whether it 
     assert.equal(await teamsOffered(api), false);
     said = { service: 'elabora-cloud', protocol: 9 };
     assert.equal(await teamsOffered(api), false, 'a server that says nothing has no teams');
+    said = { service: 'elabora-cloud', protocol: 10, teams: true, orgs: true };
+    assert.deepEqual(await cloudOffers(api), { teams: true, orgs: true }, 'organisations (C88)');
+    said = { service: 'elabora-cloud', protocol: 10, teams: true };
+    assert.deepEqual(await cloudOffers(api), { teams: true, orgs: false }, 'a server before them');
   } finally {
     server.close();
   }
 });
 
-test('an account creates a team within its `teams` limit, which the account says (C36); a server that says none allows none', async () => {
+test('an account creates a team within its `teams` limit, which the account says (C36), or in an organisation as its setting says (C88); a server that says no limit allows none', async () => {
   let limits: Record<string, unknown> | undefined = { storageBytes: 1, publicPublications: 3, openReviews: 3, indexing: false, teams: 1 };
   let owned = 0;
+  const orgs = [{ id: 'org_a', name: 'Atelier Nord', role: 'member', seat: true, teams: 2, canCreateTeam: true }, { id: 'org_b', name: 'Studio Lumen', role: 'member', seat: false, teams: 1, canCreateTeam: false }];
   const server = http.createServer((request, response) => {
     response.setHeader('content-type', 'application/json');
     if (request.url === '/v1/account') return response.end(JSON.stringify({ account: { id: 'acc_1', handle: 'claire', displayName: 'Claire' }, ...(limits ? { limits } : {}) }));
+    if (request.url === '/v1/orgs') return response.end(JSON.stringify({ orgs }));
     if (request.url === '/v1/teams' && request.method === 'POST') {
       let body = '';
       request.on('data', (chunk) => { body += chunk; });
       request.on('end', () => {
+        const asked = JSON.parse(body) as { name: string; org?: string };
+        // In an organisation (C88): its setting, not the account's limit.
+        if (asked.org) {
+          const org = orgs.find((each) => each.id === asked.org);
+          if (!org?.canCreateTeam) { response.statusCode = 403; return response.end(JSON.stringify({ error: { code: 'team-creation-closed', message: 'Only its admins create teams.' } })); }
+          response.statusCode = 201;
+          return response.end(JSON.stringify({ team: { id: 'tm_2', name: asked.name, role: 'owner', org: { id: org.id, name: org.name } } }));
+        }
         if (owned >= ((limits?.teams as number | undefined) ?? 0)) { response.statusCode = 403; return response.end(JSON.stringify({ error: { code: 'quota-teams', message: 'Teams are not open to this account yet.' } })); }
         owned++;
         response.statusCode = 201;
-        response.end(JSON.stringify({ team: { id: 'tm_1', name: (JSON.parse(body) as { name: string }).name, role: 'owner', seats: 25, storageBytes: 1 } }));
+        response.end(JSON.stringify({ team: { id: 'tm_1', name: asked.name, role: 'owner', seats: 25, storageBytes: 1 } }));
       });
       return;
     }
@@ -249,6 +263,10 @@ test('an account creates a team within its `teams` limit, which the account says
     await assert.rejects(createTeam(client, 'Studio Lumen'), (error: unknown) => error instanceof CloudError && error.status === 403 && error.code === 'quota-teams');
     limits = undefined;
     assert.equal((await accountForTeams(client)).teamsAllowed, 0, 'a server that says no limit allows none');
+    // In an organisation (C88): as its setting says, whatever the account's limit.
+    assert.deepEqual(await listOrgs(client), orgs);
+    assert.deepEqual(await createTeam(client, 'Formations', 'org_a'), { id: 'tm_2', name: 'Formations', role: 'owner', org: { id: 'org_a', name: 'Atelier Nord' } });
+    await assert.rejects(createTeam(client, 'Formations', 'org_b'), (error: unknown) => error instanceof CloudError && error.status === 403 && error.code === 'team-creation-closed');
   } finally {
     server.close();
   }
