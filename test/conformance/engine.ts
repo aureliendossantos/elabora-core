@@ -242,8 +242,7 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal(redone.change?.type, 'undo');
     assert.equal((await client.request('readScreen', { screen: 'chemin' })).data.title, 'Le chemin');
     await assert.rejects(client.request('redo', {}), refused('refused'));
-    // A change the journal does not have (refused today, where not-found would say it better).
-    await assert.rejects(client.request('undo', { seq: 999 }), (error: { kind?: string }) => error.kind === 'refused' || error.kind === 'not-found');
+    await assert.rejects(client.request('undo', { seq: 999 }), refused('not-found'));
 
     const seq = run.change!.seq;
     const history = await client.request('history', { limit: 10 });

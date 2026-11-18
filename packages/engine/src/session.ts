@@ -873,7 +873,11 @@ export class Session {
   // ⌘Z without seq: the author's last step (D79): their last change, or the batch of an agent they launched.
   async undo(seq?: number, author: Author = this.author): Promise<UndoView> {
     this.#assertOpen();
-    return this.#change(author, async () => this.#committed(edit.undo(this.root, seq, this.#editOptions(author))))
+    return this.#change(author, async () => {
+      // A change the journal does not have is not found (the protocol's not-found), not refused.
+      if (seq !== undefined && !this.#entries.some((entry) => entry.type !== 'mark' && entry.seq === seq)) throw new EngineError('not-found', `No change ${seq} in the journal`);
+      return this.#committed(edit.undo(this.root, seq, this.#editOptions(author)));
+    })
       .then(({ result, change }) => ({ ...this.#runResult('undo', result, change), undone: [result.undone].flat(), skipped: result.skipped }));
   }
 
