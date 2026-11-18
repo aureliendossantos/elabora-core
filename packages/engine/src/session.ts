@@ -98,7 +98,7 @@ import type { BuildOptions, BuildResult } from '@elabora/node/build';
 import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
-import { SessionCloud, type CloudHeld, type CloudOptions, type Where } from './session-cloud.ts';
+import { SessionCloud, type CloudHeld, type CloudOptions, type Where } from './base/session-cloud.ts';
 import { folderSnapshot, type PushSource } from '@elabora/node/cloud/projects';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type {
@@ -340,7 +340,6 @@ export class Session {
 
   async #startCloud(options: CloudOptions): Promise<void> {
     const cloud = new SessionCloud({
-      root: this.root,
       files: () => this.#state.files,
       step: (work) => this.#queue.run(async () => {
         try {

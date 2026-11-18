@@ -14,6 +14,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D8](decisions/D08.md) | Deterministic packages |  |
 | [D9](decisions/D09.md) | Executable LMS profiles |  |
 | [D10](decisions/D10.md) | Agent interface: MCP + short skills + AGENTS.md |  |
+| [D100](decisions/D100.md) | The session's base without Node, and a project's copy behind its store | 18 Nov 2026 |
 | [D11](decisions/D11.md) | LESSON.md for simple blocks |  |
 | [D12](decisions/D12.md) | TypeScript workspace packages, run directly by Node | revised 6 Oct 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |

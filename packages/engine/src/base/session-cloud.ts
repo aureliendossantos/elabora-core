@@ -4,11 +4,8 @@ import { sameContent } from '@elabora/core/ops/json';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { SyncClient, type LocalChange, type Outcome } from '@elabora/core/sync/client';
 import { SYNC_PROTOCOL, type ClientMessage, type Committed, type Presence, type RoomRole, type ServerMessage } from '@elabora/core/sync/protocol';
-import type { CloudClient } from '@elabora/node/cloud/client';
-import {
-  blobsOf, commitMedia, confirmedFiles, fetchMedium, keepConfirmed, projectMembership, roomUrl, sendMedia, unlinkFolder, writeLink, type ProjectLink
-} from '@elabora/node/cloud/projects';
-import type { EngineEvent, ExternalNotes } from './protocol.ts';
+import { blobsOf, roomUrl, type CopyLink, type CopyStore } from '@elabora/core/sync/copy';
+import type { EngineEvent, ExternalNotes } from '../protocol.ts';
 
 // A session's copy of a project in the cloud (D73, D83): the changes of the folder (the session's,
 // other processes', files edited by programs that are not Elabora tools) go to the project's room
@@ -16,9 +13,10 @@ import type { EngineEvent, ExternalNotes } from './protocol.ts';
 // folder and its journal. One invariant, kept in one place: the folder holds the client's view
 // (confirmed, then the waiting changes rebased on top). Every step that moves the view runs in the
 // session's write queue, under the project lock, after the journal's new entries are taken in.
+// Without Node (D100): what the copy keeps and the team's media are its host's (CopyStore), the
+// room's connection a WebSocket or what connect gives.
 
 export interface CloudHost {
-  readonly root: string;
   files(): Files;
   // Runs work in the session's queue, under the lock, after the folder's changes are taken in.
   step<T>(work: () => Promise<T>): Promise<T>;
@@ -44,9 +42,10 @@ export type CloudHeld = 'outdated' | 'storage-newer' | 'full';
 
 export interface CloudOptions {
   api: string;
-  client: CloudClient;  // the API with the person's session
   token: string;
-  link: ProjectLink;
+  link: CopyLink;
+  // What the copy keeps, and the team's media (a folder's: @elabora/node cloud/projects folderCopy).
+  store: CopyStore;
   // Waits between reconnections, in milliseconds (the last repeats).
   backoff?: number[];
   // The wait before trying again a room that kept the copy out for its storage or its connections.
@@ -56,9 +55,6 @@ export interface CloudOptions {
   // Opens the room's connection (tests give a room in memory); by default a WebSocket with the
   // session in Authorization, never in the address.
   connect?: (url: string, token: string) => RoomSocket;
-  // Whether the person still reaches the project, asked when the room would not take the connection;
-  // by default the team's list of projects (tests answer it).
-  membership?: () => Promise<'member' | CloudEnd | 'unknown'>;
 }
 
 // What the copy needs of a WebSocket.
@@ -83,6 +79,10 @@ const MEMBERSHIP_EVERY = 30_000;
 // Where the person is, sent at most so often (the last place always goes).
 const WHERE_EVERY = 150;
 
+// A timer that does not keep a Node process alive (a browser's has nothing to unref).
+type Timer = ReturnType<typeof setTimeout>;
+const unref = (timer: Timer): Timer => { (timer as { unref?: () => void }).unref?.(); return timer; };
+
 const webSocket = (url: string, token: string): RoomSocket =>
   new (WebSocket as unknown as new (url: string, init: { headers: Record<string, string> }) => RoomSocket)(url, { headers: { Authorization: `Bearer ${token}` } });
 
@@ -93,21 +93,22 @@ export const isFromRoom = (entry: ChangeLike): boolean => entry.command?.name ==
 export class SessionCloud {
   readonly #host: CloudHost;
   readonly #options: CloudOptions;
-  readonly #link: ProjectLink;
+  readonly #link: CopyLink;
+  readonly #store: CopyStore;
   readonly #client: SyncClient;
   #saved: Files;
   #ws: RoomSocket | null = null;
   #online = false;
   #stopped = false;
   #attempt = 0;
-  #timer: NodeJS.Timeout | null = null;
+  #timer: Timer | null = null;
   readonly #uploads = new Map<string, string | null>(); // submission id → its media upload
   // Who is in the room: each copy connected, this one included (by the room's word).
   #peers: Presence[] = [];
   #idle: (() => void)[] = [];
   #where: Where = {};
   #whereSent: string | null = null;
-  #whereTimer: NodeJS.Timeout | null = null;
+  #whereTimer: Timer | null = null;
   #ended: CloudEnd | null = null;
   // Kept out for now by the room (its protocol, for an app older than it).
   #held: { reason: CloudHeld; protocol: string | null } | null = null;
@@ -122,7 +123,8 @@ export class SessionCloud {
     this.#host = host;
     this.#options = options;
     this.#link = options.link;
-    const confirmed = confirmedFiles(host.root, options.link.confirmed);
+    this.#store = options.store;
+    const confirmed = options.store.confirmed();
     this.#saved = confirmed;
     this.#client = new SyncClient(confirmed, options.link.head);
     for (const change of options.link.waiting) this.#client.record(change);
@@ -133,7 +135,7 @@ export class SessionCloud {
   get pending(): number { return this.#client.pending; }
   get view(): Files { return this.#client.view; }
   get peers(): readonly Presence[] { return this.#peers; }
-  get link(): Readonly<ProjectLink> { return this.#link; }
+  get link(): Readonly<CopyLink> { return this.#link; }
   get role(): RoomRole | null { return this.#role; }
   get held(): CloudHeld | null { return this.#held?.reason ?? null; }
 
@@ -197,8 +199,7 @@ export class SessionCloud {
     this.#where = where;
     if (this.#whereTimer) return;
     this.#tellWhere();
-    this.#whereTimer = setTimeout(() => { this.#whereTimer = null; this.#tellWhere(); }, WHERE_EVERY);
-    this.#whereTimer.unref?.();
+    this.#whereTimer = unref(setTimeout(() => { this.#whereTimer = null; this.#tellWhere(); }, WHERE_EVERY));
   }
 
   #tellWhere(): void {
@@ -273,8 +274,7 @@ export class SessionCloud {
       // An app older than the room is not tried again: Elabora is to be updated first.
       if (this.#stopped || this.#held?.reason === 'outdated') return;
       const waits = this.#options.backoff ?? [500, 1000, 2000, 5000, 10000];
-      this.#timer = setTimeout(() => this.#connect(), this.#held ? this.#options.later ?? LATER : waits[Math.min(this.#attempt++, waits.length - 1)]);
-      this.#timer.unref?.();
+      this.#timer = unref(setTimeout(() => this.#connect(), this.#held ? this.#options.later ?? LATER : waits[Math.min(this.#attempt++, waits.length - 1)]));
       // Kept out before a welcome: the person may have left the team while the module was closed.
       if (!welcomed) void this.#askMembership();
     };
@@ -297,7 +297,7 @@ export class SessionCloud {
   async #askMembership(): Promise<void> {
     if (performance.now() - this.#askedAt < MEMBERSHIP_EVERY) return;
     this.#askedAt = performance.now();
-    const said = await (this.#options.membership ?? (() => projectMembership(this.#options.client, this.#link.team, this.#link.project)))().catch(() => 'unknown' as const);
+    const said = await this.#store.membership().catch(() => 'unknown' as const);
     if (said === 'removed' || said === 'deleted') await this.#later(async () => this.#end(said));
   }
 
@@ -308,7 +308,7 @@ export class SessionCloud {
     this.#ended = reason;
     this.stop();
     this.#peers = [];
-    unlinkFolder(this.#host.root);
+    this.#store.unlink();
     this.#host.ended();
     this.#host.emit({ type: 'cloudEnded', reason, team: this.#link.team, project: this.#link.project });
   }
@@ -346,12 +346,11 @@ export class SessionCloud {
     }
     if (!this.#uploads.has(submission.id)) {
       try {
-        this.#uploads.set(submission.id, await sendMedia(this.#options.client, this.#host.root, this.#link.team, blobsOf(submission.ops)));
+        this.#uploads.set(submission.id, await this.#store.sendMedia(blobsOf(submission.ops)));
       } catch (error) {
         // Not sent: tried again shortly, as after a lost connection.
         this.#client.disconnected();
-        const timer = setTimeout(() => void this.#later(() => this.#pump()), 2000);
-        timer.unref?.();
+        unref(setTimeout(() => void this.#later(() => this.#pump()), 2000));
         throw error;
       }
     }
@@ -365,15 +364,15 @@ export class SessionCloud {
       return;
     }
     const before = this.#client.view;
-    if (message.type === 'snapshot') for (const file of message.files) if ('blob' in file) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, file.blob);
+    if (message.type === 'snapshot') for (const file of message.files) if ('blob' in file) await this.#store.fetchMedium(file.blob);
     // A restored room's project replaces this copy's: what the copy had is kept first, in Elabora's
     // versions of the module; what it had not sent goes again on top, as after any snapshot.
     const restored = message.type === 'snapshot' ? this.#restored : null;
     const version = restored !== null ? await this.#host.version(this.#options.restoredVersion ?? 'Before the project was restored') : null;
     if ((message.type === 'change' || message.type === 'ack') && blobsOf(message.change.ops).length) {
-      for (const hash of blobsOf(message.change.ops)) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, hash);
+      for (const hash of blobsOf(message.change.ops)) await this.#store.fetchMedium(hash);
     }
-    if (message.type === 'catchup') for (const change of message.changes) for (const hash of blobsOf(change.ops)) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, hash);
+    if (message.type === 'catchup') for (const change of message.changes) for (const hash of blobsOf(change.ops)) await this.#store.fetchMedium(hash);
     const said = this.#client.receive(message);
     if (said === 'gap') this.#send({ type: 'catchup', since: this.#client.head });
     // The room could not find a medium of the change: its media are sent again before it (D85).
@@ -382,7 +381,7 @@ export class SessionCloud {
     await this.#settle(before, placed);
     if (placed && message.type !== 'ack' && !placed.id.startsWith(`${this.#link.client}.`)) this.#replaced(placed);
     if (message.type === 'ack' && this.#uploads.has(message.change.id)) {
-      await commitMedia(this.#options.client, this.#link.team, this.#uploads.get(message.change.id) ?? null);
+      await this.#store.commitMedia(this.#uploads.get(message.change.id) ?? null);
       this.#uploads.delete(message.change.id);
     }
     if (restored !== null) {
@@ -451,13 +450,10 @@ export class SessionCloud {
     if (this.#ended) return;
     const confirmed = this.#client.confirmed;
     const changed = new Map([...confirmed].filter(([rel, file]) => this.#saved.get(rel) !== file));
-    const kept = { ...this.#link.confirmed, ...keepConfirmed(this.#host.root, changed) };
-    for (const rel of Object.keys(kept)) if (!confirmed.has(rel)) delete kept[rel];
-    this.#link.confirmed = kept;
     this.#link.head = this.#client.head;
     this.#link.waiting = this.#client.waitingChanges();
     this.#saved = confirmed;
-    writeLink(this.#host.root, this.#link);
+    this.#store.save(this.#link, confirmed, changed);
     this.#status();
   }
 

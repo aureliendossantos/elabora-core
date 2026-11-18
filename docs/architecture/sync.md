@@ -58,7 +58,9 @@ An agent may read a file, think, and write it long after: what it writes is the 
 
 ## A folder linked to a project
 
-`@elabora/node` `cloud/projects.ts` and `cloud/link.ts`, `@elabora/engine` `session-cloud.ts`; the command line's `elabora cloud teams` and `elabora cloud project create|push|clone|sync` (D83).
+`@elabora/node` `cloud/projects.ts` and `cloud/link.ts`, `@elabora/engine` `base/session-cloud.ts`; the command line's `elabora cloud teams` and `elabora cloud project create|push|clone|sync` (D83).
+
+- **The copy and its store** (D100): the copy's machine (`base/session-cloud.ts`: the connection, reconnections, close codes, epoch, presence, what goes and what comes) has no Node in it. What it keeps and the team's media are its host's, a `CopyStore` (`@elabora/core/sync/copy`): the files the room confirmed, saving the copy, unlinking it, sending, committing and fetching media by hash, the person's membership. A folder's store is `folderCopy` (`cloud/projects.ts`), which `cloudSessionOptions(dir)` gives.
 
 - **The link** (`cloud-project.json` in the project's data folder): the server, team and project, this copy's id, its person, the room's number it has, what the room confirmed (by hash in the folder's blob store), the changes waiting, the journal's last entry taken in. It is all a copy needs to go on after a restart, offline or not.
 - **The engine's session syncs it.** Every journal entry, in order, goes into the copy's `SyncClient`: the session's own changes, other processes' (the CLI, the MCP server), file edits no Elabora tool made (computed as in D75). The room's changes are written in the folder and journaled as the change of their author, with the command `sync`, which is never sent back. The folder is always the client's view: a change the room refused leaves it, and the refusal is told (`cloudOutcome`). Another's change that replaced a value a change of this copy wrote, unseen, is told to this copy only (`cloudReplaced`, D90).

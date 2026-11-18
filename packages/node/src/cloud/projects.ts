@@ -11,7 +11,8 @@ import { CloudClient, CloudError, cloudUrl, segment } from './client.ts';
 import type { ServiceInfo } from './account.ts';
 import { requireCredential } from './credentials.ts';
 import { sendBlobs } from './blob-upload.ts';
-import { linkFile, readLink, writeLink, type Person, type ProjectLink } from './link.ts';
+import { linkFile, readLink, unlinkFolder, writeLink, type Person, type ProjectLink } from './link.ts';
+import type { CopyStore } from '@elabora/core/sync/copy';
 import { ensureLibrary, stagingFolder } from '../library/location.ts';
 import { getProject, readCourseInfo, type LibraryProject } from '../library/projects.ts';
 import { dataLocation } from '../data-dir.ts';
@@ -171,17 +172,9 @@ export async function submitChange(client: CloudClient, team: string, project: s
   }
 }
 
-export const roomUrl = (api: string, team: string, project: string): string =>
-  `${api.replace(/^http/, 'ws')}/v1/teams/${segment(team)}/projects/${segment(project)}/room`;
-
 // ── media ────────────────────────────────────────────────────────────
 
 const hex = (hash: string): string => hash.replace(/^sha256:/, '');
-
-// The binary contents a change writes, by hash.
-export function blobsOf(ops: readonly Op[]): string[] {
-  return [...new Set(ops.flatMap((op) => (op.op === 'write' && 'blob' in op ? [op.blob] : [])))];
-}
 
 // Announces every medium a change writes (even those the team holds: the upload keeps them from
 // the collection until the change is numbered) and sends those it lacks, a few at a time (D88);
@@ -406,10 +399,30 @@ function newLink(root: string, options: { api: string; team: string; project: st
 }
 
 // What a session needs to sync a linked folder (the engine's OpenOptions.cloud).
-export function cloudSessionOptions(dir: string): { api: string; client: CloudClient; token: string; link: ProjectLink } | null {
-  const link = readLink(path.resolve(dir));
+export function cloudSessionOptions(dir: string): { api: string; token: string; link: ProjectLink; store: CopyStore } | null {
+  const root = path.resolve(dir);
+  const link = readLink(root);
   if (!link) return null;
   const api = projectsApi(link.api);
   const token = requireCredential(api).token;
-  return { api, client: new CloudClient(api, token), token, link };
+  return { api, token, link, store: folderCopy(root, new CloudClient(api, token), link) };
+}
+
+// A folder's copy of its project (CopyStore, D100): what the room confirmed by hash in the folder's
+// blob store, the link in cloud-project.json, the media through the hosting's API.
+export function folderCopy(root: string, client: CloudClient, link: ProjectLink): CopyStore {
+  let kept = link.confirmed;
+  return {
+    confirmed: () => confirmedFiles(root, kept),
+    save(copy, confirmed, changed) {
+      kept = { ...kept, ...keepConfirmed(root, changed) };
+      for (const rel of Object.keys(kept)) if (!confirmed.has(rel)) delete kept[rel];
+      writeLink(root, { ...link, ...copy, confirmed: kept });
+    },
+    unlink: () => unlinkFolder(root),
+    sendMedia: (hashes) => sendMedia(client, root, link.team, hashes),
+    commitMedia: (upload) => commitMedia(client, link.team, upload),
+    fetchMedium: (hash) => fetchMedium(client, root, link.team, hash),
+    membership: () => projectMembership(client, link.team, link.project)
+  };
 }

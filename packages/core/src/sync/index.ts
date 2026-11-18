@@ -9,3 +9,4 @@ export { rebase, type RebaseInput, type RebaseResult } from './rebase.ts';
 export { acceptChange, type RoomState, type AcceptOptions, type Accepted } from './server.ts';
 export { SyncClient, type LocalChange, type Outcome } from './client.ts';
 export { journalOf, leftByRebase } from './undo-log.ts';
+export { roomUrl, blobsOf, type CopyLink, type CopyStore, type Person } from './copy.ts';

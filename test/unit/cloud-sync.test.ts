@@ -5,13 +5,13 @@ import path from 'node:path';
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { openProject, type Session } from '@elabora/engine/session';
-import type { RoomSocket } from '@elabora/engine/session-cloud';
+import type { RoomSocket } from '@elabora/engine/base/session-cloud';
 import { acceptChange, journalOf, type ClientMessage, type Committed, type ServerMessage } from '@elabora/core/sync/index';
 import { changesToUndo } from '@elabora/core/ops/batch';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
 import { CloudClient, CloudError } from '@elabora/node/cloud/client';
-import { accountForTeams, cloudOffers, createTeam, folderSnapshot, keepConfirmed, linkFile, listOrgs, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
+import { accountForTeams, cloudOffers, createTeam, folderCopy, folderSnapshot, keepConfirmed, linkFile, listOrgs, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { listVersions, readVersion } from '@elabora/node/backups/index';
 import { putBytes, readBlob } from '@elabora/node/blobs';
@@ -171,7 +171,7 @@ async function linked(room: Room, dir: string, membership: () => Promise<'member
   };
   writeLink(dir, link);
   const session = await openProject(dir, {
-    cloud: { api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20], later, membership },
+    cloud: { api: link.api, token: 't', link, store: { ...folderCopy(dir, new CloudClient(link.api, 't'), link), membership }, connect: room.connect, backoff: [20], later },
     backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, debounceMs: 30
   });
   sessions.push(session);
@@ -381,7 +381,7 @@ test('a folder linked while its session is open starts syncing; each copy sees w
   writeLink(B, link);
   const statuses: { peers: Presence[]; client: string }[] = [];
   b.subscribe((message) => { if (message.kind === 'event' && message.event.type === 'cloudStatus') statuses.push(message.event); });
-  await b.linkCloud({ api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20] });
+  await b.linkCloud({ api: link.api, token: 't', link, store: folderCopy(B, new CloudClient(link.api, 't'), link), connect: room.connect, backoff: [20] });
   await settled(room, a, b);
   await a.run('update_screen', { id: 'chemin', title: 'Après le lien' }, { kind: 'human' });
   await settled(room, a, b);
@@ -389,7 +389,7 @@ test('a folder linked while its session is open starts syncing; each copy sees w
   assert.deepEqual(cloudOf(b)?.peers.map((peer) => peer.actor.name).sort(), ['Ada', 'Béa']);
   assert.equal(statuses.at(-1)?.client, 'cB2');
   assert.deepEqual([cloudOf(b)?.team, cloudOf(b)?.project], ['tm_test', 'prj_test']);
-  await assert.rejects(b.linkCloud({ api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect }), /already syncs/);
+  await assert.rejects(b.linkCloud({ api: link.api, token: 't', link, store: folderCopy(B, new CloudClient(link.api, 't'), link), connect: room.connect }), /already syncs/);
   // A leaves: B sees it go.
   await a.close({ media: 'cancel' });
   sessions.splice(sessions.indexOf(a), 1);
@@ -429,7 +429,7 @@ test('what is done in a module while its first upload runs goes to the room as i
     person: { id: 'acc_ada', name: 'Ada' }, head: room.head, confirmed: keepConfirmed(A, source.files), waiting: [], journal: source.journal
   };
   writeLink(A, link);
-  await a.linkCloud({ api: link.api, client: new CloudClient(link.api, 't'), token: 't', link, connect: room.connect, backoff: [20] });
+  await a.linkCloud({ api: link.api, token: 't', link, store: folderCopy(A, new CloudClient(link.api, 't'), link), connect: room.connect, backoff: [20] });
   await settled(room, a);
   const sent = room.log.at(-1);
   assert.equal(room.log.length, 1, JSON.stringify(room.log.map((change) => change.command)));
