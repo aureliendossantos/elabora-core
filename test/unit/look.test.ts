@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
-import { objectFrame } from '@elabora/player/frames';
+import { objectFrame, pageFrames } from '@elabora/player/frames';
 import { startServer } from '@elabora/node/emulator/server';
 import { findLookServer, lookFolder } from '@elabora/node/look';
 import { codeHash, codeVersion } from '@elabora/node/code-version';
@@ -16,11 +16,34 @@ test('object frames: next to the page in an opaque sandbox, or from the frames p
   assert.deepEqual(objectFrame('objects/lab', [], null, page), { src: 'objects/lab/frame.html', sandbox: 'allow-scripts' });
   assert.deepEqual(objectFrame('objects/lab', ['pointer-lock'], null, page), { src: 'objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock' });
   // A preview: another origin of the same site, which may keep allow-same-origin.
-  assert.deepEqual(objectFrame('objects/lab', ['pointer-lock'], 4808, page), { src: 'http://127.0.0.1:4808/pkg/preview/objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock allow-same-origin' });
-  assert.deepEqual(objectFrame('objects/lab', [], 4808, 'http://localhost:4807/canvas/index.html?token=x'), { src: 'http://localhost:4808/canvas/objects/lab/frame.html', sandbox: 'allow-scripts allow-same-origin' });
+  assert.deepEqual(objectFrame('objects/lab', ['pointer-lock'], { port: 4808 }, page), { src: 'http://127.0.0.1:4808/pkg/preview/objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock allow-same-origin' });
+  assert.deepEqual(objectFrame('objects/lab', [], { port: 4808 }, 'http://localhost:4807/canvas/index.html?token=x'), { src: 'http://localhost:4808/canvas/objects/lab/frame.html', sandbox: 'allow-scripts allow-same-origin' });
   // Never the page's own origin, never a page of another computer.
-  assert.deepEqual(objectFrame('objects/lab', [], 4807, page), { src: 'objects/lab/frame.html', sandbox: 'allow-scripts' });
-  assert.deepEqual(objectFrame('objects/lab', [], 4808, 'https://lms.example.com/content/index.html'), { src: 'objects/lab/frame.html', sandbox: 'allow-scripts' });
+  assert.deepEqual(objectFrame('objects/lab', [], { port: 4807 }, page), { src: 'objects/lab/frame.html', sandbox: 'allow-scripts' });
+  assert.deepEqual(objectFrame('objects/lab', [], { port: 4808 }, 'https://lms.example.com/content/index.html'), { src: 'objects/lab/frame.html', sandbox: 'allow-scripts' });
+});
+
+test('object frames from an origin: a page of the web loads them from a host of their own, never from its own origin, nor from one that is not https', () => {
+  const page = 'https://canvas.elabora.page/canvas/index.html?token=x';
+  const from = (origin: string, base = page) => objectFrame('objects/lab', ['pointer-lock'], { origin }, base);
+  // The frames host: the same path on another origin, allow-same-origin to keep a service worker's answer.
+  assert.deepEqual(from('https://frames.elabora.page'), { src: 'https://frames.elabora.page/canvas/objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock allow-same-origin' });
+  assert.deepEqual(from('https://frames.elabora.page/'), { src: 'https://frames.elabora.page/canvas/objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock allow-same-origin' });
+  assert.deepEqual(from('https://frames.example.org:8443'), { src: 'https://frames.example.org:8443/canvas/objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock allow-same-origin' });
+  // This computer's pages may use one of this computer.
+  assert.deepEqual(from('http://127.0.0.1:4808', 'http://localhost:4807/canvas/index.html'), { src: 'http://127.0.0.1:4808/canvas/objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock allow-same-origin' });
+  // The page's own origin, an origin that is not one (a path, a query, a scheme that is not https, a name that is not an address): sandboxed, as in a package.
+  const packaged = { src: 'objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock' };
+  for (const origin of ['https://canvas.elabora.page', 'https://canvas.elabora.page/', 'https://frames.elabora.page/x', 'https://frames.elabora.page?a=1', 'http://frames.elabora.page', 'javascript:alert(1)', 'https://', 'frames.elabora.page', 'null', '']) {
+    assert.deepEqual(from(origin), packaged, origin);
+  }
+  // Where a page reads it: a port, an origin, nothing else.
+  const read = (value: string) => { (globalThis as { location?: unknown }).location = { search: `?frames=${encodeURIComponent(value)}` }; return pageFrames('url'); };
+  assert.deepEqual(read('4808'), { port: 4808 });
+  assert.deepEqual(read('https://frames.elabora.page'), { origin: 'https://frames.elabora.page' });
+  assert.equal(read('http://evil.example'), null);
+  assert.equal(read('48080808'), null);
+  delete (globalThis as { location?: unknown }).location;
 });
 
 function get(url: string): Promise<{ status: number; body: string }> {
