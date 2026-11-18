@@ -532,8 +532,7 @@ export function engineConformance(target: ConformanceTarget): void {
   it('ElevenLabs without a key: refused with its code; a key given is kept masked, then forgotten', async () => {
     const { client } = await engine('network');
     await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('refused', 'E_VOICE_KEY_MISSING'));
-    // Said as ElevenLabs not reached today (E_VOICE_OFFLINE), the missing key in its words.
-    await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('refused', /API key/));
+    await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('generateSound', { prompt: 'Un clic de souris' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('soundEstimate', { duration: 2 }), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('setVoiceKey', { provider: 'elevenlabs', key: 'not a key' }), refused('refused', 'E_VOICE_KEY_FORMAT'));
