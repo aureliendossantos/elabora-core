@@ -107,29 +107,6 @@ test('a media file dropped into assets/ that is not conformant is converted, its
   assert.equal(readJSON(dir, 'screens/accueil.json').blocks.at(-1).props.asset, 'images/photo.bmp');
 });
 
-test('an import requested through the session is journaled as the requester\'s change when its job is done', async (t) => {
-  if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
-  temporary.push(dir);
-  const session = await openProject(dir, { ...QUIET, media: { tools } });
-  sessions.push(session);
-  const events: EngineEvent[] = [];
-  session.subscribe(({ event }) => events.push(event));
-  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-engine-import-'));
-  temporary.push(folder);
-  const source = path.join(folder, 'Schéma Réseau.png');
-  await run(tools.ffmpeg, ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=640x360', '-frames:v', '1', source]);
-  const imported = await session.importMedia(source);
-  assert.match(imported.path, /^assets\/images\/schema-reseau\.(png|webp)$/);
-  const changed = await waitFor(events, isChanged('media'));
-  assert.deepEqual(changed.change.author, { kind: 'human' });
-  assert.equal(changed.change.command?.name, 'import_media');
-  assert.deepEqual(changed.change.files, [imported.path]);
-  assert.ok(session.files.get(imported.path)?.kind === 'binary');
-  assert.ok(events.some((event) => event.type === 'mediaJob' && event.job.status === 'done'));
-  assert.equal(session.mediaJobs().find((job) => job.id === imported.job.id)?.status, 'done');
-});
-
 test('an asset that a media job will write is reported as processing, not missing, while the job is under way', async () => {
   const dir = copyExample();
   temporary.push(dir);

@@ -68,5 +68,7 @@ port.onmessage = ({ data }) => client.receive(data);
 const summary = await client.request('summary', {});
 ```
 
+The protocol is checked by its conformance suite (`test/conformance/engine.ts`): each request at least once on the sample modules, judged on its answer and the events that follow, never on how a session does it, a last case failing when a request of `protocol.ts` has none. It takes a session as a target (a transport, how a picked file reaches it, where an export goes): the desktop's runs in `test/unit/engine-conformance.test.ts`, with the tests' stand-ins for its voices and transcriber; every other session that speaks the protocol runs the same cases.
+
 ## Measured
 On the 87-screen course of `scripts/make-large-course.ts` (288 MB of video), on a busy machine (`packages/engine/bench/measure.ts`, `test/e2e/engine-canvas.test.ts`): open 30 to 90 ms (250 to 850 ms the first time, when every video is hashed), plus about 40 ms on macOS until the folder's watcher reports (its thread starts, about 20 ms, then its probe is reported); a command to its `changed` event about 2 ms, to its `diagnostics` event 5 to 8 ms (median); a `course.json` edit (everything validated) about 50 ms; an agent's own file write to its events about 75 ms (the debounce); a CLI edit is seen as soon as it is journaled; a command to the canvas DOM about 10 ms in Chrome; heap used after 150 commands +4 MB.

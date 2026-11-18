@@ -310,14 +310,9 @@ test('engine: the app asks which aligners are here, writes words and times lines
     const result = await session.alignNarration({ screen: 'accueil', lines: ['l1', 'l3'] });
     assert.deepEqual(result.lines.map((line) => line.status), ['skipped', 'skipped']);
     assert.ok(events.some((event) => event.type === 'changed' && event.source === 'engine'));
-    // Through the protocol, as the app asks.
-    for (const [type, params] of [['aligners', {}], ['timeline', { screen: 'accueil' }], ['timelineAt', { screen: 'accueil', time: 1 }], ['timelineMarks', { screen: 'accueil' }]] as const) {
-      const response = await session.handle({ kind: 'request', id: type, type, params });
-      assert.ok(response.ok, `${type}: ${JSON.stringify(response)}`);
-    }
+    // A recording the desktop's engine hears is an absolute path.
     const relative = await session.handle({ kind: 'request', id: 'tr', type: 'transcribeRecording', params: { file: 'l1.m4a' } });
     assert.ok(!relative.ok && relative.error.kind === 'bad-request', 'a recording is an absolute path');
-    assert.equal(session.effects()[0].name, 'none');
     await assert.rejects(session.alignNarration({ screen: 'accueil', lines: ['l9'] }), (error: Error & { kind?: string; code?: string }) => error.kind === 'not-found' && error.code === 'E_ALIGN_LINE');
   } finally {
     await session.close();

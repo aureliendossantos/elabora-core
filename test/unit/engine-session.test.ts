@@ -2,15 +2,15 @@ import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { openProject, ProtocolClient } from '@elabora/engine';
-import type { EngineEvent, OpenOptions, Session, SessionStore, ResponseMessage, EventMessage } from '@elabora/engine';
+import { openProject } from '@elabora/engine';
+import type { EngineEvent, OpenOptions, Session, SessionStore } from '@elabora/engine';
 import { FsStore } from '@elabora/node/store/index';
 import { readJournal } from '@elabora/node/journal/index';
 import type { ChangeEntry } from '@elabora/core/ops/types';
 import { copyExample, readJSON } from '../helpers.ts';
 
 // The engine's session on the example course: commands, external edits, half-written files, its
-// own writes, bursts, and the message protocol.
+// own writes, bursts. The message protocol is test/conformance/engine.ts's.
 
 const temporary: string[] = [];
 const sessions: Session[] = [];
@@ -258,77 +258,6 @@ test('a file an edit touches that changed on disk unseen is journaled first, the
   const written = readJSON(dir, 'screens/chemin.json');
   assert.equal(written.title, 'Titre de l\'agent', 'the agent\'s edit is kept');
   assert.equal(written.blocks[0].props.markdown, 'Texte humain');
-});
-
-test('protocol: requests answered with results or typed errors, events as messages', async () => {
-  const { dir, session } = await open();
-  const messages: EventMessage[] = [];
-  session.subscribe((message) => messages.push(message));
-  // A transport in memory: what an Electron message port or a WebSocket would carry.
-  const client = new ProtocolClient((message) => {
-    void session.handle(structuredClone(message)).then((response: ResponseMessage) => client.receive(structuredClone(response)));
-  });
-  const summary = await client.request('summary', {});
-  assert.equal(summary.course?.id, readJSON(dir, 'course.json').id);
-  assert.equal(summary.outline.flatMap((section) => section.screens).length, summary.outline.reduce((n, section) => n + section.screens.length, 0));
-  assert.equal(summary.plan.state, 'approved');
-  // Every screen with how long a learner spends on it (D50).
-  assert.ok(summary.outline.flatMap((section) => section.screens).every((entry) => entry.seconds >= 10));
-  // The author writes the plan as the agent does, a validated version or not; versions are a person's.
-  await assert.rejects(client.request('run', { command: 'write_plan', args: { patch: [{ op: 'remove', path: '/items/9' }] } }), (error: Error & { kind?: string }) => error.kind === 'refused' && /does not apply/.test(error.message));
-  await assert.rejects(client.request('run', { command: 'approve_plan', args: { by: 'Claire Martin' }, author: { kind: 'agent', name: 'assistant' } }), (error: Error & { kind?: string }) => error.kind === 'refused' && /Only a person/.test(error.message));
-  const screen = await client.request('readScreen', { screen: 'chemin' });
-  assert.equal(screen.data.id, 'chemin');
-  const file = await client.request('readFile', { path: 'course.json' });
-  assert.equal(file.kind, 'text');
-  const run = await client.request('run', { command: 'update_screen', args: { id: 'chemin', title: 'Le chemin' } });
-  assert.equal(run.change?.command?.name, 'update_screen');
-  const history = await client.request('history', { limit: 10 });
-  assert.deepEqual(history.changes.map((change) => change.op), ['update_screen']);
-  const diagnostics = await client.request('diagnostics', {});
-  assert.ok(Object.keys(diagnostics.screens).includes('chemin'));
-  assert.ok(messages.some(({ kind, event }) => kind === 'event' && event.type === 'changed'));
-
-  // What the events of a screen can name: a free object's events and settings, the course's
-  // screens and variables.
-  const parts = await client.request('screenParts', { screen: 'simulation' });
-  const scene = parts.blocks.find((block) => block.id === 'simulation-scene');
-  assert.equal(scene?.behavior, 'object');
-  assert.deepEqual(scene?.object?.events.map((event) => [event.name, event.fields]), [['device_inspected', ['device', 'inOrder', 'faulty']], ['hint_shown', []], ['completed', ['score', 'attempts']]]);
-  assert.ok(scene?.object?.props.some((prop) => prop.name === 'packetSpeed' && prop.type === 'number'));
-  assert.deepEqual(parts.blocks.find((block) => block.id === 'simulation-consigne')?.controls, []);
-  assert.deepEqual(parts.steps, [1]);
-  assert.equal(parts.screens[0]?.id, summary.outline[0]?.screens[0]?.id);
-  assert.ok(parts.variables.some((variable) => variable.id === 'indiceVu'));
-  await assert.rejects(client.request('screenParts', { screen: 'absent' }), { kind: 'not-found' });
-  // The course's words that hold a text, and where.
-  const found = await client.request('findText', { query: 'pare-feu' });
-  assert.ok(found.some((match) => match.screen === 'chemin' && match.block === 'chemin-roles'));
-  assert.ok(found.every((match) => match.file.startsWith('screens/') || match.file === 'course.json'));
-  // Languages: none, then English started as a change, as a bilingual table.
-  assert.deepEqual(await client.request('translationStatus', {}), []);
-  await client.request('run', { command: 'export_translation', args: { to: 'en' } });
-  const languages = await client.request('translationStatus', {});
-  assert.deepEqual(languages.map((status) => [status.language, status.exists]), [['en', true]]);
-  const table = await client.request('translationTable', { language: 'en' });
-  assert.ok(table.rows.length > 20 && table.rows.every((row) => row.status === 'to-translate'));
-  await assert.rejects(client.request('translationTable', { language: 'fr' }), { kind: 'bad-request' });
-  await assert.rejects(client.request('readScreen', { screen: 'absent' }), { kind: 'not-found' });
-  const render = await client.request('renderScreen', { screen: 'chemin', step: 1 });
-  assert.equal(render.screen, 'chemin');
-  assert.equal(render.course.screens[0].id, 'chemin');
-  assert.deepEqual(render.view, { state: 'initial', step: 1, layer: null });
-  assert.ok(render.files.some((file) => file.path === 'assets/images/chemin-impression.svg' && file.kind === 'asset'));
-  await assert.rejects(client.request('renderScreen', { screen: 'absent' }), { kind: 'not-found' });
-  await assert.rejects(client.request('canvasView', { screen: 'chemin' }), { kind: 'not-available' });
-  await assert.rejects(client.request('run', { command: 'remove_block', args: { block: 'absent' } }), { kind: 'refused' });
-  const unknown = await session.handle({ kind: 'request', id: 'x', type: 'format_disk', params: {} });
-  assert.equal(unknown.ok, false);
-  assert.equal(!unknown.ok && unknown.error.kind, 'bad-request');
-
-  const closed = await client.request('close', {});
-  assert.equal(typeof closed.version === 'string' || closed.version === null, true);
-  await assert.rejects(client.request('summary', {}), { kind: 'closed' });
 });
 
 test('a session ignores files that are not content: tool folders, temporary files, conflict copies', async () => {
