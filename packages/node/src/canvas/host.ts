@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ObjectManifest } from '@elabora/format';
 import type { RenderedFileKind, RenderedScreen } from '@elabora/core/render/screen';
-import type { HostMessage, RenderView, ScreenRender } from '@elabora/player/canvas-protocol';
+import type { AnswerMessage, AskMessage, AskName, CanvasAsks, HostMessage, RenderView, ScreenRender } from '@elabora/player/canvas-protocol';
 import { projectPath } from '@elabora/core/project/files';
 import { startServer } from '../emulator/server.ts';
 import type { RouteHandler } from '../emulator/server.ts';
@@ -15,7 +15,9 @@ import { serveFile, mimeType } from './files.ts';
 // The Node host of the editor canvas: what the engine drives. It serves, under /canvas/:
 //   index.html                the canvas page (elabora/player.css, elabora/canvas.js, the connector)
 //   elabora/…                   the player stylesheet, canvas.js, object-frame.js, three.js
-//   elabora/events              render data, as server-sent events (push sends them)
+//   elabora/events              render data, as server-sent events (push sends them), and the host's
+//                             questions about what is on screen (ask)
+//   elabora/answer              POST: a page's answer to one of them (with the page's token)
 //   objects/<id>/frame.html   generated, object.js bundled from the object's folder (cached)
 //   any other path            a file of the project folder that a render listed (assets, stylesheet
 //                             files, fonts, object assets), the audio of a narration line
@@ -47,6 +49,10 @@ export interface CanvasHandler {
   push(render: RenderedScreen, options?: { id?: string | number }): number;
   // Changes what the pages show of the screen (step, layer, state) without new data.
   view(view: Partial<RenderView>, options?: { id?: string | number }): number;
+  // Asks the pages what is on screen (canvas-protocol.ts, CanvasAsks): the question goes to every page
+  // connected (or, with none, to the first that connects); the first answer is the result. Rejects after
+  // timeoutMs (default 10 s), when the host closes, or when every page it went to is gone.
+  ask<Name extends AskName>(ask: Name, params: CanvasAsks[Name]['params'], options?: { timeoutMs?: number }): Promise<CanvasAsks[Name]['result']>;
   // Ends the event streams.
   close(): void;
 }
@@ -65,13 +71,21 @@ const NARRATION_AUDIO = /^assets\/narration\/[^/]+\/[^/]+\/[^/]+\.m4a$/;
 // A sound of the course (D67): the editor's sound browser and inspector play it on any screen, and a
 // sound just added or made is in no render yet.
 const COURSE_SOUND = /^assets\/sounds\/[^/]+\.(?:flac|m4a|mp3|ogg|oga|opus|wav)$/;
+const ANSWER_LIMIT = 1024 * 1024;
+const ASK_TIMEOUT_MS = 10000;
 const LOCAL_HOST = /^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i;
 
-// The connector of the page served by this host: render data arrives as server-sent events.
-const CONNECT_SCRIPT = `// Connects the canvas page to its Node host: messages arrive as server-sent events.
+// The connector of the page served by this host: render data arrives as server-sent events, answers leave by POST.
+const CONNECT_SCRIPT = `// Connects the canvas page to its Node host: messages arrive as server-sent events, answers leave by POST.
 (function () {
+  var token = new URLSearchParams(location.search).get('token') || '';
   var source = new EventSource('elabora/events');
   source.onmessage = function (event) { window.__elaboraCanvas.receive(JSON.parse(event.data)); };
+  // The answers to the host's questions go back by POST.
+  window.__elaboraCanvas.onMessage(function (message) {
+    if (message.type !== 'elabora/answer') return;
+    fetch('elabora/answer?token=' + encodeURIComponent(token), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(message) }).catch(function () {});
+  });
 })();
 `;
 
@@ -104,6 +118,9 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
   // Project files the renders listed, by path: the only ones served.
   const allowed = new Map<string, RenderedFileKind>();
   let last: { id?: string | number; render: ScreenRender } | null = null;
+  // The questions waiting for an answer, by request number.
+  const asked = new Map<number, { message: AskMessage; to: Set<Page>; resolve: (result: unknown) => void; reject: (error: Error) => void; timer: NodeJS.Timeout }>();
+  let requests = 0;
   let language = 'en';
   const runtime = new Map<string, Promise<string | Buffer>>();
   const objectCode = new Map<string, { signature: string; code: Promise<string> }>();
@@ -144,17 +161,28 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
     // Only this computer's pages, by name: a page of another site that rebinds a name to 127.0.0.1
     // must not read the project.
     if (!LOCAL_HOST.test(request.headers.host ?? '')) return text(403, 'forbidden');
-    if (request.method !== 'GET' && request.method !== 'HEAD') return text(405, 'method not allowed');
     let name: string;
     try { name = decodeURIComponent(url.pathname).slice(PREFIX.length); } catch { return text(400, 'bad path'); }
+    if (name === 'elabora/answer') return takeAnswer(request, response, url);
+    if (request.method !== 'GET' && request.method !== 'HEAD') return text(405, 'method not allowed');
     if (name === '' || name === 'index.html') { response.writeHead(200, { 'content-type': mimeType('index.html'), 'cache-control': 'no-store' }).end(PAGE); return; }
     if (name === 'elabora/events') {
       response.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', connection: 'keep-alive' });
       response.write('retry: 500\n\n');
       const page: Page = { response, styles: '' };
       pages.add(page);
-      request.on('close', () => pages.delete(page));
+      request.on('close', () => {
+        pages.delete(page);
+        // A question only this page had is not left for the next: it would reach a page that did not exist when it was asked.
+        for (const waiting of asked.values()) {
+          if (!waiting.to.delete(page) || waiting.to.size > 0) continue;
+          clearTimeout(waiting.timer);
+          asked.delete(waiting.message.request);
+          waiting.reject(new Error(`The page went away before answering "${waiting.message.ask}"`));
+        }
+      });
       if (last) sendRender(page, last.id, last.render);
+      for (const waiting of asked.values()) { send(page, waiting.message); waiting.to.add(page); }
       return;
     }
     const runtimeContent = name.startsWith('elabora/') ? runtimeFile(name) : null;
@@ -185,6 +213,34 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
     serveFile(request, response, path.join(folder, ...rel.split('/')));
   }
 
+  // A page's answer, posted with its token: it settles the question it names (one that is settled or
+  // gone is ignored).
+  async function takeAnswer(request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> {
+    const text = (status: number, body: string) => { response.writeHead(status, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' }).end(body); };
+    // Only JSON (a page of another site cannot post it without a preflight, which this host does not answer), and only with the token of the pages it serves.
+    if (request.method !== 'POST' || !/^application\/json\b/i.test(request.headers['content-type'] ?? '')) return text(405, 'method not allowed');
+    const given = Buffer.from(url.searchParams.get('token') ?? '');
+    const wanted = Buffer.from(token);
+    if (given.length !== wanted.length || !crypto.timingSafeEqual(given, wanted)) return text(403, 'forbidden');
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const chunk of request) {
+      size += (chunk as Buffer).length;
+      if (size > ANSWER_LIMIT) return text(413, 'too large');
+      chunks.push(chunk as Buffer);
+    }
+    let answer: Partial<AnswerMessage> | null;
+    try { answer = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Partial<AnswerMessage> | null; } catch { return text(400, 'bad json'); }
+    const waiting = answer && answer.type === 'elabora/answer' && typeof answer.request === 'number' ? asked.get(answer.request) : undefined;
+    if (waiting && answer) {
+      clearTimeout(waiting.timer);
+      asked.delete(waiting.message.request);
+      if ('error' in answer && typeof answer.error === 'string') waiting.reject(new Error(answer.error));
+      else waiting.resolve('result' in answer ? answer.result : null);
+    }
+    response.writeHead(204, { 'cache-control': 'no-store' }).end();
+  }
+
   return {
     token,
     page: `index.html?token=${token}`,
@@ -205,7 +261,22 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
       for (const page of pages) send(page, { type: 'elabora/view', ...(id !== undefined ? { id } : {}), view });
       return pages.size;
     },
-    close() { for (const page of pages) page.response.end(); pages.clear(); }
+    ask(ask, params, { timeoutMs = ASK_TIMEOUT_MS } = {}) {
+      const message = { type: 'elabora/ask', request: ++requests, ask, params } as AskMessage;
+      return new Promise<never>((resolve, reject) => {
+        const timer = setTimeout(() => { asked.delete(message.request); reject(new Error(`The canvas did not answer "${ask}" in ${timeoutMs} ms`)); }, timeoutMs);
+        timer.unref?.();
+        const waiting = { message, to: new Set<Page>(), resolve: resolve as (result: unknown) => void, reject, timer };
+        asked.set(message.request, waiting);
+        for (const page of pages) { send(page, message); waiting.to.add(page); }
+      });
+    },
+    close() {
+      for (const waiting of asked.values()) { clearTimeout(waiting.timer); waiting.reject(new Error('The canvas host closed')); }
+      asked.clear();
+      for (const page of pages) page.response.end();
+      pages.clear();
+    }
   };
 }
 
@@ -217,7 +288,7 @@ export async function startCanvasHost({ port = 0, ...options }: CanvasHostOption
   return {
     token: handler.token, page: handler.page, base: server.base, url: `${server.base}${PREFIX}${handler.page}`,
     get pages() { return handler.pages; },
-    handle: handler.handle, push: handler.push, view: handler.view,
+    handle: handler.handle, push: handler.push, view: handler.view, ask: handler.ask,
     close: async () => { handler.close(); await server.close(); }
   };
 }

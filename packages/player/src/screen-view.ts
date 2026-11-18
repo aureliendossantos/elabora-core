@@ -19,6 +19,7 @@ import type { Labels } from './labels.ts';
 import type { Interaction } from './scorm12.ts';
 import { element, uniqueId } from './dom.ts';
 import { objectFrame } from './frames.ts';
+import type { FramesSource } from './frames.ts';
 import { createTimeline } from './timeline.ts';
 import type { Timeline, TimelineControls, TimelinePrefs } from './timeline.ts';
 import type { Tooltip } from './tooltip.ts';
@@ -87,7 +88,7 @@ export interface ScreenViewOptions {
   // The retry button of results: take the assessment again.
   retake(): void;
   // The port free objects' frames load from (frames.ts; default null: as in a package).
-  framesPort?: number | null;
+  frames?: FramesSource | null;
   // The player's tooltip (D58): a Continue that cannot open yet says why there, moving nothing.
   tooltip?: Tooltip | null;
   // Narrated screens (docs/decisions.md D24): where their bar goes (null: no bar), whether playback
@@ -117,7 +118,7 @@ export interface ScreenViewOptions {
 export type ScreenView = ReturnType<typeof createScreenView>;
 
 export function createScreenView(options: ScreenViewOptions) {
-  const { app, main, course, courseState, labels, announce, recordInteraction, framesPort = null } = options;
+  const { app, main, course, courseState, labels, announce, recordInteraction, frames = null } = options;
   // The screen shown, its steps and the step reached.
   let screen: ScreenData | undefined;
   let steps = [1];
@@ -941,7 +942,7 @@ export function createScreenView(options: ScreenViewOptions) {
 
   // ── Free objects ──────────────────────────────────────────────────────
   // Their frames, hosts and events (screen-objects.ts).
-  const objects = createObjects({ main, course, courseState, labels, framesPort, recordInteraction, syncSoon: options.syncSoon, trigger, cleanup });
+  const objects = createObjects({ main, course, courseState, labels, frames, recordInteraction, syncSoon: options.syncSoon, trigger, cleanup });
   const hosts = objects.hosts;
   // Frames follow the size class of the page (1rem): sent at initialize and when the window crosses one.
   let lastRootSize = rootSize();
@@ -1072,7 +1073,7 @@ export function createScreenView(options: ScreenViewOptions) {
     const decoration = backdrop.object;
     if (decoration && course.objects[decoration.object]) {
       const definition = course.objects[decoration.object];
-      const iframe = element('iframe', { title: definition.id, ...objectFrame(definition.dir, [], framesPort, document.baseURI), allow: '', referrerpolicy: 'no-referrer', tabindex: '-1', loading: 'eager' });
+      const iframe = element('iframe', { title: definition.id, ...objectFrame(definition.dir, [], frames, document.baseURI), allow: '', referrerpolicy: 'no-referrer', tabindex: '-1', loading: 'eager' });
       // data-state (starting, ready, failed) tells the tools how the object is (look reports it).
       const holder = element('div', { class: 't-backdrop-object', 'data-object': definition.id, 'data-state': 'starting' }, iframe);
       backdropElement.append(holder);
