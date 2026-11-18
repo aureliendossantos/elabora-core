@@ -11,7 +11,8 @@ import type { EngineEvent, EventMessage, RequestMessage, RequestType, ResponseMe
 // transport to it, the messages carried as a message port carries them (structured clone).
 //
 // What a target says of itself, besides the transport: how a file the person picks reaches the
-// session (an absolute path on a desktop), and where an export is written.
+// session (an absolute path on a desktop), and where an export is written. Its session has no
+// ElevenLabs key and cannot reach ElevenLabs: no case spends anything.
 
 export type Sample =
   // The network sample as the engine's tests keep it (test/fixtures/diagnostic-reseau-v1): seven
@@ -529,7 +530,7 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal(new TextDecoder().decode(sample.audio.slice(0, 4)), 'RIFF');
   });
 
-  it('ElevenLabs without a key: refused with its code; a key given is kept masked, then forgotten', async () => {
+  it('ElevenLabs without a key: refused with its code; a key given is kept masked, ElevenLabs out of reach said not available, the key forgotten', async () => {
     const { client } = await engine('network');
     await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));
@@ -539,6 +540,12 @@ export function engineConformance(target: ConformanceTarget): void {
     const key = 'sk_0123456789abcdef0123456789abcdef';
     const given = await client.request('setVoiceKey', { provider: 'elevenlabs', key });
     assert.ok(given.key && given.key !== key && given.key.endsWith(key.slice(-4)));
+    // ElevenLabs out of reach: its account not possible now; an estimate made without the quota, the
+    // author's approval asked.
+    await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('not-available', 'E_VOICE_OFFLINE'));
+    const estimate = await client.request('soundEstimate', { duration: 2 });
+    assert.deepEqual([estimate.quota, estimate.percent, estimate.needsApproval], [null, null, true]);
+    assert.ok(estimate.credits > 0);
     assert.deepEqual(await client.request('setVoiceKey', { provider: 'elevenlabs', key: null }), { key: null });
   });
 

@@ -16,6 +16,8 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-conformance-'));
 process.env.ELABORA_VOICE_FAKE = '1';
 delete process.env.ELEVENLABS_API_KEY;
 process.env.ELABORA_ELEVENLABS_KEY_FILE = path.join(temp, 'no-key');
+// ElevenLabs out of reach: nothing listens there.
+process.env.ELABORA_ELEVENLABS_URL = 'http://127.0.0.1:9';
 // A made-up transcriber model, installed as a download leaves it, and what it hears.
 {
   const body = Buffer.from('not a mod.');

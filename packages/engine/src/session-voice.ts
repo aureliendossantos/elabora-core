@@ -216,9 +216,10 @@ export class SessionVoice {
   }
 }
 
-// A voice tool's error, for the app: what was not found or not set is refused with its code.
+// A voice tool's error, for the app: what cannot be done here now (a model missing, the service out of
+// reach) is not-available, what was not found not-found, the rest refused, each with its code.
 function voiceError(error: unknown): unknown {
   if (error instanceof EngineError || !(error instanceof Error) || !('code' in error) || typeof error.code !== 'string' || !/^E_(VOICE|ALIGN|TRANSCRIBE|NARRATION)_/.test(error.code)) return error;
-  const kind = /^E_(VOICE|ALIGN|TRANSCRIBE)_(DOWNLOAD|RUNTIME|NOT_INSTALLED|LANGUAGE)$/.test(error.code) ? 'not-available' : /^E_(VOICE|ALIGN|NARRATION)_(SCREEN|LINE)$/.test(error.code) || error.code === 'E_VOICE_UNKNOWN' ? 'not-found' : 'refused';
+  const kind = /^E_(VOICE|ALIGN|TRANSCRIBE)_(DOWNLOAD|RUNTIME|NOT_INSTALLED|LANGUAGE|OFFLINE)$/.test(error.code) ? 'not-available' : /^E_(VOICE|ALIGN|NARRATION)_(SCREEN|LINE)$/.test(error.code) || error.code === 'E_VOICE_UNKNOWN' ? 'not-found' : 'refused';
   return new EngineError(kind, error.message, { code: error.code });
 }
