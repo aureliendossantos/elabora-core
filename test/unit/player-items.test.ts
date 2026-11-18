@@ -14,7 +14,7 @@ import { aboutCourse } from '@elabora/core/player/config';
 import { createProjectFiles, textFile } from '@elabora/core/project/files';
 import { loadProject } from '@elabora/core/project/load';
 import { snapshotOfExample } from '../validation-corpus.ts';
-import { Renderer } from '@elabora/engine/render';
+import { Renderer } from '@elabora/engine/base/render';
 import { extractUnits } from '@elabora/core/i18n/units';
 import { DEFAULT_PLAYER, packageLanguages, playerConfig } from '@elabora/core/player/config';
 import { svgLogoContrast, svgPaints } from '@elabora/core/player/logo';

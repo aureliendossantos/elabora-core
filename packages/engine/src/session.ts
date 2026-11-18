@@ -7,40 +7,28 @@ import { diffFiles } from '@elabora/core/ops/diff';
 import { applyOps, invertOps } from '@elabora/core/ops/apply';
 import { externalEdit, recentVersions } from '@elabora/core/sync/external';
 import { isJsonPath, sameContent } from '@elabora/core/ops/json';
-import { isAiAuthor, summarizeBatches, undoneChanges } from '@elabora/core/ops/batch';
-import { projectPath } from '@elabora/core/project/files';
+import { isAiAuthor } from '@elabora/core/ops/batch';
 import type { ProjectFiles, SourceFile } from '@elabora/core/project/files';
 import type { FileInfo } from '@elabora/core/project/store';
 import type { Project } from '@elabora/core/project/model';
-import { planDiffBetween, planVersionsView } from '@elabora/core/project/plan-versions';
-import type { PlanDiffView, PlanRef, PlanVersionsView } from '@elabora/core/project/plan-versions';
-import { screenParts } from '@elabora/core/project/parts';
-import { screenEstimates } from '@elabora/core/project/duration';
-import { findText } from '@elabora/core/commands/text';
+import type { PlanDiffView, PlanVersionsView } from '@elabora/core/project/plan-versions';
 import type { TextMatch } from '@elabora/core/commands/text';
-import { conversionTargets } from '@elabora/core/commands/convert';
-import { CommandError } from '@elabora/core/commands/context';
-import { screenTranslation, translationStatus, translationTable } from '@elabora/core/i18n/translate';
 import type { ScreenTranslation, TranslationStatus, TranslationTable } from '@elabora/core/i18n/translate';
 import { buildTranslation } from '@elabora/node/translate';
 import { packageWeights } from '@elabora/node/packaging/weights';
 import type { PackageWeights } from '@elabora/core/media/weights';
-import { planDocument } from '@elabora/core/plan-document/model';
 import type { PlanDocument } from '@elabora/core/plan-document/model';
 import { PLAN_DOCUMENT_FORMATS, planDocumentPage, readPlanDocument, writePlanDocument } from '@elabora/node/plan-document';
 import { dialoguePage, writeDialogueExport, DIALOGUE_EXPORT_FORMATS } from '@elabora/node/dialogue-export';
 import type { DialogueExportFormat, ExportedDialogue } from '@elabora/node/dialogue-export';
-import { dialogueView } from '@elabora/core/dialogue/view';
 import type { DialogueView } from '@elabora/core/dialogue/view';
 import { findDialogue } from '@elabora/core/dialogue/project';
-import { playDialogue } from '@elabora/core/dialogue/play';
 import type { PlayReport } from '@elabora/core/dialogue/play';
 import { localDay } from '@elabora/core/util/local-day';
 import type { ExportedPlanDocument, PlanDocumentFormat } from '@elabora/node/plan-document';
 import type { ScreenParts } from '@elabora/core/project/parts';
-import { narrationView, timelineView, screenAt, timelineMarks } from '@elabora/core/narration/view';
+import { narrationView } from '@elabora/core/narration/view';
 import type { TimelineView, ScreenAt, TimelineMark } from '@elabora/core/narration/view';
-import { effectsOf } from '@elabora/core/narration/timeline';
 import type { EffectInfo } from '@elabora/core/narration/timeline';
 import type { NarrationView } from '@elabora/core/narration/view';
 import { parseJSON } from '@elabora/core/util/json';
@@ -65,14 +53,14 @@ import { pruneProjectData } from '@elabora/node/project-data';
 import { FsStore } from '@elabora/node/store/fs-store';
 import { readSnapshot } from '@elabora/node/store/snapshot';
 import type { MediaJob } from '@elabora/node/media/jobs';
-import { ProjectState } from './project-state.ts';
-import type { DiagnosticsDelta } from './project-state.ts';
+import { ProjectState } from './base/project-state.ts';
+import type { DiagnosticsDelta } from './base/project-state.ts';
 import { JournalTail } from './journal-tail.ts';
-import { WriteQueue } from './queue.ts';
+import { WriteQueue } from './base/queue.ts';
 import { MediaSupervisor, jobInfo } from './media.ts';
 import type { MediaOptions } from './media.ts';
 import { replaceMediaReferences } from '@elabora/core/commands/media';
-import { commandContext, planVoiceover, unmetExpectation, type Expectation } from '@elabora/core/commands/index';
+import { commandContext, unmetExpectation, type Expectation } from '@elabora/core/commands/index';
 import { binaryFile } from '@elabora/core/project/files';
 import type { FileMedia } from '@elabora/core/media/conformance';
 import { isMediaAsset, mediaStatus, probeAssets } from '@elabora/node/store/media';
@@ -87,11 +75,8 @@ import type { CourseSound } from '@elabora/core/sounds/sounds';
 import { SessionMonitor } from './session-monitor.ts';
 import { SessionActivity } from './session-activity.ts';
 import type { ActivityEntry } from '@elabora/node/activity';
-import { momentTime } from './render.ts';
+import { SessionReads, documentOptions } from './base/reads.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
-import { FORMAT } from '@elabora/format';
-import { projectFormat, compareFormats, formatNumbers } from '@elabora/core/format/version';
-import { summarizeNotes } from '@elabora/core/format/migrations/index';
 import { build } from '@elabora/node/build';
 import { WEB_NAVIGATION, WEB_PROGRESS } from '@elabora/node/build';
 import type { BuildOptions, BuildResult } from '@elabora/node/build';
@@ -236,6 +221,7 @@ export class Session {
   readonly #canvas: SessionCanvas;
   readonly #voice: SessionVoice;
   readonly #sounds: SessionSounds;
+  readonly #reads: SessionReads;
   // Media: the hash each media file was probed at, what could not be read, whether ffprobe is there,
   // and whether media jobs started or finished since the media status was last given.
   readonly #mediaChecked = new Map<string, string>();
@@ -260,6 +246,10 @@ export class Session {
     this.#canvas = new SessionCanvas({ root: this.root, project, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
+    this.#reads = new SessionReads({
+      root: this.root, state: this.#state, entries: () => this.#entries, journalSeq: () => this.#tail.lastSeq, openBatch: () => this.openBatch,
+      mediaJobs: () => this.#media?.jobs() ?? [], migrate: init.options.migrate, assertOpen: () => this.#assertOpen()
+    });
     this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
     // The rescan reads the agents' activity too: a line its watcher missed shows at the next one.
     this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError, onRescan: () => void this.#activity.poke() });
@@ -569,80 +559,15 @@ export class Session {
 
   // ── reads ──────────────────────────────────────────────────────────
 
-  summary(): ProjectSummary {
-    this.#assertOpen();
-    const project = this.#state.project;
-    const course = project.course;
-    const listed = new Set<string>();
-    const estimates = screenEstimates(project);
-    const outline = (Array.isArray(course?.sections) ? course.sections : []).map((section) => ({
-      id: String(section?.id ?? ''),
-      title: String(section?.title ?? ''),
-      screens: (Array.isArray(section?.screens) ? section.screens : []).map((id) => {
-        listed.add(id);
-        const entry = project.screens.get(id);
-        const findings = this.#state.screenDiagnostics(id).filter((d) => !d.waived && !d.ignored);
-        return {
-          id, title: typeof entry?.data?.title === 'string' ? entry.data.title : null, file: entry?.file ?? `screens/${id}.json`,
-          errors: findings.filter((d) => d.severity === 'error').length, warnings: findings.filter((d) => d.severity === 'warning').length,
-          seconds: estimates.get(id)?.seconds ?? 0,
-          ...placedOn(entry?.data)
-        };
-      })
-    }));
-    const jobs = this.#media?.jobs() ?? [];
-    return {
-      root: this.root,
-      course: course ? { id: course.id, title: course.title, language: course.language, version: course.version, format: course.format } : null,
-      format: this.formatStatus(),
-      outline,
-      unlisted: [...project.screens.keys()].filter((id) => !listed.has(id)).sort(),
-      plan: (() => {
-        const versions = planVersionsView(project);
-        return { state: versions.state, objectives: project.plan?.objectives?.length ?? 0, items: project.plan?.items?.length ?? 0, latest: versions.latest, validated: versions.validated, sinceValidated: versions.current.sinceValidated, unversioned: versions.current.unversioned };
-      })(),
-      diagnostics: this.#state.summary,
-      journal: { seq: this.#tail.lastSeq, openBatch: this.openBatch },
-      media: { queued: jobs.filter((job) => job.status === 'queued').length, running: jobs.filter((job) => job.status === 'running').length }
-    };
-  }
+  summary(): ProjectSummary { return this.#reads.summary(); }
 
-  listFiles(dir?: string): FileEntry[] {
-    this.#assertOpen();
-    const prefix = dir ? `${projectPath(String(dir)) ?? ''}/`.replace(/\/+$/, '/') : '';
-    if (dir && prefix === '/') throw new EngineError('bad-request', `Not a folder of the project: ${dir}`);
-    return [...this.#state.files]
-      .filter(([rel]) => rel.startsWith(prefix))
-      .map(([rel, file]): FileEntry => ({ path: rel, kind: file.kind, size: file.kind === 'text' ? Buffer.byteLength(file.text) : file.size }))
-      .sort((a, b) => a.path.localeCompare(b.path));
-  }
+  listFiles(dir?: string): FileEntry[] { return this.#reads.listFiles(dir); }
 
-  readFile(rel: string): FileView {
-    this.#assertOpen();
-    const key = projectPath(String(rel));
-    const file = key === null ? undefined : this.#state.files.get(key);
-    if (!file || key === null) throw new EngineError('not-found', `No file ${rel} in the project`);
-    if (file.kind === 'binary') return { path: key, kind: 'binary', size: file.size, hash: file.hash ?? null };
-    const error = this.#state.brokenError(key);
-    return error === undefined ? { path: key, kind: 'text', text: file.text } : { path: key, kind: 'text', text: file.text, error };
-  }
+  readFile(rel: string): FileView { return this.#reads.readFile(rel); }
 
-  readScreen(id: string): ScreenView {
-    this.#assertOpen();
-    const entry = this.#state.project.screens.get(id);
-    if (!entry) throw new EngineError('not-found', `No screen "${id}"`);
-    const error = this.#state.brokenError(entry.file);
-    const view: ScreenView = { id, file: entry.file, data: entry.data, diagnostics: this.#state.screenDiagnostics(id) };
-    if (error !== undefined) view.error = error;
-    return view;
-  }
+  readScreen(id: string): ScreenView { return this.#reads.readScreen(id); }
 
-  screenParts(id: string): ScreenParts {
-    this.#assertOpen();
-    const parts = screenParts(this.#state.project, id);
-    if (!parts) throw new EngineError('not-found', `No screen "${id}"`);
-    return parts;
-  }
+  screenParts(id: string): ScreenParts { return this.#reads.screenParts(id); }
 
   // A narrated screen's lines in a language (default: the course's), their audio and their times,
   // and the exchange each generated line's take was cut from (said as one dialogue, D29); with
@@ -660,28 +585,11 @@ export class Session {
     return view;
   }
 
-  // A timed screen's timeline: lines and their words, timed blocks, events (docs/decisions.md D28).
-  timeline(id: string, language?: string, layer?: string): TimelineView | null {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(id)) throw new EngineError('not-found', `No screen "${id}"`);
-    return timelineView(this.#state.project, id, language || undefined, { layer: layer ?? null });
-  }
+  timeline(id: string, language?: string, layer?: string): TimelineView | null { return this.#reads.timeline(id, language, layer); }
 
-  // What is seen of a timed screen (or of a layer's timeline, D62) at a time, or at an anchor resolved in that language.
-  timelineAt({ screen, time, at, language, layer }: { screen: string; time?: number; at?: CanvasMoment; language?: string; layer?: string }): ScreenAt | null {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    const moment = at ? momentTime(this.#state.project, screen, at, language, layer) : typeof time === 'number' ? { time } : null;
-    if (!moment) throw new EngineError('bad-request', 'timelineAt takes a time (seconds) or a moment (at)');
-    return screenAt(this.#state.project, screen, moment.time, language || undefined, { layer: layer ?? null });
-  }
+  timelineAt(params: { screen: string; time?: number; at?: CanvasMoment; language?: string; layer?: string }): ScreenAt | null { return this.#reads.timelineAt(params); }
 
-  // The marks of a timed screen (or of a layer's timeline): a storyboard, one capture per mark (null: not timed).
-  timelineMarks(screen: string, language?: string, layer?: string): TimelineMark[] | null {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    return timelineMarks(this.#state.project, screen, language || undefined, { layer: layer ?? null });
-  }
+  timelineMarks(screen: string, language?: string, layer?: string): TimelineMark[] | null { return this.#reads.timelineMarks(screen, language, layer); }
 
   // The waveform of a narrated screen's lines, decoded once per audio file (cached in the data folder).
   async narrationPeaks({ screen, language, perSecond }: { screen: string; language?: string; perSecond?: number }): Promise<NarrationPeaks | null> {
@@ -690,54 +598,19 @@ export class Session {
     return narrationPeaks(this.root, this.#state.project, screen, { ...(language ? { language } : {}), ...(typeof perSecond === 'number' ? { perSecond } : {}) });
   }
 
-  effects(): EffectInfo[] {
-    this.#assertOpen();
-    return effectsOf(this.#state.project);
-  }
+  effects(): EffectInfo[] { return this.#reads.effects(); }
 
-  planVoiceover(screen: string): { item: string; speaker?: string; text: string }[] {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    return planVoiceover(this.#state.project, screen);
-  }
+  planVoiceover(screen: string): { item: string; speaker?: string; text: string }[] { return this.#reads.planVoiceover(screen); }
 
-  // The plan's versions and what changed (D52), from the project as the session holds it.
-  planVersions(): PlanVersionsView {
-    this.#assertOpen();
-    return planVersionsView(this.#state.project);
-  }
+  planVersions(): PlanVersionsView { return this.#reads.planVersions(); }
 
-  planDiff({ from, to }: { from?: unknown; to?: unknown }): PlanDiffView {
-    this.#assertOpen();
-    const ref = (value: unknown, fallback: PlanRef): PlanRef => {
-      if (value === undefined) return fallback;
-      if (value === 'validated' || value === 'latest' || value === 'current' || (typeof value === 'number' && Number.isInteger(value) && value >= 1)) return value;
-      throw new EngineError('bad-request', 'planDiff takes from and to: a version number, "validated", "latest" or "current"');
-    };
-    try { return planDiffBetween(this.#state.project, { from: ref(from, 'validated'), to: ref(to, 'current') }); } catch (error) {
-      if (error instanceof EngineError) throw error;
-      throw new EngineError('not-found', error instanceof Error ? error.message : String(error));
-    }
-  }
+  planDiff(refs: { from?: unknown; to?: unknown }): PlanDiffView { return this.#reads.planDiff(refs); }
 
-  // What a document shows: a version (2) or « current »; the latest version by default.
-  #documentOptions(date: unknown, version: unknown): { date?: string; version?: number | 'current' } {
-    if (version !== undefined && version !== 'current' && !(typeof version === 'number' && Number.isInteger(version) && version >= 1)) throw new EngineError('bad-request', 'version is a version number (2) or "current"');
-    return { ...(typeof date === 'string' && date ? { date } : {}), ...(version !== undefined ? { version: version as number | 'current' } : {}) };
-  }
-
-  // The plan's document (D48), from the project as the session holds it.
-  planDocument(date?: string, version?: number | 'current'): PlanDocument | null {
-    this.#assertOpen();
-    try { return planDocument(this.#state.project, this.#documentOptions(date, version)); } catch (error) {
-      if (error instanceof EngineError) throw error;
-      throw new EngineError('not-found', error instanceof Error ? error.message : String(error));
-    }
-  }
+  planDocument(date?: string, version?: number | 'current'): PlanDocument | null { return this.#reads.planDocument(date, version); }
 
   planDocumentPage(date?: string, version?: number | 'current'): { html: string; date: string; title: string; version: string | null } {
     this.#assertOpen();
-    const options = this.#documentOptions(date, version);
+    const options = documentOptions(date, version);
     let doc: PlanDocument;
     try { doc = readPlanDocument(this.#state.project, options); } catch (error) { throw new EngineError('not-found', error instanceof Error ? error.message : String(error)); }
     return { html: planDocumentPage(doc), date: doc.date, title: doc.title, version: doc.plan.version };
@@ -749,7 +622,7 @@ export class Session {
     this.#assertOpen();
     if (!PLAN_DOCUMENT_FORMATS.includes(params?.format)) throw new EngineError('bad-request', 'exportPlanDocument takes a format: docx, pdf or html');
     if (typeof params.file !== 'string' || !path.isAbsolute(params.file)) throw new EngineError('bad-request', 'exportPlanDocument takes file: an absolute path');
-    const options = this.#documentOptions(params.date, params.version);
+    const options = documentOptions(params.date, params.version);
     let exported: ExportedPlanDocument;
     let day: string;
     try {
@@ -763,20 +636,9 @@ export class Session {
     return { ...exported, sent: true };
   }
 
-  // A dialogue for its editor (D61), from the project as the session holds it.
-  dialogue(block: string): DialogueView | null {
-    this.#assertOpen();
-    if (typeof block !== 'string') throw new EngineError('bad-request', 'dialogue takes block: a dialogue block id');
-    return dialogueView(this.#state.project, block);
-  }
+  dialogue(block: string): DialogueView | null { return this.#reads.dialogue(block); }
 
-  dialoguePlay(params: { block: string; choices: string[] }): PlayReport {
-    this.#assertOpen();
-    const ref = typeof params?.block === 'string' ? findDialogue(this.#state.project, params.block) : null;
-    if (!ref) throw new EngineError('not-found', `No dialogue block "${String(params?.block)}"`);
-    if (!Array.isArray(params.choices) || params.choices.some((choice) => typeof choice !== 'string')) throw new EngineError('bad-request', 'dialoguePlay takes choices: option ids');
-    return playDialogue(this.#state.project, ref, params.choices);
-  }
+  dialoguePlay(params: { block: string; choices: string[] }): PlayReport { return this.#reads.dialoguePlay(params); }
 
   dialoguePage(params: { block: string; date?: string }): { html: string; date: string; title: string } {
     this.#assertOpen();
@@ -809,24 +671,9 @@ export class Session {
     }
   }
 
-  // « Transformer en… » (D63): the targets of a block, in the app's language.
-  conversions(params: ConversionsParams): ConversionsView {
-    this.#assertOpen();
-    if (params?.probe === true) return { supported: true, targets: [], refused: [] };
-    if (typeof params?.block !== 'string') throw new EngineError('bad-request', 'conversions takes block: a block id (or probe: true)');
-    try {
-      return { supported: true, ...conversionTargets(this.#state.project, params.block, params.language) };
-    } catch (error) {
-      if (error instanceof CommandError) throw new EngineError('not-found', error.message);
-      throw error;
-    }
-  }
+  conversions(params: ConversionsParams): ConversionsView { return this.#reads.conversions(params); }
 
-  findText(query: string, caseSensitive = false): TextMatch[] {
-    this.#assertOpen();
-    if (typeof query !== 'string') throw new EngineError('bad-request', 'findText takes a query (the words to find)');
-    return findText(this.#state.project, query, { caseSensitive });
-  }
+  findText(query: string, caseSensitive = false): TextMatch[] { return this.#reads.findText(query, caseSensitive); }
 
   // What a package would weigh at each media quality (« Publier »), and each media in it, as the
   // project is in memory: renditions and narration tracks as cached, else estimated; nothing encoded
@@ -836,42 +683,15 @@ export class Session {
     return packageWeights(this.#state.project);
   }
 
-  translationStatus(to?: string): TranslationStatus[] {
-    this.#assertOpen();
-    return translationStatus(this.#state.project, to ? { to } : {});
-  }
+  translationStatus(to?: string): TranslationStatus[] { return this.#reads.translationStatus(to); }
 
-  translationTable(language: string): TranslationTable {
-    this.#assertOpen();
-    try { return translationTable(this.#state.project, language); } catch (error) { throw new EngineError('bad-request', error instanceof Error ? error.message : String(error)); }
-  }
+  translationTable(language: string): TranslationTable { return this.#reads.translationTable(language); }
 
-  screenTranslation(screen: string, language: string): ScreenTranslation {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    try { return screenTranslation(this.#state.project, { screen, language }); } catch (error) { throw new EngineError('bad-request', error instanceof Error ? error.message : String(error)); }
-  }
+  screenTranslation(screen: string, language: string): ScreenTranslation { return this.#reads.screenTranslation(screen, language); }
 
-  diagnostics(screen?: string): DiagnosticsView {
-    this.#assertOpen();
-    const { screens, project, summary } = this.#state.diagnostics();
-    if (screen !== undefined) return { screens: { [screen]: this.#state.screenDiagnostics(screen) }, project, summary };
-    return { screens: Object.fromEntries(screens), project, summary };
-  }
+  diagnostics(screen?: string): DiagnosticsView { return this.#reads.diagnostics(screen); }
 
-  // The journal's last changes and batches. With ops, each change says what it did, for a window
-  // that did not see the changes arrive.
-  history(limit = 50, options: { ops?: boolean } = {}): HistoryView {
-    this.#assertOpen();
-    const entries = this.#entries;
-    const undone = undoneChanges(entries);
-    const changes = entries.filter((entry): entry is ChangeLike => entry.type !== 'mark').slice(-limit).map((entry) => ({
-      seq: entry.seq, id: entry.id, op: entry.command?.name ?? (entry.type === 'undo' ? 'undo' : entry.author.kind), at: entry.at, author: entry.author,
-      batch: entry.batch, files: entry.files.map((file) => file.path), undone: undone.has(entry.id),
-      ...(options.ops ? { ops: entry.ops as Op[] } : {})
-    }));
-    return { changes, batches: summarizeBatches(entries).slice(-limit), openBatch: this.openBatch };
-  }
+  history(limit = 50, options: { ops?: boolean } = {}): HistoryView { return this.#reads.history(limit, options); }
 
   // What agents did lately, through Elabora's tools (the 'activity' events say what comes next).
   activity(limit?: number): ActivityEntry[] {
@@ -895,16 +715,7 @@ export class Session {
     return this.#canvas.render(params);
   }
 
-  // The format of the files, and what the migrate option says to do about an older one.
-  formatStatus(): FormatStatus {
-    const project = this.#state.project;
-    const format = projectFormat(this.#state.files);
-    const base = { format, latest: FORMAT, migrate: this.#options.migrate ?? 'ask' } as const;
-    if (project.migration) return { ...base, state: 'outdated', changes: summarizeNotes(project.migration.notes), files: project.migration.changed };
-    if (format === FORMAT) return { ...base, state: 'current' };
-    if (format !== null && formatNumbers(format) !== null && compareFormats(format, FORMAT) > 0) return { ...base, state: 'newer' };
-    return { ...base, state: 'unknown' };
-  }
+  formatStatus(): FormatStatus { return this.#reads.formatStatus(); }
 
   // ── canvas (session-canvas.ts) ─────────────────────────────────────
 
@@ -2006,10 +1817,4 @@ function diagnosticsEvent(delta: DiagnosticsDelta): EngineEvent {
 
 function backupSummary(version: VersionSummary): BackupSummary {
   return { ...version };
-}
-
-// Its blocks placed by hand (D72), when it has some: « Mettre au propre » names the other screens.
-function placedOn(screen: { blocks?: unknown } | undefined): { placed?: number } {
-  const count = Array.isArray(screen?.blocks) ? screen.blocks.filter((block) => !!block && typeof block === 'object' && 'place' in block && !!(block as { place?: unknown }).place).length : 0;
-  return count ? { placed: count } : {};
 }

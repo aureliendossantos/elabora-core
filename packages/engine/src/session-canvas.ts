@@ -2,8 +2,8 @@ import type { Project } from '@elabora/core/project/model';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import type { CanvasHost } from '@elabora/node/canvas/host';
-import { Renderer, affects, dependenciesOf, momentTime } from './render.ts';
-import type { Dependencies } from './render.ts';
+import { Renderer, affects, dependenciesOf, momentTime } from './base/render.ts';
+import type { Dependencies } from './base/render.ts';
 import { EngineError } from './errors.ts';
 import type { CanvasInfo, CanvasView, RenderScreenParams } from './protocol.ts';
 
