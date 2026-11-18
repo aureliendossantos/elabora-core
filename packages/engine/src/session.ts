@@ -3,10 +3,7 @@ import path from 'node:path';
 import { DELIVERY_FORMATS, isDeliveryFormat } from '@elabora/core/lms/formats';
 import type { Author, ChangeLike, Files, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
 import { readChat } from '@elabora/node/chats';
-import { diffFiles } from '@elabora/core/ops/diff';
-import { applyOps, invertOps } from '@elabora/core/ops/apply';
-import { externalEdit, recentVersions } from '@elabora/core/sync/external';
-import { isJsonPath, sameContent } from '@elabora/core/ops/json';
+import { sameContent } from '@elabora/core/ops/json';
 import { isAiAuthor } from '@elabora/core/ops/batch';
 import type { ProjectFiles, SourceFile } from '@elabora/core/project/files';
 import type { FileInfo } from '@elabora/core/project/store';
@@ -37,14 +34,10 @@ import type { Diagnostic } from '@elabora/core/diagnostics/index';
 import type { ValidationOptions } from '@elabora/core/validate/index';
 import * as edit from '@elabora/node/edit';
 import type { EditOptions, EditResult, Written } from '@elabora/node/edit';
-import { keepOriginalTexts } from '@elabora/node/edit/disk';
-import { withProjectLock } from '@elabora/node/journal/lock';
-import { JOURNAL_DIR, JournalError, appendChange, changeFileHashes, lastChanges, storeChangeBlobs, storeChangeBlobsSync } from '@elabora/node/journal/journal';
-import { writeFileAtomic } from '@elabora/node/util/fs';
+import { JOURNAL_DIR } from '@elabora/node/journal/journal';
 import { projectDataDir } from '@elabora/node/data-dir';
-import { syncArtefact } from '@elabora/node/project-files';
 import { agentRulesState, claudeMissing, updateAgentRules, AGENTS_FILE, CLAUDE_FILE } from '@elabora/node/agent-rules';
-import { copyBlobTo, hasBlob } from '@elabora/node/blobs';
+import { copyBlobTo } from '@elabora/node/blobs';
 import type { BlobHash } from '@elabora/node/blobs';
 import { createVersion, listVersions, restore } from '@elabora/node/backups/index';
 import { findVersion, newestVersionTime, summarize as summarizeVersion } from '@elabora/node/backups/store';
@@ -64,8 +57,8 @@ import { commandContext, unmetExpectation, type Expectation } from '@elabora/cor
 import { binaryFile } from '@elabora/core/project/files';
 import type { FileMedia } from '@elabora/core/media/conformance';
 import { isMediaAsset, mediaStatus, probeAssets } from '@elabora/node/store/media';
-import { readDisk, readDiskSync, hashOf, toSourceFile, withUpdates, tryApply, pathsInside } from './disk.ts';
-import type { DiskRead, SessionStore } from './disk.ts';
+import { toSourceFile, withUpdates } from './disk.ts';
+import type { SessionStore } from './disk.ts';
 import { COMMANDS, commandResult, isCommandName, runNamedCommand } from './commands.ts';
 import { SessionCanvas } from './session-canvas.ts';
 import { SessionVoice } from './session-voice.ts';
@@ -76,6 +69,7 @@ import { SessionMonitor } from './session-monitor.ts';
 import { SessionActivity } from './session-activity.ts';
 import type { ActivityEntry } from '@elabora/node/activity';
 import { SessionReads, documentOptions } from './base/reads.ts';
+import { FolderChanges, fileOf } from './session-folder.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { build } from '@elabora/node/build';
 import { WEB_NAVIGATION, WEB_PROGRESS } from '@elabora/node/build';
@@ -151,13 +145,7 @@ export interface CloseOptions {
 }
 
 const FIVE_MINUTES = 5 * 60_000;
-// A binary file written this recently is still being written (copied, downloaded).
-const SETTLE_MS = 400;
-const MAX_SETTLE_MS = 2000;
 const SYSTEM: Author = { kind: 'system' };
-const EXTERNAL: Author = { kind: 'external' };
-// How many recent changes give the versions an external edit may have been read from (D75).
-const RECENT_VERSIONS = 64;
 
 interface SessionInit {
   root: string;
@@ -193,16 +181,14 @@ export class Session {
   readonly author: Author;
   readonly #options: OpenOptions;
   readonly #state: ProjectState;
-  readonly #tail: JournalTail;
   #entries: JournalEntry[];
   readonly #queue = new WriteQueue();
   readonly #listeners = new Set<(message: EventMessage) => void>();
-  readonly #stats: Map<string, FileInfo>; // size and time of each file when last read, for rescans
-  readonly #externalNotes = new Map<string, ExternalNotes>(); // D75, by change id
   #cloud: SessionCloud | null = null;
   readonly #monitor: SessionMonitor;
+  // Where the changes come from and go: the folder (session-folder.ts).
+  readonly #folder: FolderChanges;
   readonly #activity: SessionActivity;
-  readonly #sources = new Map<number, ChangeSource>(); // journal entries the session appended, by sequence number
   readonly #media: MediaSupervisor | null;
   #openBatch: { id: string; at: number } | null = null;
   #batchTimer: NodeJS.Timeout | null = null;
@@ -216,8 +202,6 @@ export class Session {
   #timers: NodeJS.Timeout[] = [];
   #closing: Promise<{ version: string | null }> | null = null;
   #closed = false;
-  #gone = false;
-  #settlingSince: number | null = null;
   readonly #canvas: SessionCanvas;
   readonly #voice: SessionVoice;
   readonly #sounds: SessionSounds;
@@ -236,9 +220,7 @@ export class Session {
     this.root = init.root;
     this.store = init.store;
     this.#state = init.state;
-    this.#tail = init.tail;
     this.#entries = init.entries;
-    this.#stats = init.stats;
     this.#options = init.options;
     this.author = init.options.author ?? { kind: 'human' };
     const project = () => this.#state.project;
@@ -247,12 +229,22 @@ export class Session {
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#reads = new SessionReads({
-      root: this.root, state: this.#state, entries: () => this.#entries, journalSeq: () => this.#tail.lastSeq, openBatch: () => this.openBatch,
+      root: this.root, state: this.#state, entries: () => this.#entries, journalSeq: () => this.#folder.lastSeq, openBatch: () => this.openBatch,
       mediaJobs: () => this.#media?.jobs() ?? [], migrate: init.options.migrate, assertOpen: () => this.#assertOpen()
     });
     this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
     // The rescan reads the agents' activity too: a line its watcher missed shows at the next one.
-    this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError, onRescan: () => void this.#activity.poke() });
+    this.#monitor = new SessionMonitor({ store: this.store, journalDir: init.tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#folder.refresh()), reportError, onRescan: () => void this.#activity.poke() });
+    this.#folder = new FolderChanges({
+      root: this.root, store: this.store, state: this.#state, tail: init.tail, monitor: this.#monitor, stats: init.stats, lockTimeoutMs: this.#options.lockTimeoutMs,
+      host: {
+        taken: (entries, source) => this.#taken(entries, source),
+        afterChange: () => this.#afterChange(),
+        emit: (event) => this.#emit(event),
+        owns: (rel) => this.#media?.owns(rel) ?? false,
+        rescanned: () => { this.#jobsChanged = true; }
+      }
+    });
     for (const [rel, file] of init.state.files) {
       if (file.kind !== 'binary' || !file.media) continue;
       this.#mediaChecked.set(rel, file.hash ?? '');
@@ -322,8 +314,8 @@ export class Session {
   // its authors once linkCloud starts (D88).
   async cloudSnapshot(): Promise<PushSource> {
     this.#assertOpen();
-    return this.#queue.run(() => this.#locked(async () => {
-      await this.#syncWithDisk();
+    return this.#queue.run(() => this.#folder.locked(async () => {
+      await this.#folder.sync();
       return folderSnapshot(this.root);
     }));
   }
@@ -333,21 +325,14 @@ export class Session {
       files: () => this.#state.files,
       step: (work) => this.#queue.run(async () => {
         try {
-          return await this.#locked(async () => {
-            await this.#syncWithDisk();
-            try {
-              return await work();
-            } finally {
-              await this.#recordOwn();
-            }
-          });
+          return await this.#folder.write(work);
         } finally {
           await this.#afterChange();
         }
       }),
       write: (before, after, author, batch, seq) => this.#writeFromRoom(before, after, author, batch, seq),
       emit: (event) => this.#emit(event),
-      notes: (change) => this.#externalNotes.get(change),
+      notes: (change) => this.#folder.externalNotes(change),
       ended: () => { if (this.#cloud === cloud) this.#cloud = null; },
       version: (name) => this.#takeVersion('restore', { name, author: SYSTEM })
     }, options);
@@ -391,11 +376,11 @@ export class Session {
         write.set(rel, source);
       } else {
         await copyBlobTo(this.root, file.hash as BlobHash, target);
-        updates.set(rel, fileOf(await this.#readDisk(rel)));
+        updates.set(rel, fileOf(await this.#folder.readDisk(rel)));
       }
     }
     if (!updates.size) return;
-    await this.#journalChange({ updates, author, command: { name: 'sync', args: { seq } }, source: 'cloud', write, ...(batch ? { batch } : {}) });
+    await this.#folder.journal({ updates, author, command: { name: 'sync', args: { seq } }, source: 'cloud', write, ...(batch ? { batch } : {}) });
   }
 
   // Ends the session: stops the voices' jobs (what they said stays), reconciles what changed last,
@@ -412,7 +397,7 @@ export class Session {
       // Results of the jobs that finish meanwhile are journaled by the queue, before what follows.
       const mode = options.media ?? 'cancel';
       if (mode !== 'leave') await this.#media?.close(mode);
-      await this.#queue.run(() => this.#refresh(true)).catch((error) => this.#emitError(error, 'reconciling changes'));
+      await this.#queue.run(() => this.#folder.refresh(true)).catch((error) => this.#emitError(error, 'reconciling changes'));
       let version: string | null = null;
       await this.#queue.run(async () => {
         this.#closeOpenBatch('close');
@@ -439,7 +424,7 @@ export class Session {
 
   get files(): ProjectFiles { return this.#state.files; }
   get project(): Project { return this.#state.project; }
-  get journalSeq(): number { return this.#tail.lastSeq; }
+  get journalSeq(): number { return this.#folder.lastSeq; }
   get openBatch(): string | null { return this.#openBatch?.id ?? null; }
 
   // Receives every event as a message ready for a transport.
@@ -457,7 +442,7 @@ export class Session {
       this.#monitor.requestJournal();
     }
     this.#monitor.clearScheduled();
-    await this.#queue.run(() => this.#refresh());
+    await this.#queue.run(() => this.#folder.refresh());
   }
 
   // ── protocol ───────────────────────────────────────────────────────
@@ -755,7 +740,7 @@ export class Session {
     const ref = edit.migrateIfOutdated(this.root, this.#editOptions(SYSTEM));
     if (!ref) return null;
     this.#adopt(ref.written);
-    if (ref.change) this.#sources.set(ref.change.seq, 'engine');
+    if (ref.change) this.#folder.own(ref.change.seq, 'engine');
     return { from: ref.from, to: ref.to, seq: ref.change?.seq ?? null };
   }
 
@@ -774,18 +759,18 @@ export class Session {
       this.#assertPresent();
       this.#closeOpenBatch('human');
       await this.#flushClosures();
-      await this.#locked(() => this.#syncWithDisk());
+      await this.#folder.locked(() => this.#folder.sync());
       let result: BuildResult;
       let seq: number | null = null;
       try {
         result = await build(this.root, { ...options, emit: options.target === 'web' ? 'both' : 'zip', onMedia: ({ job }) => this.#emit({ type: 'mediaJob', job: jobInfo(job) }) });
       } finally {
         // Written even when the build stops after assigning keys, or fails.
-        seq = await this.#locked(async () => {
+        seq = await this.#folder.locked(async () => {
           try {
             return await this.#journalLock(params);
           } finally {
-            await this.#recordOwn();
+            await this.#folder.takeNew();
           }
         });
         await this.#afterChange();
@@ -806,17 +791,16 @@ export class Session {
   // Under the lock, after a build: elabora.lock.json as it wrote it, journaled as a system change
   // (the journal's new entries first, so the change starts from what other writers left).
   async #journalLock(params: BuildParams): Promise<number | null> {
-    const entries = await this.#tail.read();
-    if (entries.length) await this.#absorb(entries);
+    await this.#folder.takeNew();
     this.#monitor.forget(LOCK_FILE);
-    const disk = await this.#readDisk(LOCK_FILE);
+    const disk = await this.#folder.readDisk(LOCK_FILE);
     const file = fileOf(disk);
     if (disk.kind === 'unstable' || !file || sameContent(this.#state.files.get(LOCK_FILE), file)) return null;
     if (file.kind !== 'text' || parseJSON(file.text).error !== undefined) {
       this.#monitor.observe(LOCK_FILE); // not the build's: left to the watcher
       return null;
     }
-    return this.#journalChange({ updates: new Map([[LOCK_FILE, file]]), author: SYSTEM, command: { name: 'build', args: params }, source: 'engine' });
+    return this.#folder.journal({ updates: new Map([[LOCK_FILE, file]]), author: SYSTEM, command: { name: 'build', args: params }, source: 'engine' });
   }
 
   // A language as its own package (the app's « Versions »): the translated course generated in the
@@ -831,7 +815,7 @@ export class Session {
     const options = buildOptions(params, this.#options.validation);
     return this.#queue.run(async () => {
       this.#assertPresent();
-      await this.#locked(() => this.#syncWithDisk());
+      await this.#folder.locked(() => this.#folder.sync());
       const out = path.join(projectDataDir(this.root), 'translations', params.language);
       let made;
       try {
@@ -905,15 +889,10 @@ export class Session {
       this.#assertPresent();
       this.#closeOpenBatch('mark');
       await this.#flushClosures();
-      const mark = await this.#locked(async () => {
-        await this.#syncWithDisk();
-        try {
-          const { mark } = edit.appendMark(this.root, request, { author, ...(chat ? { chat } : {}) });
-          this.#sources.set(mark.seq, 'engine');
-          return mark;
-        } finally {
-          await this.#recordOwn();
-        }
+      const mark = await this.#folder.write(async () => {
+        const { mark } = edit.appendMark(this.root, request, { author, ...(chat ? { chat } : {}) });
+        this.#folder.own(mark.seq, 'engine');
+        return mark;
       });
       await this.#afterChange();
       const version = await this.#takeVersion('before-ai', { author });
@@ -927,7 +906,7 @@ export class Session {
     this.#assertOpen();
     return this.#queue.run(async () => {
       // The agent's last changes, written by its MCP server, may not have reached the session yet.
-      if (await this.#tail.hasNew()) await this.#locked(() => this.#syncWithDisk());
+      if (await this.#folder.hasNew()) await this.#folder.locked(() => this.#folder.sync());
       const mark = this.#entries.find((entry): entry is MarkEntry => entry.type === 'mark' && entry.id === params.turn);
       const chat = mark?.chat;
       if (!chat) throw new EngineError('not-found', `No turn ${params.turn} of the chat in the journal`);
@@ -1001,8 +980,8 @@ export class Session {
     return this.#change(this.author, async () => {
       const result = await restore(this.root, version, { paths, author: this.author, skip: (rel) => this.#skipInVersions(rel) });
       const updates = new Map<string, SourceFile | null>();
-      for (const change of result.changes) updates.set(change.path, fileOf(await this.#readDisk(change.path)));
-      const seq = await this.#journalChange({ updates, author: this.author, command: { name: 'restore_backup', args: { version, paths: paths ?? null } }, source: 'engine' });
+      for (const change of result.changes) updates.set(change.path, fileOf(await this.#folder.readDisk(change.path)));
+      const seq = await this.#folder.journal({ updates, author: this.author, command: { name: 'restore_backup', args: { version, paths: paths ?? null } }, source: 'engine' });
       const before = result.before ? findVersion(this.root, result.before) : null;
       if (before?.reason === 'restore') this.#emit({ type: 'backupTaken', version: backupSummary(summarizeVersion(before)) });
       return { result, seq };
@@ -1030,14 +1009,7 @@ export class Session {
       // A course about to be migrated gets its migration version instead.
       if (this.#options.backups?.enabled !== false && !migration && !this.#versionInFlight && this.#versionDue()) await this.#takeVersion('auto', { author: SYSTEM });
       try {
-        return await this.#locked(async () => {
-          await this.#syncWithDisk();
-          try {
-            return await work();
-          } finally {
-            await this.#recordOwn();
-          }
-        });
+        return await this.#folder.write(work);
       } finally {
         await this.#afterChange();
       }
@@ -1051,7 +1023,7 @@ export class Session {
       autoVersion: false,
       lockTimeoutMs: this.#options.lockTimeoutMs,
       files: (stale) => {
-        if (stale.length) this.#reconcileSync(stale);
+        if (stale.length) this.#folder.reconcileSync(stale);
         return this.#state.files;
       }
     };
@@ -1062,10 +1034,10 @@ export class Session {
     // The executor migrated the course first (another writer made it outdated meanwhile).
     if (result.formatMigration) {
       this.#adopt(result.formatMigration.written);
-      if (result.formatMigration.change) this.#sources.set(result.formatMigration.change.seq, 'engine');
+      if (result.formatMigration.change) this.#folder.own(result.formatMigration.change.seq, 'engine');
     }
     this.#adopt(result.written);
-    if (result.change) this.#sources.set(result.change.seq, 'engine');
+    if (result.change) this.#folder.own(result.change.seq, 'engine');
     return { result, change: result.change?.seq ?? null };
   }
 
@@ -1074,7 +1046,7 @@ export class Session {
     const updates = new Map<string, SourceFile | null>();
     for (const [rel, file] of written.after) if (written.before.get(rel) !== file) updates.set(rel, toSourceFile(this.root, rel, file));
     for (const rel of written.before.keys()) if (!written.after.has(rel)) updates.set(rel, null);
-    for (const rel of updates.keys()) this.#recordStatSync(rel);
+    for (const rel of updates.keys()) this.#folder.recordStat(rel);
     this.#state.update(updates);
   }
 
@@ -1095,254 +1067,10 @@ export class Session {
     return entry ? changeView(entry) : null;
   }
 
-  #locked<T>(work: () => Promise<T>): Promise<T> {
-    return withProjectLock(this.root, work, { timeoutMs: this.#options.lockTimeoutMs });
-  }
-
-  // Under the lock: the journal's new entries first (other processes' changes), then the files
-  // that changed on disk without a journal entry.
-  async #syncWithDisk(): Promise<void> {
-    const entries = await this.#tail.read();
-    if (entries.length) await this.#absorb(entries);
-    if (this.#monitor.needsRescan) await this.#rescan();
-    await this.#reconcileDirty();
-  }
-
-  // Entries the session appended are recorded; the others are applied to the snapshot.
-  async #absorb(entries: JournalEntry[]): Promise<void> {
-    const foreign = entries.filter((entry) => !this.#sources.has(entry.seq));
-    if (foreign.length) await this.#applyForeign(foreign);
-    this.#record(entries);
-    if (this.#cloud) for (const entry of entries) if (entry.type !== 'mark') this.#cloud.take(entry);
-    for (const entry of entries) {
-      if (entry.type !== 'mark') this.#emit({ type: 'changed', source: this.#sources.get(entry.seq) ?? 'journal', change: changeView(entry) });
-      this.#sources.delete(entry.seq);
-    }
-  }
-
-  // Reads what the session itself just appended.
-  async #recordOwn(): Promise<void> {
-    const entries = await this.#tail.read();
-    if (entries.length) await this.#absorb(entries);
-  }
-
-  // Changes of other processes: each touched file is read back when it holds what the journal says
-  // it holds after them (its exact text). A file written again since (by a program that is not a
-  // Elabora tool) gets the journal's version, and the difference is reconciled as an external change.
-  async #applyForeign(entries: JournalEntry[]): Promise<void> {
-    const changes = entries.filter((entry): entry is ChangeLike => entry.type !== 'mark');
-    const expected = new Map<string, string | null>();
-    for (const change of changes) for (const file of change.files) expected.set(file.path, file.after);
-    const updates = new Map<string, SourceFile | null>();
-    let applied: ReturnType<typeof tryApply> | undefined;
-    for (const [rel, hash] of expected) {
-      const disk = await this.#readDisk(rel);
-      if (disk.kind !== 'unstable' && hashOf(fileOf(disk)) === hash) {
-        updates.set(rel, fileOf(disk));
-        continue;
-      }
-      applied ??= tryApply(this.#state.files, changes.flatMap((change) => change.ops));
-      // When the operations do not apply, the snapshot was behind the journal: the disk is taken as it is.
-      updates.set(rel, applied ? toSourceFile(this.root, rel, applied.get(rel)) : fileOf(disk));
-      this.#monitor.observe(rel);
-    }
-    this.#state.update(updates);
-    for (const [rel, file] of updates) if (file) this.#state.setBroken(rel, null);
-  }
-
-  // Under the lock: files that changed on disk and that no journal entry explains, journaled as one
-  // external change. A JSON file that does not parse is left as the snapshot has it (reported).
-  async #reconcileDirty(): Promise<void> {
-    const paths = this.#monitor.takePending((rel) => this.#media?.owns(rel) ?? false);
-    if (!paths.length) return;
-    // Read everything first: a folder removed brings its files, and while a binary file is still
-    // being written the whole burst waits for it (an agent copying a video and editing the screen
-    // that shows it makes one change), up to MAX_SETTLE_MS.
-    const reads = new Map<string, DiskRead>();
-    for (let index = 0; index < paths.length; index++) {
-      const rel = paths[index];
-      const disk = await this.#readDisk(rel, true);
-      reads.set(rel, disk);
-      // A folder reported (removed, or on Windows any folder whose files change) brings its files,
-      // except those a media job will write or replace: they are the job's to journal.
-      if (disk.kind === 'missing' && !this.#state.files.has(rel)) {
-        for (const child of pathsInside(this.#state.files, rel)) if (!paths.includes(child) && !this.#media?.owns(child)) paths.push(child);
-      }
-    }
-    const settling = [...reads.values()].some((disk) => disk.kind === 'unstable');
-    if (settling && Date.now() - (this.#settlingSince ??= Date.now()) < MAX_SETTLE_MS) {
-      for (const rel of paths) this.#monitor.observe(rel);
-      this.#monitor.scheduleRetry();
-      return;
-    }
-    this.#settlingSince = null;
-    const updates = new Map<string, SourceFile | null>();
-    let artefacts = [...this.#state.artefacts];
-    const known = new Set(this.#state.files.keys());
-    for (const [rel, disk] of reads) {
-      if (disk.kind === 'unstable') {
-        this.#monitor.observe(rel);
-        continue;
-      }
-      const current = this.#state.files.get(rel);
-      if (disk.kind === 'missing') {
-        artefacts = artefacts.filter((artefact) => artefact.path !== rel);
-        this.#state.setBroken(rel, null);
-        if (current) updates.set(rel, null);
-        // A new folder: its files are listed.
-        else if (!pathsInside(this.#state.files, rel).length) this.#monitor.requestRescan();
-        continue;
-      }
-      if (!current) {
-        const artefact = syncArtefact(rel, new Set([...known, rel]));
-        if (artefact) {
-          if (!artefacts.some((existing) => existing.path === rel)) artefacts.push(artefact);
-          continue;
-        }
-      }
-      if (sameContent(current, disk.file)) {
-        this.#state.setBroken(rel, null);
-        continue;
-      }
-      if (isJsonPath(rel) && disk.file.kind === 'text') {
-        const parsed = parseJSON(disk.file.text);
-        if (parsed.error !== undefined) {
-          // Being written (or broken): the last valid content stays; a new file waits outside the
-          // snapshot until it parses (its creation is then one change). A file broken since the
-          // session opened has no valid content to keep: its new text is taken without a journal entry.
-          if (current && !(current.kind === 'text' && parseJSON(current.text).error === undefined)) this.#state.update([[rel, disk.file]]);
-          else this.#state.setBroken(rel, parsed.error);
-          continue;
-        }
-      }
-      this.#state.setBroken(rel, null);
-      updates.set(rel, disk.file);
-    }
-    this.#state.setArtefacts(artefacts);
-    if (this.#monitor.pending().some((rel) => !this.#media?.owns(rel))) this.#monitor.scheduleRetry();
-    if (!updates.size) return;
-    try {
-      await this.#journalChange({ updates, author: EXTERNAL, source: 'watcher' });
-    } catch (error) {
-      // A file changed again while its content was stored: everything is read again shortly.
-      if (!(error instanceof JournalError)) throw error;
-      for (const rel of updates.keys()) this.#monitor.observe(rel);
-      this.#monitor.scheduleRetry();
-      return;
-    }
-    await this.#recordOwn();
-  }
-
-  // The same for the files an edit finds changed on disk while it runs (synchronously, from inside
-  // the edit): journaled as an external change before the edit is computed again.
-  #reconcileSync(paths: readonly string[]): void {
-    const updates = new Map<string, SourceFile | null>();
-    for (const rel of paths) {
-      const disk = readDiskSync(this.root, rel);
-      if (disk.kind === 'unstable') continue;
-      const file = fileOf(disk);
-      const current = this.#state.files.get(rel);
-      if (file === null ? current === undefined : sameContent(current, file)) continue;
-      // Mid-write: the edit tries again, and fails with E_CONFLICT if the file stays broken.
-      if (file?.kind === 'text' && isJsonPath(rel) && parseJSON(file.text).error !== undefined) continue;
-      updates.set(rel, file);
-      if (disk.kind === 'file') this.#stats.set(rel, disk.info);
-    }
-    if (!updates.size) return;
-    const { before, after, ops, inverse, unavailable, merged, settled, notes } = this.#prepareChange(updates, true);
-    if (ops.length) {
-      storeChangeBlobsSync(this.root, { ops, inverse, unavailable });
-      keepOriginalTexts(this.root, before, ops);
-      const entry = appendChange(this.root, { author: EXTERNAL, ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
-      this.#sources.set(entry.seq, 'watcher');
-      this.#noteExternal(entry.id, notes);
-    }
-    for (const rel of merged) this.#writeMergedSync(rel, after.get(rel));
-    this.#state.update(settled);
-    for (const rel of updates.keys()) this.#state.setBroken(rel, null);
-  }
-
-  // A file whose external edit was merged with what was written meanwhile (D75): the disk gets the
-  // merged content, the session's own write.
-  #writeMergedSync(rel: string, file: SourceFile | undefined): void {
-    const target = path.join(this.root, rel);
-    if (!file) fs.rmSync(target, { force: true });
-    else if (file.kind === 'text') writeFileAtomic(target, file.text);
-    else return;
-    this.#recordStatSync(rel);
-  }
-
-  // The change a set of new contents makes. A binary file another program overwrote or deleted
-  // before any version or change kept its content cannot come back: the change says so
-  // (unavailable), and undo will skip that part.
-  // A file edit no Elabora tool made (external) is computed from the version its program most likely
-  // read (D75): what was written meanwhile and the edit did not touch is kept; merged lists the
-  // files whose content is no longer what was written, which the session writes again.
-  #prepareChange(updates: ReadonlyMap<string, SourceFile | null>, external = false) {
-    const before = this.#state.files;
-    let after: ProjectFiles = withUpdates(before, updates);
-    let ops = diffFiles(before, after);
-    let merged: string[] = [];
-    let notes: ExternalNotes | null = null;
-    if (external && ops.length) {
-      const paths = [...updates.keys()];
-      const edit = externalEdit(before, after, recentVersions(before, lastChanges(this.root, RECENT_VERSIONS), paths), EXTERNAL);
-      ops = edit.ops;
-      merged = edit.merged;
-      if (edit.merged.length || edit.skipped.length || edit.overwrote.length) notes = { files: edit.merged, skipped: edit.skipped, overwrote: edit.overwrote };
-      // A file the edit gives as it was written keeps that text (its formatting); a merged one is
-      // the merge's.
-      const applied = applyOps(before, ops) as ProjectFiles;
-      after = withUpdates(applied, new Map([...updates].filter(([rel]) => !merged.includes(rel))));
-    }
-    const inverse = invertOps(before, ops);
-    const written = new Set(ops.flatMap((op) => (op.op === 'write' && 'blob' in op ? [op.blob] : [])));
-    const unavailable = [...new Set(inverse.flatMap((op) => (op.op === 'write' && 'blob' in op && !written.has(op.blob) && !hasBlob(this.root, op.blob as BlobHash) ? [op.blob] : [])))];
-    // What the state takes: the files as they are after the change (merged ones included).
-    const settled = new Map<string, SourceFile | null>([...updates.keys()].map((rel) => [rel, (after.get(rel) as SourceFile | undefined) ?? null]));
-    return { before, after, ops, inverse, unavailable, merged, settled, notes };
-  }
-
-  // What a file edit no Elabora tool made left out or replaced (D75), kept by its change and told.
-  #noteExternal(change: string, notes: ExternalNotes | null): void {
-    if (!notes) return;
-    this.#externalNotes.set(change, notes);
-    if (this.#externalNotes.size > 200) this.#externalNotes.delete(this.#externalNotes.keys().next().value as string);
-    this.#emit({ type: 'merged', change, ...notes });
-  }
-
-  // What an external change left out or replaced, by its id (a project in the cloud tells the others).
-  externalNotes(change: string): ExternalNotes | undefined {
-    return this.#externalNotes.get(change);
-  }
-
-  // Journals new contents as one change: files already on disk (what another program or a job
-  // wrote), and files the session writes now (write: references rewritten).
-  async #journalChange(spec: { updates: Map<string, SourceFile | null>; author: Author; command?: { name: string; args: unknown }; source: ChangeSource; write?: ReadonlyMap<string, SourceFile>; batch?: string }): Promise<number | null> {
-    const { before, after, ops, inverse, unavailable, merged, settled, notes } = this.#prepareChange(spec.updates, spec.author.kind === 'external' && spec.source !== 'cloud');
-    let seq: number | null = null;
-    if (ops.length) {
-      await storeChangeBlobs(this.root, { ops, inverse, unavailable });
-      keepOriginalTexts(this.root, before, ops);
-      for (const [rel, file] of spec.write ?? []) {
-        if (file.kind === 'text') await this.store.write(rel, file.text);
-        await this.#readDisk(rel);
-      }
-      const entry = appendChange(this.root, { author: spec.author, ...(spec.command ? { command: spec.command } : {}), ...(spec.batch ? { batch: spec.batch } : {}), ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
-      this.#sources.set(entry.seq, spec.source);
-      seq = entry.seq;
-      this.#noteExternal(entry.id, notes);
-    }
-    for (const rel of merged) this.#writeMergedSync(rel, after.get(rel));
-    this.#state.update(settled);
-    for (const rel of spec.updates.keys()) this.#state.setBroken(rel, null);
-    return seq;
-  }
-
   // Validates what changed and tells the app (the canvas first); then the AI batches that ended.
   async #afterChange(): Promise<void> {
     await this.#refreshMedia();
-    this.#canvas.changed(this.#state.takeChanged(), this.#tail.lastSeq);
+    this.#canvas.changed(this.#state.takeChanged(), this.#folder.lastSeq);
     const delta = this.#state.validate();
     if (delta) this.#emit(diagnosticsEvent(delta));
     await this.#flushClosures();
@@ -1420,81 +1148,17 @@ export class Session {
     return this.#nonConformant([rel]).length > 0 || (this.#media?.replaced(rel) ?? false);
   }
 
-  // ── watching ───────────────────────────────────────────────────────
-
-  // What the watchers reported. The lock is taken only when something is new: the session's own
-  // writes come back from the watchers as files that hold what the snapshot holds.
-  async #refresh(final = false): Promise<void> {
-    // A project folder moved or deleted while open is not a deletion of every file: nothing is
-    // journaled, and the app is told (it closes the session).
-    if (!fs.existsSync(this.root)) {
-      this.#monitor.forgetAll();
-      if (!this.#gone) this.#emit({ type: 'error', context: 'watching the project', message: `The project folder ${this.root} is gone (moved or deleted).` });
-      this.#gone = true;
-      return;
-    }
-    this.#gone = false;
-    let needLock = false;
-    if (this.#monitor.consumeJournal() || final) {
-      needLock = await this.#tail.hasNew();
-    }
-    if (this.#monitor.needsRescan || final) await this.#rescan();
-    if (!needLock) needLock = await this.#dirtyChanged();
-    if (needLock) await this.#locked(() => this.#syncWithDisk());
-    await this.#afterChange();
-  }
-
-  // Whether a reported file differs from the snapshot; the ones that do not are settled here.
-  async #dirtyChanged(): Promise<boolean> {
-    for (const rel of this.#monitor.pending()) {
-      if (this.#media?.owns(rel)) continue;
-      const disk = await this.#readDisk(rel, true);
-      if (disk.kind === 'unstable') return true;
-      const current = this.#state.files.get(rel);
-      if (disk.kind === 'missing') {
-        if (current || pathsInside(this.#state.files, rel).length || this.#state.artefacts.some((artefact) => artefact.path === rel)) return true;
-        this.#monitor.forget(rel);
-        continue;
-      }
-      if (!sameContent(current, disk.file)) return true;
-      this.#monitor.forget(rel);
-      this.#state.setBroken(rel, null);
-    }
-    return false;
-  }
-
-  // Lists the folder: files whose size or time changed since they were read, new and gone files.
-  async #rescan(): Promise<void> {
-    this.#monitor.finishRescan();
-    this.#jobsChanged = true; // jobs of other processes are seen through their job files
-    const listed = await this.store.list();
-    const seen = new Set<string>();
-    for (const info of listed) {
-      seen.add(info.path);
-      const known = this.#stats.get(info.path);
-      if (!known || known.size !== info.size || known.mtimeMs !== info.mtimeMs) this.#monitor.observe(info.path);
-    }
-    for (const rel of this.#state.files.keys()) if (!seen.has(rel)) this.#monitor.observe(rel);
-    for (const artefact of this.#state.artefacts) if (!seen.has(artefact.path)) this.#monitor.observe(artefact.path);
-  }
-
-  async #readDisk(rel: string, settle = false): Promise<DiskRead> {
-    const disk = await readDisk(this.store, rel, { settleMs: settle ? SETTLE_MS : 0 });
-    if (disk.kind === 'file') this.#stats.set(rel, disk.info);
-    else if (disk.kind === 'missing') this.#stats.delete(rel);
-    return disk;
-  }
-
-  #recordStatSync(rel: string): void {
-    try {
-      const stat = fs.statSync(path.join(this.root, ...rel.split('/')));
-      this.#stats.set(rel, { path: rel, size: stat.size, mtimeMs: stat.mtimeMs });
-    } catch {
-      this.#stats.delete(rel);
-    }
-  }
-
   // ── journal entries, batches and versions ──────────────────────────
+
+  // What the external change left out or replaced, by its id (a project in the cloud tells the others).
+  externalNotes(change: string): ExternalNotes | undefined { return this.#folder.externalNotes(change); }
+
+  // Journal entries the folder took in, in order: recorded, given to the copy in the cloud, told.
+  #taken(entries: readonly JournalEntry[], source: (entry: JournalEntry) => ChangeSource): void {
+    this.#record(entries);
+    if (this.#cloud) for (const entry of entries) if (entry.type !== 'mark') this.#cloud.take(entry);
+    for (const entry of entries) if (entry.type !== 'mark') this.#emit({ type: 'changed', source: source(entry), change: changeView(entry) });
+  }
 
   #record(entries: readonly JournalEntry[]): void {
     for (const entry of entries) {
@@ -1639,12 +1303,11 @@ export class Session {
   async #prune(): Promise<void> {
     if (this.#pruned || !fs.existsSync(this.root)) return;
     this.#pruned = true;
-    await this.#queue.run(() => this.#locked(async () => {
-      await this.#syncWithDisk();
+    await this.#queue.run(() => this.#folder.locked(async () => {
+      await this.#folder.sync();
       await pruneProjectData(this.root);
       // The journal as it is kept now (everything was read: the lock is held).
-      this.#tail.reset();
-      this.#entries = await this.#tail.read();
+      this.#entries = await this.#folder.reread();
     }));
   }
 
@@ -1657,12 +1320,12 @@ export class Session {
     void this.#queue.run(async () => {
       try {
         if (job.status === 'done' && !this.#closed) {
-          await this.#locked(async () => {
-            await this.#syncWithDisk();
+          await this.#folder.locked(async () => {
+            await this.#folder.sync();
             try {
               await this.#journalMediaResult(job);
             } finally {
-              await this.#recordOwn();
+              await this.#folder.takeNew();
             }
           });
         }
@@ -1679,7 +1342,7 @@ export class Session {
   async #journalMediaResult(job: MediaJob): Promise<void> {
     const paths = [job.output, ...(job.replaces && job.replaces !== job.output ? [job.replaces] : [])];
     const updates = new Map<string, SourceFile | null>();
-    for (const rel of paths) updates.set(rel, fileOf(await this.#readDisk(rel)));
+    for (const rel of paths) updates.set(rel, fileOf(await this.#folder.readDisk(rel)));
     const write = new Map<string, SourceFile>();
     if (job.type === 'optimize' && job.replaces && job.replaces !== job.output) {
       // References rewritten as `elabora media optimize` does (never in the plan or its versions).
@@ -1696,7 +1359,7 @@ export class Session {
       ? { name: 'import_media', args: { file: job.output } }
       : { name: 'optimize_media', args: { from: job.replaces ?? job.input, to: job.output } };
     if (!isAiAuthor(author) && author.kind !== 'external') this.#closeOpenBatch('human');
-    await this.#journalChange({ updates, author, command, source: 'media', write });
+    await this.#folder.journal({ updates, author, command, source: 'media', write });
   }
 
   // ── events ─────────────────────────────────────────────────────────
@@ -1746,7 +1409,6 @@ const REQUEST_TYPES: Record<RequestType, true> = {
 
 const isRequestType = (type: string): type is RequestType => Object.hasOwn(REQUEST_TYPES, type);
 
-const fileOf = (disk: DiskRead): SourceFile | null => (disk.kind === 'file' ? disk.file : null);
 
 // What the build request asks of @elabora/node build; the session's validation options by default,
 // so the package is checked as the app's findings are.
