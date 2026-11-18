@@ -158,15 +158,18 @@ export class SessionVoice {
 
   // The ElevenLabs key, in this process's memory only (when the app keeps it in the system's secure storage, D40).
   setVoiceKey(key: string | null): { key: string | null } {
+    this.#assertOpen();
     try { setSessionKey(key); } catch (error) { throw voiceError(error); }
     return { key: key ? maskKey(key.trim()) : null };
   }
 
   async voiceAccount({ check }: { check?: boolean }): Promise<VoiceAccount> {
+    this.#assertOpen();
     try { return await voiceProvider('elevenlabs').account!({ check }); } catch (error) { throw voiceError(error); }
   }
 
   async voiceSearch(query: VoiceQuery): Promise<VoiceSearchResult> {
+    this.#assertOpen();
     try { return await voiceProvider('elevenlabs').search!({ ...query, provider: 'elevenlabs' }); } catch (error) { throw voiceError(error); }
   }
 

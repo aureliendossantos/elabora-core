@@ -618,6 +618,10 @@ export function engineConformance(target: ConformanceTarget): void {
     await next((event): event is Extract<EngineEvent, { type: 'closed' }> => event.type === 'closed');
     await assert.rejects(client.request('summary', {}), refused('closed'));
     await assert.rejects(client.request('run', { command: 'update_screen', args: { id: 'chemin', title: 'Encore' } }), refused('closed'));
+    // Every request, those that call no file of the module included.
+    await assert.rejects(client.request('setVoiceKey', { provider: 'elevenlabs', key: null }), refused('closed'));
+    await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('closed'));
+    await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('closed'));
   });
 
   // Last: every request of the protocol was sent by a case above.
