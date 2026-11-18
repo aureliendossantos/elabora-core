@@ -38,6 +38,7 @@ import { blockLayouts, coveredTexts, rectOf, round, scrollFrom, termLayouts, tex
 import { GLIDE } from './screen-objects.ts';
 import type { CourseData, ObjectDefinition, PlaceData, ScreenData } from './course-data.ts';
 import { PLAYER_PREVIEW_PROTOCOL } from './canvas-protocol.ts';
+import { answerAsk, askOf } from './canvas-asks.ts';
 import type { BlockLayout, CanvasMessage, HostMessage, LayoutMessage, LayoutRect, PreviewHostMessage, PreviewPanel, RenderFile, RenderOutline, RenderSheet, RenderView, ScreenRender } from './canvas-protocol.ts';
 import type { PlayerItemId } from './course-data.ts';
 
@@ -135,6 +136,7 @@ function receive(message: HostMessage) {
   if (message.type === 'elabora/motion') { armMotion(); return; }
   if (message.type === 'elabora/lift') { liftBlock(message.block, message.at, message.release); return; }
   if (message.type === 'elabora/highlight' || message.type === 'elabora/open' || message.type === 'elabora/close') { preview(message); return; }
+  if (message.type === 'elabora/ask') { void answerAsk({ appliedId: () => lastId, ready: (timeout) => mounted?.view.ready(timeout) ?? Promise.resolve(null), layout }, message).then(post); return; }
   const started = performance.now();
   const id = message.id ?? null;
   try {
@@ -167,6 +169,10 @@ window.addEventListener('message', (event) => {
   else if (data.type === 'elabora/highlight' || data.type === 'elabora/open' || data.type === 'elabora/close') {
     const message = previewMessage(data);
     if (message) receive(message);
+  }
+  else if (data.type === 'elabora/ask') {
+    const ask = askOf(data);
+    if (ask) receive(ask);
   }
 });
 

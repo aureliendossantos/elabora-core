@@ -16,12 +16,15 @@
 //     { type: 'elabora/motion' }                the next render (or lift) moves what changes place or
 //                                             size from where it was (the drop of a drag, a step of
 //                                             a handle), on the player's curve
+//     { type: 'elabora/ask', request, ask, params }  a question about what is on screen (see
+//                                             CanvasAsks): answered by elabora/answer
 //   canvas → host   window.parent.postMessage, and window.__elaboraCanvas.onMessage listeners
 //     { type: 'elabora/ready', chrome, protocol? }  the canvas listens
 //     { type: 'elabora/layout', … }             where every block is (selection and handles)
 //     { type: 'elabora/navigate', screen, by? } an event of the screen, or the live bars, go to
 //                                             another screen
 //     { type: 'elabora/error', id?, message }   render data that could not be shown
+//     { type: 'elabora/answer', request, result | error }  the answer to a question of the host
 //
 // The player's preview, elabora-player-preview/1 (page option chrome=live: the app's « Lecteur »
 // tab; canvas-live.ts). Its messages carry protocol: 'elabora-player-preview/1'; one of another
@@ -111,6 +114,39 @@ export interface RenderSheet {
   css: string;
 }
 
+// What a host asks the canvas about the screen it shows, and what it answers: the page's own measures,
+// as messages, so that a host in another origin (a page of the web app) asks them as the desktop
+// app's offscreen pages do. Each is asked with the id of the render it is about (the render's id: the
+// canvas waits up to 3 s for that render to be the one shown, with its images, fonts and free objects
+// ready, as captures do, and answers false or null when it is not).
+export interface CanvasAsks {
+  // The screen of that render is shown and ready.
+  shown: { params: { id: string | number }; result: boolean };
+  // A mark in the page's top left corner (a square, in that colour; null removes it), to tell a frame
+  // drawn after a change from one drawn before it.
+  mark: { params: { rgb: [number, number, number] | null }; result: true };
+  // A block shown in its screen before it is added (« Ajouter un bloc »): the blocks beside it fade, the
+  // page is scrolled to it (a slide: down to it); where it is and whether a slide runs past its window.
+  'block-preview': { params: { id: string | number; block: string; slides: boolean }; result: BlockPreviewMeasure | null };
+  // The page as a thumbnail shows it again, after a block preview: nothing faded, scrolled to the top.
+  'block-preview-clear': { params: { id: string | number }; result: boolean };
+  // How far the page runs past the window, and the size of each text the canvas marks.
+  measure: { params: { id: string | number }; result: ScreenMeasurement | null };
+}
+export type AskName = keyof CanvasAsks;
+export interface BlockPreviewMeasure {
+  overflow: boolean;
+  // The block's box in CSS px of the window (null: it is not visible).
+  block: LayoutRect | null;
+}
+export interface ScreenMeasurement {
+  // px the page runs past the window (0: it fits).
+  overflow: number;
+  fields: { block: string; path: string; width: number; height: number }[];
+}
+export type AskMessage = { [Name in AskName]: { type: 'elabora/ask'; request: number; token?: string; ask: Name; params: CanvasAsks[Name]['params'] } }[AskName];
+export type AnswerMessage = { type: 'elabora/answer'; request: number; result: CanvasAsks[AskName]['result'] } | { type: 'elabora/answer'; request: number; error: string };
+
 // token: the token of the canvas page URL, when it has one (messages posted by the parent window).
 export type HostMessage =
   | { type: 'elabora/render'; id?: string | number; token?: string; render: ScreenRender }
@@ -131,6 +167,7 @@ export type HostMessage =
   // The next render or lift applied within 1.5 s is shown moving from what the page shows now: the
   // blocks and slots that change place or size glide to their new box (less motion: at once).
   | { type: 'elabora/motion'; token?: string }
+  | AskMessage
   | PreviewHostMessage;
 
 // The host's messages of the player's preview (chrome=live).
@@ -264,5 +301,6 @@ export type CanvasMessage =
   // by: what went there in the live bars (an event of the screen says none).
   | { type: 'elabora/navigate'; screen: string; by?: 'previous' | 'next' | 'outline' | 'progress' }
   | { type: 'elabora/error'; id: string | number | null; message: string }
+  | AnswerMessage
   | { type: 'elabora/item'; protocol: typeof PLAYER_PREVIEW_PROTOCOL; id: PlayerItemId; bar: 'top' | 'bottom' }
   | { type: 'elabora/language'; protocol: typeof PLAYER_PREVIEW_PROTOCOL; language: string };
