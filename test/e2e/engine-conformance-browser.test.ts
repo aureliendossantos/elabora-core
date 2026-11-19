@@ -10,7 +10,7 @@ import { engineConformance, type ConformanceTarget, type Sample } from '../confo
 import { EXAMPLE, BILINGUAL, NETWORK_SAMPLE } from '../helpers.ts';
 
 // The engine's protocol (test/conformance/engine.ts) played against the browser engine in a Worker of
-// Chromium (D103): its copy kept in IndexedDB, one Worker a module, offline, without any service. And
+// Chromium (D103): its copy kept in IndexedDB, one Worker a module, offline, with the canvas alone of its services (D105). And
 // what the browser's storage adds: a change kept across a closing, a second tab told the module is
 // open elsewhere.
 
@@ -27,11 +27,20 @@ let workers = 0;
 
 before(async () => {
   const worker = await bundleForBrowser({ file: 'packages/engine/src/browser/worker.ts' });
+  // The app's Worker as it gives a compiler of free objects (provideObjects): a stand-in for
+  // esbuild-wasm, which says when it is loaded.
+  const withObjects = await bundleForBrowser({ source: `import { provideObjects } from './packages/engine/src/browser/worker.ts';
+provideObjects(async () => {
+  self.postMessage({ kind: 'event', event: { type: 'error', context: 'objects', message: 'loaded' } });
+  return { bundler: { build: async () => ({ outputFiles: [{ text: 'compiled here' }] }) }, libraries: {} };
+});` });
   browser = await launchBrowser('chromium');
   page = await browser.newPage();
-  await page.route(`${ORIGIN}/**`, (route) => new URL(route.request().url()).pathname === '/worker.js'
-    ? route.fulfill({ contentType: 'text/javascript', body: worker.code })
-    : route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>engine</title>' }));
+  await page.route(`${ORIGIN}/**`, (route) => {
+    const name = new URL(route.request().url()).pathname;
+    if (name === '/worker.js' || name === '/worker-objects.js') return route.fulfill({ contentType: 'text/javascript', body: name === '/worker.js' ? worker.code : withObjects.code });
+    return route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>engine</title>' });
+  });
   await page.exposeFunction('deliver', (id: number, message: Message) => listeners.get(id)?.(message));
   page.on('pageerror', (error) => console.error('page:', error.message));
   await page.goto(`${ORIGIN}/`);
@@ -41,7 +50,7 @@ after(async () => { await browser?.close(); });
 type Page$ = { workers: Map<number, Worker>; deliver(id: number, message: unknown): void };
 
 // A Worker of the engine on a copy; its first answer (opened, held, missing, failed).
-async function worker(open: WorkerOpen): Promise<{ id: number; first: WorkerAnswer; send(message: RequestMessage): Promise<void>; receive(listener: (message: ResponseMessage | EventMessage) => void): void; end(): Promise<void> }> {
+async function worker(open: WorkerOpen, script = '/worker.js'): Promise<{ id: number; first: WorkerAnswer; send(message: RequestMessage): Promise<void>; receive(listener: (message: ResponseMessage | EventMessage) => void): void; end(): Promise<void> }> {
   const id = ++workers;
   const received: ((message: ResponseMessage | EventMessage) => void)[] = [];
   let first!: (answer: WorkerAnswer) => void;
@@ -50,15 +59,15 @@ async function worker(open: WorkerOpen): Promise<{ id: number; first: WorkerAnsw
     if (message.kind === 'response' || message.kind === 'event') for (const listener of received) listener(message);
     else first(message);
   });
-  await page.evaluate(([n, request]) => {
+  await page.evaluate(([n, request, url]) => {
     const scope = window as unknown as Page$;
     scope.workers ??= new Map();
-    const w = new Worker('/worker.js', { type: 'module' });
+    const w = new Worker(url as string, { type: 'module' });
     scope.workers.set(n, w);
     w.onmessage = ({ data }) => scope.deliver(n, data);
     w.onerror = (event) => scope.deliver(n, { kind: 'failed', message: event.message || 'the Worker did not load' });
     w.postMessage(request);
-  }, [id, open] as unknown as [number, object]);
+  }, [id, open, script] as unknown as [number, object, string]);
   return {
     id, first: await Promise.race([answered, new Promise<WorkerAnswer>((resolve) => setTimeout(() => resolve({ kind: 'failed', message: 'no answer in 30 s' }), 30_000))]),
     send: (message) => page.evaluate(([n, m]) => (window as unknown as Page$).workers.get(n)!.postMessage(m), [id, message] as unknown as [number, object]),
@@ -72,9 +81,9 @@ let copies = 0;
 
 const chromium: ConformanceTarget = {
   name: 'browser (Chromium, IndexedDB)',
-  services: [],
+  services: ['canvas'],
   async open(sample, { services } = {}) {
-    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, ...(services ? { services: [...services] } : {}) });
+    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, services: [...(services ?? ['canvas'])] });
     assert.equal(engine.first.kind, 'opened', JSON.stringify(engine.first));
     return {
       send: (message) => void engine.send(message),
@@ -152,11 +161,38 @@ test('a copy the browser does not hold is taken from the room\'s project, with t
 test('browser relay: a port transferred to the Worker answers the canvas from the copy; a medium not kept, offline, is not here yet', { timeout: 120_000 }, async () => {
   const engine = await worker({ kind: 'open', team: 'tm_test', project: 'relayed', seed: seedOf('network'), api: 'http://localhost:1', offline: true });
   assert.equal(engine.first.kind, 'opened');
-  const answers = await page.evaluate(async (n) => {
-    const w = (window as unknown as Page$).workers.get(n)!;
+  const answers = await relayAsks(engine.id, 'canvas', [{ kind: 'file', path: 'screens/chemin.json' }, { kind: 'file', path: 'assets/narration/fr/chemin/chemin-depart.m4a' }]);
+  assert.equal(answers.ok, true);
+  const [screen, audio] = answers.answers;
+  assert.deepEqual([screen.status, screen.type], ['ok', 'application/json']);
+  assert.match(screen.text ?? "", /^\{\n  "\$schema"/);
+  assert.equal(audio.status, 'unavailable');
+  await ask(engine, 'close', {});
+  await engine.end();
+});
+
+test('the app\'s Worker gives a compiler of free objects: loaded at the first object a page asks for, once', { timeout: 120_000 }, async () => {
+  const engine = await worker({ kind: 'open', team: 'tm_test', project: 'objects', seed: seedOf('network'), api: 'http://localhost:1', offline: true }, '/worker-objects.js');
+  assert.equal(engine.first.kind, 'opened');
+  let loads = 0;
+  engine.receive((message) => { if (message.kind === 'event' && message.event.type === 'error' && message.event.context === 'objects') loads++; });
+  await ask(engine, 'summary', {});
+  assert.equal(loads, 0, 'nothing loaded while no page asks for an object');
+  const answers = await relayAsks(engine.id, 'frames', [{ kind: 'object-code', object: 'diagnostic-reseau' }, { kind: 'object-frame', object: 'diagnostic-reseau' }, { kind: 'object-code', object: 'diagnostic-reseau' }]);
+  assert.deepEqual(answers.answers.map((answer) => answer.status), ['ok', 'ok', 'ok']);
+  assert.equal(answers.answers[0].text, 'compiled here');
+  assert.equal(loads, 1);
+  await ask(engine, 'close', {});
+  await engine.end();
+});
+
+// Questions of a relay host's pages, through a port transferred to the Worker (relayPort).
+function relayAsks(n: number, host: 'canvas' | 'frames', requests: unknown[]) {
+  return page.evaluate(async ([n, host, requests]) => {
+    const w = (window as unknown as Page$).workers.get(n as number)!;
     const { port1, port2 } = new MessageChannel();
     const opened = new Promise((resolve) => w.addEventListener('message', function listen({ data }) { if (data.kind === 'response' && data.id === 'relay') { w.removeEventListener('message', listen); resolve(data.ok); } }));
-    w.postMessage({ kind: 'request', id: 'relay', type: 'relayPort', params: { host: 'canvas' } }, [port1]);
+    w.postMessage({ kind: 'request', id: 'relay', type: 'relayPort', params: { host } }, [port1]);
     const ok = await opened;
     const ask = (id: number, request: unknown) => new Promise<{ status: string; type?: string; text?: string }>((resolve) => {
       port2.addEventListener('message', async function listen({ data }) {
@@ -168,12 +204,8 @@ test('browser relay: a port transferred to the Worker answers the canvas from th
       port2.start();
       port2.postMessage({ type: 'relay/request', id, request });
     });
-    return { ok, screen: await ask(1, { kind: 'file', path: 'screens/chemin.json' }), audio: await ask(2, { kind: 'file', path: 'assets/narration/fr/chemin/chemin-depart.m4a' }) };
-  }, engine.id);
-  assert.equal(answers.ok, true);
-  assert.deepEqual([answers.screen.status, answers.screen.type], ['ok', 'application/json']);
-  assert.match(answers.screen.text ?? "", /^\{\n  "\$schema"/);
-  assert.equal(answers.audio.status, 'unavailable');
-  await ask(engine, 'close', {});
-  await engine.end();
-});
+    const answers = [];
+    for (const [i, request] of (requests as unknown[]).entries()) answers.push(await ask(i + 1, request));
+    return { ok, answers };
+  }, [n, host, requests] as unknown as [number, string, unknown[]]);
+}

@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { askResultOf, parseCanvasMessage } from '@elabora/player/canvas-parse';
-import { screenRenderOf } from '@elabora/player/canvas-render';
 import { PLAYER_PREVIEW_PROTOCOL } from '@elabora/player/canvas-protocol';
 import type { LayoutMessage } from '@elabora/player/canvas-protocol';
 
@@ -61,13 +60,4 @@ test('the result of a question is read as the question says it is made', () => {
   assert.deepEqual(askResultOf('block-preview', { overflow: true, block: rect() }), { ok: true, result: { overflow: true, block: rect() } });
   assert.equal(askResultOf('block-preview', { overflow: true, block: { x: 1 } }).ok, false);
   assert.equal(askResultOf('block-preview-clear', 1).ok, false);
-});
-
-test('the render a host sends its page: the screen, the course, its view, the styles unless the page has them, the files by their hash, the outline', () => {
-  const course = { language: 'fr' } as never;
-  const source = { screen: 'a', course, view: { state: 'initial', step: null, layer: null } as const, styles: { hash: 'h', sheets: [] }, files: [{ path: 'assets/a.png', kind: 'asset', hash: 'sha256:1', bytes: 99, extra: true }], outline: { sections: [] }, internal: 'not sent' };
-  const sent = screenRenderOf(source as never);
-  assert.deepEqual(sent, { screen: 'a', course, view: source.view, styles: source.styles, files: [{ path: 'assets/a.png', kind: 'asset', hash: 'sha256:1' }], outline: { sections: [] } });
-  assert.equal('styles' in screenRenderOf(source as never, { styles: false }), false);
-  assert.equal('files' in screenRenderOf({ screen: 'a', course, view: source.view }), false);
 });

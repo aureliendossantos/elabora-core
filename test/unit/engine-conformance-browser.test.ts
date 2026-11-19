@@ -11,14 +11,14 @@ import type { FileContent } from '@elabora/core/ops/types';
 import { openCopy } from '@elabora/engine/browser/session';
 import { memoryCopy } from '@elabora/engine/browser/store';
 import type { RoomSocket } from '@elabora/engine/base/session-cloud';
-import type { EventMessage, ResponseMessage } from '@elabora/engine/protocol';
+import type { EngineEvent, EventMessage, ResponseMessage } from '@elabora/engine/protocol';
 import { engineConformance, type ConformanceTarget, type Sample } from '../conformance/engine.ts';
 import { EXAMPLE, BILINGUAL, NETWORK_SAMPLE } from '../helpers.ts';
 
 // The engine's protocol (test/conformance/engine.ts) played against a browser engine's session
 // (D103) under Node: a copy of the sample as the room would give it, kept in memory, offline (its room
-// never answers), without any service: every case of a service is skipped, and the case of a
-// service not here judges them.
+// never answers), with the one service it has a provider for, the canvas (D105): every case of another
+// service is skipped, and the case of a service not here judges them.
 
 const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPLE, bilingual: BILINGUAL };
 
@@ -27,11 +27,11 @@ const offline = (): RoomSocket => ({ readyState: 0, send() {}, close() {}, addEv
 
 const browser: ConformanceTarget = {
   name: 'browser (memory)',
-  services: [],
+  services: ['canvas'],
   async open(sample, { services } = {}) {
     const { files } = readProjectFiles(SAMPLES[sample]);
     const store = memoryCopy({ link: { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 }, confirmed: files });
-    const session = await openCopy({ id: `cloud:tm_test/prj_test`, store, api: 'http://localhost:1', connect: offline, ...(services ? { services } : {}) });
+    const session = await openCopy({ id: `cloud:tm_test/prj_test`, store, api: 'http://localhost:1', connect: offline, services: services ?? ['canvas'] });
     const listeners: ((message: ResponseMessage | EventMessage) => void)[] = [];
     session.subscribe((message) => { for (const listener of listeners) listener(structuredClone(message)); });
     return {
@@ -69,9 +69,29 @@ const closing: (() => Promise<unknown>)[] = [];
 after(async () => { for (const close of closing) await close(); });
 
 test('browser: a service named without a provider is not had: not in the summary, and a command that needs it is not here', async () => {
-  const session = await copyOf('basic', { services: ['library', 'media'] });
-  assert.deepEqual((await ask<{ services: string[] }>(session, 'summary', {})).services, []);
+  const session = await copyOf('basic', { services: ['library', 'media', 'canvas'] });
+  assert.deepEqual((await ask<{ services: string[] }>(session, 'summary', {})).services, ['canvas']);
   await assert.rejects(ask(session, 'run', { command: 'add_font', args: { family: 'inter' } }), (error: { kind?: string; code?: string }) => error.kind === 'not-available' && error.code === 'E_NOT_HERE');
+});
+
+test('browser canvas: its renders and views go out as events, the page\'s words left to the window; a change sends the screen shown again', async () => {
+  const session = await copyOf('network', { services: ['canvas'] });
+  const events: EngineEvent[] = [];
+  session.subscribe(({ event }) => { if (event.type === 'canvasRender' || event.type === 'canvasView') events.push(event); });
+  const info = await ask<{ url: string; base: string; token: string }>(session, 'openCanvas', {});
+  assert.deepEqual([info.url, info.base, info.token], ['', '', '']);
+  const shown = await ask<{ id: string }>(session, 'canvasView', { screen: 'chemin', step: 1 });
+  const render = events.shift();
+  assert.ok(render?.type === 'canvasRender' && render.id === shown.id && render.render.screen === 'chemin' && render.render.view.step === 1);
+  assert.ok(render.render.files?.length && render.render.files.every((file) => Object.keys(file).sort().join() === 'hash,kind,path'), 'files by path, kind and hash');
+  const stepped = await ask<{ id: string }>(session, 'canvasView', { step: 2 });
+  assert.deepEqual(events.shift(), { type: 'canvasView', id: stepped.id, view: { state: 'initial', step: 2, layer: null } });
+  const changed = await ask<{ change: { seq: number } }>(session, 'run', { command: 'update_screen', args: { id: 'chemin', title: 'Le chemin' } });
+  const again = events.shift();
+  assert.ok(again?.type === 'canvasRender' && again.id === changed.change.seq && again.render.course.screens[0]?.title === 'Le chemin');
+  await ask(session, 'run', { command: 'update_screen', args: { id: 'accueil', showTitle: false } });
+  assert.deepEqual(events, [], 'another screen\'s change that the bars do not show');
+  assert.deepEqual(await ask(session, 'closeCanvas', {}), { closed: true });
 });
 
 // A relay's port (D118, D105): what each host's pages may ask, answered from the copy.

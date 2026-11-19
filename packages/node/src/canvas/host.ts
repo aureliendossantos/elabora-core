@@ -6,7 +6,7 @@ import type { AnswerMessage, AskMessage, AskName, CanvasAsks, HostMessage, Rende
 import { startServer } from '../emulator/server.ts';
 import type { RouteHandler } from '../emulator/server.ts';
 import { runtimeFiles, runtimeBundle, vendorThree, canvasPageHtml } from '../bundles.ts';
-import { screenRenderOf } from '@elabora/player/canvas-render';
+import { screenRenderOf } from '@elabora/core/render/screen';
 import { parseRange, relayPathOf, relayRequestOf, relayResponse } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayRange } from '@elabora/player/relay-protocol';
 import { errorMessage } from '../util/values.ts';
@@ -111,7 +111,7 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
   const sendRender = (page: Page, id: string | number | undefined, render: ScreenRender) => {
     const known = !!render.styles && render.styles.hash === page.styles;
     if (render.styles) page.styles = render.styles.hash;
-    send(page, { type: 'elabora/render', ...(id !== undefined ? { id } : {}), render: screenRenderOf(render, { styles: !known }) });
+    send(page, { type: 'elabora/render', ...(id !== undefined ? { id } : {}), render: known ? { ...render, styles: undefined } : render });
   };
 
   function runtimeFile(name: string): Promise<string | Buffer> | null {
@@ -228,7 +228,7 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
     push(render, { id } = {}) {
       for (const file of render.files) allowed.set(file.path, file.kind);
       language = render.course.language;
-      last = { ...(id !== undefined ? { id } : {}), render };
+      last = { ...(id !== undefined ? { id } : {}), render: screenRenderOf(render) };
       for (const page of pages) sendRender(page, id, render);
       return pages.size;
     },

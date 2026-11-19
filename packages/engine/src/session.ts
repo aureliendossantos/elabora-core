@@ -57,7 +57,8 @@ import type { FileMedia } from '@elabora/core/media/conformance';
 import { isMediaAsset, mediaStatus, probeAssets } from '@elabora/node/store/media';
 import { toSourceFile, withUpdates } from './disk.ts';
 import type { SessionStore } from './disk.ts';
-import { SessionCanvas } from './session-canvas.ts';
+import { SessionCanvas } from './base/canvas.ts';
+import { startCanvasHost } from '@elabora/node/canvas/host';
 import { SessionVoice } from './session-voice.ts';
 import { SessionSounds } from './session-sounds.ts';
 import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
@@ -235,7 +236,7 @@ export class Session {
       reportError: (error, context) => this.#emitError(error, context)
     });
     const renderer = new Renderer();
-    this.#canvas = new SessionCanvas({ root: this.root, project, renderer, reportError });
+    this.#canvas = new SessionCanvas({ sink: ({ port, debug }) => startCanvasHost({ root: this.root, port, debug }), project, renderer, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#sounds = new SessionSounds({ run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#reads = new SessionReads({
@@ -708,7 +709,7 @@ export class Session {
 
   formatStatus(): FormatStatus { return this.#reads.formatStatus(); }
 
-  // ── canvas (session-canvas.ts) ─────────────────────────────────────
+  // ── canvas (base/canvas.ts) ─────────────────────────────────────
 
   // Starts the canvas host of the project (once): the app shows its page in a frame.
   async openCanvas(options: { port?: number; debug?: boolean } = {}): Promise<CanvasInfo> {
