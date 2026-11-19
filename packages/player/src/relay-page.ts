@@ -17,6 +17,10 @@ interface Route { port: MessagePort; waiting: Map<number, (answer: RelayAnswer) 
 const routes = new Map<string, Route>();
 let counter = 0;
 let hello: WorkerHello | null = null;
+// How long an update waits for the newer script to take over, in ms.
+const UPDATE_WAIT_MS = 20000;
+// How often a newer script that waits is asked again to skip waiting, in ms.
+const NUDGE_MS = 1500;
 
 const parentWindow = window.parent !== window ? window.parent : null;
 const tell = (message: RelayToApp) => { if (parentWindow && hello?.appOrigin) parentWindow.postMessage(message, hello.appOrigin); };
@@ -121,17 +125,40 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// Looks for a newer script, and says which one runs.
+// A newer script is on its way (found by the browser at a load of a page, or by `update`): waits until it has taken the
+// pages over, and asks it again to skip waiting while it has not. The browser stops the running script to activate the
+// newer one; when an event of a page (a script of an object's frame loading, a message) reaches the running one at that
+// moment, it is started again and the newer one stays waiting until the running one has been idle for the browser's own
+// time (about 30 s: seen with the browser's service worker states, in one pass in twenty of the relay's test). Asking the
+// waiting script to skip waiting again makes the browser try again. This page says nothing to the running script meanwhile:
+// a message to it is one more event that brings it back. `controllerchange` says ready again with the version that took over.
+function takeOver(registration: ServiceWorkerRegistration, incoming: ServiceWorker): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const done = () => { clearTimeout(timer); clearInterval(nudge); incoming.removeEventListener('statechange', changed); navigator.serviceWorker.removeEventListener('controllerchange', done); resolve(); };
+    const changed = () => { if (incoming.state === 'activated' || incoming.state === 'redundant') done(); };
+    const timer = setTimeout(done, UPDATE_WAIT_MS);
+    const nudge = setInterval(() => { registration.waiting?.postMessage({ type: 'relay/skip' } satisfies PageToWorker); }, NUDGE_MS);
+    incoming.addEventListener('statechange', changed);
+    navigator.serviceWorker.addEventListener('controllerchange', done);
+    changed();
+  });
+}
+
+// Looks for a newer script, and says which one runs once it has taken over.
 async function update(): Promise<void> {
   const registration = await navigator.serviceWorker.getRegistration('/');
   await registration?.update().catch(() => {});
+  const incoming = registration?.installing ?? registration?.waiting;
+  if (registration && incoming) await takeOver(registration, incoming);
   hello = (await askWorker()) ?? hello;
   if (hello) tell({ type: 'relay/updated', protocol: RELAY_PROTOCOL, version: hello.version });
 }
 
 async function start(): Promise<void> {
   try {
-    await navigator.serviceWorker.register('/relay.js', { scope: '/' });
+    const registration = await navigator.serviceWorker.register('/relay.js', { scope: '/' });
+    // A newer script found by the browser (a deploy: this page was loaded, the browser checked) is taken over the same way.
+    registration.addEventListener('updatefound', () => { const incoming = registration.installing; if (incoming) void takeOver(registration, incoming); });
     await navigator.serviceWorker.ready;
     // The first visit: the page is claimed once the worker is active.
     if (!worker()) await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }));

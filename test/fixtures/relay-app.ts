@@ -1,7 +1,7 @@
 // The web app's page in the relay's tests: it holds the two relay pages (the canvas and the frames host's),
 // gives them a port per route, and answers the ports as the engine will: from a module's files served by
 // the test (a stand-in for the engine in a Worker). window.app is what the test drives.
-import { serveRelayPort } from '@elabora/player/relay-protocol';
+import { RELAY_PROTOCOL, serveRelayPort } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 import { objectFrameHtml } from '@elabora/core/objects/bundle';
 import { createPageCanvasHost } from '@elabora/player/canvas-page-host';
@@ -87,6 +87,24 @@ const api = {
   },
   // The frame of the canvas page loaded anew, as a window that shows the view again does.
   reload() { canvas.src = 'about:blank'; setTimeout(() => { canvas.src = canvasAddress.href; }, 100); },
+  // A canvas page of its own, whose route is opened after it has asked for files: a page that asks for an image in its first task.
+  lateCanvas() {
+    const route = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+    const late = document.createElement('iframe');
+    late.id = 'late';
+    const address = new URL('/canvas/index.html', CANVAS);
+    address.searchParams.set('token', 'late');
+    address.searchParams.set('route', route);
+    late.src = address.href;
+    document.body.append(late);
+    return route;
+  },
+  openLate(route: string) {
+    const late = document.getElementById('late') as HTMLIFrameElement;
+    const channel = new MessageChannel();
+    ends.push(serveRelayPort(channel.port1, source, 'canvas'));
+    late.contentWindow!.postMessage({ type: 'relay/open', protocol: RELAY_PROTOCOL, route }, CANVAS, [channel.port2]);
+  },
   close() { host.close(); for (const end of ends.splice(0)) end(); }
 };
 (window as unknown as { app: typeof api }).app = api;

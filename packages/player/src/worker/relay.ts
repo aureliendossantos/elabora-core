@@ -22,7 +22,6 @@ const VERSION = typeof __RELAY_VERSION__ === 'string' ? __RELAY_VERSION__ : 'dev
 // Route → the client (a page) that holds it, in memory. Claims are made by the relay pages, which are
 // asked nothing a route could be read from; a route is a secret of the tab that made it.
 const holders = new Map<string, string>();
-const startedAt = Date.now();
 
 const pagePath = (url: string): string => new URL(url).pathname;
 const isRelayPage = (url: string): boolean => RELAY_PAGES.includes(pagePath(url));
@@ -50,6 +49,9 @@ self.addEventListener('message', (event) => {
   const source = event.source;
   const data: unknown = event.data;
   if (!host || !source || !('url' in source) || !isRecord(data) || !isRelayPage(source.url)) return;
+  // A newer script that was held back (the browser stopped the running one for it, and an event of a page brought that one
+  // back: the browser does not try again until it is idle for its own time): asked again, it takes over.
+  if (data.type === 'relay/skip') { void self.skipWaiting(); return; }
   if (data.type === 'relay/hello') {
     event.ports[0]?.postMessage({ version: VERSION, appOrigin: appOriginOf(host) } satisfies WorkerHello);
     return;
@@ -127,7 +129,10 @@ async function routeOf(event: FetchEvent): Promise<string | null> {
 
 // The page that holds the route, waiting a moment for the pages to say it again after the worker woke.
 async function holderOf(route: string): Promise<Client | null> {
-  const patience = Date.now() - startedAt < 3000 ? 2000 : 300;
+  // A request of the module's files that comes before its route is open (a page asks for an image in its first task; a worker
+  // that has just woken, whose pages have not said again what they hold) waits for it, as long as an answer of the engine does,
+  // then is answered 503: it is never left to the network, which has none of the module's files.
+  const patience = RELAY_ANSWER_MS;
   for (let waited = 0; waited <= patience; waited += 100) {
     const id = holders.get(route);
     const client = id ? await self.clients.get(id) : undefined;

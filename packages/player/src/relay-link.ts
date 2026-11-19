@@ -12,7 +12,9 @@ export type PageToWorker =
   // Asks the version and the app's origin; the answer comes on the port that goes with it.
   | { type: 'relay/hello' }
   // The routes this page holds, all of them (a page that holds none says []).
-  | { type: 'relay/hold'; routes: string[] };
+  | { type: 'relay/hold'; routes: string[] }
+  // Said to a newer script that waits to take over: it asks to skip waiting again (see relay-page.ts, update).
+  | { type: 'relay/skip' };
 
 export interface WorkerHello {
   version: string;
