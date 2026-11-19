@@ -41,7 +41,8 @@ import { interfaceSounds, shippedPlayerSounds, soundCreditsText } from '@elabora
 import type { SoundsData } from '@elabora/player/course-data';
 import { getRegistry, componentHash } from '@elabora/core/components/registry';
 import type { Registry } from '@elabora/core/components/registry';
-import { runtimeFiles, lmsBootFile, reviewFiles, playerSoundFile, vendorThree, compileObjectCode, objectFrameHtml, bundleErrorMessage, ELABORA_VERSION } from './bundles.ts';
+import { runtimeFiles, lmsBootFile, reviewFiles, playerSoundFile, vendorThree, compileObjectCode, bundleErrorMessage, ELABORA_VERSION } from './bundles.ts';
+import { objectFrameHtml } from '@elabora/core/objects/bundle';
 import { planZip, writeZip, hashZip, ZipLimitError } from './packaging/zip-writer.ts';
 import type { ZipInput, ZipPlan } from './packaging/zip-writer.ts';
 import { packageMedia, packageSizes, mediaQualityOf } from './packaging/media.ts';
