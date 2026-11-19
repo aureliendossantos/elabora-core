@@ -20,6 +20,10 @@ Media is part of the package. The project keeps **one master per media file, alr
 - While a job runs, references to its output get `I_MEDIA_PROCESSING` instead of `E_ASSET_MISSING`; the preview shows a placeholder; `elabora build` (and `elabora_build`) waits for the jobs, and `--no-wait` refuses to build.
 - Backups skip non-conformant media: they are inputs waiting for conversion, not sources.
 
+### One reading of the bytes
+
+What both hosts must read the same way lives in `@elabora/core` `media/`, without I/O: a reader is a generator that asks for ranges of a file and returns its answer (`media/bytes.ts`, `ByteSteps`). The desktop answers it from a file handle (`readSync`), the browser from a `File`'s slices (`readAsync`) or from bytes it holds. `media/metadata.ts` reads an image's EXIF orientation and its GPS position (EXIF, XMP), writes the image without its metadata as pieces (bytes it made, ranges of the file copied as they are) and reads an MP4's top-level boxes (its brand, whether its index comes first). `@elabora/node` `media/metadata.ts` and `media/probe.ts` call them; a test keeps the bytes the desktop writes the same as before the move, and the same through a browser's reading (`test/unit/media-metadata.test.ts`).
+
 ## Narration (D24)
 
 The voice of a narrated screen is one file per line and language, found by convention next to the script (`screen.narration.lines`): `assets/narration/<language>/<screen>/<line>.m4a` and its sidecar `<line>.json` (SPEC §4.7). They are media masters of `assets/` (probed, hashed, backed up) that no asset prop names, so packages never ship them. A layer's lines (`layers[].narration.lines`, D62), and a dialogue's (D61: its lines with a speaker, and with `learnerVoice` the learner's answers as `<node>.<option>`), are voice lines too: ids unique in the screen, every track counted, their audio at the same path.

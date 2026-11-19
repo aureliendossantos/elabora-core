@@ -8,7 +8,7 @@ import { execFile, spawnSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import {
   PRESETS, presetHash, fitWithin, conformance, masterPlan, renditionPlan, canonicalPath, presetDimensions,
-  findMediaTools, MediaToolsError, probeMedia, probeMediaSync, probeProjectMedia, readMp4Layout, encodeAttempts, runFfmpeg,
+  findMediaTools, MediaToolsError, probeMedia, probeMediaSync, probeProjectMedia, encodeAttempts, runFfmpeg,
   importMedia, optimizeInPlace, ensureRendition, renditionPath, renditionsDir, MediaQueue, readJobs, jobsDir, probeCachePath
 } from '@elabora/node/media/index';
 import { projectDataDir } from '@elabora/node/data-dir';
@@ -127,18 +127,6 @@ test('conformance: what a master must be, and how to get there', () => {
 });
 
 const pick = ({ action, extension, video, audio }: { action: string; extension: string | null; video: string | null; audio: string | null }) => ({ action, extension, video, audio });
-
-test('MP4 layout: faststart read from the top-level boxes, 64-bit sizes included', async () => {
-  const dir = project();
-  const box = (type: string, size: number) => { const b = Buffer.alloc(size); b.writeUInt32BE(size, 0); b.write(type, 4, 'latin1'); return b; };
-  const ftyp = (brand: string) => { const b = box('ftyp', 16); b.write(brand, 8, 'latin1'); return b; };
-  const large = Buffer.alloc(24); large.writeUInt32BE(1, 0); large.write('mdat', 4, 'latin1'); large.writeBigUInt64BE(24n, 8);
-  fs.writeFileSync(path.join(dir, 'fast.mp4'), Buffer.concat([ftyp('isom'), box('moov', 40), box('mdat', 100)]));
-  fs.writeFileSync(path.join(dir, 'slow.mov'), Buffer.concat([ftyp('qt  '), box('free', 8), large, box('moov', 40)]));
-  assert.deepEqual(await readMp4Layout(path.join(dir, 'fast.mp4')), { brand: 'isom', faststart: true, boxes: ['ftyp', 'moov', 'mdat'] });
-  assert.deepEqual(await readMp4Layout(path.join(dir, 'slow.mov')), { brand: 'qt  ', faststart: false, boxes: ['ftyp', 'free', 'mdat', 'moov'] });
-  removeProject(dir);
-});
 
 test('tools: a missing ffmpeg is a typed error', async () => {
   await assert.rejects(findMediaTools({ env: { ...process.env, ELABORA_FFMPEG: '/nonexistent/ffmpeg' } }), (error: unknown) => error instanceof MediaToolsError && error.code === 'E_MEDIA_TOOLS_MISSING' && error.missing.includes('ffmpeg'));

@@ -4,7 +4,10 @@ import { execFile, spawnSync } from 'node:child_process';
 import { projectDataDir } from '../data-dir.ts';
 import { extensionOf, mediaKindOfPath } from '@elabora/core/media/conformance';
 import type { MediaInfo } from '@elabora/core/media/conformance';
-import { readImageMetadata } from './metadata.ts';
+import { readSync } from '@elabora/core/media/bytes';
+import { mp4LayoutSteps, ORIENTATION_DEGREES } from '@elabora/core/media/metadata';
+import type { Mp4Layout } from '@elabora/core/media/metadata';
+import { readImageMetadata, reader, withFile } from './metadata.ts';
 import { findMediaTools, findProberSync, MediaToolsError } from './tools.ts';
 import type { MediaTools, Prober } from './tools.ts';
 import { writeFileAtomic } from './files.ts';
@@ -29,7 +32,6 @@ export interface ProbeOptions { tools?: MediaTools }
 const IMAGE_CODECS: Readonly<Record<string, string>> = { mjpeg: 'jpeg', png: 'png', apng: 'png', webp: 'webp', gif: 'gif', tiff: 'tiff', bmp: 'bmp', hevc: 'heif', av1: 'avif' };
 const HEIF_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1']);
 const AVIF_BRANDS = new Set(['avif', 'avis']);
-const ORIENTATION_DEGREES: Readonly<Record<number, number>> = { 3: 180, 5: 90, 6: 90, 7: 270, 8: 270 };
 
 // The probe of a file as steps: each yield asks for an ffprobe run with these arguments and
 // receives its output. major: the ffmpeg major version (stream groups need 7 or later).
@@ -178,46 +180,11 @@ function ratio(value: string | undefined): number {
   return Math.round((Number(m[1]) / Number(m[2])) * 1000) / 1000;
 }
 
-// --- MP4 top-level boxes
+// --- MP4 top-level boxes, read by the rule of @elabora/core/media/metadata
 
-export interface Mp4Layout {
-  brand: string | null;      // major brand of ftyp
-  faststart: boolean | null; // moov before the first mdat; null without moov
-  boxes: string[];           // top-level box types in file order
-}
+export type { Mp4Layout };
 
-export function readMp4LayoutSync(file: string): Mp4Layout {
-  const fd = fs.openSync(file, 'r');
-  try {
-    const size = fs.fstatSync(fd).size;
-    const header = Buffer.alloc(16);
-    const boxes: string[] = [];
-    let brand: string | null = null;
-    let position = 0;
-    while (position + 8 <= size && boxes.length < 10_000) {
-      const bytesRead = fs.readSync(fd, header, 0, 16, position);
-      if (bytesRead < 8) break;
-      const type = header.toString('latin1', 4, 8);
-      let boxSize = header.readUInt32BE(0);
-      if (boxSize === 1) {
-        if (bytesRead < 16) break;
-        boxSize = Number(header.readBigUInt64BE(8));
-      } else if (boxSize === 0) {
-        boxSize = size - position; // extends to the end of the file
-      }
-      if (boxSize < 8) break;
-      if (type === 'ftyp' && bytesRead >= 12) brand = header.toString('latin1', 8, 12);
-      boxes.push(type);
-      if (boxes.includes('moov') && boxes.includes('mdat')) break;
-      position += boxSize;
-    }
-    const moov = boxes.indexOf('moov');
-    const mdat = boxes.indexOf('mdat');
-    return { brand, faststart: moov < 0 ? null : mdat < 0 || moov < mdat, boxes };
-  } finally {
-    fs.closeSync(fd);
-  }
-}
+export const readMp4LayoutSync = (file: string): Mp4Layout => withFile(file, (handle) => readSync(mp4LayoutSteps(fs.fstatSync(handle).size), reader(handle)));
 
 export const readMp4Layout = async (file: string): Promise<Mp4Layout> => readMp4LayoutSync(file);
 
