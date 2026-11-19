@@ -1,28 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { runBench } from '../sync/bench.ts';
+import { FAILED, failures, range } from '../sync/convergence.ts';
 
 // The convergence bench (test/sync/bench.ts, D73–D75): two copies, a server in memory, people and
-// agents drawn at random, a copy offline and back. ELABORA_SYNC_DRAWS=5000 runs more draws.
+// agents drawn at random, a copy offline and back. ELABORA_SYNC_DRAWS=5000 runs more draws. The same
+// runs in a browser's Worker: test/e2e/sync-convergence-browser.test.ts.
 const DRAWS = Number(process.env.ELABORA_SYNC_DRAWS ?? 120);
-
-// Seeds that once failed, kept as fixed cases: each fails again when what it caught comes back.
-const FAILED = [
-  31, // a copy's own rebase overwrote another's value, and the change did not say so: no one was told
-  48, // two removals emptied a screen's blocks: the server refuses what does not validate
-  140, // two copies duplicating a block drew the same id (before D77): the server refused the second
-  3834 // an agent rewrote course.json with its keys in another order: every version looked as far (D75 compares values)
-];
-
-const failures = (seeds: Iterable<number>, options: { external?: 'closest-version' | 'current'; solo?: boolean } = {}) => {
-  const out: string[] = [];
-  for (const seed of seeds) {
-    const report = runBench({ seed, ...options });
-    if (report.problems.length) out.push(`seed ${seed}: ${report.problems.slice(0, 3).join(' | ')}`);
-  }
-  return out;
-};
-const range = (from: number, count: number) => Array.from({ length: count }, (_, i) => from + i);
 
 test('sync bench: one copy alone, the generator makes valid changes the server places as they are', () => {
   assert.deepEqual(failures(range(1, 30), { solo: true }), []);
