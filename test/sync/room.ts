@@ -1,4 +1,4 @@
-import { acceptChange, type ClientMessage, type Committed, type ServerMessage } from '@elabora/core/sync/index';
+import { acceptChange, blobsOf, readMediaFacts, replacesFacts, type ClientMessage, type Committed, type KnownMedium, type MediaFacts, type ServerMessage } from '@elabora/core/sync/index';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type { Files } from '@elabora/core/ops/types';
 import type { RoomSocket } from '@elabora/engine/base/session-cloud';
@@ -36,7 +36,29 @@ export class Room {
   // each head, to go back to one.
   epoch = '0';
   readonly at = new Map<number, Files>();
+  // What the room knows of media (elabora-cloud C106): their facts by hash, as copies gave them, the
+  // first of a version kept, a higher version replacing a lower; said in welcome unless sayMedia is false,
+  // as a room before them.
+  readonly facts = new Map<string, MediaFacts>();
+  sayMedia = true;
+  mediaMessages = 0;
   constructor(files: Files) { this.files = files; this.at.set(0, files); }
+
+  // A medium's size, from the files that hold it, with its facts.
+  known(hashes: readonly string[]): Record<string, KnownMedium> | undefined {
+    const known: Record<string, KnownMedium> = {};
+    for (const file of this.files.values()) {
+      if (file.kind !== 'binary' || !file.hash || !hashes.includes(file.hash)) continue;
+      const facts = this.facts.get(file.hash);
+      known[file.hash] = { size: file.size ?? 0, ...(facts ? { facts } : {}) };
+    }
+    return Object.keys(known).length ? known : undefined;
+  }
+  #keep(hash: string, given: MediaFacts): boolean {
+    if (!replacesFacts(this.facts.get(hash), given)) return false;
+    this.facts.set(hash, given);
+    return true;
+  }
   // Back to an earlier head, as the administrator restores a room to a time: its later changes leave,
   // its epoch changes, every connection closes with 4008.
   restore(head: number): void {
@@ -61,15 +83,30 @@ export class Room {
       if (this.away.has(message.client)) return from.close();
       from.presence = { actor: message.actor, client: message.client, at: '2026-11-12T09:00:00.000Z' };
       const role = this.roles.get(message.client);
-      from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers(), epoch: this.epoch, ...(role && this.sayRole ? { role } : {}) });
+      from.deliver({ type: 'welcome', protocol: 'elabora-sync/1', head: this.head, peers: this.peers(), epoch: this.epoch, ...(role && this.sayRole ? { role } : {}), ...(this.sayMedia ? { media: true as const } : {}) });
       // A copy of another history (its epoch, or none once restored): the whole project, not a catch-up.
       if (message.since > 0 && (message.epoch ?? '0') !== this.epoch) {
-        const give = () => from.deliver({ type: 'snapshot', head: this.head, files: [...this.files].map(([rel, file]) => (file.kind === 'text' ? { path: rel, text: file.text } : { path: rel, blob: file.hash!, size: file.size })) });
+        const give = () => from.deliver({ type: 'snapshot', head: this.head, files: [...this.files].map(([rel, file]) => (file.kind === 'text' ? { path: rel, text: file.text } : { path: rel, blob: file.hash!, size: file.size, ...(this.facts.has(file.hash!) ? { facts: this.facts.get(file.hash!)! } : {}) })) });
         if (this.holdSnapshots) this.holdSnapshot = give; else give();
       }
       return this.tellPresence(from);
     }
-    if (message.type === 'catchup') return from.deliver({ type: 'catchup', changes: this.log.filter((change) => change.seq > message.since), head: this.head });
+    if (message.type === 'catchup') {
+      const changes = this.log.filter((change) => change.seq > message.since);
+      const media = this.known(changes.flatMap((change) => blobsOf(change.ops)));
+      return from.deliver({ type: 'catchup', changes, head: this.head, ...(media ? { media } : {}) });
+    }
+    // Facts given in passing (D126): refused whole when one does not hold or names a medium the room lacks.
+    if (message.type === 'media') {
+      this.mediaMessages++;
+      const given = Object.entries(message.media).map(([hash, value]) => [hash, readMediaFacts(value, 'strict')] as const);
+      if (!given.length || given.some(([hash, facts]) => !facts || !this.known([hash]))) return from.deliver({ type: 'error', code: 'invalid', message: 'not facts of this project\'s media' });
+      const changed = given.filter(([hash, facts]) => this.#keep(hash, facts!)).map(([hash]) => hash);
+      from.deliver({ type: 'media', media: this.known(given.map(([hash]) => hash))! });
+      const media = this.known(changed);
+      if (media) for (const other of this.sockets) if (other !== from && other.presence) other.deliver({ type: 'media', media });
+      return;
+    }
     // The room relays where a copy is, as elabora-cloud's does (screen, selection, and the view, D91).
     if (message.type === 'presence') {
       if (!from.presence) return;
@@ -86,14 +123,22 @@ export class Room {
     }
     const accepted = acceptChange({ head: this.head, files: this.files, log: this.log }, message.change);
     if ('refusal' in accepted) return from.deliver({ type: 'refused', refusal: accepted.refusal, head: this.head });
+    // The facts of the media it writes accompany the change: those that do not hold are left out, never the change.
+    const written = blobsOf(accepted.committed.ops);
+    const dropped: string[] = [];
+    for (const [hash, value] of Object.entries(message.change.media ?? {})) {
+      const facts = written.includes(hash) && !accepted.duplicate ? readMediaFacts(value, 'strict') : null;
+      if (facts) this.#keep(hash, facts); else dropped.push(hash);
+    }
     if (!accepted.duplicate) {
       this.head = accepted.committed.seq;
       this.files = accepted.files;
       this.log.push(accepted.committed);
       this.at.set(this.head, this.files);
-      for (const other of this.sockets) if (other !== from && other.presence) other.deliver({ type: 'change', change: accepted.committed });
     }
-    from.deliver({ type: 'ack', change: accepted.committed });
+    const media = this.known(written);
+    if (!accepted.duplicate) for (const other of this.sockets) if (other !== from && other.presence) other.deliver({ type: 'change', change: accepted.committed, ...(media ? { media } : {}) });
+    from.deliver({ type: 'ack', change: accepted.committed, ...(media ? { media } : {}), ...(dropped.length ? { mediaDropped: dropped } : {}) });
   }
 
   peers(): Presence[] { return [...this.sockets].flatMap((socket) => (socket.presence ? [socket.presence] : [])); }

@@ -12,7 +12,10 @@ import type { ServiceInfo } from './account.ts';
 import { requireCredential } from './credentials.ts';
 import { sendBlobs } from './blob-upload.ts';
 import { linkFile, readLink, unlinkFolder, writeLink, type Person, type ProjectLink } from './link.ts';
-import type { CopyStore } from '@elabora/core/sync/copy';
+import type { CopyStore, MediumRef } from '@elabora/core/sync/copy';
+import { mediaFacts, type MediaFacts, type MediaMap } from '@elabora/core/sync/media';
+import { probeProjectMedia } from '../media/probe.ts';
+import { isMediaAsset } from '../store/media.ts';
 import { ensureLibrary, stagingFolder } from '../library/location.ts';
 import { getProject, readCourseInfo, type LibraryProject } from '../library/projects.ts';
 import { dataLocation } from '../data-dir.ts';
@@ -423,6 +426,26 @@ export function folderCopy(root: string, client: CloudClient, link: ProjectLink)
     sendMedia: (hashes) => sendMedia(client, root, link.team, hashes),
     commitMedia: (upload) => commitMedia(client, link.team, upload),
     fetchMedium: (hash) => fetchMedium(client, root, link.team, hash),
+    mediaFacts: (media) => folderMediaFacts(root, media),
     membership: () => projectMembership(client, link.team, link.project)
   };
+}
+
+// The facts of media a folder holds (elabora-core D126): its probe of the files of assets/ (the probe
+// cache in the project's data, what the session probes anyway), for a medium only when the file at its
+// path has the size of the hash's bytes (the copy's word, else the folder's blob store): never the facts
+// of other bytes.
+export async function folderMediaFacts(root: string, media: readonly MediumRef[]): Promise<MediaMap<MediaFacts>> {
+  const sized = media.flatMap((medium) => {
+    const size = medium.size ?? (hasBlob(root, medium.hash as BlobHash) ? fs.statSync(blobPath(root, medium.hash as BlobHash)).size : undefined);
+    return isMediaAsset(medium.path) && size !== undefined ? [{ ...medium, size }] : [];
+  });
+  if (!sized.length) return {};
+  const probes = await probeProjectMedia(root, sized.map((medium) => medium.path));
+  const facts: MediaMap<MediaFacts> = {};
+  for (const medium of sized) {
+    const info = probes.get(medium.path);
+    if (info && !(info instanceof Error) && info.size === medium.size) facts[medium.hash] = mediaFacts(info);
+  }
+  return facts;
 }

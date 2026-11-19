@@ -9,7 +9,7 @@ import { journalOf, type ServerMessage } from '@elabora/core/sync/index';
 import { changesToUndo } from '@elabora/core/ops/batch';
 import type { Presence } from '@elabora/core/sync/protocol';
 import { CloudClient, CloudError } from '@elabora/node/cloud/client';
-import { accountForTeams, cloudOffers, createTeam, folderCopy, folderSnapshot, keepConfirmed, linkFile, listOrgs, projectsApi, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
+import { accountForTeams, cloudOffers, createTeam, folderCopy, folderSnapshot, keepConfirmed, linkFile, listOrgs, projectsApi, readLink, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { listVersions, readVersion } from '@elabora/node/backups/index';
 import { putBytes, readBlob } from '@elabora/node/blobs';
@@ -672,4 +672,25 @@ test('a copy made after a restore (its new link knows no epoch yet) takes the we
   await new Promise((resolve) => setTimeout(resolve, 100));
   assert.deepEqual(told, [], 'nothing said');
   assert.equal(listVersions(C).length, versionsBefore, 'no version kept');
+});
+
+test('a folder gives the facts of its media in passing to a room that keeps them, and nothing to a room from before (D125, D126)', async () => {
+  const A = copyExample();
+  // A picture of the folder's, in its blob store as a folder cloned or pushed keeps it.
+  const point = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+  fs.writeFileSync(path.join(A, 'assets/images/point.png'), point);
+  const hash = putBytes(A, point);
+  const room = new Room(readProjectFiles(A).files);
+  room.sayMedia = false;
+  const a = await linked(room, A);
+  await settled(room, a);
+  assert.deepEqual([room.mediaMessages, room.facts.size], [0, 0]);
+  // The room is updated: at the next connection the folder gives what its probe says, once.
+  room.sayMedia = true;
+  room.drop();
+  const started = Date.now();
+  while (!room.facts.has(hash) && Date.now() - started < 20_000) await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.deepEqual([room.facts.get(hash)?.kind, room.facts.get(hash)?.width, room.mediaMessages], ['image', 1, 1]);
+  await settled(room, a);
+  assert.deepEqual(readLink(A)?.media?.[hash], { size: point.length, facts: room.facts.get(hash) });
 });
