@@ -88,8 +88,7 @@ export const migrateComponents = defineTool({
   ...fromCommand('migrate_components'),
   async handler(args, { root, author }) {
     const result = await edit.run(root, 'migrate_components', args, { author });
-    // No component has steps pending: nothing was run.
-    return result.components.length ? editResult(result) : textResult({ ok: true, migrated: [], message: 'Nothing to migrate.' });
+    return 'message' in result ? textResult({ ok: true, migrated: [], message: result.message }) : editResult(result);
   }
 });
 

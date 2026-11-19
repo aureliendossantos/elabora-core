@@ -31,6 +31,8 @@ export interface HostOptions extends EditOptions {
   onAlign?: () => void;      // the word aligner starts on a line's audio
 }
 
+export const NOTHING_TO_MIGRATE = 'Nothing to migrate.';
+
 // The needs whose provider works asynchronously (a module imported, a tool run): their command's
 // run answers a promise.
 export type AsyncNeed = 'componentMigrations' | 'lineAudio' | 'recording' | 'heardText' | 'sound' | 'videoOfImage';
@@ -67,10 +69,13 @@ export const PROVIDERS: { readonly [Need in HostNeed]: Provider<Need> } = {
   },
   resourceFile,
   // Importing migrations.mjs is asynchronous: the steps are loaded first, then the change runs.
+  // No component with steps pending: nothing is run (no lock, no change), and the result says so.
   componentMigrations: async (dir, args, _options, use) => {
     const project = loadProjectFromDir(dir);
+    const plans = migrationPlans(project, args);
+    if (!plans.length) return { ok: true, migrated: [], components: [], message: NOTHING_TO_MIGRATE, op: 'migrate_components', undo: null, change: null, files: [], diagnostics: [], summary: null } as ReturnType<typeof use>;
     const steps = new Map<string, MigrationSteps>();
-    for (const { descriptor } of migrationPlans(project, args)) steps.set(descriptor.id, await loadMigrations(project.root, descriptor));
+    for (const { descriptor } of plans) steps.set(descriptor.id, await loadMigrations(project.root, descriptor));
     return use({ steps });
   },
   // Media and models are imported when a command needs them.

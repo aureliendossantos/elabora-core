@@ -32,7 +32,8 @@ export interface UndoPlan {
   batch?: string;
 }
 
-const nameOf = (entry: ChangeLike): string => entry.command?.name ?? (entry.type === 'undo' ? 'undo' : entry.author.kind);
+// What a change is called in a history: its command, undo, or who wrote it (an edit made outside Elabora).
+export const nameOf = (entry: ChangeLike): string => entry.command?.name ?? (entry.type === 'undo' ? 'undo' : entry.author.kind);
 
 export function planUndo(entries: readonly JournalEntry[], request: UndoRequest): UndoPlan {
   const plan = (target: ChangeLike, changes: ChangeLike[], rest: Omit<UndoPlan, 'changes' | 'undone' | 'op'>, op = nameOf(target)): UndoPlan =>

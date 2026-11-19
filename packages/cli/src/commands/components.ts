@@ -105,7 +105,7 @@ const migrate = defineCommand({
     const dir = positionals.length > 1 || firstIsCourse ? first : '.';
     const [id] = positionals.length > 1 ? positionals.slice(1) : fs.existsSync(path.join(first || '.', 'course.json')) ? [] : positionals;
     const result = await edit.run(dir, 'migrate_components', { component: id, from: flags.from });
-    if (!result.components.length) { console.log('Nothing to migrate.'); return 0; }
+    if ('message' in result) { console.log(result.message); return 0; }
     for (const component of result.components) console.log(`✔ ${component.id} ${component.from} → ${component.to} (steps ${component.steps.join(', ')})`);
     console.log(`  ${result.migrated.length} instance(s) migrated. Undo with elabora undo.`);
     return 0;
