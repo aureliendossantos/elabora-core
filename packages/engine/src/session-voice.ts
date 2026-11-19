@@ -71,7 +71,7 @@ export class SessionVoice {
     this.#assertOpen();
     if (!this.#project().screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
     try {
-      return await this.#voiceJob(screen, (signal) => transcribeNarrationLine(this.#root, { screen, line, ...(language ? { language } : {}), signal, ...this.#transcribing({ install, service, approvedPercent }) }));
+      return await this.#voiceJob(screen, (signal) => transcribeNarrationLine(this.#root, { screen, line, ...(language ? { language } : {}), ...this.#transcribing({ install, service, approvedPercent }) }, { signal, onTranscribe: (progress) => this.#emit({ type: 'transcribeProgress', progress }) }));
     } catch (error) { throw voiceError(error); }
   }
 
@@ -146,8 +146,8 @@ export class SessionVoice {
   #voiceWriter(author: Author): VoiceWriter {
     return {
       project: () => this.#project(),
-      setNarrationAudio: async (args) => {
-        const written = await this.#run('set_narration_audio', args, author);
+      setNarrationAudio: async ({ tools, align, onAlign, ...args }) => {
+        const written = await this.#run('set_narration_audio', args, author, undefined, { ...(tools ? { tools } : {}), ...(align !== undefined ? { align } : {}), ...(onAlign ? { onAlign } : {}) });
         return { audio: typeof written.result.audio === 'string' ? written.result.audio : undefined, seq: written.change?.seq ?? null,
           ...(typeof written.result.alignmentError === 'string' ? { alignmentError: written.result.alignmentError } : {}) };
       },

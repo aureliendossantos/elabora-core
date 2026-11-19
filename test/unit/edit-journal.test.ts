@@ -47,9 +47,9 @@ test('commands are pure: files or operations from a snapshot, nothing written', 
 
 test('edits are journaled as changes: command, author, operations by id, inverse and file hashes', () => {
   const dir = project();
-  const r1 = edit.addBlock(dir, { screen: 'chemin', block: { id: 'chemin-note', type: 'text', props: { markdown: 'Note' } }, after: 'chemin-intro' }, { author: agent });
-  const r2 = edit.updateBlock(dir, { block: 'chemin-note', props: { markdown: 'Note révisée' } }, { author: agent });
-  const r3 = edit.moveBlock(dir, { block: 'chemin-note', screen: 'accueil' }, { author: human });
+  const r1 = edit.run(dir, 'add_block', { screen: 'chemin', block: { id: 'chemin-note', type: 'text', props: { markdown: 'Note' } }, after: 'chemin-intro' }, { author: agent });
+  const r2 = edit.run(dir, 'update_block', { block: 'chemin-note', props: { markdown: 'Note révisée' } }, { author: agent });
+  const r3 = edit.run(dir, 'move_block', { block: 'chemin-note', screen: 'accueil' }, { author: human });
   assert.deepEqual([r1.undo, r2.undo, r3.undo], [1, 2, 3]);
   assert.equal(r1.change?.batch, r2.change?.batch, 'AI changes a moment apart form one batch');
   assert.equal(r3.change?.batch, r3.change?.id, 'a human change is its own batch');
@@ -64,7 +64,7 @@ test('edits are journaled as changes: command, author, operations by id, inverse
   assert.deepEqual(c3.files.map((f) => f.path), ['screens/accueil.json', 'screens/chemin.json']);
   assert.equal(c3.files[0].after, hashBytes(text(dir, 'screens/accueil.json')));
   // A command that changes nothing writes no change.
-  const same = edit.updateBlock(dir, { block: 'chemin-note', props: { markdown: 'Note révisée' } });
+  const same = edit.run(dir, 'update_block', { block: 'chemin-note', props: { markdown: 'Note révisée' } });
   assert.equal(same.change, null);
   assert.equal(changes(dir).length, 3);
   // History, from the journal.
@@ -75,7 +75,7 @@ test('a file changed on disk while the edit was computed: computed again, or ref
   const dir = project();
   const file = path.join(dir, 'screens/chemin.json');
   // Another program writes the screen once: the edit is computed again on top of it.
-  const r = edit.updateBlock(dir, { block: 'chemin-intro', props: { markdown: 'Par Elabora' } }, {
+  const r = edit.run(dir, 'update_block', { block: 'chemin-intro', props: { markdown: 'Par Elabora' } }, {
     beforeWrite: (attempt) => {
       if (attempt > 1) return;
       const s = readJSON(dir, 'screens/chemin.json');
@@ -89,7 +89,7 @@ test('a file changed on disk while the edit was computed: computed again, or ref
   assert.equal(s.blocks.find((b: { id: string }) => b.id === 'chemin-intro').props.markdown, 'Par Elabora');
   // It keeps writing: the edit is refused, nothing is written or journaled.
   let n = 0;
-  assert.throws(() => edit.updateBlock(dir, { block: 'chemin-intro', props: { markdown: 'Jamais' } }, {
+  assert.throws(() => edit.run(dir, 'update_block', { block: 'chemin-intro', props: { markdown: 'Jamais' } }, {
     beforeWrite: () => {
       const other = readJSON(dir, 'screens/chemin.json');
       other.title = `Écrit ${++n}`;
@@ -105,22 +105,22 @@ test('refusals carry catalogue codes: a project locked by another writer, an ope
   const dir = project();
   fs.mkdirSync(path.dirname(lockPath(dir)), { recursive: true });
   fs.writeFileSync(lockPath(dir), JSON.stringify({ pid: 1, host: 'other-computer', at: new Date().toISOString(), token: 't' }));
-  assert.throws(() => edit.updateScreen(dir, { id: 'chemin', title: 'X' }, { lockTimeoutMs: 100 }), (e: unknown) => e instanceof edit.EditError && (e as edit.EditError).code === 'E_LOCKED' && /other-computer/.test((e as Error).message));
+  assert.throws(() => edit.run(dir, 'update_screen', { id: 'chemin', title: 'X' }, { lockTimeoutMs: 100 }), (e: unknown) => e instanceof edit.EditError && (e as edit.EditError).code === 'E_LOCKED' && /other-computer/.test((e as Error).message));
   fs.rmSync(lockPath(dir));
   // Errors of operations carry their code too: a list with a duplicate id cannot take a move by id.
   const screen = readJSON(dir, 'screens/premier-reflexe.json');
   screen.layers[0].blocks.push(screen.layers[0].blocks[0]);
   writeJSON(dir, 'screens/premier-reflexe.json', screen);
-  assert.throws(() => edit.moveBlock(dir, { block: 'chemin-intro', screen: 'premier-reflexe', layer: 'rappel-regle' }), (e: unknown) => e instanceof edit.EditError && (e as edit.EditError).code === 'E_OP_NOT_KEYED' && (e as edit.EditError).diagnostics[0].code === 'E_OP_NOT_KEYED');
+  assert.throws(() => edit.run(dir, 'move_block', { block: 'chemin-intro', screen: 'premier-reflexe', layer: 'rappel-regle' }), (e: unknown) => e instanceof edit.EditError && (e as edit.EditError).code === 'E_OP_NOT_KEYED' && (e as edit.EditError).diagnostics[0].code === 'E_OP_NOT_KEYED');
 });
 
 test('an automatic version is taken just before the first write, not for refused or empty edits', () => {
   const dir = project();
   const original = text(dir, 'screens/chemin.json');
-  assert.throws(() => edit.addBlock(dir, { screen: 'chemin', block: { id: 'x', type: 'quiz', props: { stem: 1 } } }), edit.EditError);
-  edit.updateBlock(dir, { block: 'chemin-intro', props: {} });
+  assert.throws(() => edit.run(dir, 'add_block', { screen: 'chemin', block: { id: 'x', type: 'quiz', props: { stem: 1 } } }), edit.EditError);
+  edit.run(dir, 'update_block', { block: 'chemin-intro', props: {} });
   assert.deepEqual(listVersions(dir), [], 'no version for a refused edit or one that changes nothing');
-  const r = edit.updateScreen(dir, { id: 'chemin', title: 'Nouveau titre' }, { author: agent });
+  const r = edit.run(dir, 'update_screen', { id: 'chemin', title: 'Nouveau titre' }, { author: agent });
   assert.ok(r.backup?.version, 'the result says which version was taken');
   const versions = listVersions(dir);
   assert.equal(versions.length, 1);
@@ -128,7 +128,7 @@ test('an automatic version is taken just before the first write, not for refused
   assert.equal(version.reason, 'auto');
   assert.deepEqual(version.author, agent);
   assert.equal(version.files['screens/chemin.json'].hash, hashBytes(original), 'the project as it was before the edit');
-  edit.updateScreen(dir, { id: 'chemin', title: 'Encore' });
+  edit.run(dir, 'update_screen', { id: 'chemin', title: 'Encore' });
   assert.equal(listVersions(dir).length, 1, 'the next one waits 5 minutes');
 });
 
@@ -140,7 +140,7 @@ test('an edit from `node --input-type=module -e` takes its version: the worker d
   // then held the project lock for 10 minutes. With --max-old-space-size, which a worker refuses
   // when given explicitly, it inherits every flag and its bootstrap runs with them.
   const script = `import * as edit from ${JSON.stringify(moduleUrl('packages/node/src/edit/index.ts'))};
-console.log(JSON.stringify(edit.updateScreen(process.cwd(), { id: 'chemin', title: 'Titre' }).backup));`;
+console.log(JSON.stringify(edit.run(process.cwd(), 'update_screen', { id: 'chemin', title: 'Titre' }).backup));`;
   const run = (flags: string[]) => {
     const dir = project();
     return new Promise<{ dir: string; backup: AutoVersion }>((resolve, reject) => execFile(process.execPath, [...flags, '--input-type=module', '-e', script], { cwd: dir, timeout: 30_000 }, (error, stdout, stderr) =>
@@ -176,10 +176,10 @@ test('undoing the AI batch keeps a later human edit; the undo can be undone', ()
   const dir = project();
   const original = text(dir, 'screens/chemin.json');
   assert.deepEqual(edit.appendMark(dir, 'Ajoute une note et renomme l\'écran').mark.seq, 1);
-  const title = edit.updateScreen(dir, { id: 'chemin', title: 'Titre de l\'IA' }, { author: agent });
-  const note = edit.addBlock(dir, { screen: 'chemin', block: { id: 'chemin-ia', type: 'text', props: { markdown: 'Note de l\'IA' } } }, { author: agent });
+  const title = edit.run(dir, 'update_screen', { id: 'chemin', title: 'Titre de l\'IA' }, { author: agent });
+  const note = edit.run(dir, 'add_block', { screen: 'chemin', block: { id: 'chemin-ia', type: 'text', props: { markdown: 'Note de l\'IA' } } }, { author: agent });
   // The human rewrites the AI's note.
-  const rewrite = edit.updateBlock(dir, { block: 'chemin-ia', props: { markdown: 'Note humaine' } }, { author: human });
+  const rewrite = edit.run(dir, 'update_block', { block: 'chemin-ia', props: { markdown: 'Note humaine' } }, { author: human });
   const batches = edit.historyBatches(dir);
   assert.deepEqual(batches.map((b) => [b.ai, b.label ?? null, b.changes.length]), [[true, 'Ajoute une note et renomme l\'écran', 2], [false, null, 1]]);
 
@@ -215,7 +215,7 @@ test('binary files brought in by an edit are undone and redone from the blob sto
   write('components/badge/component.json', JSON.stringify({ id: 'badge', title: 'Badge', version: '1.0.0', props: { type: 'object', properties: {} } }, null, 2));
   write('components/badge/template.html', '<span class="badge"></span>\n');
   write('components/badge/fonts/badge.woff2', font);
-  const r = edit.addLibraryComponent(dir, { library, component: 'badge' }, { author: agent });
+  const r = edit.run(dir, 'add_component', { library, component: 'badge' }, { author: agent });
   assert.deepEqual(r.files.sort(), ['components/badge/component.json', 'components/badge/fonts/badge.woff2', 'components/badge/template.html']);
   assert.ok(fs.readFileSync(path.join(dir, 'components/badge/fonts/badge.woff2')).equals(font));
   const entry = changes(dir)[0];

@@ -66,7 +66,7 @@ const themeUpgrade = defineCommand({
   run: ({ positionals: [dir = '.'], flags }) => reportingFailures(() => {
     const result = flags['dry-run']
       ? { ...upgradeThemeCascade(commandContext(loadProjectFromDir(dir).files)).result, change: null, formatMigration: undefined, diagnostics: [] }
-      : edit.upgradeThemeCascade(dir);
+      : edit.run(dir, 'upgrade_theme', {});
     if (flags.json) { printJson(result); return 0; }
     printFormatMigration(result.formatMigration);
     if (!result.upgraded) { console.log(`✔ The theme already comes before the components (theme.cascade ${result.to}): nothing to do.`); return 0; }
@@ -130,8 +130,8 @@ const player = defineCommand({
     // Files added to the resources first, one change each.
     const files = flags['add-resource'] ?? [];
     if ((flags.title || flags.description) && files.length !== 1) throw new ArgumentError('--title and --description go with one --add-resource file.');
-    const added = files.map((file) => edit.addResource(dir, { path: file, ...(flags.title ? { title: flags.title } : {}), ...(flags.description ? { description: flags.description } : {}) }));
-    const edited = Object.keys(changes).length ? edit.updatePlayer(dir, changes) : null;
+    const added = files.map((file) => edit.run(dir, 'add_resource', { path: file, ...(flags.title ? { title: flags.title } : {}), ...(flags.description ? { description: flags.description } : {}) }));
+    const edited = Object.keys(changes).length ? edit.run(dir, 'update_player', changes) : null;
     const report = playerReport(dir, target);
     if (flags.json) { printJson(edited || added.length ? { added: added.map(({ change, resource, path, reused }) => ({ change, resource, path, reused })), ...(edited ? { change: edited.change, unlinked: edited.unlinked, translations: edited.translations } : {}), player: report } : report); return 0; }
     for (const resource of added) console.log(`✔ Added the resource « ${resource.resource.title} » (${resource.path}${resource.reused ? ', already in the course' : ''}). Undo: elabora undo --change ${resource.change?.seq ?? '?'}`);

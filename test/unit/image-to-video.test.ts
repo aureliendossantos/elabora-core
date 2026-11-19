@@ -9,9 +9,9 @@ import type { Block } from '@elabora/format';
 import { undo } from '@elabora/node/edit';
 import { probeMedia } from '@elabora/node/media/probe';
 import { findMediaTools } from '@elabora/node/media/tools';
-import { imageToVideo } from '@elabora/node/media/to-video';
 import { openProject } from '@elabora/engine';
 import { copyExample, readJSON, writeJSON } from '../helpers.ts';
+import * as edit from '@elabora/node/edit';
 
 const run = promisify(execFile);
 const tools = await findMediaTools().catch(() => null);
@@ -52,7 +52,7 @@ test('an animated image becomes a video that loops like it, in its place, lighte
     place(dir, 'spinner.gif', 'assets/images/spinner.gif');
     addBlocks(dir, { id: 'spinner', type: 'image', step: 1, props: { presentation: 'wide', asset: 'images/spinner.gif', alt: 'The router restarts.', caption: 'A restart takes a minute.', generated: true, zoom: true } } as Block);
     const index = (readJSON(dir, 'screens/accueil.json').blocks as Block[]).findIndex((block) => block.id === 'spinner');
-    const result = await imageToVideo(dir, { block: 'spinner' }, { tools });
+    const result = await edit.run(dir, 'image_to_video', { block: 'spinner' }, { tools });
 
     assert.equal(result.video, 'assets/video/spinner.mp4');
     assert.match(result.poster ?? '', /^assets\/images\/spinner-poster\.(webp|jpg)$/);
@@ -99,7 +99,7 @@ test('an animated PNG becomes a video too; a file another block still shows stay
       { id: 'pulse-again', type: 'image', props: { asset: 'images/pulse.png', alt: 'A pulse.' } } as Block,
       { id: 'band', type: 'image', props: { presentation: 'band', asset: 'images/pulse.png', alt: 'A pulse.' } } as Block,
       { id: 'still', type: 'image', props: { asset: 'images/still.png', alt: 'A test card.' } } as Block);
-    const result = await imageToVideo(dir, { block: 'pulse' }, { tools });
+    const result = await edit.run(dir, 'image_to_video', { block: 'pulse' }, { tools });
     assert.equal(result.removed, null);
     assert.equal(fs.existsSync(path.join(dir, 'assets/images/pulse.png')), true);
     // Decorative: no alt, and the file's name as title.
@@ -107,10 +107,10 @@ test('an animated PNG becomes a video too; a file another block still shows stay
     const video = await probeMedia(path.join(dir, result.video), { tools });
     assert.deepEqual([video.width, video.height], [160, 90]);
 
-    await assert.rejects(imageToVideo(dir, { block: 'band' }, { tools }), /a video takes the place of a centered or a wide image only/);
-    await assert.rejects(imageToVideo(dir, { block: 'pulse-again', blocks: ['still'] }, { tools }), /does not show assets\/images\/pulse\.png/);
-    await assert.rejects(imageToVideo(dir, { block: 'still' }, { tools }), /is not animated/);
-    await assert.rejects(imageToVideo(dir, { block: 'pulse' }, { tools }), /is a video block/);
+    await assert.rejects(edit.run(dir, 'image_to_video', { block: 'band' }, { tools }), /a video takes the place of a centered or a wide image only/);
+    await assert.rejects(edit.run(dir, 'image_to_video', { block: 'pulse-again', blocks: ['still'] }, { tools }), /does not show assets\/images\/pulse\.png/);
+    await assert.rejects(edit.run(dir, 'image_to_video', { block: 'still' }, { tools }), /is not animated/);
+    await assert.rejects(edit.run(dir, 'image_to_video', { block: 'pulse' }, { tools }), /is a video block/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

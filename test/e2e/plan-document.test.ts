@@ -14,7 +14,7 @@ test('the plan\'s document prints to a tagged A4 PDF with an outline, the same t
   const dir = copyExample();
   try {
     // The working copy, a text changed since V1 validated: its words deleted and inserted print too.
-    edit.setPlanText(dir, { block: 'chemin-regle', markdown: 'Suivez toujours le chemin dans l\'ordre. N\'en sautez aucune étape.' }, { author: { kind: 'human' } });
+    edit.run(dir, 'set_plan_text', { block: 'chemin-regle', markdown: 'Suivez toujours le chemin dans l\'ordre. N\'en sautez aucune étape.' }, { author: { kind: 'human' } });
     const doc = readPlanDocument(dir, { date: '2026-10-15', version: 'current' });
     const first = await printPlanDocument(doc);
     const second = await printPlanDocument(doc);

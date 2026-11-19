@@ -11,6 +11,8 @@ import { translationTable } from '@elabora/core/i18n/translate';
 import type { ProjectFiles } from '@elabora/core/project/files';
 import type { Files } from '@elabora/core/ops/types';
 import { readProjectFiles } from '@elabora/node/project-reader';
+import { PROVIDERS } from '@elabora/node/edit/host';
+import { NEED_SERVICES } from '@elabora/engine/base/services';
 import { ROOT } from '../helpers.ts';
 
 // The commands by name (D84, D110): the core's table, which the engines, a project's room and the
@@ -139,4 +141,18 @@ test('a command that needs its host runs on what the host gives, and the journal
   assert.deepEqual(namedCommand('add_component')!.journal({ library: '/Volumes/Clients/acme', component: 'card', upgrade: true }, { component: { library: 'acme', component: 'card', files: new Map() }, bytes: new Map() }),
     { name: 'upgrade_component', args: { library: 'acme', component: 'card', as: 'card' } });
   assert.deepEqual(namedCommand('write_object_file')!.journal({ object: 'sluice-sim', file: 'object.js', content: 'export {};' }), { name: 'write_object_file', args: { object: 'sluice-sim', file: 'object.js', bytes: 10 } });
+});
+
+test('a change a host journals is a command of the table, and each host gives what the table\'s commands need', () => {
+  // A change written by a hand-made run, not by the table: only those the host keeps (D110).
+  const HOST_ONLY = ['migrate_format', 'update_agent_rules'];
+  const sources = fs.globSync('packages/*/src/**/*.ts', { cwd: ROOT }).map((file) => fs.readFileSync(path.join(ROOT, file), 'utf8'));
+  const journaled = sources.flatMap((source) => [...source.matchAll(/runCommand\([^{]*\{\s*name: '([a-z_]+)'/g)].map((match) => match[1]!));
+  assert.deepEqual([...new Set(journaled)].sort(), HOST_ONLY);
+  for (const name of COMMAND_NAMES) {
+    const needs = namedCommand(name)!.needs;
+    if (!needs) continue;
+    assert.equal(typeof PROVIDERS[needs], 'function', `${name}: this computer gives ${needs}`);
+    assert.ok(NEED_SERVICES[needs], `${name}: the engines know the service of ${needs}`);
+  }
 });

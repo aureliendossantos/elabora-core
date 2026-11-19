@@ -9,7 +9,7 @@ import { copyExample, readJSON } from '../helpers.ts';
 // stays in force.
 
 const text = (dir: string, block: string): string => readJSON(dir, 'screens/chemin.json').blocks.find((b: { id: string }) => b.id === block).props.markdown;
-const write = (dir: string, block: string, markdown: string, author: Author) => edit.updateBlock(dir, { block, props: { markdown } }, { author, autoVersion: false, validate: false });
+const write = (dir: string, block: string, markdown: string, author: Author) => edit.run(dir, 'update_block', { block, props: { markdown } }, { author, autoVersion: false, validate: false });
 
 test('⌘Z undoes my last step: my change, or the whole batch of an agent I launched; ⇧⌘Z redoes them one undo at a time', () => {
   const dir = copyExample();

@@ -6,7 +6,6 @@ export { openProject, Session, type OpenOptions, type BackupOptions, type CloseO
 export { changeView } from './base/events.ts';
 export { ProjectState, type DiagnosticsDelta } from './base/project-state.ts';
 export { EngineError, protocolError } from './errors.ts';
-export { COMMANDS, isCommandName } from './commands.ts';
 export { rewriteAssetReferences } from './base/references.ts';
 export { Renderer } from './base/render.ts';
 export type { SessionStore } from './disk.ts';

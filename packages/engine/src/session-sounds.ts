@@ -64,8 +64,7 @@ export class SessionSounds {
     if (typeof params?.prompt !== 'string') throw new EngineError('bad-request', 'generateSound takes prompt: the sound described');
     try {
       return await generateSoundWith(params, async (request) => {
-        const { signal: _signal, ...args } = request;
-        const ran = await this.#run('add_sound', args, author);
+        const ran = await this.#run('add_sound', request, author);
         const added = ran.result as { id: string; path: string; sidecar: string; reused: boolean; source: string; license: string; duration: number };
         return { ...added, change: ran.change ? { seq: ran.change.seq } : null };
       });

@@ -53,20 +53,20 @@ test('compiled: a placed block says where it is; the others say nothing', () => 
 test('place_block: placed with its anchor in one change, back in the flow at a place, its rank kept without one; undone at once', () => {
   const dir = copyExample(FIXTURE);
   // The last text placed by hand, its anchor after the first text: one change.
-  const placed = edit.placeBlock(dir, { block: 'sketch-more', place: { x: 0.523456, y: 0.75, width: 0.475 }, slot: null, after: 'sketch-intro' });
+  const placed = edit.run(dir, 'place_block', { block: 'sketch-more', place: { x: 0.523456, y: 0.75, width: 0.475 }, slot: null, after: 'sketch-intro' });
   assert.ok(placed.change);
   assert.deepEqual(placeOf(dir, 'sketch-more'), { x: 0.5235, y: 0.75, width: 0.475 });
   assert.deepEqual(ids(dir), ['sketch-intro', 'sketch-more', 'sketch-keep', 'sketch-figure']);
   // Moved without an anchor: its rank stays.
-  edit.placeBlock(dir, { block: 'sketch-more', place: { x: 0.4, y: 0.7, width: 0.475, z: 3 } });
+  edit.run(dir, 'place_block', { block: 'sketch-more', place: { x: 0.4, y: 0.7, width: 0.475, z: 3 } });
   assert.deepEqual(ids(dir), ['sketch-intro', 'sketch-more', 'sketch-keep', 'sketch-figure']);
   assert.equal(placeOf(dir, 'sketch-more').z, 3);
   // Back in the flow, first of the screen.
-  edit.placeBlock(dir, { block: 'sketch-more', place: null, after: null });
+  edit.run(dir, 'place_block', { block: 'sketch-more', place: null, after: null });
   assert.equal(placeOf(dir, 'sketch-more'), undefined);
   assert.deepEqual(ids(dir), ['sketch-more', 'sketch-intro', 'sketch-keep', 'sketch-figure']);
   // A callout placed by hand put back with update_block place null: its rank stays.
-  edit.updateBlock(dir, { block: 'sketch-keep', place: null });
+  edit.run(dir, 'update_block', { block: 'sketch-keep', place: null });
   assert.equal(placeOf(dir, 'sketch-keep'), undefined);
   edit.undo(dir);
   assert.deepEqual(placeOf(dir, 'sketch-keep'), { x: 0.62, y: 0.6, width: 0.3 });
@@ -74,19 +74,19 @@ test('place_block: placed with its anchor in one change, back in the flow at a p
   const sketch = readJSON(dir, 'screens/sketch.json');
   sketch.layers = [{ id: 'more', title: 'More', blocks: [{ id: 'more-text', type: 'text', props: { markdown: 'In a layer.' } }] }];
   writeJSON(dir, 'screens/sketch.json', sketch);
-  assert.throws(() => edit.placeBlock(dir, { block: 'more-text', place: { x: 0, y: 0, width: 0.5 } }), /only blocks of the screen itself/);
+  assert.throws(() => edit.run(dir, 'place_block', { block: 'more-text', place: { x: 0, y: 0, width: 0.5 } }), /only blocks of the screen itself/);
 });
 
 test('arrange_screen: every block placed by hand back in the flow at its anchor, in one change', () => {
   const dir = copyExample(FIXTURE);
-  const result = edit.arrangeScreen(dir, { screen: 'sketch' });
+  const result = edit.run(dir, 'arrange_screen', { screen: 'sketch' });
   assert.deepEqual(result.blocks, ['sketch-keep', 'sketch-figure']);
   assert.deepEqual(ids(dir), ['sketch-intro', 'sketch-keep', 'sketch-figure', 'sketch-more']);
   assert.equal(placeOf(dir, 'sketch-keep'), undefined);
   assert.equal(placeOf(dir, 'sketch-figure'), undefined);
   edit.undo(dir);
   assert.ok(placeOf(dir, 'sketch-keep') && placeOf(dir, 'sketch-figure'));
-  assert.throws(() => edit.arrangeScreen(dir, { screen: 'sketch', blocks: ['sketch-intro'] }), /Not placed by hand/);
+  assert.throws(() => edit.run(dir, 'arrange_screen', { screen: 'sketch', blocks: ['sketch-intro'] }), /Not placed by hand/);
 });
 
 // A zone of a layout offers its places to the blocks it takes (the founder, 6 Nov 2026): on the example

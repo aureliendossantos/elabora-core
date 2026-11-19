@@ -131,7 +131,7 @@ test('the status follows the versions: a draft without one, a version to approve
   assert.equal(doc.kicker, 'Plan du module');
   assert.equal(doc.properties.find((property) => property.key === 'approvedBy')!.value, 'Pas encore validé');
   assert.equal(doc.properties.find((property) => property.key === 'history'), undefined, 'no version to list');
-  edit.createPlanVersion(dir, {}, PERSON);
+  edit.run(dir, 'create_plan_version', {}, PERSON);
   doc = documentOf(dir);
   assert.deepEqual(doc.status, { state: 'draft', label: 'À valider' });
   assert.match(doc.properties.find((property) => property.key === 'history')!.value, /^V1 créée le \d+ \S+ \d{4}$/);
@@ -195,9 +195,9 @@ test('the changes since the validated version read in place: words deleted and i
 
 test('the document never says who wrote the plan or a change', () => {
   const dir = course(GEARS);
-  edit.setPlanText(dir, { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of a single gear.' }, AGENT);
-  edit.writePlan(dir, { patch: [{ op: 'replace', path: '/items/0/title', value: 'One gearset' }] }, AGENT);
-  edit.setPlanNote(dir, { target: 'item:ITEM-1', text: 'Shorter.' }, AGENT);
+  edit.run(dir, 'set_plan_text', { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of a single gear.' }, AGENT);
+  edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/items/0/title', value: 'One gearset' }] }, AGENT);
+  edit.run(dir, 'set_plan_note', { target: 'item:ITEM-1', text: 'Shorter.' }, AGENT);
   const doc = documentOf(dir, 'current');
   assert.ok(doc.marks);
   const outputs = { model: JSON.stringify(doc), html: planDocumentHtml(doc), docx: docxText(doc) };
@@ -301,7 +301,7 @@ function checkDocx(bytes: Buffer, doc: PlanDocument): Map<string, string> {
 
 test('the .docx is a valid package: parts, relationships, styles, bookmarks, tracked changes; Word\'s headings', () => {
   const dir = course(GEARS);
-  edit.setPlanText(dir, { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of a single gear, yet it can **reduce** speed.' }, AGENT);
+  edit.run(dir, 'set_plan_text', { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of a single gear, yet it can **reduce** speed.' }, AGENT);
   const doc = documentOf(dir, 'current');
   const parts = checkDocx(planDocumentWord(doc), doc);
   const document = parts.get('word/document.xml')!;
@@ -322,8 +322,8 @@ test('the .docx is a valid package: parts, relationships, styles, bookmarks, tra
 
 test('python-docx opens the .docx and pandoc reads its maths and tracked changes back (when they are installed)', (t) => {
   const dir = course(GEARS);
-  edit.setPlanText(dir, { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of one gear.' }, AGENT);
-  edit.setPlanNote(dir, { target: 'text:TXT-1', text: 'Shorter.' }, PERSON);
+  edit.run(dir, 'set_plan_text', { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of one gear.' }, AGENT);
+  edit.run(dir, 'set_plan_note', { target: 'text:TXT-1', text: 'Shorter.' }, PERSON);
   const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-docx-')), 'plan.docx');
   temporary.push(path.dirname(file));
   fs.writeFileSync(file, planDocumentWord(documentOf(dir, 'current')));
@@ -471,7 +471,7 @@ test('a plan that writes its parts down when one item is dragged changed that it
   // ITEM-6 dragged up among the items of Pratiquer, as the app writes it: a move, then each item's part.
   const order = ['ITEM-1', 'ITEM-2', 'ITEM-3', 'ITEM-6', 'ITEM-4', 'ITEM-5'];
   const shown = new Map([['ITEM-1', 'Découvrir'], ['ITEM-2', 'Découvrir'], ['ITEM-3', 'Pratiquer'], ['ITEM-6', 'Pratiquer'], ['ITEM-4', 'Pratiquer'], ['ITEM-5', 'Valider']]);
-  const written = edit.writePlan(dir, { patch: [{ op: 'move', from: '/items/5', path: '/items/3' }, ...order.map((id, at) => ({ op: 'add' as const, path: `/items/${at}/part`, value: shown.get(id) }))] }, PERSON);
+  const written = edit.run(dir, 'write_plan', { patch: [{ op: 'move', from: '/items/5', path: '/items/3' }, ...order.map((id, at) => ({ op: 'add' as const, path: `/items/${at}/part`, value: shown.get(id) }))] }, PERSON);
   assert.deepEqual(written.moved?.screens, ['bilan'], 'the dragged item took its screen with it');
   assert.deepEqual(readJSON(dir, 'plan.json').items.map((item: { id: string; part: string }) => [item.id, item.part]), order.map((id) => [id, shown.get(id)]));
 

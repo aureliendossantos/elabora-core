@@ -9,7 +9,6 @@ import { execFileSync } from 'node:child_process';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { courseSounds } from '@elabora/core/sounds/sounds';
-import { addSound } from '@elabora/node/sounds/add';
 import { generateSound, estimateSound } from '@elabora/node/sounds/generate';
 import { searchLibrary, librarySounds, libraryFile } from '@elabora/node/sounds/library';
 import { searchOpenverse } from '@elabora/node/sounds/openverse';
@@ -17,6 +16,7 @@ import { soundPreview } from '@elabora/node/sounds/search';
 import { forgetQuota } from '@elabora/node/voice/elevenlabs/costs';
 import { ROOT, copyExample, codes } from '../helpers.ts';
 import { FFMPEG, hasFfmpeg } from '../narration.ts';
+import { run } from '@elabora/node/edit';
 
 // The agents' sound commands (D67): the library, Openverse and ElevenLabs imitated, adding a sound.
 
@@ -80,7 +80,7 @@ test('the library: its catalogue matches its files, CC0 or public domain only; a
 
 test('sound add: a library sound, then a file cut and faded into FLAC, a lossy file kept as it came; licences checked; undo', { skip: NO_FFMPEG }, async () => {
   const dir = copyExample(QUIET);
-  const ring = await addSound(dir, { from: 'telephone-fixe', caption: { en: 'The phone rings.' } });
+  const ring = await run(dir, 'add_sound', { from: 'telephone-fixe', caption: { en: 'The phone rings.' } });
   assert.equal(ring.path, 'assets/sounds/telephone-fixe.flac');
   const sidecar = JSON.parse(fs.readFileSync(path.join(dir, 'assets/sounds/telephone-fixe.json'), 'utf8'));
   assert.equal(sidecar.source, 'library');
@@ -89,25 +89,25 @@ test('sound add: a library sound, then a file cut and faded into FLAC, a lossy f
   assert.equal(sidecar.caption.fr, 'Le téléphone sonne.');
   assert.deepEqual(fs.readFileSync(path.join(dir, ring.path)), fs.readFileSync(libraryFile(librarySounds().find((sound) => sound.id === 'telephone-fixe')!)), 'the same bytes');
   // The same again: kept, not copied twice.
-  assert.equal((await addSound(dir, { from: 'telephone-fixe' })).reused, true);
+  assert.equal((await run(dir, 'add_sound', { from: 'telephone-fixe' })).reused, true);
 
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-sound-file-'));
   tone(path.join(work, 'Door Bell.wav'), 4, ['-c:a', 'pcm_s16le']);
-  await assert.rejects(addSound(dir, { from: path.join(work, 'Door Bell.wav') }), /Say the licence/);
-  await assert.rejects(addSound(dir, { from: path.join(work, 'Door Bell.wav'), license: 'CC-BY-NC-4.0' }), /cannot|may ship/);
-  const bell = await addSound(dir, { from: path.join(work, 'Door Bell.wav'), license: 'own', trim: { start: 0.5, end: 2 }, fade: 0.3 });
+  await assert.rejects(run(dir, 'add_sound', { from: path.join(work, 'Door Bell.wav') }), /Say the licence/);
+  await assert.rejects(run(dir, 'add_sound', { from: path.join(work, 'Door Bell.wav'), license: 'CC-BY-NC-4.0' }), /cannot|may ship/);
+  const bell = await run(dir, 'add_sound', { from: path.join(work, 'Door Bell.wav'), license: 'own', trim: { start: 0.5, end: 2 }, fade: 0.3 });
   assert.equal(bell.path, 'assets/sounds/door-bell.flac');
   assert.ok(Math.abs(bell.duration - 1.5) < 0.05, String(bell.duration));
   const bellSidecar = JSON.parse(fs.readFileSync(path.join(dir, 'assets/sounds/door-bell.json'), 'utf8'));
   assert.deepEqual([bellSidecar.source, bellSidecar.modified, bellSidecar.trim], ['recording', ['trimmed', 'faded'], { start: 0.5, end: 2 }]);
 
   fs.writeFileSync(path.join(work, 'chime.mp3'), mp3);
-  const chime = await addSound(dir, { from: path.join(work, 'chime.mp3'), license: 'CC0-1.0' });
+  const chime = await run(dir, 'add_sound', { from: path.join(work, 'chime.mp3'), license: 'CC0-1.0' });
   assert.equal(chime.path, 'assets/sounds/chime.mp3');
   assert.deepEqual(fs.readFileSync(path.join(dir, chime.path)), mp3, 'not encoded again');
   // A FLAC that loops is an ambience: AAC 256, like any long sound (D67).
   tone(path.join(work, 'rain.flac'), 4, ['-c:a', 'flac']);
-  assert.equal((await addSound(dir, { from: path.join(work, 'rain.flac'), license: 'CC0-1.0', loop: true })).path, 'assets/sounds/rain.m4a');
+  assert.equal((await run(dir, 'add_sound', { from: path.join(work, 'rain.flac'), license: 'CC0-1.0', loop: true })).path, 'assets/sounds/rain.m4a');
 
   const listed = courseSounds(loadProjectFromDir(dir));
   assert.deepEqual(listed.map((sound) => [sound.id, sound.licence.ok, sound.uses.length]), [['chime', true, 0], ['door-bell', true, 0], ['rain', true, 0], ['telephone-fixe', true, 0]]);
@@ -121,7 +121,7 @@ test('Openverse: CC0, public domain and CC BY only (its commercial filter lets N
   assert.deepEqual(found.map((sound) => [sound.title, sound.license]), [['Door knock', 'CC0-1.0'], ['Knock (BY)', 'CC-BY-4.0']]);
   assert.match(asked.at(-1)!.route, /license=cc0%2Cpdm%2Cby/);
   const dir = copyExample(QUIET);
-  const added = await addSound(dir, { from: found[0].id });
+  const added = await run(dir, 'add_sound', { from: found[0].id });
   const sidecar = JSON.parse(fs.readFileSync(path.join(dir, `assets/sounds/${added.id}.json`), 'utf8'));
   assert.deepEqual([added.id, sidecar.source, sidecar.url, sidecar.author, sidecar.license], ['door-knock', 'openverse', 'https://freesound.org/s/1/', 'Ann', 'CC0-1.0']);
 });

@@ -37,7 +37,7 @@ const create = defineCommand({
   run({ positionals, flags }) {
     const { dir, id } = folderAndId(positionals);
     if (!id) { console.error(USAGE); return 2; }
-    const result = edit.createObject(dir, { id, title: flags.title || id, ...(flags.decoration ? { decoration: true } : { objectives: flags.objectives || [] }) });
+    const result = edit.run(dir, 'create_object', { id, title: flags.title || id, ...(flags.decoration ? { decoration: true } : { objectives: flags.objectives || [] }) });
     console.log(flags.decoration
       ? `Created ${result.files.join(', ')}.\nNext: set course.json theme.backdrop.object { "id": "${id}" }, shape the drawing in object.js, then elabora object test and elabora object replay . ${id} (behind the course).`
       : `Created ${result.files.join(', ')}.\nNext: write the manifest (props, state, events), then tests, then code. Place it with a free-object block.`);

@@ -31,8 +31,8 @@ test('a plan without a validated version is a draft; a person makes V1, the clie
   assert.ok(codes(validateDir(dir, { release: true }).diagnostics).includes('E_PLAN_NOT_APPROVED'));
   assert.ok(codes(validateDir(dir).diagnostics).includes('W_PLAN_DRAFT'));
   // Validating needs a version: the working copy is never validated.
-  assert.throws(() => edit.approvePlan(dir, { by: 'Claire Martin' }, PERSON), /no version yet: make one first/);
-  const v1 = edit.createPlanVersion(dir, { note: 'Premier envoi' }, PERSON);
+  assert.throws(() => edit.run(dir, 'approve_plan', { by: 'Claire Martin' }, PERSON), /no version yet: make one first/);
+  const v1 = edit.run(dir, 'create_plan_version', { note: 'Premier envoi' }, PERSON);
   assert.deepEqual([v1.version, v1.number, v1.contentHash], ['V1', 1, planContentHash(readJSON(dir, 'plan.json'))]);
   const file = readJSON(dir, 'plan-versions/V1.json');
   assert.equal(file.version, 1);
@@ -40,18 +40,18 @@ test('a plan without a validated version is a draft; a person makes V1, the clie
   assert.match(file.date, /^\d{4}-\d{2}-\d{2}$/);
   assert.equal(file.plan.$schema, undefined, 'the frozen plan is its content');
   assert.equal(planState(loadProjectFromDir(dir)), 'draft', 'made, not validated');
-  assert.throws(() => edit.createPlanVersion(dir, {}, PERSON), /The plan is V1 as it is: nothing changed since/);
-  edit.approvePlan(dir, { by: 'Claire Martin, Hélios Énergie', reference: 'Courriel du 5 octobre', date: '2026-10-05' }, PERSON);
+  assert.throws(() => edit.run(dir, 'create_plan_version', {}, PERSON), /The plan is V1 as it is: nothing changed since/);
+  edit.run(dir, 'approve_plan', { by: 'Claire Martin, Hélios Énergie', reference: 'Courriel du 5 octobre', date: '2026-10-05' }, PERSON);
   assert.deepEqual(readJSON(dir, 'plan-versions/V1.json').validation, { by: 'Claire Martin, Hélios Énergie', date: '2026-10-05', reference: 'Courriel du 5 octobre' });
   assert.equal(planState(loadProjectFromDir(dir)), 'approved');
   assert.equal(validateDir(dir, { release: true }).summary.errors, 0);
-  assert.throws(() => edit.approvePlan(dir, { by: 'Claire Martin' }, PERSON), /V1 is already validated, by Claire Martin, Hélios Énergie on 2026-10-05/);
+  assert.throws(() => edit.run(dir, 'approve_plan', { by: 'Claire Martin' }, PERSON), /V1 is already validated, by Claire Martin, Hélios Énergie on 2026-10-05/);
 });
 
 test('the plan is written at any time; what changed since the validated version is a warning, never a refusal, and counts twice', () => {
   const dir = copyExample(); // V1, validated, and the working copy as it is
   assert.equal(planState(loadProjectFromDir(dir)), 'approved');
-  edit.writePlan(dir, { patch: [{ op: 'replace', path: '/objectives/1/criterion', value: '3 diagnostics réussis sur 3' }] }, AGENT);
+  edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/objectives/1/criterion', value: '3 diagnostics réussis sur 3' }] }, AGENT);
   assert.equal(planState(loadProjectFromDir(dir)), 'modified');
   const found = validateDir(dir, { release: true });
   assert.equal(found.summary.errors, 0, 'a release delivers changes the client has not validated, and says so');
@@ -61,27 +61,27 @@ test('the plan is written at any time; what changed since the validated version 
   let view = planVersionsView(loadProjectFromDir(dir));
   assert.deepEqual([view.latest, view.validated, view.next, view.current.sinceValidated, view.current.unversioned, view.export], [1, 1, 2, 1, 1, { shows: 1, changesSince: 1 }]);
   // V2 made: the pill counts nothing in no version, the marks still count since V1 validated.
-  edit.createPlanVersion(dir, {}, PERSON);
-  edit.writePlan(dir, { patch: [{ op: 'replace', path: '/title', value: 'Diagnostiquer une panne réseau' }] }, AGENT);
+  edit.run(dir, 'create_plan_version', {}, PERSON);
+  edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/title', value: 'Diagnostiquer une panne réseau' }] }, AGENT);
   view = planVersionsView(loadProjectFromDir(dir));
   assert.deepEqual([view.latest, view.validated, view.current.sinceValidated, view.current.unversioned, view.versions.map((version) => version.changes)], [2, 1, 2, 1, [0, 1]]);
   // Validating takes the latest version by default, never the working copy.
-  edit.approvePlan(dir, { by: 'Claire Martin' }, PERSON);
+  edit.run(dir, 'approve_plan', { by: 'Claire Martin' }, PERSON);
   view = planVersionsView(loadProjectFromDir(dir));
   assert.deepEqual([view.validated, view.state, view.current.sinceValidated], [2, 'modified', 1]);
   // An older version can be validated by name.
-  edit.createPlanVersion(dir, {}, PERSON);
-  edit.writePlan(dir, { patch: [{ op: 'replace', path: '/title', value: 'Encore un titre' }] }, AGENT);
-  edit.createPlanVersion(dir, {}, PERSON);
-  edit.approvePlan(dir, { version: 'V3', by: 'Claire Martin' }, PERSON);
+  edit.run(dir, 'create_plan_version', {}, PERSON);
+  edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/title', value: 'Encore un titre' }] }, AGENT);
+  edit.run(dir, 'create_plan_version', {}, PERSON);
+  edit.run(dir, 'approve_plan', { version: 'V3', by: 'Claire Martin' }, PERSON);
   assert.equal(planVersionsView(loadProjectFromDir(dir)).validated, 3);
-  assert.throws(() => edit.approvePlan(dir, { version: 'V9', by: 'Claire Martin' }, PERSON), /no version V9/);
+  assert.throws(() => edit.run(dir, 'approve_plan', { version: 'V9', by: 'Claire Martin' }, PERSON), /no version V9/);
 });
 
 test('versions and their validation are a person\'s: an agent is refused, whatever its tool', () => {
   const dir = copyExample();
-  edit.writePlan(dir, { patch: [{ op: 'replace', path: '/title', value: 'Autre' }] }, AGENT);
-  for (const run of [() => edit.createPlanVersion(dir, {}, AGENT), () => edit.approvePlan(dir, { by: 'Claire Martin' }, AGENT)]) {
+  edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/title', value: 'Autre' }] }, AGENT);
+  for (const run of [() => edit.run(dir, 'create_plan_version', {}, AGENT), () => edit.run(dir, 'approve_plan', { by: 'Claire Martin' }, AGENT)]) {
     assert.throws(run, (error: Error & { code?: string }) => error.code === 'E_PLAN_PERSON_ONLY' && /Only a person .* Nothing was written/.test(error.message));
   }
   assert.ok(!fs.existsSync(path.join(dir, 'plan-versions/V2.json')));
@@ -92,18 +92,18 @@ test('a text kept « à l\'identique »: an agent never changes it, the author d
   const plan = readJSON(dir, 'plan.json');
   plan.items[0].lockedTexts[0].verbatim = true;
   writeJSON(dir, 'plan.json', plan);
-  edit.createPlanVersion(dir, {}, PERSON);
-  edit.approvePlan(dir, { by: 'Claire Martin' }, PERSON);
+  edit.run(dir, 'create_plan_version', {}, PERSON);
+  edit.run(dir, 'approve_plan', { by: 'Claire Martin' }, PERSON);
   const before = fs.readFileSync(path.join(dir, 'plan.json'), 'utf8');
   const refused = (error: Error & { code?: string }) => error.code === 'E_PLAN_VERBATIM_LOCKED' && /TXT-1 is kept « à l'identique » .* Ask the author/.test(error.message);
-  assert.throws(() => edit.writePlan(dir, { patch: [{ op: 'replace', path: '/items/0/lockedTexts/0/text', value: 'Lundi matin.' }] }, AGENT), refused);
-  assert.throws(() => edit.writePlan(dir, { patch: [{ op: 'remove', path: '/items/0/lockedTexts/0/verbatim' }] }, AGENT), refused);
-  assert.throws(() => edit.setPlanText(dir, { text: 'TXT-1', markdown: 'Lundi matin.' }, AGENT), refused);
+  assert.throws(() => edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/items/0/lockedTexts/0/text', value: 'Lundi matin.' }] }, AGENT), refused);
+  assert.throws(() => edit.run(dir, 'write_plan', { patch: [{ op: 'remove', path: '/items/0/lockedTexts/0/verbatim' }] }, AGENT), refused);
+  assert.throws(() => edit.run(dir, 'set_plan_text', { text: 'TXT-1', markdown: 'Lundi matin.' }, AGENT), refused);
   assert.equal(fs.readFileSync(path.join(dir, 'plan.json'), 'utf8'), before);
   // Moving it with its item is no change of its words.
-  edit.writePlan(dir, { patch: [{ op: 'replace', path: '/items/0/title', value: 'Le ticket' }] }, AGENT);
+  edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/items/0/title', value: 'Le ticket' }] }, AGENT);
   // The author changes it, deliberately: the change is flagged until a version holds it.
-  edit.setPlanText(dir, { block: 'accueil-situation', markdown: 'Lundi matin, Marc vous appelle.' }, PERSON);
+  edit.run(dir, 'set_plan_text', { block: 'accueil-situation', markdown: 'Lundi matin, Marc vous appelle.' }, PERSON);
   assert.deepEqual(planVersionsView(loadProjectFromDir(dir)).verbatimChanged, ['TXT-1']);
   const flag = validateDir(dir).diagnostics.find((d) => d.code === 'W_PLAN_VERBATIM_CHANGED')!;
   assert.equal(flag.target, 'TXT-1');
@@ -208,21 +208,21 @@ test('one change undone (« Revenir à la V1 »): the element as the version has
   assert.throws(() => back('plan:nothing'), /No field nothing/);
   // As a command: back to the validated version, one change.
   writeJSON(dir, 'plan.json', plan);
-  const result = edit.revertPlanChange(dir, { key: 'item:ITEM-4' }, AGENT);
+  const result = edit.run(dir, 'revert_plan_change', { key: 'item:ITEM-4' }, AGENT);
   assert.equal(result.version, 'V1');
   assert.ok(!planDiffBetween(loadProjectFromDir(dir)).changes.some((change) => change.key === 'item:ITEM-4'));
-  assert.throws(() => edit.revertPlanChange(dir, { key: 'item:ITEM-4' }, AGENT), /Nothing changed in item:ITEM-4 since V1/);
+  assert.throws(() => edit.run(dir, 'revert_plan_change', { key: 'item:ITEM-4' }, AGENT), /Nothing changed in item:ITEM-4 since V1/);
 });
 
 test('notes for the client: one per change in no version yet, frozen with the next version; those on changes undone go', () => {
   const dir = copyExample();
-  assert.throws(() => edit.setPlanNote(dir, { target: 'item:ITEM-2', text: 'Pourquoi' }, AGENT), /No change item:ITEM-2 since V1/);
-  edit.writePlan(dir, { patch: [{ op: 'replace', path: '/items/1/title', value: 'Le chemin des paquets' }, { op: 'replace', path: '/items/2/title', value: 'Le réflexe' }] }, AGENT);
-  edit.setPlanNote(dir, { target: 'item:ITEM-2', text: 'Le mot du métier.' }, PERSON);
-  edit.setPlanNote(dir, { target: 'item:ITEM-3', text: 'Plus court.' }, PERSON);
+  assert.throws(() => edit.run(dir, 'set_plan_note', { target: 'item:ITEM-2', text: 'Pourquoi' }, AGENT), /No change item:ITEM-2 since V1/);
+  edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/items/1/title', value: 'Le chemin des paquets' }, { op: 'replace', path: '/items/2/title', value: 'Le réflexe' }] }, AGENT);
+  edit.run(dir, 'set_plan_note', { target: 'item:ITEM-2', text: 'Le mot du métier.' }, PERSON);
+  edit.run(dir, 'set_plan_note', { target: 'item:ITEM-3', text: 'Plus court.' }, PERSON);
   assert.equal(planVersionsView(loadProjectFromDir(dir)).notes, 2);
-  edit.writePlan(dir, { patch: [{ op: 'replace', path: '/items/2/title', value: readJSON(dir, 'plan-versions/V1.json').plan.items[2].title }] }, AGENT);
-  const v2 = edit.createPlanVersion(dir, {}, PERSON);
+  edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/items/2/title', value: readJSON(dir, 'plan-versions/V1.json').plan.items[2].title }] }, AGENT);
+  const v2 = edit.run(dir, 'create_plan_version', {}, PERSON);
   assert.deepEqual([v2.notes, v2.droppedNotes], [1, ['item:ITEM-3']]);
   assert.deepEqual(readJSON(dir, 'plan-versions/V2.json').notes, [{ target: 'item:ITEM-2', text: 'Le mot du métier.' }]);
   assert.ok(!fs.existsSync(path.join(dir, 'plan-versions/notes.json')), 'no note waits any more');
@@ -230,9 +230,9 @@ test('notes for the client: one per change in no version yet, frozen with the ne
 
 test('exporting records the send on the version it shows; it never makes one', () => {
   const dir = copyExample();
-  edit.recordPlanSend(dir, { version: 'V1', format: 'docx', date: '2026-10-16' }, AGENT);
+  edit.run(dir, 'record_plan_send', { version: 'V1', format: 'docx', date: '2026-10-16' }, AGENT);
   assert.deepEqual(readJSON(dir, 'plan-versions/V1.json').sends, [{ date: '2026-10-16', format: 'docx' }]);
-  assert.throws(() => edit.recordPlanSend(dir, { version: 'V2', format: 'pdf' }, AGENT), /no version V2/);
+  assert.throws(() => edit.run(dir, 'record_plan_send', { version: 'V2', format: 'pdf' }, AGENT), /no version V2/);
   assert.equal(fs.readdirSync(path.join(dir, 'plan-versions')).length, 1);
 });
 
@@ -247,23 +247,23 @@ test('write_plan: the whole plan or a patch, its schema checked first; a plan\'s
       objectives: [{ id: 'OBJ-1', statement: 'Expliquer avec ses mots ce que Nietzsche appelle la grande santé, à partir d’un extrait du Gai Savoir.' }],
       items: [{ id: 'ITEM-1', kind: 'intro', title: 'Une santé qui se sert de la maladie', objectives: ['OBJ-1'] }]
     };
-    const written = edit.writePlan(dir, { plan }, AGENT);
+    const written = edit.run(dir, 'write_plan', { plan }, AGENT);
     assert.ok(written.change);
     const drafted = readJSON(dir, 'plan.json');
     assert.deepEqual([drafted.status, drafted.approval], [undefined, undefined]);
     assert.match(drafted.$schema, /plan\.schema\.json$/);
-    edit.writePlan(dir, { patch: [{ op: 'add', path: '/spacing', value: ['J+2', 'J+7'] }] }, AGENT);
+    edit.run(dir, 'write_plan', { patch: [{ op: 'add', path: '/spacing', value: ['J+2', 'J+7'] }] }, AGENT);
     assert.deepEqual(readJSON(dir, 'plan.json').spacing, ['J+2', 'J+7']);
     const before = fs.readFileSync(path.join(dir, 'plan.json'), 'utf8');
-    assert.throws(() => edit.writePlan(dir, { patch: [{ op: 'add', path: '/spacing/-', value: 'J+90 : relire en entier la troisième Dissertation (trop long)' }] }, AGENT), /would not match its schema, so nothing was written: \/spacing\/2: must NOT have more than 50 characters/);
-    assert.throws(() => edit.writePlan(dir, { plan: { ...plan, items: [] } }, AGENT), /\/items: must NOT have fewer than 1 items/);
-    assert.throws(() => edit.writePlan(dir, { patch: [{ op: 'remove', path: '/objectives/9' }] }, AGENT), /does not apply/);
+    assert.throws(() => edit.run(dir, 'write_plan', { patch: [{ op: 'add', path: '/spacing/-', value: 'J+90 : relire en entier la troisième Dissertation (trop long)' }] }, AGENT), /would not match its schema, so nothing was written: \/spacing\/2: must NOT have more than 50 characters/);
+    assert.throws(() => edit.run(dir, 'write_plan', { plan: { ...plan, items: [] } }, AGENT), /\/items: must NOT have fewer than 1 items/);
+    assert.throws(() => edit.run(dir, 'write_plan', { patch: [{ op: 'remove', path: '/objectives/9' }] }, AGENT), /does not apply/);
     assert.equal(fs.readFileSync(path.join(dir, 'plan.json'), 'utf8'), before);
-    assert.throws(() => edit.writePlan(dir, {}, AGENT), /one of them/);
+    assert.throws(() => edit.run(dir, 'write_plan', {}, AGENT), /one of them/);
     // Validated, the plan is still written: the diff says what changed.
-    edit.createPlanVersion(dir, {}, PERSON);
-    edit.approvePlan(dir, { by: 'Aurélien, auteur' }, PERSON);
-    edit.writePlan(dir, { patch: [{ op: 'replace', path: '/title', value: 'Autre' }] }, AGENT);
+    edit.run(dir, 'create_plan_version', {}, PERSON);
+    edit.run(dir, 'approve_plan', { by: 'Aurélien, auteur' }, PERSON);
+    edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/title', value: 'Autre' }] }, AGENT);
     assert.deepEqual(planDiffBetween(loadProjectFromDir(dir)).changes.map((change) => change.key), ['plan:title']);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -289,22 +289,22 @@ test('a draft says what the agent decided by itself and asks one question; valid
       ],
       question: { text: 'Le ticket doit-il reprendre le formulaire de votre outil de support ?', topic: 'case', items: ['ITEM-2'] }
     };
-    edit.writePlan(dir, { plan }, AGENT);
+    edit.run(dir, 'write_plan', { plan }, AGENT);
     const drafted = readJSON(dir, 'plan.json');
     assert.deepEqual(drafted.decided, plan.decided);
     assert.deepEqual(drafted.question, plan.question);
     assert.ok(!codes(validateDir(dir).diagnostics).includes('E_PLAN_REFERENCE'));
-    edit.writePlan(dir, { patch: [{ op: 'add', path: '/decided/0/items/-', value: 'ITEM-9' }, { op: 'replace', path: '/question/items', value: ['ITEM-8'] }] }, AGENT);
+    edit.run(dir, 'write_plan', { patch: [{ op: 'add', path: '/decided/0/items/-', value: 'ITEM-9' }, { op: 'replace', path: '/question/items', value: ['ITEM-8'] }] }, AGENT);
     const references = validateDir(dir).diagnostics.filter((d) => d.code === 'E_PLAN_REFERENCE').map((d) => `${d.path} ${d.target}`);
     assert.deepEqual(references, ['/decided/0/items/1 ITEM-9', '/question/items/0 ITEM-8']);
-    assert.throws(() => edit.writePlan(dir, { patch: [{ op: 'add', path: '/decided/-', value: { topic: 'Ton', choice: 'Direct' } }] }, AGENT), /\/decided\/3\/topic: does not match the expected pattern/);
-    assert.throws(() => edit.writePlan(dir, { patch: [{ op: 'replace', path: '/question', value: [{ text: 'Une ?' }, { text: 'Deux ?' }] }] }, AGENT), /\/question: must be object/);
-    edit.writePlan(dir, { patch: [{ op: 'remove', path: '/decided/0/items/1' }, { op: 'replace', path: '/question/items', value: ['ITEM-2'] }] }, AGENT);
+    assert.throws(() => edit.run(dir, 'write_plan', { patch: [{ op: 'add', path: '/decided/-', value: { topic: 'Ton', choice: 'Direct' } }] }, AGENT), /\/decided\/3\/topic: does not match the expected pattern/);
+    assert.throws(() => edit.run(dir, 'write_plan', { patch: [{ op: 'replace', path: '/question', value: [{ text: 'Une ?' }, { text: 'Deux ?' }] }] }, AGENT), /\/question: must be object/);
+    edit.run(dir, 'write_plan', { patch: [{ op: 'remove', path: '/decided/0/items/1' }, { op: 'replace', path: '/question/items', value: ['ITEM-2'] }] }, AGENT);
 
     // A version never holds them; validating it removes them from the working copy.
-    edit.createPlanVersion(dir, {}, PERSON);
+    edit.run(dir, 'create_plan_version', {}, PERSON);
     assert.equal(readJSON(dir, 'plan-versions/V1.json').plan.decided, undefined);
-    edit.approvePlan(dir, { by: 'Claire Martin, Hélios Énergie', date: '2026-10-15' }, PERSON);
+    edit.run(dir, 'approve_plan', { by: 'Claire Martin, Hélios Énergie', date: '2026-10-15' }, PERSON);
     const validated = readJSON(dir, 'plan.json');
     assert.deepEqual([validated.decided, validated.question], [undefined, undefined]);
     assert.deepEqual(validated.duration, { min: 10, max: 20 });
@@ -357,5 +357,5 @@ test('versions and notes stay with the course (its archive, its backups), never 
 
 test('write_plan: a property written where the plan has none of that name says where the plan has it', () => {
   const dir = copyExample();
-  assert.throws(() => edit.writePlan(dir, { patch: [{ op: 'add', path: '/lockedTexts', value: [{ id: 'TXT-RULE', text: 'Une règle.', verbatim: true }] }] }), /\/: unknown property "lockedTexts".*the plan has "lockedTexts" at items\[\]\.lockedTexts/);
+  assert.throws(() => edit.run(dir, 'write_plan', { patch: [{ op: 'add', path: '/lockedTexts', value: [{ id: 'TXT-RULE', text: 'Une règle.', verbatim: true }] }] }), /\/: unknown property "lockedTexts".*the plan has "lockedTexts" at items\[\]\.lockedTexts/);
 });

@@ -1,12 +1,12 @@
 import path from 'node:path';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { exportDialogue } from '@elabora/node/dialogue-export';
-import { setDialogueNode, removeDialogueNode } from '@elabora/node/edit';
 import { findDialogue, dialogueBlocks, projectDialogue } from '@elabora/core/dialogue/project';
 import { dialogueScript, formatScript } from '@elabora/core/dialogue/script';
 import { playDialogue, formatPlay, dialoguePaths, formatPaths } from '@elabora/core/dialogue/play';
 import type { Project } from '@elabora/core/project/model';
 import { defineTool, fromCommand, editResult, errorResult, objectSchema, SLUG, textResult } from './tool.ts';
+import { run } from '@elabora/node/edit';
 
 // Dialogues (docs/decisions.md D61): read as a script, played and listed by the player's own walk,
 // exported for the client; one node written whole. The dialogue is a block: elabora_add_block and
@@ -76,11 +76,11 @@ export const exportDialogueTool = defineTool({
 export const setDialogueNodeTool = defineTool({
   name: 'elabora_set_dialogue_node',
   ...fromCommand('set_dialogue_node'),
-  handler: (args, { root, author }) => editResult(setDialogueNode(root, args, { author }))
+  handler: (args, { root, author }) => editResult(run(root, 'set_dialogue_node', args, { author }))
 });
 
 export const removeDialogueNodeTool = defineTool({
   name: 'elabora_remove_dialogue_node',
   ...fromCommand('remove_dialogue_node'),
-  handler: (args, { root, author }) => editResult(removeDialogueNode(root, args, { author }))
+  handler: (args, { root, author }) => editResult(run(root, 'remove_dialogue_node', args, { author }))
 });

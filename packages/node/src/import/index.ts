@@ -218,7 +218,7 @@ export async function importCourse(options: ImportCourseOptions): Promise<Import
       // Fonts the module embeds: vetted families, copied with their licence, as `elabora font add`.
       const fonts: string[] = [];
       for (const font of converted.fonts) {
-        edit.addFont(target, { family: font.family, for: font.for }, { author: options.author ?? { kind: 'system', name: 'import' }, validate: false, autoVersion: false });
+        edit.run(target, 'add_font', { family: font.family, for: font.for }, { author: options.author ?? { kind: 'system', name: 'import' }, validate: false, autoVersion: false });
         fonts.push(font.family);
       }
       return { files: files.sort(), fonts };

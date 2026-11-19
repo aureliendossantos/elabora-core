@@ -8,7 +8,6 @@ import { ignoredOf } from '@elabora/core/validate/index';
 import type { NarrationAudio } from '@elabora/core/narration/narration';
 import type { Project } from '@elabora/core/project/model';
 import { loadProjectFromDir } from '../project-reader.ts';
-import { setNarrationWords } from '../edit/index.ts';
 import { lineMouth, mouthWords } from '../narration/mouth.ts';
 import type { EditOptions } from '../edit/index.ts';
 import { findMediaTools } from '../media/tools.ts';
@@ -21,6 +20,8 @@ import type { AlignerModel } from './models.ts';
 import type { DownloadProgress } from '../models/download.ts';
 import type { AlignerView, AlignProgress, AlignResult } from './types.ts';
 import { localAiSupported, requireLocalAi } from '../models/platform.ts';
+import { run } from '../edit/index.ts';
+import type { CommandArgs } from '@elabora/core/commands/table';
 
 // When each word of a narration line is said (docs/decisions.md D27): forced alignment of the
 // line's text with its audio, by a wav2vec2 character model of its language (models.ts, downloaded
@@ -129,14 +130,14 @@ export interface AlignOptions {
 // session, whose write queue and snapshot they go through.
 export interface AlignWriter {
   project(): Project;
-  setNarrationWords(args: Parameters<typeof setNarrationWords>[1]): Promise<number | null>;
+  setNarrationWords(args: CommandArgs['set_narration_words']): Promise<number | null>;
 }
 
 export function folderAlignWriter(dir: string, editOptions?: EditOptions): AlignWriter {
   return {
     project: () => loadProjectFromDir(dir),
     async setNarrationWords(args) {
-      const written = await setNarrationWords(dir, args, editOptions);
+      const written = await run(dir, 'set_narration_words', args, editOptions);
       return written.change?.seq ?? null;
     }
   };

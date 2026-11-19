@@ -9,9 +9,8 @@ import { baseUrl, cacheDir, failure } from '../voice/elevenlabs/api.ts';
 import { requireKey, scrub } from '../voice/elevenlabs/key.ts';
 import { noteSpent, readQuota } from '../voice/elevenlabs/costs.ts';
 import { VoiceError } from '../voice/provider.ts';
-import type { EditOptions } from '../edit/executor.ts';
-import { addSound } from './add.ts';
-import type { AddSoundRequest } from './add.ts';
+import type { AddSoundRequest } from '@elabora/core/commands/sounds';
+import { run, type HostOptions } from '../edit/index.ts';
 import type { GenerateSoundParams, SoundEstimate } from './types.ts';
 
 // « Créer avec ElevenLabs » (docs/decisions.md D67): a sound effect made from a description with the
@@ -43,8 +42,8 @@ export async function estimateSound({ duration, signal }: { duration?: number; s
 
 export type GenerateSoundRequest = GenerateSoundParams & { signal?: AbortSignal };
 
-export function generateSound(dir: string, request: GenerateSoundRequest, options?: EditOptions) {
-  return generateSoundWith(request, (added) => addSound(dir, added, options));
+export function generateSound(dir: string, request: GenerateSoundRequest, options?: HostOptions) {
+  return generateSoundWith(request, (added) => run(dir, 'add_sound', added, options));
 }
 
 // The same, the sound made added by write (add_sound): an engine runs it through its session's queue.

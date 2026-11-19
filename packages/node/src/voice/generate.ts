@@ -11,7 +11,6 @@ import { projectDataDir } from '../data-dir.ts';
 import { setNarrationAudio } from '../narration/audio.ts';
 import type { NarrationAudioArgs } from '../narration/audio.ts';
 import type { Project } from '@elabora/core/project/model';
-import { updateCourseSettings, updateNarrationLine } from '../edit/index.ts';
 import type { EditOptions } from '../edit/index.ts';
 import { findMediaTools } from '../media/tools.ts';
 import { runFfmpeg } from '../media/encode.ts';
@@ -21,6 +20,7 @@ import { APPROVAL_SHARE, covers, needsApproval, quotaPercent, shareOf } from '@e
 import { VoiceError, resolveVoice, speaks, voiceProvider } from './provider.ts';
 import type { VoiceProvider } from './provider.ts';
 import type { InstallProgress, VoiceProgress, LineResult, GenerateResult, TakeInfo, VoiceEstimate } from './types.ts';
+import { run } from '../edit/index.ts';
 export type { VoiceProgress, LineResult, GenerateResult, TakeInfo, VoiceEstimate } from './types.ts';
 
 // Generated narration (docs/decisions.md D24, D25): a voice says the lines of a narrated screen,
@@ -74,11 +74,11 @@ export function folderWriter(dir: string, editOptions?: EditOptions): VoiceWrite
       return { audio: written.audio, seq: written.change?.seq ?? null, ...(written.alignmentError ? { alignmentError: written.alignmentError } : {}) };
     },
     async setSpeakerVoice(speaker, language, voice) {
-      const written = await updateCourseSettings(dir, { patch: { speakers: { [speaker]: { voices: { [language]: voice } } } } }, editOptions);
+      const written = await run(dir, 'update_course', { patch: { speakers: { [speaker]: { voices: { [language]: voice } } } } }, editOptions);
       return written.change?.seq ?? null;
     },
     async updateLinePause(screen, line, pause) {
-      const written = await updateNarrationLine(dir, { screen, line, pauseBefore: pause }, editOptions);
+      const written = await run(dir, 'update_narration_line', { screen, line, pauseBefore: pause }, editOptions);
       return written.change?.seq ?? null;
     }
   };

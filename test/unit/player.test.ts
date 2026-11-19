@@ -161,15 +161,15 @@ test('default bars: a bar without its own items has the defaults, an item the au
   assert.ok(config.bottom.items.some((item) => item.id === 'resources'), 'the author\'s place wins over the default');
   assert.ok(!codes(validateDir(dir).diagnostics).includes('E_PLAYER_ITEM_DUPLICATE'));
   // A change of one token writes both bars in full, as the player reads them.
-  edit.updatePlayer(dir, { tokens: { 'player.accent': '#0B5394' } });
+  edit.run(dir, 'update_player', { tokens: { 'player.accent': '#0B5394' } });
   const written = readJSON(dir, 'course.json').player;
   assert.deepEqual(written.top.items.map((item: { id: string }) => item.id), config.top.items.map((item) => item.id));
   assert.equal(written.top.position, 'page');
   assert.ok(!codes(validateDir(dir).diagnostics).includes('E_PLAYER_ITEM_DUPLICATE'));
   // An index that is not a whole number from 0, and content that would only be flagged once written, are refused.
-  assert.throws(() => edit.updatePlayer(dir, { move: [{ item: 'next', bar: 'top', index: Number.NaN }] }), /whole number/);
-  assert.throws(() => edit.updatePlayer(dir, { glossary: [{ id: 'a', term: 'A', definition: 'Un.' }, { id: 'a', term: 'B', definition: 'Deux.' }] }), /two entries have the id "a"/);
-  assert.throws(() => edit.updatePlayer(dir, { resources: [{ id: 'r', title: 'R', asset: 'resources/absente.pdf' }] }), /not in the course/);
+  assert.throws(() => edit.run(dir, 'update_player', { move: [{ item: 'next', bar: 'top', index: Number.NaN }] }), /whole number/);
+  assert.throws(() => edit.run(dir, 'update_player', { glossary: [{ id: 'a', term: 'A', definition: 'Un.' }, { id: 'a', term: 'B', definition: 'Deux.' }] }), /two entries have the id "a"/);
+  assert.throws(() => edit.run(dir, 'update_player', { resources: [{ id: 'r', title: 'R', asset: 'resources/absente.pdf' }] }), /not in the course/);
 });
 
 test('regulation and accessibility: a generated voice with « IA et crédits » hidden, narration without controls or transcript', () => {
@@ -198,7 +198,7 @@ test('regulation and accessibility: a generated voice with « IA et crédits » 
 test('update_player: items enabled, moved and given options, tokens, content, in one undoable change', () => {
   const dir = copyExample();
   const before = fs.readFileSync(path.join(dir, 'course.json'), 'utf8');
-  const result = edit.updatePlayer(dir, {
+  const result = edit.run(dir, 'update_player', {
     disable: ['progress'], move: [{ item: 'outline', bar: 'top', index: 1 }],
     options: { controls: { speeds: '0.75-1.5', captionsByDefault: true }, outline: { label: 'section' } },
     position: { bottom: 'page' }, tokens: { 'player.accent': '#0B5394', 'player.density': 'compact' },
@@ -213,8 +213,8 @@ test('update_player: items enabled, moved and given options, tokens, content, in
   assert.equal(course.theme.tokens['player.accent'], '#0B5394');
   assert.deepEqual(course.glossary.map((entry: { id: string }) => entry.id), ['dns']);
   // An unknown item or token is refused, and nothing is written.
-  assert.throws(() => edit.updatePlayer(dir, { enable: ['sidebar' as 'title'] }), /sidebar/);
-  assert.throws(() => edit.updatePlayer(dir, { tokens: { 'player.shadow': '1px' } }), /player\.shadow/);
+  assert.throws(() => edit.run(dir, 'update_player', { enable: ['sidebar' as 'title'] }), /sidebar/);
+  assert.throws(() => edit.run(dir, 'update_player', { tokens: { 'player.shadow': '1px' } }), /player\.shadow/);
   edit.undo(dir);
   assert.equal(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'), before);
 });
@@ -223,12 +223,12 @@ test('the progress\'s options: in parts with its percentage by default, else one
   const dir = copyExample();
   const progress = (data: CourseData) => data.player.top!.items.find((item) => item.id === 'progress');
   assert.deepEqual(progress(compiled(dir)), { id: 'progress', parts: true, percent: true });
-  assert.equal(edit.updatePlayer(dir, { options: { progress: { parts: false, percent: false } } }).ok, true);
+  assert.equal(edit.run(dir, 'update_player', { options: { progress: { parts: false, percent: false } } }).ok, true);
   assert.deepEqual(readJSON(dir, 'course.json').player.top.items.find((item: { id: string }) => item.id === 'progress'), { id: 'progress', options: { parts: false, percent: false } });
   assert.deepEqual(progress(compiled(dir)), { id: 'progress', parts: false, percent: false });
   assert.ok(!codes(validateDir(dir).diagnostics).some((code) => code.startsWith('E_')));
   // null puts an option back to its default.
-  edit.updatePlayer(dir, { options: { progress: { parts: null } } });
+  edit.run(dir, 'update_player', { options: { progress: { parts: null } } });
   assert.deepEqual(progress(compiled(dir)), { id: 'progress', parts: true, percent: false });
   const course = readJSON(dir, 'course.json');
   course.player.top.items.find((item: { id: string }) => item.id === 'progress').options.segments = 3;
