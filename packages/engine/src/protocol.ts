@@ -4,7 +4,7 @@ import type { BatchSummary } from '@elabora/core/ops/batch';
 import type { Overwrite, Presence } from '@elabora/core/sync/protocol';
 import type { Outcome } from '@elabora/core/sync/client';
 import type { DeliveryFormat } from '@elabora/core/lms/formats';
-import type { Screen, Variable } from '@elabora/core/project/model';
+import type { Screen } from '@elabora/core/project/model';
 import type { Anchor } from '@elabora/format';
 import type { PlanApprovalState, PlanDiffView, PlanVersionsView } from '@elabora/core/project/plan-versions';
 import type { PlanDocument } from '@elabora/core/plan-document/model';
@@ -22,23 +22,13 @@ import type { VoiceInfo, VoiceStatus, GenerateResult, TakeInfo, VoiceProgress, V
 import type { AlignerView, AlignProgress, AlignResult } from '@elabora/node/align/types';
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/types';
 import type { NarrationPeaks, ImportedFile } from '@elabora/node/narration/types';
-import type { LineFromAudioFileArgs, TextFromAudioFileArgs } from '@elabora/core/commands/narration';
-import type { AddSoundRequest as AddSoundArgs } from '@elabora/core/commands/sounds';
 import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
 import type { CourseSound } from '@elabora/core/sounds/sounds';
-import type {
-  Expectation, CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, PlaceBlockArgs, ArrangeScreenArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
-  CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
-  WriteComponentFileArgs, MigrateComponentsArgs, AddLibraryComponentArgs, CommandDiagnostic, AddFontArgs, FontRequest, SettleImportReportArgs, AddResourceRequest,
-  SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, RenameArgs, DuplicateScreenArgs,
-  UpdateNarrationArgs, AddNarrationLineArgs, UpdateNarrationLineArgs, MoveNarrationLineArgs, NarrationAudioFileArgs, RemoveSpeakerArgs, SetBlockTimingArgs, SetContinuityArgs, SetDialogueNodeArgs, RemoveDialogueNodeArgs, SetNarrationWordsArgs, SplitStepArgs, NarrationFromPlanArgs, KeepNarrationAudioArgs, SetPlanVoiceoverArgs,
-  WritePlanArgs, SetPlanTextArgs, RevertPlanChangeArgs, CreatePlanVersionArgs, ApprovePlanArgs, RecordPlanSendArgs, SetPlanNoteArgs
-} from '@elabora/core/commands/index';
+import type { Expectation, ConvertTarget, CommandDiagnostic } from '@elabora/core/commands/index';
 import type { ScreenParts } from '@elabora/core/project/parts';
 import type { NarrationView, TimelineView, ScreenAt, TimelineMark } from '@elabora/core/narration/view';
 import type { EffectInfo } from '@elabora/core/narration/timeline';
-import type { ReplaceTextArgs, TextMatch } from '@elabora/core/commands/text';
-import type { ApproveTranslationArgs, ExportTranslationArgs, TranslateUnitArgs } from '@elabora/core/commands/translation';
+import type { TextMatch } from '@elabora/core/commands/text';
 import type { ScreenTranslation, TranslationStatus, TranslationTable } from '@elabora/core/i18n/translate';
 
 // The engine's message protocol: what the desktop app sends over an Electron message port, and a

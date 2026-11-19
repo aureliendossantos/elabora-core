@@ -60,6 +60,9 @@ export interface RelayFile {
   size: number;
   // sha256:… of the whole file, when known: the relay may send it as the entity tag.
   hash?: string;
+  // A validator that changes when the file does, when there is no hash (a folder's file: its size and time): the
+  // entity tag a local server compares with the browser's. Without either, nothing is validated.
+  etag?: string;
   // The bytes, or the text. A Blob is read as it is used: a file kept by the browser goes by reference.
   body: Blob | string;
   // Set when body is only these bytes (end included) of a file of `size`: a medium taken in pieces from
@@ -179,6 +182,38 @@ export function relayRequestOf(path: string, range: RelayRange | null = null): R
 // The HTTP status of a refusal.
 export const REFUSAL_STATUS: Readonly<Record<RelayRefusal['status'], number>> = { 'not-found': 404, refused: 403, unavailable: 503, failed: 500 };
 
+// The HTTP answer to a request, from the engine's answer: what the relay and a local server both send, written
+// once. Headers are the file's own (type, length, range, entity tag); the host adds its policy and its cache
+// rules. A request with a Range gets 206 with it (416 past the end of the file), whatever the source returned (the
+// whole file, or only the part it had); one without never gets 206 or 416; several ranges, or a malformed one,
+// get the whole file. A refusal is its status with no body (404, 403, 503, 500): the host says it in its words.
+export interface RelayHttp {
+  status: number;
+  headers: Record<string, string>;
+  body: Blob | null;
+}
+
+// A media type as a source gives it, or the one that is read as nothing.
+export const safeMediaType = (type: string): string => (/^[\w.+-]+\/[\w.+-]+(?:; ?[\w-]+=[\w.-]+)*$/.test(type) ? type : 'application/octet-stream');
+
+export function relayResponse(answer: RelayAnswer, range: RelayRange | null, head = false): RelayHttp {
+  if (answer.status !== 'ok') return { status: REFUSAL_STATUS[answer.status], headers: {}, body: null };
+  const blob = typeof answer.body === 'string' ? new Blob([answer.body]) : answer.body;
+  const total = answer.part ? answer.size : blob.size;
+  const offset = answer.part?.start ?? 0;
+  const tag = answer.etag ?? answer.hash;
+  const common: Record<string, string> = { 'content-type': safeMediaType(answer.type), 'accept-ranges': 'bytes', ...(tag ? { etag: `"${tag.replace(/[^\w:.+/=-]/g, '')}"` } : {}) };
+  if (range === null) {
+    if (answer.part) return { status: 503, headers: {}, body: null };
+    return { status: 200, headers: { ...common, 'content-length': String(total) }, body: head ? null : blob };
+  }
+  const wanted = resolveRange(range, total);
+  if (wanted === 'unsatisfiable') return { status: 416, headers: { 'content-range': `bytes */${total}` }, body: null };
+  const end = answer.part ? Math.min(wanted.end, answer.part.end) : wanted.end;
+  if (wanted.start < offset || wanted.start > end) return { status: 503, headers: {}, body: null };
+  return { status: 206, headers: { ...common, 'content-range': `bytes ${wanted.start}-${end}/${total}`, 'content-length': String(end - wanted.start + 1) }, body: head ? null : blob.slice(wanted.start - offset, end - offset + 1) };
+}
+
 // ── Messages from another window or another thread are data: checked before they are used ────────────
 
 const isCount = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
@@ -200,11 +235,12 @@ export function parseRelayRequest(value: unknown): RelayRequest | null {
 export function parseRelayAnswer(value: unknown): RelayAnswer | null {
   if (!isRecord(value)) return null;
   if (value.status === 'ok') {
-    const { type, size, hash, body, part } = value;
+    const { type, size, hash, etag, body, part } = value;
     if (typeof type !== 'string' || !isCount(size) || !(typeof body === 'string' || body instanceof Blob)) return null;
     if (hash !== undefined && typeof hash !== 'string') return null;
+    if (etag !== undefined && typeof etag !== 'string') return null;
     if (part !== undefined && !(isRecord(part) && isCount(part.start) && isCount(part.end) && part.start <= part.end && part.end < size)) return null;
-    return { status: 'ok', type, size, body, ...(hash !== undefined ? { hash } : {}), ...(part !== undefined ? { part: { start: (part as { start: number }).start, end: (part as { end: number }).end } } : {}) };
+    return { status: 'ok', type, size, body, ...(hash !== undefined ? { hash } : {}), ...(etag !== undefined ? { etag } : {}), ...(part !== undefined ? { part: { start: (part as { start: number }).start, end: (part as { end: number }).end } } : {}) };
   }
   if (value.status === 'not-found' || value.status === 'refused' || value.status === 'unavailable' || value.status === 'failed') return { status: value.status, ...(typeof value.message === 'string' ? { message: value.message.slice(0, 500) } : {}) };
   return null;
@@ -234,11 +270,13 @@ export function parseRelayToApp(value: unknown): RelayToApp | null {
   return null;
 }
 
-// What a port of a relay host may ask. The frames host's page can be taken over by the code of a free
-// object (D119): its port answers what an object's frame asks of the relay (the frame's page, its code,
-// the files of the object's own folder), not the module's other files.
+// What a port of a relay host may ask, each its own: the canvas host's page asks the module's files; the frames
+// host's page, which the code of a free object can take over (D119), what an object's frame asks of the relay
+// (the frame's page, its code, the files of objects/, its own folder: the course's files an object reads, by
+// ctx.host.asset, the canvas page fetches and gives it, and its policy lets it fetch nothing), not the module's
+// other files. One source answers both, a port each.
 export function hostMayAsk(host: RelayHost, request: RelayRequest): boolean {
-  return host === 'canvas' || request.kind !== 'file' || request.path.startsWith('objects/');
+  return host === 'canvas' ? request.kind === 'file' : request.kind !== 'file' || request.path.startsWith('objects/');
 }
 
 // ── The engine's end of a route's port ──────────────────────────────────────────────────────────────
@@ -248,9 +286,17 @@ export function hostMayAsk(host: RelayHost, request: RelayRequest): boolean {
 // may not ask (hostMayAsk), is answered `refused`. `host`: the relay page the port was given to; the app makes
 // one port per page, so the frames host's gets the narrower answers. Returns what ends it: it says
 // `relay/bye` and closes the port.
-export function serveRelayPort(port: MessagePort, source: RelaySource, host: RelayHost = 'canvas'): () => void {
+// A message port as far as it is used here (a browser's MessagePort, or Node's).
+export interface RelayPort {
+  // (Declared so that both a browser's port and Node's are taken: their handlers take their own event types.)
+  onmessage: null | { bivarianceHack(event: { data: unknown }): void }['bivarianceHack'];
+  postMessage(message: unknown): void;
+  close(): void;
+}
+
+export function serveRelayPort(port: RelayPort, source: RelaySource, host: RelayHost = 'canvas'): () => void {
   const running = new Map<number, AbortController>();
-  port.onmessage = (event: MessageEvent<unknown>) => {
+  port.onmessage = (event) => {
     const message = event.data;
     if (!isRecord(message) || !isCount(message.id)) return;
     const id = message.id;

@@ -8,7 +8,7 @@
 // The host's Worker writes `self.ELABORA_HOST = Object.freeze({ policy, frameAncestors, appOrigin? })`
 // before this script. Without it the relay answers nothing.
 
-import { REFUSAL_STATUS, RELAY_ANSWER_MS, isRoute, isStaticPath, parseRange, parseRelayAnswer, relayPathOf, relayRequestOf, resolveRange } from '../relay-protocol.ts';
+import { RELAY_ANSWER_MS, isRoute, isStaticPath, parseRange, parseRelayAnswer, relayPathOf, relayRequestOf, relayResponse } from '../relay-protocol.ts';
 import type { RelayAnswer, RelayRange } from '../relay-protocol.ts';
 import { RELAY_PAGES } from '../relay-link.ts';
 import type { RelayHostPolicy, WorkerHello, WorkerToPage } from '../relay-link.ts';
@@ -149,24 +149,9 @@ async function ask(holder: Client, route: string, request: ReturnType<typeof rel
   });
 }
 
-// The bytes of the answer a request wants: the whole file (200), or when it carried a Range, that range (206).
-// A request without a Range is never answered 206 or 416.
+// The answer a request gets (relayResponse: 200, or 206 with a Range, never 206 or 416 without one), with the host's policy.
 function respond(answer: RelayAnswer, range: RelayRange | null, head: boolean, host: RelayHostPolicy): Response {
-  if (answer.status !== 'ok') return refusal(host, REFUSAL_STATUS[answer.status]);
-  const blob = typeof answer.body === 'string' ? new Blob([answer.body]) : answer.body;
-  const total = answer.part ? answer.size : blob.size;
-  const offset = answer.part?.start ?? 0;
-  const common: Record<string, string> = { 'content-type': mediaType(answer.type), 'accept-ranges': 'bytes', ...(answer.hash ? { etag: `"${answer.hash.replace(/[^\w:.+/=-]/g, '')}"` } : {}) };
-  if (range === null) {
-    if (answer.part) return refusal(host, 503);
-    return new Response(head ? null : blob, { status: 200, headers: headers(host, { ...common, 'content-length': String(total) }) });
-  }
-  const wanted = resolveRange(range, total);
-  if (wanted === 'unsatisfiable') return new Response(null, { status: 416, headers: headers(host, { 'content-range': `bytes */${total}`, 'content-type': 'text/plain; charset=utf-8' }) });
-  const end = answer.part ? Math.min(wanted.end, answer.part.end) : wanted.end;
-  if (wanted.start < offset || wanted.start > end) return refusal(host, 503);
-  return new Response(head ? null : blob.slice(wanted.start - offset, end - offset + 1), { status: 206, headers: headers(host, { ...common, 'content-range': `bytes ${wanted.start}-${end}/${total}`, 'content-length': String(end - wanted.start + 1) }) });
+  const http = relayResponse(answer, range, head);
+  if (http.status >= 400 && http.status !== 416) return refusal(host, http.status);
+  return new Response(http.body, { status: http.status, headers: headers(host, http.status === 416 ? { ...http.headers, 'content-type': 'text/plain; charset=utf-8' } : http.headers) });
 }
-
-// A media type as the engine gives it, or the one that is read as nothing.
-const mediaType = (type: string): string => (/^[\w.+-]+\/[\w.+-]+(?:; ?[\w-]+=[\w.-]+)*$/.test(type) ? type : 'application/octet-stream');
