@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { extensionOf, masterPlan, mediaKindOfPath, replaceExtension } from '@elabora/core/media/conformance';
 import type { MediaInfo, MediaPlan } from '@elabora/core/media/conformance';
-import { isSafeRelativePath, slugify, toPosix } from './files.ts';
+import { isSafeRelativePath, toPosix } from './files.ts';
+import { importFolder, normaliseExtension, slugify, uniquePathAmong } from '@elabora/core/media/naming';
 import { getMediaQueue, isFinished } from './jobs.ts';
 import type { MediaJob, MediaQueue } from './jobs.ts';
 import { probeMedia, probeProjectFile } from './probe.ts';
@@ -13,7 +14,7 @@ import type { MediaTools } from './tools.ts';
 // Media enter a project as masters: imported files are converted (or remuxed) into assets/ and
 // the original is never copied; files dropped into assets/ by hand are optimised in place.
 
-export const MEDIA_FOLDERS = { video: 'assets/video', audio: 'assets/audio', image: 'assets/images', vector: 'assets/images' } as const;
+export { MEDIA_FOLDERS } from '@elabora/core/media/naming';
 
 export interface MediaRequestOptions {
   queue?: MediaQueue;
@@ -43,11 +44,8 @@ export async function importMedia(projectDir: string, inputPath: string, options
   const info = await probeMedia(input, { tools });
   const plan = masterPlan(info, { webp: tools?.webp ?? true, importing: true });
   // --to names a folder of assets/, with or without the prefix: "images" is assets/images.
-  const given = (options.to ?? MEDIA_FOLDERS[info.kind]).replace(/^\.\//, '').replace(/\/+$/, '');
-  const folder = given === 'assets' || given.startsWith('assets/') ? given : `assets/${given}`;
-  if (!given || given.split('/').includes('..') || !isSafeRelativePath(folder)) {
-    throw new Error(`Media go under assets/: give a folder of it, such as "images" or "assets/images" (not "${options.to}").`);
-  }
+  const folder = importFolder(info.kind, options.to);
+  if (!folder) throw new Error(`Media go under assets/: give a folder of it, such as "images" or "assets/images" (not "${options.to}").`);
   const extension = plan.extension ?? normaliseExtension(extensionOf(input));
   const queue = options.queue ?? getMediaQueue(root, { tools });
   const base = slugify(options.name ?? path.basename(input, path.extname(input)));
@@ -91,18 +89,9 @@ export async function optimizeInPlace(projectDir: string, relPath: string, optio
   return { from: rel, to, job, info, plan };
 }
 
-function normaliseExtension(extension: string): string {
-  return extension === '.jpeg' ? '.jpg' : extension === '.tiff' ? '.tif' : extension;
-}
-
 // intro.mp4, then intro-2.mp4, intro-3.mp4…: never a file that exists or that a job will write.
 // Compared without case: macOS and Windows file systems ignore it.
 export function uniquePath(projectDir: string, relPath: string, reserved: ReadonlySet<string> = new Set()): string {
   const taken = new Set([...reserved].map((p) => p.toLowerCase()));
-  const extension = extensionOf(relPath);
-  const stem = extension ? relPath.slice(0, -extension.length) : relPath;
-  for (let n = 1; ; n++) {
-    const candidate = n === 1 ? relPath : `${stem}-${n}${extension}`;
-    if (!taken.has(candidate.toLowerCase()) && !fs.existsSync(path.join(projectDir, candidate))) return candidate;
-  }
+  return uniquePathAmong(relPath, (candidate) => taken.has(candidate.toLowerCase()) || fs.existsSync(path.join(projectDir, candidate)));
 }

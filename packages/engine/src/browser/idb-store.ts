@@ -1,5 +1,6 @@
 import type { FileContent, Files, JournalEntry } from '@elabora/core/ops/types';
 import type { CopyLink } from '@elabora/core/sync/copy';
+import { madeFacts, sha256 } from './store.ts';
 import type { BrowserStore } from './store.ts';
 
 // A browser's copy kept for good (D103, D104): in IndexedDB its link, the files the room confirmed and
@@ -64,6 +65,8 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
   const journal = (entries as JournalEntry[]).sort((a, b) => a.seq - b.seq);
   const failed = (error: unknown) => (onError ?? ((reason) => { throw reason; }))(error);
   const media = await mediaFolder(key);
+  const facts = madeFacts();
+  const sizes = new Map<string, number>();
 
   const copy: IdbCopy = {
     link,
@@ -90,6 +93,14 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
     },
     readMedium: (hash) => media.read(hash),
     putMedium: (bytes) => media.put(bytes),
+    async keep(bytes, made) {
+      const hash = await media.put(bytes);
+      if (made) facts.set(hash, made);
+      sizes.set(hash, bytes.byteLength);
+      return hash;
+    },
+    // Facts of the media this copy made since it opened; the room keeps them once given (D126).
+    mediaFacts: async (refs) => facts.get(refs, (hash) => sizes.get(hash) ?? null),
     async sendMedia(hashes) {
       if (!remote) throw new Error('The project\'s media cannot be sent: not connected.');
       return remote.send(hashes, async (hash) => {
@@ -126,10 +137,7 @@ export async function forgetIdbCopy(key: string): Promise<void> {
   await root.removeEntry(`${DB_PREFIX}${key}`, { recursive: true }).catch(() => {});
 }
 
-export async function sha256(bytes: Uint8Array): Promise<string> {
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes as Uint8Array<ArrayBuffer>));
-  return `sha256:${[...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('')}`;
-}
+export { sha256 };
 
 // The media of a copy, one file a hash, in OPFS. Writes of the same hash wait for one another.
 async function mediaFolder(key: string) {
