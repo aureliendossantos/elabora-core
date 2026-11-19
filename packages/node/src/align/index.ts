@@ -14,11 +14,11 @@ import { findMediaTools } from '../media/tools.ts';
 import type { MediaTools } from '../media/tools.ts';
 import { runFfmpeg } from '../media/encode.ts';
 import { AlignProcess } from './process.ts';
-import { AlignmentError } from './ctc.ts';
+import { AlignmentError } from '@elabora/core/align/ctc';
 import { acquireAligner, alignerFor, alignerDir, alignerInstalled, alignerModels, alignerSize, holdAligner, installAligner } from './models.ts';
 import type { AlignerModel } from './models.ts';
 import type { DownloadProgress } from '../models/download.ts';
-import type { AlignerView, AlignProgress, AlignResult } from './types.ts';
+import type { AlignerView, AlignProgress, AlignResult } from '@elabora/core/align/types';
 import { localAiSupported, requireLocalAi } from '../models/platform.ts';
 import { run } from '../edit/index.ts';
 import type { CommandArgs } from '@elabora/core/commands/table';
@@ -33,9 +33,9 @@ import type { CommandArgs } from '@elabora/core/commands/table';
 
 export { ALIGNER_MODELS, alignerFor, alignerInstalled, alignerModels, alignerSize, installAligner, AlignerDownloadError } from './models.ts';
 export type { AlignerModel } from './models.ts';
-export { AlignmentError } from './ctc.ts';
-export type { AlignedWord, Alignment } from './align.ts';
-export type { AlignerView, AlignProgress, AlignedLine, AlignResult } from './types.ts';
+export { AlignmentError } from '@elabora/core/align/ctc';
+export type { AlignedWord, Alignment } from '@elabora/core/align/align';
+export type { AlignerView, AlignProgress, AlignedLine, AlignResult } from '@elabora/core/align/types';
 
 const SAMPLE_RATE = 16000;
 let aligner: AlignProcess | null = null;

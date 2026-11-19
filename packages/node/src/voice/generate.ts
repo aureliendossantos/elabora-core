@@ -15,7 +15,7 @@ import type { EditOptions } from '../edit/index.ts';
 import { findMediaTools } from '../media/tools.ts';
 import { runFfmpeg } from '../media/encode.ts';
 import { alignsAtOnce, alignAudio } from '../align/index.ts';
-import { spokenWords } from '../align/spoken.ts';
+import { spokenWords } from '@elabora/core/align/spoken';
 import { APPROVAL_SHARE, covers, needsApproval, quotaPercent, shareOf } from '@elabora/core/ai/quota';
 import { VoiceError, resolveVoice, speaks, voiceProvider } from './provider.ts';
 import type { VoiceProvider } from './provider.ts';

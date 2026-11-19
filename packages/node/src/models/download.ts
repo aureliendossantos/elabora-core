@@ -10,12 +10,8 @@ import { Readable } from 'node:stream';
 // pinned to a revision and checked against its SHA-256; an interrupted download resumes; one
 // download per folder at a time across processes (the app, a CLI, an MCP server).
 
-export interface ModelFile {
-  name: string;
-  url: string;   // path on the host, from the repository name
-  size: number;
-  sha256: string;
-}
+export type { ModelFile } from '@elabora/core/util/model-files';
+import type { ModelFile } from '@elabora/core/util/model-files';
 
 export interface DownloadProgress {
   bundle: string;
