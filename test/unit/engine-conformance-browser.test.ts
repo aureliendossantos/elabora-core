@@ -6,6 +6,8 @@ import * as wasm from 'esbuild-wasm';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { objectLibrarySources } from '@elabora/node/bundles';
 import type { EnginePortMessage, RelayAnswer, RelayRequest } from '@elabora/player/relay-protocol';
+import { mediaFacts } from '@elabora/core/sync/media';
+import type { FileContent } from '@elabora/core/ops/types';
 import { openCopy } from '@elabora/engine/browser/session';
 import { memoryCopy } from '@elabora/engine/browser/store';
 import type { RoomSocket } from '@elabora/engine/base/session-cloud';
@@ -111,4 +113,34 @@ test('browser relay: the canvas gets the module\'s files, texts and media by has
     canvas.close();
     frames.close();
   }
+});
+
+test('browser: a medium never taken has its size and the facts the room gave (D125), read and validated as a probed one; one without facts has its size and waits', async () => {
+  const { files } = readProjectFiles(NETWORK_SAMPLE);
+  const line = 'assets/narration/fr/chemin/chemin-depart.m4a';
+  const located = 'assets/narration/fr/chemin/chemin-diagnostic.m4a';
+  const unknown = 'assets/narration/fr/chemin/chemin-reseaux.m4a';
+  const confirmed = new Map<string, FileContent>();
+  const media: Record<string, { size: number; facts?: ReturnType<typeof mediaFacts> }> = {};
+  for (const [rel, file] of files) {
+    if (file.kind !== 'binary' || !file.hash) { confirmed.set(rel, file); continue; }
+    // As the room gives a medium: its hash and size, no bytes, no probe.
+    confirmed.set(rel, { kind: 'binary', hash: file.hash, size: file.size });
+    if (rel === unknown || !file.media) { media[file.hash] = { size: file.size }; continue; }
+    const facts = mediaFacts(file.media);
+    // Facts that only the room could have given: the line said for 42 s; another with a GPS position in it.
+    media[file.hash] = { size: file.size, facts: rel === line ? { ...facts, duration: 42 } : rel === located ? { ...facts, location: true } : facts };
+  }
+  const store = memoryCopy({ link: { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0, media }, confirmed });
+  const session = await openCopy({ id: 'cloud:tm_test.prj_test', store, api: 'http://localhost:1', connect: offline });
+  closing.push(() => session.close());
+
+  const lines = (await ask<{ lines: { id: string; duration: number | null }[] }>(session, 'narration', { screen: 'chemin' })).lines;
+  assert.equal(lines.find((one) => one.id === 'chemin-depart')?.duration, 42, 'the duration the room gave');
+  const diagnostics = await ask<{ project: { code: string; file?: string }[]; screens: Record<string, { code: string; file?: string }[]> }>(session, 'diagnostics', {});
+  const all = [...diagnostics.project, ...Object.values(diagnostics.screens).flat()];
+  assert.ok(all.some((finding) => finding.code === 'W_MEDIA_NOT_OPTIMIZED' && finding.file === located), 'the verdict computed from the facts');
+  assert.ok(!all.some((finding) => finding.file === unknown), 'a medium without facts: no finding');
+  const listed = await ask<{ path: string; size: number }[]>(session, 'listFiles', { dir: 'assets/narration/fr/chemin' });
+  assert.equal(listed.find((file) => file.path === unknown)?.size, files.get(unknown)?.kind === 'binary' ? (files.get(unknown) as { size: number }).size : -1);
 });

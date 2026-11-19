@@ -2,6 +2,7 @@ import type { FileContent, Files } from '@elabora/core/ops/types';
 import { binaryFile, textFile } from '@elabora/core/ops/json';
 import type { CopyLink } from '@elabora/core/sync/copy';
 import type { SnapshotFile } from '@elabora/core/sync/protocol';
+import { readMediaFacts, type KnownMedium, type MediaMap } from '@elabora/core/sync/media';
 import type { RoomSocket } from '../base/session-cloud.ts';
 import type { RemoteMedia } from './idb-store.ts';
 
@@ -62,9 +63,16 @@ export async function roomSeed({ api, team, project }: RoomAccess): Promise<{ li
   ]);
   const client = `c${[...crypto.getRandomValues(new Uint8Array(6))].map((byte) => byte.toString(16).padStart(2, '0')).join('')}`;
   const confirmed = new Map<string, FileContent>();
-  for (const file of [...remote.files].sort((a, b) => (a.path < b.path ? -1 : 1))) confirmed.set(file.path, 'text' in file ? textFile(file.path, file.text) : binaryFile(file.blob, file.size));
+  // What the room knows of each medium without its bytes (D125): its size, and its facts once a copy gave them.
+  const media: MediaMap<KnownMedium> = {};
+  for (const file of [...remote.files].sort((a, b) => (a.path < b.path ? -1 : 1))) {
+    if ('text' in file) { confirmed.set(file.path, textFile(file.path, file.text)); continue; }
+    confirmed.set(file.path, binaryFile(file.blob, file.size));
+    const facts = file.facts === undefined ? null : readMediaFacts(file.facts, 'tolerant');
+    if (Number.isSafeInteger(file.size)) media[file.blob] = { size: file.size!, ...(facts ? { facts } : {}) };
+  }
   return {
-    link: { team, project, client, person: { id: account.id, name: account.displayName ?? account.handle }, head: remote.head, epoch: null, waiting: [], journal: 0 },
+    link: { team, project, client, person: { id: account.id, name: account.displayName ?? account.handle }, head: remote.head, epoch: null, waiting: [], journal: 0, media },
     confirmed
   };
 }
