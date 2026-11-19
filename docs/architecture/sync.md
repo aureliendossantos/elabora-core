@@ -90,15 +90,19 @@ A room runs commands as well as changes: a tool of the cloud sends a command's n
 | `submit { change }` | a submission |
 | `catchup { since }` | what came after a number |
 | `presence { screen?, selection?, view? }` | where its author is (`view`: D91) |
+| `media { media }` | the facts of media the project holds, that the room lacks or holds at a lower version (D125, D126); only to a room whose welcome says `media` |
 
 | From the server | |
 |---|---|
-| `welcome { protocol, head, peers, role? }` | `role`: the person's role at the connection (D94), taken before anything waiting is sent |
-| `ack { change }`, `change { change }` | a placed change, to its copy and to the others |
+| `welcome { protocol, head, peers, role?, media? }` | `role`: the person's role at the connection (D94), taken before anything waiting is sent; `media`: the room keeps media's facts (D125) |
+| `ack { change, media?, mediaDropped? }`, `change { change, media? }` | a placed change, to its copy and to the others; `media`: what the room knows of the media its operations write |
 | `refused { refusal, head }` | |
-| `catchup { changes, head }`, `snapshot { head, files }` | what a copy missed |
+| `catchup { changes, head, media? }`, `snapshot { head, files }` | what a copy missed; a snapshot's binary file carries its `size` and `facts` |
+| `media { media }` | facts a copy gave since |
 | `presence { peers }` | who is there: an `Actor` (a person, or an agent with the person who launched it) per copy |
 | `role { role }` | the person's role changed while connected (D93): a viewer's changes wait in the copy |
+
+**A medium's facts** (D125, D126). What a copy needs to know of a medium without its bytes goes by its hash, beside the reference, never in an operation or the journal: its size, which the room measures, and its facts (`MediaFacts`, `sync/media.ts`: `MediaInfo` without its size, with a version), which a copy that holds the file gives with the change that writes it (`Submission.media`) or in passing (`media`). The conformance verdict is not part of them: a copy computes it with `fileMedia({ ...facts, size }, path)`. Facts that do not hold are left out (`ack.mediaDropped`), never the change. A room keeps the first facts of each version and a higher version replaces a lower; a reader drops a key it does not know (a copy) or the facts that carry one (a room). A copy keeps what the room told it in its link (`CopyLink.media`).
 
 **Authors.** A change's author is the `Author` of [operations](operations.md), with, in a project in the cloud, `id` (a person's stable id, their account) and, for an agent, `by` (the person who launched it). The rule of rebase depends on the author's kind, so the server sets the author from the connection, never from what a copy says.
 

@@ -26,6 +26,8 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D117](decisions/D117.md) | A free object's code is bundled by a part that needs no Node, given esbuild and its libraries | 18 Nov 2026 |
 | [D118](decisions/D118.md) | The relay's protocol: the questions a host answers about a module's files, and the messages that carry them | 19 Nov 2026 |
 | [D12](decisions/D12.md) | TypeScript workspace packages, run directly by Node | revised 6 Oct 2026 |
+| [D125](decisions/D125.md) | A medium's facts go by its hash, beside the reference, in elabora-sync/1 | 19 Nov 2026 |
+| [D126](decisions/D126.md) | A copy that holds a medium gives its facts: with the change that writes it, and in passing for those already there | 19 Nov 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
 | [D15](decisions/D15.md) | Files are the source of truth; every change is an operation | 6 Oct 2026 |

@@ -10,3 +10,4 @@ export { acceptChange, type RoomState, type AcceptOptions, type Accepted } from 
 export { SyncClient, type LocalChange, type Outcome } from './client.ts';
 export { journalOf, leftByRebase } from './undo-log.ts';
 export { roomUrl, blobsOf, type CopyLink, type CopyStore, type Person } from './copy.ts';
+export { MEDIA_FACTS_VERSION, MEDIUM_HASH, mediaFacts, readKnownMedia, readMediaFacts, replacesFacts, type KnownMedium, type MediaFacts, type MediaMap } from './media.ts';
