@@ -20,7 +20,7 @@ export interface RelayFrom {
   files(): ProjectFiles;
   project(): Project;
   // A medium's bytes, kept or taken from the team's (null: not kept, and the project cannot be reached).
-  medium(hash: string): Promise<Uint8Array | null>;
+  medium(hash: string): Promise<Blob | null>;
   // A part of a medium, without taking it whole (a long video the page plays by ranges).
   part?(hash: string, start: number, end: number): Promise<Blob | null>;
   objects?: () => Promise<ObjectCompiler>;
@@ -45,9 +45,9 @@ export function relaySource(host: RelayHost, from: RelayFrom): RelaySource {
           const part = await from.part!(file.hash, range.start, range.end);
           if (part) return { status: 'ok', type, size: file.size!, hash: file.hash, body: new Blob([part], { type }), part: range };
         }
-        const bytes = await from.medium(file.hash);
-        if (!bytes) return { status: 'unavailable', message: `${request.path} is not kept in this browser, and the project cannot be reached` };
-        return { status: 'ok', type, size: bytes.byteLength, hash: file.hash, body: new Blob([bytes as Uint8Array<ArrayBuffer>], { type }) };
+        const medium = await from.medium(file.hash);
+        if (!medium) return { status: 'unavailable', message: `${request.path} is not kept in this browser, and the project cannot be reached` };
+        return { status: 'ok', type, size: medium.size, hash: file.hash, body: new Blob([medium], { type }) };
       }
       if (host !== 'frames') return { status: 'refused', message: 'An object\'s frame is served by the frames host' };
       const object = from.project().objects.get(request.object);

@@ -36,9 +36,9 @@ test('relay sources: the folder and the browser engine answer a file, an object\
     const listed = new Map<string, RenderedFileKind>(renderScreen(project, screen, {}, createRenderContext(project)).files.map((file) => [file.path, file.kind]));
     assert.ok([...listed.values()].includes('object-code'));
     const folder = folderRelaySource({ root, debug: false, allowed: () => listed, language: () => project.course?.language ?? 'en' });
-    const medium = async (hash: string): Promise<Uint8Array | null> => {
+    const medium = async (hash: string): Promise<Blob | null> => {
       const found = [...files].find(([, file]) => file.kind === 'binary' && file.hash === hash);
-      return found ? fs.readFileSync(path.join(root, found[0])) : null;
+      return found ? new Blob([fs.readFileSync(path.join(root, found[0]))]) : null;
     };
     const frames = relaySource('frames', { files: () => files, project: () => project, medium, objects: async () => ({ bundler: wasm, libraries: { d3: { contents: sources.d3 }, charts: { contents: sources.charts } } }) });
     const canvas = relaySource('canvas', { files: () => files, project: () => project, medium });

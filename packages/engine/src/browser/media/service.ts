@@ -77,10 +77,10 @@ export class BrowserMedia {
   }
 
   // A master's bytes kept by hash with its facts (for the room, D126), as the project's state holds it.
-  async #keep(file: Blob, info: MediaInfo, rel: string): Promise<{ bytes: Uint8Array; hash: string; source: SourceFile }> {
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const hash = await this.#host.store.keep(bytes, mediaFacts(info));
-    return { bytes, hash, source: binaryFile(bytes.length, { hash: hash as `sha256:${string}`, media: fileMedia({ ...info, size: bytes.length }, rel) }) };
+  // Written as it is read: a master of any size is never held whole here.
+  async #keep(file: Blob, info: MediaInfo, rel: string): Promise<{ size: number; hash: string; source: SourceFile }> {
+    const hash = await this.#host.store.keep(file, mediaFacts(info));
+    return { size: file.size, hash, source: binaryFile(file.size, { hash: hash as `sha256:${string}`, media: fileMedia({ ...info, size: file.size }, rel) }) };
   }
 
   // ── importMedia, its jobs ──────────────────────────────────────────
@@ -167,9 +167,9 @@ export class BrowserMedia {
       const key = `${file.hash}-${rate}`;
       let peaks = this.#peaks.get(key);
       if (!peaks) {
-        const bytes = await this.#host.store.medium(file.hash);
-        if (!bytes) continue;
-        const answer = await this.#ask({ op: 'peaks', file: new Blob([bytes as Uint8Array<ArrayBuffer>]), name: info.audio, perSecond: rate, duration: file.media?.duration ?? null });
+        const audio = await this.#host.store.medium(file.hash);
+        if (!audio) continue;
+        const answer = await this.#ask({ op: 'peaks', file: audio, name: info.audio, perSecond: rate, duration: file.media?.duration ?? null });
         if (!('peaks' in answer)) continue;
         peaks = answer.peaks;
         this.#peaks.set(key, peaks);
@@ -215,10 +215,11 @@ export class BrowserMedia {
       const made = await this.#ask({ op: 'master', kind: 'line', file, name, trim: need === 'recording' ? args.trim !== false : !!args.trim });
       if (!('master' in made)) throw new EngineError('internal', 'The media Worker gave no audio.');
       const rel = `assets/narration/${name}`;
-      const { bytes, hash } = await this.#keep(made.master.file, made.master.info, rel);
+      const { size, hash } = await this.#keep(made.master.file, made.master.info, rel);
       const duration = made.master.info.duration;
       if (!duration) throw new EngineError('refused', `${name}: its length could not be read.`, { code: 'E_MEDIA_UNREADABLE' });
-      const audio = { audio: { size: bytes.length, hash: hash as `sha256:${string}` }, duration, createdAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), bytes: new Map([[hash, bytes]]) };
+      // Its bytes are kept already (keep): the command brings none of its own.
+      const audio = { audio: { size, hash: hash as `sha256:${string}` }, duration, createdAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), bytes: new Map() };
       if (need === 'lineAudio') return { ...audio, ...(Array.isArray(args.words) ? { words: args.words as HostNeeds['lineAudio']['words'], ...(typeof args.aligner === 'string' ? { aligner: args.aligner } : {}) } : {}) };
       const project = this.#host.project();
       const text = typeof args.text === 'string' ? args.text.replace(/\s+/g, ' ').trim() : '';
@@ -232,9 +233,9 @@ export class BrowserMedia {
       let text: string | null = null;
       if (isTextPath(name)) { try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch { text = null; } }
       if (text !== null) return { name, file: textFile(text), pdfTitle: null };
-      const hash = await this.#host.store.keep(bytes);
+      const hash = await this.#host.store.keep(file);
       // A PDF's own title is read on the desktop; here the resource is titled as asked, else by its name.
-      return { name, file: binaryFile(bytes.length, { hash: hash as `sha256:${string}` }), pdfTitle: null, bytes: new Map([[hash, bytes]]) };
+      return { name, file: binaryFile(file.size, { hash: hash as `sha256:${string}` }), pdfTitle: null, bytes: new Map() };
     }
     if (need === 'videoOfImage') throw new EngineError('refused', 'This browser cannot turn an animated image into a video yet: do it in the desktop app.', { code: 'E_MEDIA_ENCODER_MISSING' });
     throw new EngineError('not-available', `${need} is not given by the media service here.`, { code: 'E_NOT_HERE' });

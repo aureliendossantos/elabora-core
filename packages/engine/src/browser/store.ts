@@ -1,6 +1,7 @@
 import type { Files, JournalEntry } from '@elabora/core/ops/types';
 import type { CopyLink, CopyStore, MediumRef } from '@elabora/core/sync/copy';
 import type { MediaFacts, MediaMap } from '@elabora/core/sync/media';
+import { sha256 as coreSha256 } from '@elabora/core/util/sha256';
 
 // What a browser's copy of a project keeps (D103, D104): the store of the base's copy (its link, what
 // the room confirmed, the team's media) and the copy's own journal. What it holds is read before the
@@ -11,10 +12,10 @@ export interface BrowserStore extends CopyStore {
   append(entries: readonly JournalEntry[]): Promise<void>;
   // A medium's bytes, kept, or taken from the team's media and kept (null: not kept, and the project
   // cannot be reached).
-  medium(hash: string): Promise<Uint8Array | null>;
+  medium(hash: string): Promise<Blob | null>;
   // A medium this copy made (an import, a line's audio): its bytes kept by hash, its facts with them
   // for the room (mediaFacts, D126). Gives its hash.
-  keep(bytes: Uint8Array, facts?: MediaFacts): Promise<string>;
+  keep(data: Blob | Uint8Array, facts?: MediaFacts): Promise<string>;
   // Bytes start to end (included) of a medium of `size`, without taking it whole: from what is kept,
   // else read by range from the team's media (C103); null when neither can give them.
   mediumPart?(hash: string, start: number, end: number): Promise<Blob | null>;
@@ -47,9 +48,10 @@ export function memoryCopy({ link, confirmed, journal = [], media: given = new M
     unlink() { kept.unlinked = true; },
     journal: () => kept.journal,
     async append(entries) { kept.journal.push(...structuredClone(entries)); },
-    medium: async (hash) => media.get(hash) ?? null,
+    medium: async (hash) => { const bytes = media.get(hash); return bytes ? new Blob([bytes as Uint8Array<ArrayBuffer>]) : null; },
     mediumPart: async (hash, start, end) => { const bytes = media.get(hash); return bytes ? new Blob([bytes.slice(start, end + 1) as Uint8Array<ArrayBuffer>]) : null; },
-    async keep(bytes, made) {
+    async keep(data, made) {
+      const bytes = data instanceof Blob ? new Uint8Array(await data.arrayBuffer()) : data;
       const hash = await sha256(bytes);
       media.set(hash, bytes);
       if (made) facts.set(hash, made);
@@ -64,7 +66,7 @@ export function memoryCopy({ link, confirmed, journal = [], media: given = new M
   };
 }
 
+// sha256:<hex> of bytes held (the core's Sha256, which also hashes what is read by slices).
 export async function sha256(bytes: Uint8Array): Promise<string> {
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes as Uint8Array<ArrayBuffer>));
-  return `sha256:${[...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+  return `sha256:${coreSha256(bytes)}`;
 }

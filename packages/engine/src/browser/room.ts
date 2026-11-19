@@ -30,12 +30,12 @@ export class RoomError extends Error {
 const segment = (value: string): string => encodeURIComponent(value);
 const hex = (hash: string): string => hash.replace(/^sha256:/, '');
 
-async function call<T>(api: string, method: string, path: string, body?: unknown | Uint8Array): Promise<T> {
+async function call<T>(api: string, method: string, path: string, body?: unknown | Blob): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`${api}${path}`, {
       method, credentials: 'include', mode: 'cors', redirect: 'error',
-      ...(body instanceof Uint8Array ? { body: body as Uint8Array<ArrayBuffer>, headers: { 'Content-Type': 'application/octet-stream' } } : body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } } : {})
+      ...(body instanceof Blob ? { body, headers: { 'Content-Type': 'application/octet-stream' } } : body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } } : {})
     });
   } catch (error) {
     throw new RoomError(0, 'E_CLOUD_NETWORK', `Elabora's hosting could not be reached: ${error instanceof Error ? error.message : String(error)}.`);
@@ -84,21 +84,22 @@ export function roomMedia({ api, team }: RoomAccess): RemoteMedia {
   return {
     async send(hashes, read) {
       if (!hashes.length) return null;
-      const media = await Promise.all(hashes.map(async (hash) => ({ sha256: hex(hash), size: (await read(hash)).byteLength })));
+      const media = await Promise.all(hashes.map(async (hash) => ({ sha256: hex(hash), size: (await read(hash)).size })));
       const upload = await call<{ upload: string; missing: { sha256: string; size: number }[]; limits?: { singlePutMaxBytes?: number } }>(api, 'POST', uploads, { media });
       const at = `${uploads}/${segment(upload.upload)}`;
       const limit = upload.limits?.singlePutMaxBytes ?? 64 * 1024 * 1024;
       for (const blob of upload.missing) {
+        // A Blob read in parts as it is sent: a large medium is never held whole.
         const bytes = await read(`sha256:${blob.sha256}`);
         const target = `${at}/blobs/${blob.sha256}`;
-        if (bytes.byteLength <= limit) { await call(api, 'PUT', target, bytes); continue; }
+        if (bytes.size <= limit) { await call(api, 'PUT', target, bytes); continue; }
         const started = await call<{ present: boolean; multipart?: string; partBytes?: number; parts?: number }>(api, 'POST', `${target}/multipart`);
         if (started.present) continue;
         const multipart = `${target}/multipart/${segment(started.multipart ?? '')}`;
         const parts: { partNumber: number; etag: string }[] = [];
         for (let n = 1; n <= (started.parts ?? 0); n++) {
           const offset = (n - 1) * (started.partBytes ?? 0);
-          parts.push(await call<{ partNumber: number; etag: string }>(api, 'PUT', `${multipart}/${n}`, bytes.subarray(offset, offset + (started.partBytes ?? 0))));
+          parts.push(await call<{ partNumber: number; etag: string }>(api, 'PUT', `${multipart}/${n}`, bytes.slice(offset, offset + (started.partBytes ?? 0))));
         }
         await call(api, 'POST', `${multipart}/complete`, { parts: parts.map(({ partNumber, etag }) => ({ partNumber, etag })) });
       }
