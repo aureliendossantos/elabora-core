@@ -71,6 +71,7 @@ import type { ActivityEntry } from '@elabora/node/activity';
 import { SessionReads, documentOptions } from './base/reads.ts';
 import { Renderer } from './base/render.ts';
 import { SERVICES, notHere, serviceOf } from './base/services.ts';
+import { Batches } from './base/batches.ts';
 import { FolderChanges, fileOf } from './session-folder.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { build } from '@elabora/node/build';
@@ -84,7 +85,7 @@ import { folderSnapshot, type PushSource } from '@elabora/node/cloud/projects';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type {
   BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, ExternalNotes, FileEntry, FileView,
-  FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, BatchCloseReason, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
+  FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
   RequestResult, RequestType, ResponseMessage, RestoreView, Service, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
 } from './protocol.ts';
 import { takeDialogue } from '@elabora/node/voice/index';
@@ -194,12 +195,8 @@ export class Session {
   readonly #folder: FolderChanges;
   readonly #activity: SessionActivity;
   readonly #media: MediaSupervisor | null;
-  #openBatch: { id: string; at: number } | null = null;
-  #batchTimer: NodeJS.Timeout | null = null;
-  #closures: { id: string; reason: BatchCloseReason }[] = [];
-  // The turns of Elabora's chat not ended yet, by conversation: the mark's id is the turn's batch,
-  // which neither a human change nor 5 idle minutes close, only the turn's end (endTurn) or the next mark.
-  readonly #turns = new Map<string, string>();
+  // The AI batches and the chat's turns (base/batches.ts).
+  readonly #batches: Batches;
   #versionTimer: NodeJS.Timeout | null = null;
   #versionInFlight: Promise<string | null> | null = null;
   #pruned = false;
@@ -231,6 +228,13 @@ export class Session {
     const project = () => this.#state.project;
     const reportError = (error: unknown, context: string) => this.#emitError(error, context);
     this.#services = new Set(init.options.services ?? SERVICES);
+    this.#batches = new Batches({
+      idleMs: init.options.batchIdleMs ?? FIVE_MINUTES,
+      run: (work) => this.#queue.run(work),
+      version: (batch) => (this.#options.backups?.enabled === false ? Promise.resolve(null) : this.#takeVersion('after-ai', { batch, author: SYSTEM })),
+      emit: (event) => this.#emit(event),
+      reportError: (error, context) => this.#emitError(error, context)
+    });
     const renderer = new Renderer();
     this.#canvas = new SessionCanvas({ root: this.root, project, renderer, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
@@ -281,7 +285,7 @@ export class Session {
   // Called by openProject: watchers, media queue, schedules. Resolves once the folder's watcher
   // reports what is written from then on (Store.watch, onReady; 3 s at most).
   async start(): Promise<void> {
-    this.#resumeBatch();
+    this.#batches.resume(this.#entries, (chat, at) => readChat(this.root, chat).some((line) => line.type === 'turn-end' && line.at >= at));
     await this.#monitor.start();
     this.#activity.start(this.#options.watch !== false);
     if (this.#media) {
@@ -400,15 +404,16 @@ export class Session {
       this.#cloud?.stop();
       this.#monitor.stop();
       this.#activity.stop();
-      for (const timer of [...this.#timers, this.#batchTimer, this.#versionTimer]) if (timer) clearTimeout(timer);
+      this.#batches.stop();
+      for (const timer of [...this.#timers, this.#versionTimer]) if (timer) clearTimeout(timer);
       // Results of the jobs that finish meanwhile are journaled by the queue, before what follows.
       const mode = options.media ?? 'cancel';
       if (mode !== 'leave') await this.#media?.close(mode);
       await this.#queue.run(() => this.#folder.refresh(true)).catch((error) => this.#emitError(error, 'reconciling changes'));
       let version: string | null = null;
       await this.#queue.run(async () => {
-        this.#closeOpenBatch('close');
-        await this.#flushClosures();
+        this.#batches.close('close');
+        await this.#batches.flush();
         if (this.#options.backups?.enabled !== false) version = await this.#takeVersion('close', { author: SYSTEM });
       });
       if (this.#options.backups?.prune !== false && !this.#pruned) await this.#prune().catch((error) => this.#emitError(error, 'pruning the project data'));
@@ -432,7 +437,7 @@ export class Session {
   get files(): ProjectFiles { return this.#state.files; }
   get project(): Project { return this.#state.project; }
   get journalSeq(): number { return this.#folder.lastSeq; }
-  get openBatch(): string | null { return this.#openBatch?.id ?? null; }
+  get openBatch(): string | null { return this.#batches.open; }
 
   // Receives every event as a message ready for a transport.
   subscribe(listener: (message: EventMessage) => void): () => void {
@@ -765,8 +770,8 @@ export class Session {
     const options = buildOptions(params, this.#options.validation);
     return this.#queue.run(async () => {
       this.#assertPresent();
-      this.#closeOpenBatch('human');
-      await this.#flushClosures();
+      this.#batches.close('human');
+      await this.#batches.flush();
       await this.#folder.locked(() => this.#folder.sync());
       let result: BuildResult;
       let seq: number | null = null;
@@ -895,8 +900,8 @@ export class Session {
     this.#assertOpen();
     return this.#queue.run(async () => {
       this.#assertPresent();
-      this.#closeOpenBatch('mark');
-      await this.#flushClosures();
+      this.#batches.close('mark');
+      await this.#batches.flush();
       const mark = await this.#folder.write(async () => {
         const { mark } = edit.appendMark(this.root, request, { author, ...(chat ? { chat } : {}) });
         this.#folder.own(mark.seq, 'engine');
@@ -918,9 +923,8 @@ export class Session {
       const mark = this.#entries.find((entry): entry is MarkEntry => entry.type === 'mark' && entry.id === params.turn);
       const chat = mark?.chat;
       if (!chat) throw new EngineError('not-found', `No turn ${params.turn} of the chat in the journal`);
-      if (this.#turns.get(chat) === params.turn) this.#turns.delete(chat);
-      if (this.#openBatch?.id === params.turn) this.#closeOpenBatch('turn');
-      await this.#flushClosures();
+      this.#batches.endTurn(chat, params.turn);
+      await this.#batches.flush();
       const changes = this.#entries.filter((entry) => entry.type !== 'mark' && entry.batch === params.turn).length;
       return { batch: changes ? params.turn : null, changes };
     });
@@ -1011,8 +1015,8 @@ export class Session {
         throw new EngineError('refused', `This course is in format ${migration.from}, older than the one this Elabora writes (${migration.to}), and the session does not migrate it: nothing is written until it is migrated (the migrate request, or elabora migrate).`, { code: 'I_FORMAT_OUTDATED' });
       }
       if (!isAiAuthor(author)) {
-        this.#closeOpenBatch('human');
-        await this.#flushClosures();
+        this.#batches.close('human');
+        await this.#batches.flush();
       }
       // A course about to be migrated gets its migration version instead.
       if (this.#options.backups?.enabled !== false && !migration && !this.#versionInFlight && this.#versionDue()) await this.#takeVersion('auto', { author: SYSTEM });
@@ -1081,7 +1085,7 @@ export class Session {
     this.#canvas.changed(this.#state.takeChanged(), this.#folder.lastSeq);
     const delta = this.#state.validate();
     if (delta) this.#emit(diagnosticsEvent(delta));
-    await this.#flushClosures();
+    await this.#batches.flush();
   }
 
   // ── media status ───────────────────────────────────────────────────
@@ -1171,96 +1175,9 @@ export class Session {
   #record(entries: readonly JournalEntry[]): void {
     for (const entry of entries) {
       this.#entries.push(entry);
-      this.#noteBatch(entry);
+      this.#batches.note(entry);
     }
     if (entries.some((entry) => entry.type !== 'mark')) this.#noteActivity();
-  }
-
-  #noteBatch(entry: JournalEntry): void {
-    if (entry.type === 'mark') {
-      this.#closeOpenBatch('mark');
-      if (entry.chat) this.#turns.set(entry.chat, entry.id);
-      return;
-    }
-    if (!isAiAuthor(entry.author)) {
-      this.#closeOpenBatch('human');
-      return;
-    }
-    if (this.#openBatch && this.#openBatch.id !== entry.batch) {
-      // Another AI's work during a turn (a file no Elabora tool wrote, an agent outside the chat) is
-      // left out of the open batch: the turn stays open until its end.
-      if (this.#isTurn(this.#openBatch.id)) return;
-      this.#closeOpenBatch('idle');
-    }
-    this.#openBatch = { id: entry.batch, at: Date.now() };
-    if (this.#isTurn(entry.batch)) {
-      if (this.#batchTimer) clearTimeout(this.#batchTimer);
-      this.#batchTimer = null;
-    } else this.#armBatchTimer(this.#options.batchIdleMs ?? FIVE_MINUTES);
-  }
-
-  #isTurn(batch: string | undefined): boolean {
-    return batch !== undefined && [...this.#turns.values()].includes(batch);
-  }
-
-  // An AI batch still open when the session starts (an agent worked moments ago).
-  // A turn of the chat begun before the session opened (the window reloaded while the agent worked)
-  // is open again when its transcript has no turn-end since and it began less than a day ago.
-  #resumeBatch(): void {
-    const since = Date.now() - TURN_RESUME_MS;
-    for (const entry of [...this.#entries].reverse()) {
-      if (Date.parse(entry.at) < since) break;
-      if (entry.type !== 'mark' || !entry.chat || this.#turns.has(entry.chat)) continue;
-      // The host writes turn-end in the transcript once a turn is over: one after the mark ended it.
-      const ended = readChat(this.root, entry.chat).some((line) => line.type === 'turn-end' && line.at >= entry.at);
-      this.#turns.set(entry.chat, ended ? '' : entry.id);
-    }
-    for (const [chat, turn] of this.#turns) if (!turn) this.#turns.delete(chat);
-    const last = this.#entries[this.#entries.length - 1];
-    if (last && last.type !== 'mark' && this.#isTurn(last.batch)) {
-      this.#openBatch = { id: last.batch, at: Date.parse(last.at) };
-      return;
-    }
-    if (!last || last.type === 'mark' || !isAiAuthor(last.author)) return;
-    const idle = this.#options.batchIdleMs ?? FIVE_MINUTES;
-    const age = Date.now() - Date.parse(last.at);
-    if (!(age < idle)) return;
-    this.#openBatch = { id: last.batch, at: Date.now() - age };
-    this.#armBatchTimer(idle - age);
-  }
-
-  #armBatchTimer(delay: number): void {
-    if (this.#batchTimer) clearTimeout(this.#batchTimer);
-    const batch = this.#openBatch?.id;
-    this.#batchTimer = setTimeout(() => {
-      this.#batchTimer = null;
-      void this.#queue.run(async () => {
-        if (!this.#openBatch || this.#openBatch.id !== batch) return;
-        this.#closeOpenBatch('idle');
-        await this.#flushClosures();
-      }).catch((error) => this.#emitError(error, 'closing the AI batch'));
-    }, Math.max(0, delay));
-    this.#batchTimer.unref();
-  }
-
-  // A turn of the chat stays open while the author works (human) and the agent thinks (idle): only
-  // its end, the next mark or the session closing close it.
-  #closeOpenBatch(reason: BatchCloseReason): void {
-    if (!this.#openBatch) return;
-    if ((reason === 'human' || reason === 'idle') && this.#isTurn(this.#openBatch.id)) return;
-    this.#closures.push({ id: this.#openBatch.id, reason });
-    this.#openBatch = null;
-    if (this.#batchTimer) clearTimeout(this.#batchTimer);
-    this.#batchTimer = null;
-  }
-
-  // The after-ai versions of the batches that ended (outside the project lock: other writers go on).
-  async #flushClosures(): Promise<void> {
-    while (this.#closures.length) {
-      const { id, reason } = this.#closures.shift() as { id: string; reason: BatchCloseReason };
-      const version = this.#options.backups?.enabled === false ? null : await this.#takeVersion('after-ai', { batch: id, author: SYSTEM });
-      this.#emit({ type: 'batchClosed', batch: id, reason, version });
-    }
   }
 
   // An auto version every intervalMs of activity: after a change, once the newest version is that old.
@@ -1366,7 +1283,7 @@ export class Session {
     const command = job.type === 'import'
       ? { name: 'import_media', args: { file: job.output } }
       : { name: 'optimize_media', args: { from: job.replaces ?? job.input, to: job.output } };
-    if (!isAiAuthor(author) && author.kind !== 'external') this.#closeOpenBatch('human');
+    if (!isAiAuthor(author) && author.kind !== 'external') this.#batches.close('human');
     await this.#folder.journal({ updates, author, command, source: 'media', write });
   }
 
@@ -1398,8 +1315,6 @@ export class Session {
   }
 }
 
-// How far back an open turn of the chat is looked for when a session opens: no turn lasts a day.
-const TURN_RESUME_MS = 24 * 60 * 60 * 1000;
 
 // ── helpers ──────────────────────────────────────────────────────────
 
