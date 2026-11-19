@@ -1,36 +1,26 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { MULTIPLE_OF_PRECISION } from '@elabora/format';
 import { COMMAND_NAMES, NAMED_COMMANDS, namedCommand } from '@elabora/core/commands/table';
-import { commandContext, executeCommand } from '@elabora/core/commands/index';
-import { setPlanVoiceover } from '@elabora/core/commands/plan';
+import { commandContext, executeCommand, OBJECT_FILES } from '@elabora/core/commands/index';
+import { textFile } from '@elabora/core/project/files';
 import { translationTable } from '@elabora/core/i18n/translate';
 import type { ProjectFiles } from '@elabora/core/project/files';
 import type { Files } from '@elabora/core/ops/types';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { ROOT } from '../helpers.ts';
 
-// The commands by name (D84): the core's table, which a project's room and the tools of the cloud
-// derive from. Each schema says what a tool may send; run on a course, the command takes it.
-
-// The commands that need nothing but the project's files, as the room runs them today.
-const ROOM = [
-  'create_screen', 'update_screen', 'delete_screen', 'move_screen', 'duplicate_screen',
-  'add_block', 'update_block', 'remove_block', 'move_block', 'place_block', 'arrange_screen', 'duplicate_block', 'detach_block', 'convert_block', 'rename',
-  'upsert_layer', 'remove_layer', 'upsert_event', 'remove_event', 'upsert_variable', 'rename_variable', 'remove_variable',
-  'update_course', 'ignore_findings', 'update_player', 'replace_text', 'export_translation', 'translate_text', 'approve_translation',
-  'write_plan', 'set_plan_text', 'revert_plan_change', 'create_plan_version', 'approve_plan', 'set_plan_note',
-  'update_narration', 'add_narration_line', 'update_narration_line', 'move_narration_line', 'remove_narration_line', 'remove_speaker',
-  'narration_from_plan', 'split_step', 'set_continuity', 'set_block_timing', 'set_dialogue_node', 'remove_dialogue_node'
-];
+// The commands by name (D84, D110): the core's table, which the engines, a project's room and the
+// tools of the cloud derive from. Each schema says what a tool may send; run on a course, the
+// command takes it. A command that needs its host says so, and runs on what its host gives.
 
 const ajv = new Ajv2020({ allErrors: true, strict: false, multipleOfPrecision: MULTIPLE_OF_PRECISION });
 const PERSON = { kind: 'human' as const, name: 'Ada' };
 
-test('the table has the commands a room runs, no more, each with a schema that compiles', () => {
-  assert.deepEqual([...COMMAND_NAMES].sort(), [...ROOM].sort());
+test('each command of the table has a schema that compiles, and says what it needs', () => {
   for (const name of COMMAND_NAMES) {
     const entry = namedCommand(name);
     assert.ok(entry && entry.description.length > 20, name);
@@ -40,9 +30,13 @@ test('the table has the commands a room runs, no more, each with a schema that c
     assert.doesNotThrow(() => ajv.compile(entry.args), name);
   }
   // Only the table's own names: nothing inherited, nothing that is not a command.
-  for (const name of ['toString', 'constructor', '__proto__', 'add_font', 'write_object_file', '']) assert.equal(namedCommand(name), null, name);
+  for (const name of ['toString', 'constructor', '__proto__', 'migrate_format', '']) assert.equal(namedCommand(name), null, name);
   assert.deepEqual(COMMAND_NAMES.filter((name) => namedCommand(name)?.personOnly), ['create_plan_version', 'approve_plan']);
   assert.ok(namedCommand('remove_narration_line')?.destructive && !namedCommand('add_narration_line')?.destructive);
+  // What reads more than the files says what its host gives it; the rest needs nothing.
+  assert.equal(namedCommand('add_font')?.needs, 'font');
+  assert.equal(namedCommand('set_narration_audio')?.needs, 'lineAudio');
+  assert.equal(namedCommand('write_object_file')?.needs, null);
 });
 
 test('each command takes what its schema allows: a course edited through the table, nulls included', () => {
@@ -100,8 +94,18 @@ test('each command takes what its schema allows: a course edited through the tab
 
   // A screen's script from its plan item's voice-over.
   const item = json<{ covers: string[] }>('screens/lock-lab.json').covers[0]!;
-  files = executeCommand(files as ProjectFiles, 'set_plan_voiceover', (context) => setPlanVoiceover(context, { item, lines: [{ text: 'Fill the chamber, then open the gate.' }] }), { author: PERSON }).after;
+  run('set_plan_voiceover', { item, lines: [{ text: 'Fill the chamber, then open the gate.' }] });
   run('narration_from_plan', { screen: 'lock-lab', replace: true });
+  run('record_plan_send', { version: 'V2', format: 'pdf', date: '2026-11-13' });
+  refused('record_plan_send', { version: 'V2', format: 'odt' });
+
+  // Design: a stylesheet, a component made, forked and written, the theme put under the components.
+  run('write_design_file', { file: 'theme/extra.css', content: '.t-extra { color: red; }\n' });
+  run('create_component', { id: 'note-card', title: 'Note card', props: { type: 'object', properties: { text: { type: 'string' } } } });
+  run('write_component_file', { component: 'note-card', file: 'component.css', content: '.c-note-card { padding: 1rem; }\n' });
+  run('fork_component', { component: 'note-card', id: 'tip-card', title: 'Tip card' });
+  run('upgrade_theme', {});
+  refused('write_component_file', { component: 'note-card', file: 'notes.txt', content: '' });
 
   // A dialogue's node written whole, then another removed; the speaker leaves.
   const talk = (json<{ blocks: unknown }>('screens/downhill.json').blocks as { id: string; props: { nodes: { id: string }[] } }[]).find((block) => block.id === 'downhill-talk')!;
@@ -109,4 +113,30 @@ test('each command takes what its schema allows: a course edited through the tab
   run('remove_dialogue_node', { block: 'downhill-talk', node: 'farewell' });
   run('remove_speaker', { speaker: 'nell' });
   refused('remove_speaker', { speaker: 'nell', lines: 'none' });
+});
+
+test('a command that needs its host runs on what the host gives, and the journal records what it wrote', () => {
+  const files = readProjectFiles(path.join(ROOT, 'examples/canal-locks')).files as ProjectFiles;
+  const ran = (name: string, args: Record<string, unknown>, given: unknown) => {
+    const entry = namedCommand(name)!;
+    assert.ok(ajv.validate(entry.args, args), `${name} ${JSON.stringify(args)}: ${ajv.errorsText(ajv.errors)}`);
+    return { executed: executeCommand(files, name, (context) => entry.run(context, args, given), { author: PERSON }), journaled: entry.journal(args, given) };
+  };
+
+  // A free object from the templates its host read.
+  const templates = Object.fromEntries(OBJECT_FILES.map((file) => [file, fs.readFileSync(path.join(ROOT, 'packages/node/templates/object', file), 'utf8')]));
+  const object = ran('create_object', { id: 'sluice-sim', title: 'Sluice', objectives: ['OBJ-1'] }, { templates });
+  assert.deepEqual(object.executed.result, { object: 'sluice-sim', files: OBJECT_FILES.map((file) => `objects/sluice-sim/${file}`) });
+  assert.deepEqual(object.journaled, { name: 'create_object', args: { id: 'sluice-sim', title: 'Sluice', objectives: ['OBJ-1'] } });
+
+  // A resource from the file its host read: titled from its name, the journal without its content.
+  const resource = ran('add_resource', { path: '/somewhere/lock_keepers v2.csv' }, { name: 'lock_keepers v2.csv', file: textFile('name;lock\nNell;3\n'), pdfTitle: null });
+  assert.equal((resource.executed.result as { titleFrom: string }).titleFrom, 'name');
+  assert.ok(resource.executed.after.has((resource.executed.result as { path: string }).path));
+  assert.deepEqual(resource.journaled, { name: 'add_resource', args: { name: 'lock_keepers v2.csv', title: 'lock keepers v2' } });
+
+  // A library's component is journaled by the library's id, an upgrade as such; a file's content is in the operations.
+  assert.deepEqual(namedCommand('add_component')!.journal({ library: '/Volumes/Clients/acme', component: 'card', upgrade: true }, { component: { library: 'acme', component: 'card', files: new Map() }, bytes: new Map() }),
+    { name: 'upgrade_component', args: { library: 'acme', component: 'card', as: 'card' } });
+  assert.deepEqual(namedCommand('write_object_file')!.journal({ object: 'sluice-sim', file: 'object.js', content: 'export {};' }), { name: 'write_object_file', args: { object: 'sluice-sim', file: 'object.js', bytes: 10 } });
 });

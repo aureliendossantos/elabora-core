@@ -16,7 +16,7 @@ import { runCommand, type EditOptions, type EditResult } from '../edit/executor.
 import { libraryFile, librarySounds } from './library.ts';
 import { openverseSound } from './openverse.ts';
 import { ELABORA_VERSION } from '../bundles.ts';
-import type { AddSoundArgs } from './types.ts';
+import type { AddSoundRequest as AddSoundArgs } from '@elabora/core/commands/sounds';
 
 const run = promisify(execFile);
 

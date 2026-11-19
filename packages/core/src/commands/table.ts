@@ -1,49 +1,77 @@
-import type { Block, Course, CourseSection, Event, PatchOperation, Screen, ScreenLayer, Theme, Variable } from '@elabora/format';
+import type { Block, ComponentManifest, ComponentSlot, Course, CourseSection, Event, NarrationAudioWord, PatchOperation, Screen, ScreenLayer, Sound, Theme, Variable } from '@elabora/format';
+import type { FileHash } from '../project/files.ts';
 import { PLAYER_ITEMS, PLAYER_TOKENS } from '../player/config.ts';
 import type { NarrationLine } from '../narration/narration.ts';
 import { formatValue, objectSchema, LANGUAGE, PLAN_ID, SLUG, type ArgumentsOf, type InputSchema } from './arguments.ts';
 import { SET } from './set-paths.ts';
 import type { CommandContext, CommandOutput } from './context.ts';
+import type { GivenFor, HostNeed, HostNeeds, JournaledCommand } from './host.ts';
 import { createScreen, updateScreen, deleteScreen, moveScreen, duplicateScreen, type UpdateScreenArgs } from './screens.ts';
 import { addBlock, updateBlock, removeBlock, moveBlock, duplicateBlock, detachBlock, type AddBlockArgs } from './blocks.ts';
 import { placeBlock, arrangeScreen } from './placement.ts';
 import { upsertLayer, removeLayer, upsertEvent, removeEvent, upsertVariable, removeVariable } from './layers-events-variables.ts';
 import { updateCourseSettings, ignoreFindings } from './course.ts';
-import { writePlan, setPlanText, revertPlanChange, createPlanVersion, approvePlan, setPlanNote } from './plan.ts';
+import { writePlan, setPlanText, revertPlanChange, createPlanVersion, approvePlan, setPlanNote, setPlanVoiceover, recordPlanSend, type CreatePlanVersionArgs } from './plan.ts';
 import { renameId, renameVariable } from './rename.ts';
 import { exportTranslation, translateText, approveTranslation } from './translation.ts';
 import { replaceText } from './text.ts';
-import { updateNarration, addNarrationLine, updateNarrationLine, moveNarrationLine, removeNarrationLine, removeSpeaker, splitStep, narrationFromPlan, type AddNarrationLineArgs } from './narration.ts';
+import {
+  updateNarration, addNarrationLine, updateNarrationLine, moveNarrationLine, removeNarrationLine, removeSpeaker, splitStep, narrationFromPlan,
+  setNarrationAudio, setNarrationWords, keepNarrationAudio, addNarrationLineWithAudio, setNarrationTextFromAudio,
+  type AddNarrationLineArgs, type AddNarrationLineWithAudioArgs, type NarrationAudioFileArgs, type LineFromAudioFileArgs, type SetNarrationAudioArgs, type SetNarrationTextFromAudioArgs, type TextFromAudioFileArgs
+} from './narration.ts';
 import { setBlockTiming, type MomentPatch } from './timing.ts';
 import { setDialogueNode, removeDialogueNode } from './dialogue.ts';
 import { updatePlayer, type CourseResource } from './player.ts';
 import { setContinuity } from './continuity.ts';
 import { convertBlock } from './convert.ts';
+import { createObject, writeObjectFile, writeDesignFile, OBJECT_FILES, type CreateObjectArgs } from './objects-design.ts';
+import { createComponent, forkComponent, writeComponentFile, migrateComponents, addLibraryComponent, publishComponent, COMPONENT_FILES, type AddLibraryComponentArgs, type MigrateComponentsArgs } from './components.ts';
+import { addFont, type AddFontArgs, type FontRequest } from './fonts.ts';
+import { addResource, resourceTitle, type AddResourceRequest } from './resources.ts';
+import { addSound, type AddSoundRequest } from './sounds.ts';
+import { imageToVideo, replaceMediaReferences, setCaptions, type ImageToVideoRequest } from './media.ts';
+import { settleImportReport } from './import-report.ts';
+import { upgradeThemeCascade } from './theme.ts';
 import type { CourseGlossary } from '@elabora/format';
 
-// The commands by name (docs/decisions.md D84): those that need nothing but the project's files,
-// by the names the journal, the command line, the MCP tools and the engine give them, each with the
-// JSON Schema of its arguments, what a tool says of it, and the core function that runs it. A server
-// that runs commands on a project (a project's room in the cloud) and the tools an agent writes
-// with derive from it. Nothing that renders, speaks, or reads a disk or a library is here (templates,
-// fonts, components from a library, media): those need the author's computer.
+// The commands by name (docs/decisions.md D84, D110): every command of the core, by the names the
+// journal, the command line, the MCP tools and the engines give them, each with the JSON Schema of
+// its arguments, what a tool says of it, and the core function that runs it. A server that runs
+// commands on a project (a project's room in the cloud), the engines and the tools an agent writes
+// with derive from it.
+//
+// A command that needs more than the project's files says what it expects from its host (needs: a
+// kind of host.ts), and its run takes what the host gives: a font's files, a library's component,
+// a line's audio made from a file. The host prepares it (a computer from its disk, its ffmpeg and
+// its models; a browser from what it downloaded); the command only writes it. journal: what the
+// journal records of a run, when it is not the command as it was called.
 //
 // The schema is what a tool may send: each command still checks its own arguments, and a caller
 // with arguments from elsewhere (the journal, the app) runs the command, not the schema. Data and
 // functions only: no validator, nothing done at load.
 
-export interface NamedCommand<Schema extends InputSchema = InputSchema> {
+export interface NamedCommand<Schema extends InputSchema = InputSchema, Args = never, Result = unknown, Need extends HostNeed | undefined = HostNeed | undefined> {
   readonly description: string;
   readonly args: Schema;
   // Removes content (a tool's destructive hint).
   readonly destructive?: true;
   // A person's only: refused to an agent (E_PLAN_PERSON_ONLY).
   readonly personOnly?: true;
-  readonly run: (context: CommandContext, args: ArgumentsOf<Schema>) => CommandOutput<unknown>;
+  // What its host gives it before it runs (host.ts); without it, the project's files are enough.
+  readonly needs?: Need;
+  readonly run: (context: CommandContext, args: Args, given: GivenFor<Need>) => CommandOutput<Result>;
+  readonly journal?: (args: Args, given: GivenFor<Need>) => JournaledCommand;
 }
 
-// The run takes what the schema allows: the compiler checks each schema against its command.
-const command = <const Schema extends InputSchema>(entry: NamedCommand<Schema>): NamedCommand<Schema> => entry;
+// The run takes what the schema allows (the compiler checks each schema against its command), and
+// its arguments' own type is what callers send (the engine's protocol, the app).
+const command = <const Schema extends InputSchema, Args, Result, const Need extends HostNeed | undefined = undefined>(
+  entry: NamedCommand<Schema, Args, Result, Need> & { readonly run: (context: CommandContext, args: ArgumentsOf<Schema>, given: GivenFor<Need>) => unknown }
+): NamedCommand<Schema, Args, Result, Need> => entry;
+
+// A run's result with what its host's work adds to it.
+const adding = <Result, More extends object>(output: CommandOutput<Result>, more: More): CommandOutput<Result & More> => ({ ...output, result: { ...output.result, ...more } }) as CommandOutput<Result & More>;
 
 // A block's width in the screen's column (the app says Moitié · Standard · Large · Bord à bord):
 // full is the width of the text column, the default, not the window's.
@@ -72,6 +100,11 @@ const PLAYER_BAR = { enum: ['top', 'bottom'] } as const;
 const PLAYER_POSITION = { enum: ['window', 'page'] } as const;
 const FLAG = { type: ['boolean', 'null'] } as const;
 const TERM_IN_SCREEN = { type: 'object', additionalProperties: false, required: ['term', 'screen'], properties: { term: { type: 'string' }, screen: { type: 'string' } } } as const;
+
+// The words of a line's audio and when they are said (seconds from its start), and the audio they were timed on.
+const WORDS = formatValue<NarrationAudioWord[]>()({ type: 'array', items: { type: 'object', properties: { text: { type: 'string' }, start: { type: 'number', minimum: 0 }, end: { type: 'number', minimum: 0 }, score: { type: 'number', minimum: 0, maximum: 1 } }, required: ['text', 'start', 'end'], additionalProperties: false } });
+const AUDIO_HASH = formatValue<FileHash>()({ type: 'string', pattern: '^sha256:[0-9a-f]{64}$' });
+const TRANSCRIPTION_SERVICE = { enum: ['local', 'elevenlabs'], description: 'Who transcribes: the author\'s computer (local, the default) or ElevenLabs (the author\'s quota: approvedPercent, the share they approved, D30).' } as const;
 
 // The player's changes (D58): the MCP tool elabora_player takes them with what it reads and adds.
 export const PLAYER_CHANGES = {
@@ -105,9 +138,8 @@ const TABLE = {
   }),
   update_screen: command({
     description: 'Change title, covers, completeWhen, required, showTitle, layout (a screen-level component), layoutProps (its props), style (theme.styles.screen), backdrop (a theme.backdrop variant, or none), continueRevealsSteps (false: only the screen\'s reveal-step events reveal its steps), narration (the script: lines with id, speaker, text, step and pauseBefore; advance and seek; replaced whole) or steps (how each step opens, by number: { "2": { "opens": "answered" } }, or "explored" for a Continue locked until the blocks above are explored; replaced whole) of a screen. null removes layout, layoutProps, style, backdrop, continueRevealsSteps, steps or narration. set changes one line or field of these by its path (narration.lines[l2].text, steps.2.opens, covers[OBJ-2]) and keeps the rest; a field given whole replaces it, and the result\'s removed says what that took away.',
-    args: objectSchema({ id: SLUG, title: { type: 'string' }, covers: { type: 'array', items: PLAN_ID }, completeWhen: { enum: ['viewed', 'interactions-done', 'action'] }, required: { type: 'boolean' }, showTitle: { type: 'boolean' }, layout: { type: ['string', 'null'] }, layoutProps: { type: ['object', 'null'] }, style: { type: ['string', 'null'] }, backdrop: { type: ['string', 'null'] }, continueRevealsSteps: { type: ['boolean', 'null'] }, steps: STEPS, narration: formatValue<Screen['narration'] | null>()({ type: ['object', 'null'] }), set: SET }, ['id']),
-    // The schema checks the shape of steps, which objectSchema types as a plain record.
-    run: (context, args) => updateScreen(context, args as UpdateScreenArgs)
+    args: objectSchema({ id: SLUG, title: { type: 'string' }, covers: { type: 'array', items: PLAN_ID }, completeWhen: { enum: ['viewed', 'interactions-done', 'action'] }, required: { type: 'boolean' }, showTitle: { type: 'boolean' }, layout: { type: ['string', 'null'] }, layoutProps: { type: ['object', 'null'] }, style: { type: ['string', 'null'] }, backdrop: { type: ['string', 'null'] }, continueRevealsSteps: { type: ['boolean', 'null'] }, steps: formatValue<UpdateScreenArgs['steps']>()(STEPS), narration: formatValue<Screen['narration'] | null>()({ type: ['object', 'null'] }), set: SET }, ['id']),
+    run: updateScreen
   }),
   delete_screen: command({
     description: 'Delete a screen file and remove it from its section.',
@@ -295,7 +327,7 @@ const TABLE = {
     description: 'The plan\'s working copy frozen as its next version (« Créer la V3 »). A person\'s only.',
     args: objectSchema({ note: { type: 'string' }, date: DATE }),
     personOnly: true,
-    run: createPlanVersion
+    run: (context, args: CreatePlanVersionArgs) => createPlanVersion(context, args)
   }),
   approve_plan: command({
     description: 'The client\'s validation of a version of the plan (the latest by default), by whom, with a reference. A person\'s only.',
@@ -355,26 +387,258 @@ const TABLE = {
     args: objectSchema({ screen: SLUG, line: SLUG }, ['screen', 'line']),
     run: splitStep
   }),
+  // ── what needs nothing but the files, beyond an agent's tools ─────────
+  set_plan_voiceover: command({
+    description: 'The voice-over of a plan item (a storyboard\'s voice-over column), line by line, written in the plan. A screen that covers the item then takes it as its narration script (elabora narration from-plan). lines: [{ speaker, text }], speaker a course.json speaker id (default: the first); null removes the voice-over. It is translated with the plan, and not kept word for word in the module (the script can be reworded).',
+    args: objectSchema({ item: { type: 'string', minLength: 1, description: 'A plan item id (ITEM-3).' }, lines: { type: ['array', 'null'], minItems: 1, maxItems: 60, items: { type: 'object', properties: { speaker: SLUG, text: { type: 'string', minLength: 1, maxLength: 2000 } }, required: ['text'], additionalProperties: false } } }, ['item', 'lines']),
+    run: setPlanVoiceover
+  }),
+  record_plan_send: command({
+    description: 'A version of the plan sent to the client, recorded on it: its format (docx, pdf, html, or review: a review link) and its day (default: today). An export of the plan records its own.',
+    args: objectSchema({ version: VERSION, format: { enum: ['docx', 'pdf', 'html', 'review'] }, date: DATE }, ['version', 'format']),
+    run: recordPlanSend
+  }),
+  keep_narration_audio: command({
+    description: '« La voix dit bien ce texte »: a line whose audio is out of date only because its text was corrected (a checked transcription, a typo) keeps its audio, now up to date for that text; its words follow the corrected text.',
+    args: objectSchema({ screen: SLUG, line: SLUG, language: LANGUAGE }, ['screen', 'line']),
+    run: keepNarrationAudio
+  }),
+  set_narration_words: command({
+    description: 'The word times of a line\'s audio (forced alignment, D27) written into its sidecar, with what timed them (aligner); audioHash: the audio they were timed on (refused when the line\'s audio changed since); mouth: the mouth\'s envelope measured again with these words.',
+    args: objectSchema({ screen: SLUG, line: SLUG, language: LANGUAGE, audioHash: AUDIO_HASH, words: WORDS, aligner: { type: 'string', minLength: 1 }, mouth: { type: 'string' } }, ['screen', 'line', 'words', 'aligner']),
+    run: setNarrationWords
+  }),
+  set_captions: command({
+    description: 'Captions for a video block (E_VIDEO_CAPTIONS_MISSING): a WebVTT text, or a SubRip one converted to WebVTT, written under assets/captions/ (named after the block unless name is given; the same text already there is reused) and named by the block\'s captions prop, in one change.',
+    args: objectSchema({ block: { ...SLUG, description: 'The video block.' }, text: { type: 'string', description: 'The captions, WebVTT or SubRip.' }, name: { type: 'string', description: 'File name under assets/captions/, without extension (default: the block id).' } }, ['block', 'text']),
+    run: setCaptions
+  }),
+  settle_import_report: command({
+    description: 'The report of an import (D47) settled: decisions the import made accepted as they are (accept: their places in its decisions), or the report closed and its file removed (close).',
+    args: objectSchema({ accept: { type: 'array', minItems: 1, items: { type: 'integer', minimum: 0 } }, close: { type: 'boolean' } }),
+    run: settleImportReport
+  }),
+  optimize_media: command({
+    description: 'Media files made into their web format under other names (assets/video/intro.mov became intro.mp4): every reference to each old path names the new one, and the old files go, in one change.',
+    args: objectSchema({ moves: { type: 'array', minItems: 1, items: { type: 'object', properties: { from: { type: 'string', minLength: 1 }, to: { type: 'string', minLength: 1 } }, required: ['from', 'to'], additionalProperties: false } } }, ['moves']),
+    run: replaceMediaReferences
+  }),
+  write_object_file: command({
+    description: 'Write one file of a free object: object.manifest.json, object.js, object.tests.json or object.notes.md. Then run elabora_test_object.',
+    args: objectSchema({ object: SLUG, file: { enum: OBJECT_FILES }, content: { type: 'string' } }, ['object', 'file', 'content']),
+    run: writeObjectFile,
+    // The content is in the operations: the journal says how long it was.
+    journal: (args) => ({ name: 'write_object_file', args: { object: args.object, file: args.file, bytes: args.content.length } })
+  }),
+  write_design_file: command({
+    description: 'Write a design file: theme/<name>.css (course stylesheet) or generators/<name>.mjs (asset generator). Design is free; content stays in blocks. Read the design layer first (elabora_docs design; skill elabora-visual-design).',
+    args: objectSchema({ file: { type: 'string' }, content: { type: 'string' } }, ['file', 'content']),
+    run: writeDesignFile,
+    journal: (args) => ({ name: 'write_design_file', args: { file: args.file, bytes: args.content.length } })
+  }),
+  upgrade_theme: command({
+    description: 'Put the theme\'s rules under the components (course.json theme.cascade components-over-theme, docs D32) without changing how the course looks: a course without theme.cascade (I_THEME_CASCADE_OLD) still has its theme after the component stylesheets, so a general theme rule (.t-figure img { width: 100% }) silently overrides a component\'s own rule. The theme\'s declarations of properties the components also set go into a top-level @layer overrides { … } block of the theme stylesheet (which stays over the components); the rest become the course\'s defaults, under them. Then move out of that block the rules that are course-wide defaults, and look again (elabora_look, elabora_check_fit name what the theme still overrides: W_STYLE_COMPONENT_OVERRIDDEN). One change; elabora_undo reverts it.',
+    args: objectSchema({}),
+    run: (context) => upgradeThemeCascade(context)
+  }),
+  create_component: command({
+    description: 'Create a course component (components/<id>/): a block type (level block) or a screen layout (level screen), with its props schema, slots, template and stylesheet. Read the components page first (elabora_docs components; skill elabora-components); then write the files with elabora_write_component_file and check with elabora_preview_component.',
+    args: objectSchema({ id: SLUG, title: { type: 'string' }, level: { enum: ['block', 'screen'] }, description: { type: 'string' }, props: formatValue<ComponentManifest['props']>()({ type: 'object' }), slots: { type: 'array', items: formatValue<ComponentSlot>()({ type: 'object' }) }, template: { type: 'string' }, css: { type: 'string' } }, ['id', 'title']),
+    run: createComponent
+  }),
+  fork_component: command({
+    description: 'Fork a component (built-in or course) under a new id: the fork remembers its parent, copies its template to change, inherits props (add more with propsExtend), slots, styles, fallback and stylesheet. Forks of quiz, numeric, decision and results keep their behaviour: scoring, saved state, SCORM records.',
+    args: objectSchema({ component: SLUG, id: SLUG, title: { type: 'string' }, copyCss: { type: 'boolean' } }, ['component', 'id']),
+    run: forkComponent
+  }),
+  write_component_file: command({
+    description: 'Write a file of a course component, to change its look, markup or props: component.json (manifest: props, slots, fallback, styles, examples, version), template.html, component.css or migrations.mjs (steps that migrate instance props when the props shape changes).',
+    args: objectSchema({ component: SLUG, file: { enum: COMPONENT_FILES }, content: { type: 'string' } }, ['component', 'file', 'content']),
+    run: writeComponentFile,
+    journal: (args) => ({ name: 'write_component_file', args: { component: args.component, file: args.file, bytes: args.content.length } })
+  }),
+
+  // ── what needs its host (host.ts) ─────────────────────────────────────
+  create_object: command({
+    description: 'Scaffold a free object (objects/<id>/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job. decoration: a decoration of the course backdrop instead (theme.backdrop.object; no objectives): a 2D canvas that follows the course (ctx.context with the screen\'s rank, its section\'s, the direction), keeps out of the player\'s bars and lands at once when frames are still.',
+    args: objectSchema({ id: SLUG, title: { type: 'string' }, objectives: { type: 'array', items: PLAN_ID, minItems: 1 }, items: { type: 'array', items: PLAN_ID }, decoration: { type: 'boolean' } }, ['id', 'title']),
+    needs: 'objectTemplates',
+    run: (context, args: CreateObjectArgs, given) => createObject(context, args, given.templates)
+  }),
+  add_font: command({
+    description: 'Embed a font in the course with its licence: copies its WOFF2 files and licence into theme/fonts/<id>/, declares its faces in course.json theme.fonts (the player writes the @font-face rules) and gives its CSS stack to tokens (for: body → font.body, heading → font.heading, any other name → custom token font.<name> such as mono or display, read as var(--t-font-mono); none for no token; default: the font\'s usual role). Takes the latin files, and the latin-ext files too when the language of the course or of a translation needs them (Polish, Czech, Romanian, Turkish…: one face per file, with its unicode range, loaded only by pages that use its letters); subsets chooses. family: a vetted font (elabora_list_fonts). Another font: from, the folder or .tgz of its Fontsource package (npm pack @fontsource-variable/<id>), whose other subsets (cyrillic, greek, vietnamese…) subsets can name; or files, local WOFF2 files, with license, their licence file (weights and style are read from the files). Adding a family again replaces its faces (add it again after adding a language). Undo with elabora_undo.',
+    args: objectSchema({
+      family: { type: 'string', description: 'A vetted family ("EB Garamond"), or the family name to declare for from/files (default: the font\'s own).' },
+      weights: { type: 'array', items: { type: 'integer', minimum: 100, maximum: 900, multipleOf: 100 }, description: 'Static fonts: the weights to take (default: all vetted; 400 and 700 for a Fontsource package). A variable file covers its whole range.' },
+      styles: { type: 'array', items: { enum: ['normal', 'italic'] }, description: 'Default: every style there is.' },
+      subsets: { type: 'array', items: { type: 'string', pattern: '^[a-z][a-z0-9-]{0,31}$' }, minItems: 1, description: 'The subsets to embed: latin, latin-ext (vetted fonts), or any of a Fontsource package (cyrillic, greek, vietnamese…). Default: latin, and latin-ext when a language of the course needs it.' },
+      for: { type: 'array', items: { type: 'string', pattern: '^[a-z][a-z0-9-]{0,31}$' }, description: 'Tokens that get the font\'s stack: body, heading, mono, display… or ["none"].' },
+      from: { type: 'string', description: 'Folder or .tgz of a Fontsource package (npm @fontsource/<id>, @fontsource-variable/<id>): its files of the subsets (with their unicode ranges) and LICENSE.' },
+      files: { type: 'array', items: { type: 'string' }, minItems: 1, description: 'Local WOFF2 (or WOFF) files of one family.' },
+      license: { type: 'string', description: 'With files: the licence file of the font (OFL.txt, LICENSE…).' }
+    }),
+    needs: 'font',
+    run: (context, args: FontRequest & AddFontArgs, font) => {
+      const output = addFont(context, { for: args.for, subsets: args.subsets }, font.source);
+      return adding(output, { notes: [...font.notes, ...output.result.notes], origin: font.origin });
+    }
+  }),
+  add_component: command({
+    description: 'Copy a component from a library folder (a client design system shared by several courses) into the course, pinned with its origin; upgrade: true replaces the course copy with the library version (then run elabora_migrate_components if needed).',
+    args: objectSchema({ library: { type: 'string', description: 'Path of the library folder.' }, component: SLUG, as: SLUG, upgrade: { type: 'boolean' }, force: { type: 'boolean' } }, ['library', 'component']),
+    needs: 'libraryComponent',
+    run: (context, args: AddLibraryComponentArgs & { library: string }, given) => addLibraryComponent(context, args, given.component),
+    // The library by its id, not by where it is on a computer.
+    journal: (args, given) => ({ name: args.upgrade ? 'upgrade_component' : 'add_component', args: { library: given.component.library, component: args.component, as: args.as || args.component } })
+  }),
+  publish_component: command({
+    description: 'Copy a course component into a library folder so other courses can add it; the course copy records the library as its origin.',
+    args: objectSchema({ library: { type: 'string' }, component: SLUG }, ['library', 'component']),
+    needs: 'publication',
+    run: (context, args: { library: string; component: string }, published) => publishComponent(context, { component: args.component, library: published.library }),
+    journal: (args, published) => ({ name: 'publish_component', args: { library: published.library, component: args.component } })
+  }),
+  migrate_components: command({
+    description: 'Run pending migration steps (components/<id>/migrations.mjs) on every instance, check them against the new schema, and write them in one undoable edit (nothing is written if one fails).',
+    args: objectSchema({ component: SLUG, from: { type: 'string', description: 'Version the instances are at, when elabora.lock.json does not know it.' } }),
+    needs: 'componentMigrations',
+    run: (context, args: MigrateComponentsArgs, given) => migrateComponents(context, args, given.steps),
+    journal: (args) => ({ name: 'migrate_components', args: { component: args.component, from: args.from } })
+  }),
+  add_resource: command({
+    description: '« Ajouter une ressource »: a file (a PDF, a spreadsheet, a document, an image) copied as it is into assets/resources/ and added to the player\'s resources (D58), titled as asked, else by the title a PDF gives itself, else by its name, in one change; the same content already there is not copied twice.',
+    args: objectSchema({ path: { type: 'string', minLength: 1, description: 'The file.' }, title: { type: 'string' }, description: { type: 'string' } }, ['path']),
+    needs: 'resourceFile',
+    run: (context, args: AddResourceRequest, given) => {
+      const { title, from } = resourceTitle(args.title, given.name, given.pdfTitle);
+      return adding(addResource(context, { name: given.name, file: given.file, title, ...(args.description ? { description: args.description } : {}) }), { titleFrom: from });
+    },
+    journal: (args, given) => ({ name: 'add_resource', args: { name: given.name, title: resourceTitle(args.title, given.name, given.pdfTitle).title, ...(args.description ? { description: args.description } : {}) } })
+  }),
+  add_sound: command({
+    description: '« Ajouter un son » (D67): a sound of the library (from: its id), one found through Openverse (openverse:<uuid>) or a file, into assets/sounds/ with its sidecar (where it comes from, its licence), cut (trim) and faded out (fade) as asked; line: a sound line saying it in a narration, placed in the same change.',
+    args: objectSchema({
+      from: { type: 'string', minLength: 1 }, id: SLUG,
+      trim: { type: 'object', properties: { start: { type: 'number', minimum: 0 }, end: { type: 'number', exclusiveMinimum: 0 } }, required: ['start', 'end'], additionalProperties: false },
+      fade: { type: 'number', exclusiveMinimum: 0 }, loop: { type: 'boolean' },
+      title: { type: 'string' }, author: { type: 'string' }, license: { type: 'string' }, url: { type: 'string' },
+      caption: formatValue<Record<string, string>>()({ type: 'object', additionalProperties: { type: 'string' }, description: 'By language.' }),
+      generated: formatValue<Sound['generated']>()({ type: 'object' }),
+      line: { type: 'object', properties: { screen: SLUG, layer: SLUG, after: NULLABLE_ID, step: { type: 'integer', minimum: 1 }, caption: { type: 'string' }, volume: { type: 'number' } }, required: ['screen'], additionalProperties: false }
+    }, ['from']),
+    needs: 'sound',
+    run: (context, args: AddSoundRequest, sound) => adding(
+      addSound(context, { id: sound.id, extension: sound.extension, file: sound.file, sidecar: sound.sidecar, ...(args.line ? { line: args.line } : {}) }),
+      { source: sound.sidecar.source ?? 'file', license: sound.sidecar.license, duration: sound.sidecar.duration ?? 0 }
+    ),
+    journal: (args, sound) => ({ name: 'add_sound', args: { id: sound.id, from: args.from, ...(args.line ? { line: args.line } : {}) } })
+  }),
+  image_to_video: command({
+    description: '« Transformer en vidéo »: an image block whose file is animated (GIF, animated WebP or PNG) made a video block that loops like it, several times lighter, its MP4 and poster made by its host; blocks: other image blocks showing the same file, made videos with it. The image\'s file goes when nothing else names it. One change: undo puts the image back.',
+    args: objectSchema({ block: { ...SLUG, description: 'The image block.' }, blocks: { type: 'array', items: SLUG } }, ['block']),
+    needs: 'videoOfImage',
+    run: (context, args: ImageToVideoRequest, made) => adding(imageToVideo(context, {
+      block: args.block, ...(args.blocks?.length ? { blocks: args.blocks } : {}),
+      reserved: made.reserved, video: made.video, poster: made.poster, posterExtension: made.posterExtension
+    }), { bytes: made.sizes }),
+    journal: (args) => ({ name: 'image_to_video', args: { block: args.block, ...(args.blocks?.length ? { blocks: args.blocks } : {}) } })
+  }),
+  set_narration_audio: command({
+    description: 'The audio of a line (D24) from a file: a voice tool\'s, or a recording (provider "recording", not generated), made by its host an M4A in AAC, mono (trim: its silence at both ends trimmed), with its sidecar, its words timed when its host has the word aligner of its language (or as given), in one change.',
+    args: objectSchema({
+      screen: SLUG, line: SLUG, language: LANGUAGE, file: { type: 'string', minLength: 1 },
+      provider: { type: 'string', minLength: 1 }, voice: { type: 'string' }, generated: { type: 'boolean' },
+      words: WORDS, aligner: { type: 'string' }, take: { type: 'integer', minimum: 1 }, credit: { type: 'string' }, model: { type: 'string' }, trim: { type: 'boolean' }
+    }, ['screen', 'line', 'file', 'provider', 'voice', 'generated']),
+    needs: 'lineAudio',
+    run: (context, args: NarrationAudioFileArgs, made) => adding(setNarrationAudio(context, lineAudioArgs(args, made)), made.alignmentError ? { alignmentError: made.alignmentError } : {}),
+    journal: (args, made) => ({ name: 'set_narration_audio', args: lineAudioArgs(args, made) })
+  }),
+  add_narration_line_with_audio: command({
+    description: '« Nouvelle réplique depuis un fichier audio… » (D46): a line made from a recording, its text given or heard by its host\'s transcriber (service), its words timed, its audio the recording, after a line (null: first; default: last), in one change.',
+    args: objectSchema({
+      screen: SLUG, file: { type: 'string', minLength: 1 }, text: { type: 'string' }, after: NULLABLE_ID, step: { type: 'integer', minimum: 1 }, speaker: SLUG, layer: SLUG, language: LANGUAGE,
+      trim: { type: 'boolean' }, service: TRANSCRIPTION_SERVICE, approvedPercent: { type: 'number', minimum: 0 }, install: { type: 'boolean' }
+    }, ['screen', 'file']),
+    needs: 'recording',
+    run: (context, args: LineFromAudioFileArgs, heard) => adding(addNarrationLineWithAudio(context, recordingArgs(args, heard)), { text: heard.text, ...(heard.transcript ? { transcript: heard.transcript } : {}) }),
+    journal: (args, heard) => ({ name: 'add_narration_line_with_audio', args: recordingArgs(args, heard) })
+  }),
+  set_narration_text_from_audio: command({
+    description: '« Régénérer le texte d\'après l\'audio » (D46): a line\'s text becomes what its recording says (text: as the author checked it; else heard by its host\'s transcriber now); the recording stays, its words timed again. audioHash: the audio it was heard in (refused when the line\'s audio changed since).',
+    args: objectSchema({ screen: SLUG, line: SLUG, language: LANGUAGE, text: { type: 'string' }, audioHash: AUDIO_HASH, service: TRANSCRIPTION_SERVICE, approvedPercent: { type: 'number', minimum: 0 }, install: { type: 'boolean' } }, ['screen', 'line']),
+    needs: 'heardText',
+    run: (context, args: TextFromAudioFileArgs, heard) => adding(setNarrationTextFromAudio(context, heardTextArgs(args, heard)), heard.transcript ? { transcript: heard.transcript } : {}),
+    journal: (args, heard) => ({ name: 'set_narration_text_from_audio', args: heardTextArgs(args, heard) })
+  }),
 } as const;
 
-// The table with each entry's own schema type (the MCP tools read their arguments' type from it).
+// A line's audio as its host made it from the file (set_narration_audio): what the core writes.
+function lineAudioArgs(args: NarrationAudioFileArgs, made: HostNeeds['lineAudio']): SetNarrationAudioArgs {
+  return {
+    screen: args.screen, line: args.line, ...(args.language ? { language: args.language } : {}),
+    audio: made.audio, duration: made.duration, provider: args.provider, voice: args.voice, generated: args.generated,
+    ...(made.words ? { words: made.words, ...(made.aligner ? { aligner: made.aligner } : {}) } : {}),
+    ...(args.take ? { take: args.take } : {}), ...(args.credit ? { credit: args.credit } : {}), ...(args.model ? { model: args.model } : {}),
+    ...(made.mouth !== undefined ? { mouth: made.mouth } : {}), createdAt: made.createdAt
+  };
+}
+
+// A line made from a recording (add_narration_line_with_audio): its text and its audio.
+function recordingArgs(args: LineFromAudioFileArgs, heard: HostNeeds['recording']): AddNarrationLineWithAudioArgs {
+  return {
+    screen: args.screen, ...(args.after !== undefined ? { after: args.after } : {}), ...(args.layer !== undefined ? { layer: args.layer } : {}), language: heard.language,
+    line: { text: heard.text, ...(args.speaker ? { speaker: args.speaker } : {}), ...(typeof args.step === 'number' ? { step: args.step } : {}) },
+    audio: heard.audio, duration: heard.duration, provider: 'recording', voice: heard.voice, generated: false,
+    ...(heard.words ? { words: heard.words, ...(heard.aligner ? { aligner: heard.aligner } : {}) } : {}), createdAt: heard.createdAt
+  };
+}
+
+// A line's text from what its recording says (set_narration_text_from_audio).
+function heardTextArgs(args: TextFromAudioFileArgs, heard: HostNeeds['heardText']): SetNarrationTextFromAudioArgs {
+  return {
+    screen: args.screen, line: args.line, language: heard.language, text: heard.text, ...(heard.audioHash ? { audioHash: heard.audioHash } : {}),
+    ...(heard.words ? { words: heard.words, ...(heard.aligner ? { aligner: heard.aligner } : {}) } : {})
+  };
+}
+
+// The table with each entry's own types (the MCP tools read their arguments' schema from it, the
+// engines and the app their arguments' type).
 export const NAMED_COMMANDS: { readonly [Name in keyof typeof TABLE]: (typeof TABLE)[Name] } = TABLE;
 export type CommandName = keyof typeof TABLE;
 export const COMMAND_NAMES = Object.freeze(Object.keys(TABLE) as CommandName[]);
 
+type RunOf<Name extends CommandName> = (typeof TABLE)[Name]['run'];
+// What a command takes, by name: what callers send (a renamed argument breaks every caller).
+export type CommandArgs = { [Name in CommandName]: RunOf<Name> extends (context: CommandContext, args: infer Args, given: never) => unknown ? Args : never };
+// What it reports, beside its change.
+export type CommandResult<Name extends CommandName> = RunOf<Name> extends (context: CommandContext, args: never, given: never) => CommandOutput<infer Result> ? Result : never;
+// What it expects from its host (undefined: nothing but the files).
+export type CommandNeed<Name extends CommandName> = [NonNullable<(typeof TABLE)[Name]['needs']>] extends [never] ? undefined : NonNullable<(typeof TABLE)[Name]['needs']>;
+// The commands that need nothing but the project's files: what any host runs.
+export type FileCommandName = { [Name in CommandName]: CommandNeed<Name> extends undefined ? Name : never }[CommandName];
+
 // A command for arguments from elsewhere (a submission, a request): the room's view. The command
-// checks them and throws CommandError when they do not fit.
+// checks them and throws CommandError when they do not fit. needs: what its host must give run
+// (null: nothing); a host that cannot refuses the command.
 export interface RunnableCommand {
   readonly name: CommandName;
   readonly description: string;
   readonly args: InputSchema;
   readonly destructive: boolean;
   readonly personOnly: boolean;
-  run(context: CommandContext, args: unknown): CommandOutput<unknown>;
+  readonly needs: HostNeed | null;
+  run(context: CommandContext, args: unknown, given?: unknown): CommandOutput<unknown>;
+  // What the journal records of a run with these arguments.
+  journal(args: unknown, given?: unknown): JournaledCommand;
 }
 
 export function namedCommand(name: string): RunnableCommand | null {
   if (!Object.hasOwn(TABLE, name)) return null;
-  const entry = TABLE[name as CommandName] as NamedCommand<InputSchema> & { destructive?: true; personOnly?: true };
-  return { name: name as CommandName, description: entry.description, args: entry.args, destructive: !!entry.destructive, personOnly: !!entry.personOnly, run: (context, args) => entry.run(context, args as never) };
+  const entry = TABLE[name as CommandName] as NamedCommand<InputSchema, unknown, unknown, HostNeed | undefined>;
+  return {
+    name: name as CommandName, description: entry.description, args: entry.args, destructive: !!entry.destructive, personOnly: !!entry.personOnly, needs: entry.needs ?? null,
+    run: (context, args, given) => entry.run(context, args, given as never),
+    journal: (args, given) => (entry.journal ? entry.journal(args, given as never) : { name, args })
+  };
 }

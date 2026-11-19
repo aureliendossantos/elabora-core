@@ -9,12 +9,12 @@ import type { CourseResource } from './player.ts';
 // under a readable name of its own (« Fiche réflexe (v2).pdf » → fiche-reflexe-v2.pdf, then
 // fiche-reflexe-v2-2.pdf when the name is taken by another file), and its entry added to
 // course.json resources, in one change. The same content already in assets/resources/ is not
-// copied twice: the entry names it. The file's bytes come with the change (@elabora/node
-// edit.addResource reads them, and the title a PDF gives itself).
+// copied twice: the entry names it. The file's bytes come with the change: its host reads them, and
+// the title a PDF gives itself (add_resource, D110).
 
 export const RESOURCES_FOLDER = 'assets/resources';
 
-// What the app, the CLI and agents ask (@elabora/node edit.addResource reads the file).
+// What the app, the CLI and agents ask (its host reads the file).
 export interface AddResourceRequest {
   // The file: an absolute path, or one relative to the working folder.
   path: string;
@@ -37,6 +37,15 @@ export interface AddResourceResult {
   // The file in the course (assets/…) and whether it was there already.
   path: string;
   reused: boolean;
+}
+
+// A title from a file's name: « fiche_reflexe-impression v2.pdf » → « fiche reflexe-impression v2 ».
+export const titleFromName = (name: string): string => name.replace(/\.[A-Za-z0-9]{1,8}$/, '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim();
+
+// A resource's title: the one asked for, else the title a PDF gives itself, else its name; and which.
+export function resourceTitle(asked: string | undefined, name: string, pdfTitle: string | null): { title: string; from: 'given' | 'pdf' | 'name' } {
+  const given = asked?.trim();
+  return { title: given || pdfTitle || titleFromName(name) || name, from: given ? 'given' : pdfTitle ? 'pdf' : 'name' };
 }
 
 const extensionOf = (name: string): string => /\.[A-Za-z0-9]{1,8}$/.exec(name)?.[0].toLowerCase() ?? '';

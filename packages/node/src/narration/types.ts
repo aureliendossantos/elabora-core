@@ -27,33 +27,3 @@ export interface ImportedFile {
   reason?: string;
   change?: number | null;
 }
-
-// « Nouvelle réplique depuis un fichier audio… » (docs/decisions.md D46): a new line, its text what
-// the recording says (transcribed unless given), its audio the recording.
-export interface LineFromAudioFileArgs {
-  screen: string;
-  file: string;                    // any audio ffmpeg reads (an absolute path through the engine)
-  text?: string;                   // what it says (default: transcribed)
-  after?: string | null;           // after this line (null: first; default: last)
-  step?: number;                   // default: the step of the line before it
-  speaker?: string;                // default: the speaker of the line before it
-  layer?: string;                  // a line of that layer's narration (D62); default: the screen's
-  language?: string;               // the course's
-  trim?: boolean;                  // silence at both ends trimmed (default true)
-  service?: 'local' | 'elevenlabs'; // who transcribes (default: this computer)
-  approvedPercent?: number;        // ElevenLabs: the share of the quota the author approved (D30)
-  install?: boolean;               // download the local transcriber first when it is not here
-}
-
-// « Régénérer le texte d'après l'audio »: the line's text becomes what its recording says (given,
-// as the author checked it, or transcribed now); the recording stays.
-export interface TextFromAudioFileArgs {
-  screen: string;
-  line: string;
-  language?: string;
-  text?: string;
-  audioHash?: `sha256:${string}`;  // the audio it was heard in (refused when the line's audio changed since)
-  service?: 'local' | 'elevenlabs';
-  approvedPercent?: number;
-  install?: boolean;
-}

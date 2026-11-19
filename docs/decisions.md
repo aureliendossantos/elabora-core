@@ -16,6 +16,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D10](decisions/D10.md) | Agent interface: MCP + short skills + AGENTS.md |  |
 | [D100](decisions/D100.md) | The session's base without Node, and a project's copy behind its store | 18 Nov 2026 |
 | [D11](decisions/D11.md) | LESSON.md for simple blocks |  |
+| [D110](decisions/D110.md) | Every command in the table, each saying what it expects from its host | 19 Nov 2026 |
 | [D12](decisions/D12.md) | TypeScript workspace packages, run directly by Node | revised 6 Oct 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
@@ -88,7 +89,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D81](decisions/D81.md) | The schemas a course writes: the keywords the interpreter reads, and a clear refusal for the others | 12 Nov 2026 |
 | [D82](decisions/D82.md) | Where Ajv stays, and the proof in a Worker | 12 Nov 2026 |
 | [D83](decisions/D83.md) | A folder linked to a project in the cloud: the engine's session syncs it; an agent's run goes as one change | 12 Nov 2026 |
-| [D84](decisions/D84.md) | The commands by name, with the schema of their arguments, in the core | 12 Nov 2026 |
+| [D84](decisions/D84.md) | The commands by name, with the schema of their arguments, in the core (12 Nov 2026) (revised by D110) |  |
 | [D85](decisions/D85.md) | A room's refusals are named in the protocol | 12 Nov 2026 |
 | [D86](decisions/D86.md) | A project's validation kept change by change, in the core | 12 Nov 2026 |
 | [D87](decisions/D87.md) | An undo carries what it left out, through a project's server | 12 Nov 2026 |
