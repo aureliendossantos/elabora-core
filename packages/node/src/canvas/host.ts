@@ -8,7 +8,8 @@ import type { AnswerMessage, AskMessage, AskName, CanvasAsks, HostMessage, Rende
 import { projectPath } from '@elabora/core/project/files';
 import { startServer } from '../emulator/server.ts';
 import type { RouteHandler } from '../emulator/server.ts';
-import { runtimeFiles, runtimeBundle, vendorThree, compileObjectCode, objectFrameHtml, bundleErrorMessage } from '../bundles.ts';
+import { runtimeFiles, runtimeBundle, vendorThree, compileObjectCode, bundleErrorMessage } from '../bundles.ts';
+import { objectFrameHtml } from '@elabora/core/objects/bundle';
 import { errorMessage } from '../util/values.ts';
 import { serveFile, mimeType } from './files.ts';
 
