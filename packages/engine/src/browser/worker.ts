@@ -6,6 +6,7 @@ import { openCopy, type BrowserSession } from './session.ts';
 import { openIdbCopy } from './idb-store.ts';
 import { roomMedia, roomMembership, roomSeed, roomSocket, type RoomAccess } from './room.ts';
 import type { ObjectCompiler } from './relay.ts';
+import type { NewCourseOptions } from '@elabora/core/commands/new-course';
 
 // The browser engine in a Worker (D103): one module a Worker. The page opens it, then speaks the
 // engine's protocol to it by messages. One tab holds a module at a time (Web Locks): a second one is
@@ -20,6 +21,9 @@ export type WorkerOpen = RoomAccess & {
   services?: Service[];
   // No connection to the room: nothing is sent nor taken (a module tried offline, a test).
   offline?: boolean;
+  // A project just made in the window (« Nouveau module »): its first files, written as its first
+  // change when it has no course yet (create_course, D112).
+  newCourse?: NewCourseOptions;
 };
 
 export type WorkerAnswer =
@@ -78,6 +82,7 @@ async function open(request: WorkerOpen): Promise<void> {
     const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}), ...(objects ? { objects } : {}) });
     session = opened;
     opened.subscribe((message) => scope.postMessage(message));
+    if (request.newCourse) await opened.run('create_course', request.newCourse);
     scope.postMessage({ kind: 'opened', taken });
     for (const { message, ports } of waiting.splice(0)) void opened.handle(message, ports).then((response) => scope.postMessage(response));
     // Held until the session closes.

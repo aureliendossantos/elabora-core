@@ -167,7 +167,7 @@ test('a new module\'s files are the first change of an empty project, and a proj
   assert.equal(entry.needs, null);
   assert.ok(ajv.validate(entry.args, args), ajv.errorsText(ajv.errors));
   const made = executeCommand(new Map() as ProjectFiles, 'create_course', (context) => entry.run(context, args), { author: PERSON });
-  assert.deepEqual(made.result, { created: true, files: ['course.json', 'plan.json', 'screens/intro.json', 'AGENTS.md', 'CLAUDE.md', '.gitignore'] });
+  assert.deepEqual([made.result, [...made.after.keys()].sort()], [{ created: true }, ['.gitignore', 'AGENTS.md', 'CLAUDE.md', 'course.json', 'plan.json', 'screens/intro.json']]);
   // The bytes a computer writes for the same course (initProject), and a course with nothing to fix.
   for (const [rel, text] of newCourseFiles(args)) assert.equal((made.after.get(rel) as { text: string }).text, text, rel);
   assert.deepEqual(validateProject(loadProject(made.after as ProjectFiles)).diagnostics.filter((d) => d.severity === 'error'), []);
