@@ -98,7 +98,7 @@ A room runs commands as well as changes: a tool of the cloud sends a command's n
 | `ack { change, media?, mediaDropped? }`, `change { change, media? }` | a placed change, to its copy and to the others; `media`: what the room knows of the media its operations write |
 | `refused { refusal, head }` | |
 | `catchup { changes, head, media? }`, `snapshot { head, files }` | what a copy missed; a snapshot's binary file carries its `size` and `facts` |
-| `media { media }` | facts a copy gave since |
+| `media { media }` | facts a copy gave since; to the copy that gave them, what the room holds now for those media |
 | `presence { peers }` | who is there: an `Actor` (a person, or an agent with the person who launched it) per copy |
 | `role { role }` | the person's role changed while connected (D93): a viewer's changes wait in the copy |
 

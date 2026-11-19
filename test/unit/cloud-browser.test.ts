@@ -1,5 +1,6 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import { openProject, type Session } from '@elabora/engine/session';
 import { openCopy, type BrowserSession } from '@elabora/engine/browser/session';
@@ -7,6 +8,8 @@ import { memoryCopy } from '@elabora/engine/browser/store';
 import { CloudClient } from '@elabora/node/cloud/client';
 import { folderCopy, keepConfirmed, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
+import { isMediaAsset } from '@elabora/node/store/media';
+import { putBytes } from '@elabora/node/blobs';
 import type { ProjectSummary, ScreenView, UndoView } from '@elabora/engine/protocol';
 import { copyExample } from '../helpers.ts';
 import { Room } from '../sync/room.ts';
@@ -28,10 +31,17 @@ async function desktop(room: Room, dir: string): Promise<Session> {
 }
 
 async function browser(room: Room): Promise<BrowserSession> {
-  const store = memoryCopy({ link: { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_bea', name: 'Béa' }, head: room.head, epoch: null, waiting: [], journal: 0 }, confirmed: room.files });
-  const session = await openCopy({ id: 'cloud:tm_test.prj_test', store, api: 'http://localhost:1', connect: room.connect, backoff: [20] });
-  closing.push(() => session.close());
-  return session;
+  return (await browserCopy(room)).copy;
+}
+
+// The browser's copy with its store, and the media it took (none: it takes one when something needs it).
+async function browserCopy(room: Room) {
+  const taken: string[] = [];
+  const kept = memoryCopy({ link: { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_bea', name: 'Béa' }, head: room.head, epoch: null, waiting: [], journal: 0 }, confirmed: room.files });
+  const store = { ...kept, fetchMedium: async (hash: string) => { taken.push(hash); } };
+  const copy = await openCopy({ id: 'cloud:tm_test.prj_test', store, api: 'http://localhost:1', connect: room.connect, backoff: [20] });
+  closing.push(() => copy.close());
+  return { copy, kept: kept.kept, taken };
 }
 
 const ask = async <T>(session: Session | BrowserSession, type: string, params: unknown): Promise<T> => {
@@ -84,4 +94,30 @@ test('a browser\'s copy and a desktop\'s folder converge, the browser offline th
   await settled(room, folder, copy);
   assert.notEqual(await title(folder, 'accueil'), 'Hors ligne');
   assert.equal(await title(folder, 'chemin'), 'Pendant ce temps', 'the desktop\'s change stays');
+});
+
+test('a browser\'s copy knows the size and the facts of the media it never took, which the desktop gave in passing (D125, D126)', async () => {
+  const dir = copyExample();
+  // A picture of the folder's, sent to the room before (the sample's are SVG, texts), in its blob store as a
+  // folder cloned or pushed keeps it.
+  const point = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+  fs.writeFileSync(path.join(dir, 'assets/images/point.png'), point);
+  putBytes(dir, point);
+  const room = new Room(readProjectFiles(dir).files);
+  const media = [...room.files].flatMap(([rel, file]) => (file.kind === 'binary' && file.hash && isMediaAsset(rel) ? [{ rel, hash: file.hash, size: file.size }] : []));
+  assert.ok(media.length > 0);
+  const { copy, kept, taken } = await browserCopy(room);
+  // The desktop's folder joins: it gives the facts of its probe for the media the room holds without them.
+  const folder = await desktop(room, dir);
+  await settled(room, folder, copy);
+  const started = Date.now();
+  while (!media.every(({ hash }) => kept.link.media?.[hash]?.facts) && Date.now() - started < 20_000) await new Promise((resolve) => setTimeout(resolve, 25));
+  for (const { rel, hash, size } of media) {
+    const known = kept.link.media?.[hash];
+    assert.equal(known?.size, size, rel);
+    assert.equal(known?.facts?.kind, room.facts.get(hash)?.kind, rel);
+    assert.ok(known?.facts && known.facts.version >= 1, rel);
+  }
+  assert.equal(kept.link.media?.[media[0]!.hash]?.facts?.width, 1);
+  assert.deepEqual(taken, []);
 });

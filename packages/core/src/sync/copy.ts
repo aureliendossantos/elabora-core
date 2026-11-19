@@ -1,5 +1,6 @@
 import type { Author, Files, Op } from '../ops/types.ts';
 import type { LocalChange } from './client.ts';
+import type { KnownMedium, MediaFacts, MediaMap } from './media.ts';
 
 // A copy of a project in the cloud as its host keeps it (docs/architecture/sync.md, D100): what the
 // copy itself remembers between two openings, and what it asks of its host to keep what the room
@@ -22,7 +23,13 @@ export interface CopyLink {
   epoch?: string | null;
   waiting: LocalChange[];  // changes made here the room has not placed yet, oldest first
   journal: number;         // the last journal entry the copy took in
+  // What the room said of the media of the copy's files (D125, D126): their size and their facts, by hash.
+  // A browser's copy knows each medium by it without taking it. Absent in a link made before it.
+  media?: MediaMap<KnownMedium>;
 }
+
+// A medium the copy's files hold at a path, with its size when the copy knows it.
+export interface MediumRef { hash: string; path: string; size?: number }
 
 // What the host gives the copy. Media are named by their hash (sha256:…): the host keeps their bytes.
 export interface CopyStore {
@@ -39,6 +46,10 @@ export interface CopyStore {
   commitMedia(upload: string | null): Promise<void>;
   // A medium of the team kept here, checked against its hash, before a change that writes it is.
   fetchMedium(hash: string): Promise<void>;
+  // The facts the host knows of these media, from the files it holds (D126): the desktop's probe of its
+  // folder, a browser's of what it imported. Only facts of the very bytes of a hash; nothing probed for the
+  // occasion that the host would not probe anyway. A host that knows none leaves it out.
+  mediaFacts?(media: readonly MediumRef[]): Promise<MediaMap<MediaFacts>>;
   // Whether the copy's person still reaches the project (D91), asked when the room would not take the
   // connection: removed from the team (or the team gone), the project deleted, or unknown (offline,
   // any other answer: the copy keeps trying).
