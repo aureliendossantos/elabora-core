@@ -107,6 +107,18 @@ export function roomMedia({ api, team }: RoomAccess): RemoteMedia {
     async commit(upload) {
       if (upload) await call(api, 'POST', `${uploads}/${segment(upload)}/commit`);
     },
+    async fetchPart(hash, start, end) {
+      let response: Response;
+      try {
+        response = await fetch(`${api}/v1/teams/${segment(team)}/blobs/${hex(hash)}`, { credentials: 'include', mode: 'cors', redirect: 'error', headers: { range: `bytes=${start}-${end}` } });
+      } catch (error) {
+        throw new RoomError(0, 'E_CLOUD_NETWORK', `The medium ${hex(hash).slice(0, 12)}… could not be read: ${error instanceof Error ? error.message : String(error)}.`);
+      }
+      if (response.status !== 206 && !response.ok) throw new RoomError(response.status, `http-${response.status}`, `The medium ${hex(hash).slice(0, 12)}… could not be read from the project.`);
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      // A server that gives the whole file for a range: its part is cut here.
+      return response.status === 206 ? bytes : bytes.subarray(start, end + 1);
+    },
     async fetch(hash) {
       let response: Response;
       try {
