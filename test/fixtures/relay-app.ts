@@ -1,9 +1,11 @@
 // The web app's page in the relay's tests: it holds the two relay pages (the canvas and the frames host's),
 // gives them a port per route, and answers the ports as the engine will: from a module's files served by
 // the test (a stand-in for the engine in a Worker). window.app is what the test drives.
-import { RELAY_PROTOCOL, isRoute, serveRelayPort } from '@elabora/player/relay-protocol';
+import { serveRelayPort } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 import { objectFrameHtml } from '@elabora/core/objects/bundle';
+import { createPageCanvasHost } from '@elabora/player/canvas-page-host';
+import type { CanvasMessage } from '@elabora/player/canvas-protocol';
 
 // What the test's address says is taken from closed lists and checked shapes, never put in an address as it is.
 const params = new URLSearchParams(location.search);
@@ -13,11 +15,8 @@ const oneOf = <T extends string>(value: string | null, allowed: readonly T[]): T
   return found;
 };
 const MODULE = oneOf(params.get('module'), ['a', 'b']);
-const ROUTE = params.get('route') ?? '';
-if (!isRoute(ROUTE)) throw new Error('Not a route');
 const CANVAS = oneOf(params.get('canvas'), ['https://canvas.elabora.page']);
 const FRAMES = oneOf(params.get('frames'), ['https://frames.elabora.page']);
-const TOKEN = oneOf(params.get('token') ?? 'test-token', ['test-token']);
 // A medium answered in pieces, as the engine does while it takes it from the server.
 const PARTS = params.get('parts') === '1';
 
@@ -52,53 +51,44 @@ const source: RelaySource = {
   }
 };
 
+// The window's side, as the web window will have it: the canvas host for a page does the rest (the route, the ports,
+// the frames host's relay page); the app gives it the engine's end of each port and the frame of the canvas page.
+const ends: Array<() => void> = [];
+const messages: CanvasMessage[] = [];
+const host = createPageCanvasHost({
+  canvasOrigin: CANVAS,
+  framesOrigin: FRAMES,
+  mount: document.body,
+  relayPort: async (relayHost, port) => { ends.push(serveRelayPort(port, source, relayHost)); }
+});
 const canvas = document.createElement('iframe');
 canvas.id = 'canvas';
 canvas.allow = 'autoplay';
+canvas.referrerPolicy = 'no-referrer';
 canvas.style.cssText = 'width:1280px;height:720px;border:0';
-const relay = document.createElement('iframe');
-relay.id = 'relay';
-relay.style.display = 'none';
-document.body.append(canvas, relay);
-
-const pages: Record<string, { frame: HTMLIFrameElement; origin: string; version?: string; ready?: boolean }> = { canvas: { frame: canvas, origin: CANVAS }, frames: { frame: relay, origin: FRAMES } };
-const ends: Array<() => void> = [];
-addEventListener('message', (event) => {
-  const data = event.data as { type?: string; host?: string; version?: string } | null;
-  if (!data || typeof data.type !== 'string') return;
-  log.push({ from: event.origin, ...data });
-  if (!data.type.startsWith('relay/')) return;
-  const host = Object.entries(pages).find(([, page]) => page.origin === event.origin && page.frame.contentWindow === event.source)?.[0];
-  if (!host) return;
-  const page = pages[host]!;
-  if (data.type === 'relay/ready') { page.version = data.version; if (!page.ready) { page.ready = true; open(host); } }
-  if (data.type === 'relay/updated') page.version = data.version;
-});
-
-function open(host: string): void {
-  const page = pages[host]!;
-  const channel = new MessageChannel();
-  ends.push(serveRelayPort(channel.port1, source, host as 'canvas' | 'frames'));
-  page.frame.contentWindow!.postMessage({ type: 'relay/open', protocol: RELAY_PROTOCOL, route: ROUTE }, page.origin, [channel.port2]);
-}
+document.body.append(canvas);
+host.attach(canvas);
+const canvasAddress = new URL(host.info.url);
+canvasAddress.searchParams.set('scrollbars', 'none');
+canvasAddress.searchParams.set('placing', 'editor');
+host.onRelay((from, message) => log.push({ from, ...message }));
+host.onMessage((message) => messages.push(message));
 
 let renderId = 0;
 const api = {
-  log, requests, pages,
-  versions: () => ({ canvas: pages.canvas!.version, frames: pages.frames!.version }),
-  // Said to a relay page, as the app would.
-  say(host: string, message: object, ports: Transferable[] = []) { pages[host]!.frame.contentWindow!.postMessage(message, pages[host]!.origin, ports); },
-  update() { for (const host of ['canvas', 'frames']) api.say(host, { type: 'relay/update', protocol: RELAY_PROTOCOL }); },
+  log, requests, messages, host,
+  info: host.info,
+  versions: () => ({ canvas: host.relays().canvas.version ?? undefined, frames: host.relays().frames.version ?? undefined }),
+  update: () => host.update(),
   async show(screen: string) {
     const render = await (await fetch(`/render/${MODULE}/${encodeURIComponent(screen)}.json`)).json();
-    canvas.contentWindow!.postMessage({ type: 'elabora/render', id: ++renderId, token: TOKEN, render }, CANVAS);
+    host.push(render, { id: ++renderId });
     return renderId;
   },
-  close() { for (const end of ends.splice(0)) end(); }
+  // The frame of the canvas page loaded anew, as a window that shows the view again does.
+  reload() { canvas.src = 'about:blank'; setTimeout(() => { canvas.src = canvasAddress.href; }, 100); },
+  close() { host.close(); for (const end of ends.splice(0)) end(); }
 };
 (window as unknown as { app: typeof api }).app = api;
 
-const canvasAddress = new URL('/canvas/index.html', CANVAS);
-for (const [name, value] of [['token', TOKEN], ['route', ROUTE], ['frames', FRAMES], ['scrollbars', 'none'], ['placing', 'editor']] as const) canvasAddress.searchParams.set(name, value);
 canvas.src = canvasAddress.href;
-relay.src = new URL('/relay.html', FRAMES).href;

@@ -6,6 +6,7 @@ import type { AnswerMessage, AskMessage, AskName, CanvasAsks, HostMessage, Rende
 import { startServer } from '../emulator/server.ts';
 import type { RouteHandler } from '../emulator/server.ts';
 import { runtimeFiles, runtimeBundle, vendorThree, canvasPageHtml } from '../bundles.ts';
+import { screenRenderOf } from '@elabora/core/render/screen';
 import { parseRange, relayPathOf, relayRequestOf, relayResponse } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayRange } from '@elabora/player/relay-protocol';
 import { errorMessage } from '../util/values.ts';
@@ -108,10 +109,9 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
 
   const send = (page: Page, message: HostMessage) => { page.response.write(`data: ${JSON.stringify(message)}\n\n`); };
   const sendRender = (page: Page, id: string | number | undefined, render: ScreenRender) => {
-    const styles = render.styles && render.styles.hash !== page.styles ? render.styles : undefined;
-    if (styles) page.styles = styles.hash;
-    const files = render.files?.map(({ path, kind, hash }) => ({ path, kind, hash }));
-    send(page, { type: 'elabora/render', ...(id !== undefined ? { id } : {}), render: { screen: render.screen, course: render.course, view: render.view, ...(styles ? { styles } : {}), ...(files ? { files } : {}), ...(render.outline ? { outline: render.outline } : {}) } });
+    const known = !!render.styles && render.styles.hash === page.styles;
+    if (render.styles) page.styles = render.styles.hash;
+    send(page, { type: 'elabora/render', ...(id !== undefined ? { id } : {}), render: known ? { ...render, styles: undefined } : render });
   };
 
   function runtimeFile(name: string): Promise<string | Buffer> | null {
@@ -228,7 +228,7 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
     push(render, { id } = {}) {
       for (const file of render.files) allowed.set(file.path, file.kind);
       language = render.course.language;
-      last = { ...(id !== undefined ? { id } : {}), render };
+      last = { ...(id !== undefined ? { id } : {}), render: screenRenderOf(render) };
       for (const page of pages) sendRender(page, id, render);
       return pages.size;
     },
