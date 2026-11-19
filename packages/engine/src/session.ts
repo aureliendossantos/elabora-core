@@ -69,6 +69,7 @@ import { SessionMonitor } from './session-monitor.ts';
 import { SessionActivity } from './session-activity.ts';
 import type { ActivityEntry } from '@elabora/node/activity';
 import { SessionReads, documentOptions } from './base/reads.ts';
+import { Renderer } from './base/render.ts';
 import { FolderChanges, fileOf } from './session-folder.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { build } from '@elabora/node/build';
@@ -225,11 +226,12 @@ export class Session {
     this.author = init.options.author ?? { kind: 'human' };
     const project = () => this.#state.project;
     const reportError = (error: unknown, context: string) => this.#emitError(error, context);
-    this.#canvas = new SessionCanvas({ root: this.root, project, reportError });
+    const renderer = new Renderer();
+    this.#canvas = new SessionCanvas({ root: this.root, project, renderer, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#reads = new SessionReads({
-      root: this.root, state: this.#state, entries: () => this.#entries, journalSeq: () => this.#folder.lastSeq, openBatch: () => this.openBatch,
+      root: this.root, state: this.#state, renderer, entries: () => this.#entries, journalSeq: () => this.#folder.lastSeq, openBatch: () => this.openBatch,
       mediaJobs: () => this.#media?.jobs() ?? [], migrate: init.options.migrate, assertOpen: () => this.#assertOpen()
     });
     this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
@@ -694,11 +696,7 @@ export class Session {
     return listVersions(this.root).map(backupSummary);
   }
 
-  // One screen as the player shows it (memoised; the canvas shows the same).
-  renderScreen(params: RenderScreenParams): RenderedScreen {
-    this.#assertOpen();
-    return this.#canvas.render(params);
-  }
+  renderScreen(params: RenderScreenParams): RenderedScreen { return this.#reads.renderScreen(params); }
 
   formatStatus(): FormatStatus { return this.#reads.formatStatus(); }
 

@@ -29,19 +29,23 @@ import { projectFormat, compareFormats, formatNumbers } from '@elabora/core/form
 import { summarizeNotes } from '@elabora/core/format/migrations/index';
 import { EngineError } from './errors.ts';
 import { momentTime } from './render.ts';
+import type { Renderer } from './render.ts';
 import type { ProjectState } from './project-state.ts';
+import type { RenderedScreen } from '@elabora/core/render/screen';
 import type {
-  CanvasMoment, ConversionsParams, ConversionsView, DiagnosticsView, FileEntry, FileView, FormatStatus, HistoryView, ProjectSummary, ScreenView
+  CanvasMoment, RenderScreenParams, ConversionsParams, ConversionsView, DiagnosticsView, FileEntry, FileView, FormatStatus, HistoryView, ProjectSummary, ScreenView
 } from '../protocol.ts';
 
 // The requests that only read the project in memory (docs/architecture/engine.md, The base without
 // Node): its files, screens, findings, narration's timeline, plan, dialogues, texts and languages,
-// format, and the journal's history. The same in every session; what differs is its host's: where the
+// format, a screen rendered, and the journal's history. The same in every session; what differs is its host's: where the
 // project's files and the journal come from, what is being made (media jobs), whether it is open.
 
 export interface ReadsHost {
   readonly root: string;
   readonly state: ProjectState;
+  // The renders' memory, shared with what shows them (a canvas).
+  readonly renderer: Renderer;
   // The journal's entries, oldest first: the folder's, or the room's (journalOf).
   entries(): readonly JournalEntry[];
   journalSeq(): number;
@@ -269,6 +273,12 @@ export class SessionReads {
       ...(options.ops ? { ops: entry.ops as Op[] } : {})
     }));
     return { changes, batches: summarizeBatches(entries).slice(-limit), openBatch: this.#host.openBatch() };
+  }
+
+  // One screen as the player shows it (memoised; the canvas shows the same).
+  renderScreen(params: RenderScreenParams): RenderedScreen {
+    this.#host.assertOpen();
+    return this.#host.renderer.render(this.#state.project, params);
   }
 
   // The format of the files, and what the migrate option says to do about an older one.

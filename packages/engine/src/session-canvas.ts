@@ -2,28 +2,30 @@ import type { Project } from '@elabora/core/project/model';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import type { CanvasHost } from '@elabora/node/canvas/host';
-import { Renderer, affects, dependenciesOf, momentTime } from './base/render.ts';
+import { affects, dependenciesOf, momentTime } from './base/render.ts';
+import type { Renderer } from './base/render.ts';
 import type { Dependencies } from './base/render.ts';
 import { EngineError } from './errors.ts';
-import type { CanvasInfo, CanvasView, RenderScreenParams } from './protocol.ts';
+import type { CanvasInfo, CanvasView } from './protocol.ts';
 
-// The canvas of the session: the renderer (its memoised renders serve renderScreen too) and the host
-// whose pages show one screen, sent again after each change that affects it.
+// The canvas of the session: the host whose pages show one screen, sent again after each change that
+// affects it, rendered by the session's renderer (base/render.ts: its memoised renders serve
+// renderScreen too, a read of the base).
 export class SessionCanvas {
-  readonly #renderer = new Renderer();
+  readonly #renderer: Renderer;
   // chrome: what the bars showed in the last render pushed (the outline, the items that show…).
   #canvas: { host: CanvasHost; view: CanvasView; shown: Dependencies | null; views: number; chrome: string | null } | null = null;
   readonly #root: string;
   readonly #project: () => Project;
   readonly #reportError: (error: unknown, context: string) => void;
 
-  constructor({ root, project, reportError }: { root: string; project: () => Project; reportError: (error: unknown, context: string) => void }) {
+  constructor({ root, project, renderer, reportError }: { root: string; project: () => Project; renderer: Renderer; reportError: (error: unknown, context: string) => void }) {
     this.#root = root;
+    this.#renderer = renderer;
     this.#project = project;
     this.#reportError = reportError;
   }
 
-  render(params: RenderScreenParams): RenderedScreen { return this.#renderer.render(this.#project(), params); }
   // Starts the canvas host of the project (once): the app shows its page in a frame.
   async open(options: { port?: number; debug?: boolean } = {}): Promise<CanvasInfo> {
     if (!this.#canvas) {
