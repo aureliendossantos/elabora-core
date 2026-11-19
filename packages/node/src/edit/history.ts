@@ -2,7 +2,7 @@ import path from 'node:path';
 import type { Author, ChangeLike, FileHash, Op, SkippedOp } from '@elabora/core/ops/types';
 import { invertOps, touchedFiles } from '@elabora/core/ops/apply';
 import { summarizeBatches, undoneChanges, type BatchSummary } from '@elabora/core/ops/batch';
-import { planUndo, undoOps, type UndoPlan, type UndoRequest } from '@elabora/core/ops/undo-plan';
+import { nameOf, planUndo, undoOps, type UndoPlan, type UndoRequest } from '@elabora/core/ops/undo-plan';
 import { CommandError } from '@elabora/core/commands/index';
 import { hasBlob, type BlobHash } from '../blobs.ts';
 import { withProjectLockSync, readJournal, appendUndo, appendMark as appendJournalMark, detectAuthor, journalAuthor, CHAT_ID } from '../journal/index.ts';
@@ -22,8 +22,6 @@ export interface HistoryEntry {
   files: string[];
   undone: boolean;
 }
-
-const nameOf = (entry: ChangeLike): string => entry.command?.name ?? (entry.type === 'undo' ? 'undo' : entry.author.kind);
 
 // The last changes, oldest first.
 export function history(dir: string, limit = 20): HistoryEntry[] {
