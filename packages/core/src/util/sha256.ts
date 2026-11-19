@@ -89,7 +89,10 @@ export class Sha256 {
 }
 
 // A Blob hashed slice by slice, never read whole (onSlice sees each slice as it goes): 64 hex digits.
-export async function sha256OfBlob(blob: Blob, sliceBytes = 4 * 1024 * 1024, onSlice?: (bytes: Uint8Array) => void | Promise<void>): Promise<string> {
+// A file's bytes as a browser's Blob gives them (the core has no DOM types).
+export interface Sliced { readonly size: number; slice(start: number, end: number): { arrayBuffer(): Promise<ArrayBuffer> } }
+
+export async function sha256OfBlob(blob: Sliced, sliceBytes = 4 * 1024 * 1024, onSlice?: (bytes: Uint8Array) => void | Promise<void>): Promise<string> {
   const hash = new Sha256();
   for (let at = 0; at < blob.size; at += sliceBytes) {
     const bytes = new Uint8Array(await blob.slice(at, at + sliceBytes).arrayBuffer());
