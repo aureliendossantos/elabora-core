@@ -107,6 +107,17 @@ for (const name of wanted) {
       });
       assert.ok(played.duration > 19 && played.time >= 11, JSON.stringify(played));
 
+      // A page that asks for a file of the module in its first task, its route open after: the request waits for the route, and is
+      // answered by the port, never left to the network (which has none of the module's files).
+      const lateRoute = await page.evaluate(() => (window as unknown as { app: { lateCanvas(): string } }).app.lateCanvas());
+      const late = await (async () => { for (let i = 0; i < 100; i++) { const found = page.frames().find((frame) => frame.url().includes(`route=${lateRoute}`)); if (found) return found; await page.waitForTimeout(100); } throw new Error('no late canvas'); })();
+      const asking = late.evaluate(async () => { const response = await fetch('/canvas/course.json'); return { status: response.status, start: (await response.text()).slice(0, 1) }; });
+      await page.waitForTimeout(1500);
+      const unanswered = await Promise.race([asking.then(() => 'answered'), new Promise((resolve) => setTimeout(() => resolve('waiting'), 50))]);
+      assert.equal(unanswered, 'waiting', 'a request whose route is not open waits');
+      await page.evaluate((route) => (window as unknown as { app: { openLate(route: string): void } }).app.openLate(route), lateRoute);
+      assert.deepEqual(await asking, { status: 200, start: '{' });
+
       // 3. A free object: its frame page by the relay, with the route in its address, its code bundled by the engine.
       await page.waitForFunction(() => document.querySelectorAll('iframe').length >= 2);
       const frames = await (async () => { for (let i = 0; i < 300; i++) { const found = objectFrames(page); if (found.length) return found; await page.waitForTimeout(100); } return []; })();
@@ -186,8 +197,14 @@ for (const name of wanted) {
       const next = relay['relay.js']!.replaceAll(before.canvas!, `${before.canvas}-next`);
       assert.notEqual(next, relay['relay.js']);
       setRelayScript(next);
+      // Events keep coming to the script being replaced, from a frame of the frames host and from the canvas page, as pages load
+      // their scripts: the browser stops the running script to activate the new one, and an event that reaches it then brings it
+      // back (found in the test's passes: the new script then waited for the running one's idle time). The relay's page asks the
+      // waiting script to skip waiting again until it has taken over.
+      const hammering = [objectFrames(page)[0], canvasFrame(page)].map((frame) => frame?.evaluate(async () => { for (let i = 0; i < 400; i++) await fetch(`/canvas/elabora/${i % 2 ? 'object-frame.js' : 'player.css'}`).then((response) => response.status).catch(() => 0); }).catch(() => undefined));
       await page.evaluate(() => (window as unknown as { app: { update(): void } }).app.update());
       await page.waitForFunction((was) => { const now = (window as unknown as { app: { versions(): { canvas?: string; frames?: string } } }).app.versions(); return now.canvas === `${was}-next` && now.frames === `${was}-next`; }, before.canvas, { timeout: 30000 });
+      await Promise.all(hammering);
       assert.equal(await page.evaluate(() => (window as unknown as { marker?: string }).marker), 'kept');
       const after = await canvasFrame(page).evaluate(async () => { const response = await fetch('/canvas/course.json'); return { status: response.status, text: (await response.text()).slice(0, 1) }; });
       assert.deepEqual(after, { status: 200, text: '{' });

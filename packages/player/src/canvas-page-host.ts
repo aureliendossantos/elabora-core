@@ -142,8 +142,21 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
     if (closed) return;
     toRelay(entry, { type: 'relay/open', protocol: RELAY_PROTOCOL, route }, [channel.port2]);
   }
+  // The page is given its renders (and its questions) once its files can be had: both relay pages hold their route's port,
+  // so that the service worker controls the page and answers the files its first render asks for. A render sent sooner
+  // would ask the network, which has none of the module's files.
+  const bothOpened = () => entries.canvas.state.opened && entries.frames.state.opened;
   function checkOpened(): void {
-    if (entries.canvas.state.opened && entries.frames.state.opened) resolveOpened();
+    if (!bothOpened()) return;
+    resolveOpened();
+    flush();
+  }
+  // Whether the page has been given the last render (once for each page loaded, and for each push).
+  let renderSent = false;
+  function flush(): void {
+    if (!pageReady || !bothOpened()) return;
+    if (!renderSent && last) { sendLast(); renderSent = true; }
+    sendPending();
   }
 
   function sendLast(): void {
@@ -199,11 +212,11 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
       return;
     }
     if (message.type === 'elabora/ready') {
-      // The page listens (a page loaded again, or the first): what it holds is nothing; it is given what it shows.
+      // The page listens (a page loaded again, or the first): what it holds is nothing; it is given what it shows once its route is open.
       pageReady = true;
       stylesHash = '';
-      sendLast();
-      sendPending();
+      renderSent = false;
+      flush();
     }
     for (const listener of [...messageListeners]) listener(message);
   }
@@ -217,17 +230,19 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
       entry.frame = frame;
       entry.state = fresh();
       pageReady = false;
+      renderSent = false;
       stylesHash = '';
       for (const waiting of asked.values()) waiting.sent = false;
     },
     push(render, { id } = {}) {
       last = { ...(id !== undefined ? { id } : {}), render };
-      if (!pageReady) return;
-      sendLast();
+      renderSent = false;
+      flush();
     },
     view(view, { id } = {}) {
       if (last) last = { ...last, render: { ...last.render, view: { ...last.render.view, ...view } } };
-      if (!pageReady) return;
+      // Before the render is sent, the render carries the view.
+      if (!pageReady || !bothOpened()) return;
       toPage({ type: 'elabora/view', ...(id !== undefined ? { id } : {}), view });
     },
     post(message) {
@@ -240,7 +255,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
         const timer = setTimeout(() => { asked.delete(request); pendingParams.delete(request); reject(new Error(`The canvas did not answer "${name}" in ${askTimeoutMs} ms`)); }, askTimeoutMs);
         asked.set(request, { name, resolve: resolve as (result: never) => void, reject, timer, sent: false });
         pendingParams.set(request, params);
-        if (pageReady) sendPending();
+        flush();
       });
     },
     onMessage(listener) { messageListeners.add(listener); return () => { messageListeners.delete(listener); }; },
