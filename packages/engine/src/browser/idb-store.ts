@@ -14,6 +14,8 @@ export interface RemoteMedia {
   send(hashes: readonly string[], read: (hash: string) => Promise<Uint8Array>): Promise<string | null>;
   commit(upload: string | null): Promise<void>;
   fetch(hash: string): Promise<Uint8Array>;
+  // Bytes start to end (included) of a medium, by range (C103).
+  fetchPart?(hash: string, start: number, end: number): Promise<Uint8Array>;
 }
 
 // Media the host holds by hash (the examples the app ships, D103): a Blob, or null when it has none.
@@ -112,6 +114,14 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
     commitMedia: async (upload) => { await remote?.commit(upload); },
     // A copy in a browser takes a medium when something needs it (medium), not as a change brings it.
     async fetchMedium() {},
+    // A part of a medium: a slice of the kept file, else of the host's, else the team's range. A part is
+    // not checked against the hash of the whole, nor kept: the whole is, when something takes it.
+    async mediumPart(hash, start, end) {
+      const kept = await media.file(hash) ?? await source?.(hash) ?? null;
+      if (kept) return kept.slice(start, end + 1);
+      if (!remote?.fetchPart) return null;
+      return new Blob([await remote.fetchPart(hash, start, end) as Uint8Array<ArrayBuffer>]);
+    },
     // Kept in the origin's private file system, else the host's (source), else the team's; what is
     // taken is checked against its hash, then kept.
     async medium(hash) {
@@ -146,6 +156,10 @@ async function mediaFolder(key: string) {
   const writing = new Map<string, Promise<void>>();
   const name = (hash: string) => hash.replace(/^sha256:/, '');
   return {
+    async file(hash: string): Promise<File | null> {
+      await writing.get(hash);
+      try { return await (await dir.getFileHandle(name(hash))).getFile(); } catch { return null; }
+    },
     async read(hash: string): Promise<Uint8Array | null> {
       await writing.get(hash);
       try {

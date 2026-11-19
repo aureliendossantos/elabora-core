@@ -349,7 +349,7 @@ export class BrowserSession {
     if (host !== 'canvas' && host !== 'frames') throw new EngineError('bad-request', 'relayPort takes host: canvas or frames');
     if (!port) throw new EngineError('bad-request', 'relayPort takes the port transferred with its message');
     const store = this.#store;
-    const end = serveRelayPort(port, relaySource(host, { files: () => this.#state.files, project: () => this.#state.project, medium: (hash) => store.medium(hash), ...(this.#objects ? { objects: this.#objects } : {}) }), host);
+    const end = serveRelayPort(port, relaySource(host, { files: () => this.#state.files, project: () => this.#state.project, medium: (hash) => store.medium(hash), ...(store.mediumPart ? { part: (hash: string, start: number, end: number) => store.mediumPart!(hash, start, end) } : {}), ...(this.#objects ? { objects: this.#objects } : {}) }), host);
     this.#relays.add(end);
     return {};
   }

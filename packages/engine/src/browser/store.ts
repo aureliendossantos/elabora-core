@@ -15,6 +15,9 @@ export interface BrowserStore extends CopyStore {
   // A medium this copy made (an import, a line's audio): its bytes kept by hash, its facts with them
   // for the room (mediaFacts, D126). Gives its hash.
   keep(bytes: Uint8Array, facts?: MediaFacts): Promise<string>;
+  // Bytes start to end (included) of a medium of `size`, without taking it whole: from what is kept,
+  // else read by range from the team's media (C103); null when neither can give them.
+  mediumPart?(hash: string, start: number, end: number): Promise<Blob | null>;
 }
 
 // The facts of the media a copy made, by hash, for its room (CopyStore.mediaFacts): only those of the
@@ -45,6 +48,7 @@ export function memoryCopy({ link, confirmed, journal = [], media: given = new M
     journal: () => kept.journal,
     async append(entries) { kept.journal.push(...structuredClone(entries)); },
     medium: async (hash) => media.get(hash) ?? null,
+    mediumPart: async (hash, start, end) => { const bytes = media.get(hash); return bytes ? new Blob([bytes.slice(start, end + 1) as Uint8Array<ArrayBuffer>]) : null; },
     async keep(bytes, made) {
       const hash = await sha256(bytes);
       media.set(hash, bytes);

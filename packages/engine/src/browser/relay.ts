@@ -2,6 +2,7 @@ import type { Project } from '@elabora/core/project/model';
 import type { ProjectFiles } from '@elabora/core/project/files';
 import { compileObjectFromFiles, objectFrameHtml, type ObjectBundler, type ObjectLibraries } from '@elabora/core/objects/bundle';
 import { mediaTypeOf } from '@elabora/core/util/media-types';
+import { resolveRange } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayHost, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 
 // What the browser engine answers its relay (D118, D105): the open module's files from the copy, a free
@@ -20,6 +21,8 @@ export interface RelayFrom {
   project(): Project;
   // A medium's bytes, kept or taken from the team's (null: not kept, and the project cannot be reached).
   medium(hash: string): Promise<Uint8Array | null>;
+  // A part of a medium, without taking it whole (a long video the page plays by ranges).
+  part?(hash: string, start: number, end: number): Promise<Blob | null>;
   objects?: () => Promise<ObjectCompiler>;
 }
 
@@ -36,6 +39,12 @@ export function relaySource(host: RelayHost, from: RelayFrom): RelaySource {
         const type = mediaTypeOf(request.path);
         if (file.kind === 'text') return { status: 'ok', type, size: ENCODER.encode(file.text).length, body: file.text };
         if (!file.hash) return { status: 'unavailable', message: `${request.path} has no content kept` };
+        // A range of a medium the copy knows the size of: that part alone (C103, the relay's part).
+        const range = request.range && from.part && file.size ? resolveRange(request.range, file.size) : null;
+        if (range && range !== 'unsatisfiable') {
+          const part = await from.part!(file.hash, range.start, range.end);
+          if (part) return { status: 'ok', type, size: file.size!, hash: file.hash, body: new Blob([part], { type }), part: range };
+        }
         const bytes = await from.medium(file.hash);
         if (!bytes) return { status: 'unavailable', message: `${request.path} is not kept in this browser, and the project cannot be reached` };
         return { status: 'ok', type, size: bytes.byteLength, hash: file.hash, body: new Blob([bytes as Uint8Array<ArrayBuffer>], { type }) };
