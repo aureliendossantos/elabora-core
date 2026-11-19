@@ -86,7 +86,7 @@ export async function videoMaster(file: Blob, name: string, info: MediaInfo, { t
 const ascii = (text: string) => Uint8Array.from(text, (c) => c.charCodeAt(0));
 const padded = (text: string, length: number) => { const out = new Uint8Array(length); out.set(ascii(text)); return out; };
 
-function withoutNames(target: WritableStream<StreamTargetChunk>): WritableStream<StreamTargetChunk> {
+export function withoutNames(target: WritableStream<StreamTargetChunk>): WritableStream<StreamTargetChunk> {
   const writer = target.getWriter();
   return new WritableStream<StreamTargetChunk>({
     write: (chunk) => writer.write(chunk.type === 'write' ? { ...chunk, data: scrub(chunk.data) } : chunk),
