@@ -16,9 +16,6 @@ export interface RemoteMedia {
 }
 
 export interface IdbCopy extends BrowserStore {
-  // A medium's bytes, kept here (OPFS), or taken from the team's media and kept (null: not kept, and
-  // the project cannot be reached).
-  medium(hash: string): Promise<Uint8Array | null>;
   readMedium(hash: string): Promise<Uint8Array | null>;
   putMedium(bytes: Uint8Array): Promise<string>;
   close(): void;

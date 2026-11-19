@@ -58,7 +58,7 @@ const REQUESTS: Record<RequestType, true> = {
   backups: true, createBackup: true, restoreBackup: true, renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, voices: true,
   installVoices: true, setSpeakerVoice: true, setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true,
   courseSounds: true, soundEstimate: true, generateSound: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
-  alignNarration: true, build: true, packageWeights: true, close: true
+  alignNarration: true, build: true, packageWeights: true, close: true, relayPort: true
 };
 
 // A wait in a test is bounded for failures only.
@@ -172,6 +172,8 @@ export function engineConformance(target: ConformanceTarget): void {
 
     assert.equal((await client.request('effects', {}))[0]?.name, 'none');
     assert.deepEqual(await client.request('courseSounds', {}), [], 'no sound in the module');
+    // A relay's port comes transferred with the message (D105): without one, not a request.
+    await assert.rejects(client.request('relayPort', { host: 'canvas' }), refused('bad-request'));
   });
 
   it('what the events of a screen can name: its blocks, steps and layers, the course\'s screens and variables', async () => {

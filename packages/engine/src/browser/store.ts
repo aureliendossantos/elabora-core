@@ -8,11 +8,14 @@ export interface BrowserStore extends CopyStore {
   readonly link: CopyLink;
   journal(): readonly JournalEntry[];
   append(entries: readonly JournalEntry[]): Promise<void>;
+  // A medium's bytes, kept, or taken from the team's media and kept (null: not kept, and the project
+  // cannot be reached).
+  medium(hash: string): Promise<Uint8Array | null>;
 }
 
 // A copy kept in memory (tests, the conformance suite under Node, a module tried without an account):
 // what a browser's storage holds, gone with the page.
-export function memoryCopy({ link, confirmed, journal = [] }: { link: CopyLink; confirmed: Files; journal?: readonly JournalEntry[] }): BrowserStore & { readonly kept: { link: CopyLink; confirmed: Files; journal: JournalEntry[]; unlinked: boolean } } {
+export function memoryCopy({ link, confirmed, journal = [], media = new Map() }: { link: CopyLink; confirmed: Files; journal?: readonly JournalEntry[]; media?: ReadonlyMap<string, Uint8Array> }): BrowserStore & { readonly kept: { link: CopyLink; confirmed: Files; journal: JournalEntry[]; unlinked: boolean } } {
   const kept = { link: structuredClone(link), confirmed, journal: [...journal], unlinked: false };
   return {
     link: kept.link,
@@ -25,6 +28,7 @@ export function memoryCopy({ link, confirmed, journal = [] }: { link: CopyLink; 
     unlink() { kept.unlinked = true; },
     journal: () => kept.journal,
     async append(entries) { kept.journal.push(...structuredClone(entries)); },
+    medium: async (hash) => media.get(hash) ?? null,
     // No room to send media to, nor to read them from: what the copy has is all there is.
     sendMedia: async () => null,
     commitMedia: async () => {},

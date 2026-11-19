@@ -128,6 +128,9 @@ importers:
       '@elabora/node':
         specifier: workspace:*
         version: link:../node
+      '@elabora/player':
+        specifier: workspace:*
+        version: link:../player
 
   packages/fonts: {}
 

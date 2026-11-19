@@ -21,6 +21,8 @@ import { NEED_SERVICES, isRequestType, notHere, serviceOf } from '../base/servic
 import { SessionCloud, type RoomSocket } from '../base/session-cloud.ts';
 import { CopyChanges, newId, touched } from './copy-changes.ts';
 import type { BrowserStore } from './store.ts';
+import { relaySource, type ObjectCompiler } from './relay.ts';
+import { serveRelayPort } from '@elabora/player/relay-protocol';
 import type {
   ChangeSource, EndTurnParams, EndTurnResult, EngineEvent, EventMessage, FormatMigrationView, MarkResult, RequestMessage, RequestResult, RequestType, ResponseMessage, RunResult, Service, UndoView
 } from '../protocol.ts';
@@ -42,9 +44,17 @@ export interface CopyOptions {
   connect?: (url: string, token: string) => RoomSocket;
   backoff?: number[];
   author?: Author;
+  // The services its host provides (D102): a service named here that this engine has no provider for is
+  // not had (none yet: media, voices, word times and packages come later).
   services?: readonly Service[];
   validation?: ValidationOptions;
+  // How free objects are compiled for the relay's frames (esbuild-wasm, D117): without it, an object's
+  // code is not served.
+  objects?: () => Promise<ObjectCompiler>;
 }
+
+// The services this engine has a provider for: none yet.
+const PROVIDED: ReadonlySet<Service> = new Set();
 
 // How far back a chat's turn is looked for: no turn lasts a day.
 const TURN_LOOKBACK_MS = 24 * 60 * 60 * 1000;
@@ -73,12 +83,16 @@ export class BrowserSession {
   readonly #pending: ChangeLike[];
   #cloud: SessionCloud | null;
   #closing: Promise<{ version: string | null }> | null = null;
+  readonly #objects: (() => Promise<ObjectCompiler>) | undefined;
+  // The relay's ports served (relayPort), each ended with relay/bye as the session closes.
+  readonly #relays = new Set<() => void>();
 
   constructor(options: CopyOptions) {
     this.id = options.id;
     this.#store = options.store;
     this.author = options.author ?? { kind: 'human' };
-    this.#services = new Set(options.services ?? []);
+    this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service)));
+    this.#objects = options.objects;
     const entries = [...options.store.journal()];
     this.#entries = entries;
     this.#cloud = new SessionCloud({
@@ -133,20 +147,21 @@ export class BrowserSession {
 
   // ── protocol ───────────────────────────────────────────────────────
 
-  async handle(message: unknown): Promise<ResponseMessage> {
+  // ports: what came transferred with the message (relayPort's).
+  async handle(message: unknown, ports: readonly MessagePort[] = []): Promise<ResponseMessage> {
     const request = (message ?? {}) as Partial<RequestMessage>;
     const id = typeof request.id === 'string' ? request.id : '';
     const type = typeof request.type === 'string' ? request.type : '';
     try {
       if (!id || request.kind !== 'request' || !isRequestType(type)) throw new EngineError('bad-request', `Not a request of the engine protocol: ${JSON.stringify(message)?.slice(0, 200)}`);
-      const result = await this.#dispatch(request as RequestMessage);
+      const result = await this.#dispatch(request as RequestMessage, ports);
       return { kind: 'response', id, type, ok: true, result } as ResponseMessage;
     } catch (error) {
       return { kind: 'response', id, type, ok: false, error: protocolError(error) };
     }
   }
 
-  async #dispatch(request: RequestMessage): Promise<RequestResult<RequestType>> {
+  async #dispatch(request: RequestMessage, ports: readonly MessagePort[]): Promise<RequestResult<RequestType>> {
     const service = serviceOf(request.type);
     if (service && !this.#services.has(service)) {
       this.#assertOpen();
@@ -193,6 +208,7 @@ export class BrowserSession {
       case 'endTurn': return this.endTurn(request.params);
       case 'migrate': return this.migrate();
       case 'close': return this.close();
+      case 'relayPort': return this.relayPort(request.params?.host, ports[0]);
       default: throw new EngineError('bad-request', `${request.type} is not a request of this session`);
     }
   }
@@ -278,8 +294,21 @@ export class BrowserSession {
     throw new EngineError('refused', `This course is in format ${migration.from}, older than the one this Elabora writes (${migration.to}): a copy in the browser does not migrate it yet.`, { code: 'I_FORMAT_OUTDATED' });
   }
 
+  // A relay host's port (D118, D105): the module's files served to it until the session closes.
+  relayPort(host: unknown, port: MessagePort | undefined): Record<string, never> {
+    this.#assertOpen();
+    if (host !== 'canvas' && host !== 'frames') throw new EngineError('bad-request', 'relayPort takes host: canvas or frames');
+    if (!port) throw new EngineError('bad-request', 'relayPort takes the port transferred with its message');
+    const store = this.#store;
+    const end = serveRelayPort(port, relaySource(host, { files: () => this.#state.files, project: () => this.#state.project, medium: (hash) => store.medium(hash), ...(this.#objects ? { objects: this.#objects } : {}) }));
+    this.#relays.add(end);
+    return {};
+  }
+
   close(): Promise<{ version: string | null }> {
     this.#closing ??= (async () => {
+      for (const end of this.#relays) end();
+      this.#relays.clear();
       this.#cloud?.stop();
       await this.#queue.run(async () => {
         this.#batches.close('close');

@@ -2,28 +2,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pipeline } from 'node:stream';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { mediaTypeOf } from '@elabora/core/util/media-types';
 
 // Files served by the local servers (preview, LMS emulator, editor canvas): streamed from disk
 // (never read whole, never copied), with HTTP range requests, which <video> and <audio> need to
 // seek (and Safari to play at all), so a 300 MB course seeks in its videos at once.
 
-export const MIME_TYPES: Readonly<Record<string, string>> = {
-  '.html': 'text/html; charset=utf-8', '.htm': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.avif': 'image/avif', '.ico': 'image/x-icon',
-  '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.mov': 'video/quicktime', '.webm': 'video/webm', '.ogv': 'video/ogg',
-  '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.flac': 'audio/flac', '.ogg': 'audio/ogg', '.oga': 'audio/ogg', '.opus': 'audio/ogg', '.wav': 'audio/wav', '.aac': 'audio/aac', '.vtt': 'text/vtt; charset=utf-8',
-  '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf',
-  '.wasm': 'application/wasm', '.glb': 'model/gltf-binary', '.gltf': 'model/gltf+json', '.ktx2': 'image/ktx2', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8', '.csv': 'text/csv; charset=utf-8',
-  // The player's resources (D58, RESOURCE_TYPES): a PDF served as anything else is downloaded, and
-  // its preview stays empty.
-  '.pdf': 'application/pdf', '.zip': 'application/zip', '.rtf': 'application/rtf',
-  '.doc': 'application/msword', '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  '.xls': 'application/vnd.ms-excel', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  '.ppt': 'application/vnd.ms-powerpoint', '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  '.odt': 'application/vnd.oasis.opendocument.text', '.ods': 'application/vnd.oasis.opendocument.spreadsheet', '.odp': 'application/vnd.oasis.opendocument.presentation'
-};
+export { MIME_TYPES } from '@elabora/core/util/media-types';
 
-export const mimeType = (file: string): string => MIME_TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream';
+export const mimeType = (file: string): string => mediaTypeOf(file);
 
 // A byte range of a file of size bytes (inclusive), or null when the header asks for none we serve
 // (several ranges: the whole file is sent, as RFC 9110 allows), or 'unsatisfiable'.

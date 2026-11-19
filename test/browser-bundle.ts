@@ -15,7 +15,7 @@ const noNode: esbuild.Plugin = {
     build.onResolve({ filter: /.*/ }, ({ path: spec, importer }) => {
       const bare = spec.replace(/^node:/, '').split('/')[0]!;
       if (spec.startsWith('node:') || BUILTINS.has(bare) || spec === '@elabora/node' || spec.startsWith('@elabora/node/')) {
-        return { errors: [{ text: `Node in a browser's bundle: ${spec}, imported by ${path.relative(ROOT, importer) || importer}` }] };
+        return { errors: [{ text: `Node in a browser's bundle: ${spec}, imported by ${path.relative(ROOT, importer).split(path.sep).join('/') || importer}` }] };
       }
       return undefined;
     });

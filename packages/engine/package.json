@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@elabora/format": "workspace:*",
+    "@elabora/player": "workspace:*",
     "@elabora/core": "workspace:*",
     "@elabora/node": "workspace:*"
   }
