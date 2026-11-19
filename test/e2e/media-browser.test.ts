@@ -12,6 +12,7 @@ import type { MediaInfo, MediaTools } from '@elabora/node/media/index';
 import { fileMedia, presetDimensions } from '@elabora/core/media/conformance';
 import { bundleForBrowser } from '../browser-bundle.ts';
 import { makeMediaFixtures } from '../media-fixtures.ts';
+import { aacEncoderModule } from '../aac-encoder.ts';
 import type { MediaFixtures } from '../media-fixtures.ts';
 
 // The media of a browser's engine in a Worker (packages/engine/src/browser/media/), judged by the
@@ -32,19 +33,37 @@ before(async () => {
   fixtures = await makeMediaFixtures(tools);
   const worker = await bundleForBrowser({ source: `import { probeFile } from './packages/engine/src/browser/media/probe.ts';
 import { imageMaster } from './packages/engine/src/browser/media/image.ts';
+import { fileTarget, videoMaster } from './packages/engine/src/browser/media/video.ts';
+import { provideAac } from './packages/engine/src/browser/media/encoders.ts';
+const aac = provideAac('/aac.js');
 self.onmessage = async ({ data }) => {
   try {
     const info = await probeFile(data.file, data.name);
     if (data.op === 'probe') return self.postMessage({ info });
-    const master = await imageMaster(data.file, data.name, info);
-    self.postMessage({ master });
+    if (data.op === 'image') return self.postMessage({ master: await imageMaster(data.file, data.name, info) });
+    // The origin's private file system; Playwright's WebKit has none in its throwaway profiles: in memory there.
+    const handle = await navigator.storage.getDirectory().then((root) => root.getFileHandle('master-' + data.name + '.mp4', { create: true }), () => null);
+    const parts = [];
+    const memory = new WritableStream({ write(chunk) { if (chunk.type === 'write') parts.push(chunk); } });
+    const started = performance.now();
+    const made = await videoMaster(data.file, data.name, info, { target: handle ? await fileTarget(handle) : memory, aac });
+    let blob = data.file;
+    if (made.action !== 'copy' && handle) blob = await handle.getFile();
+    else if (made.action !== 'copy') {
+      const bytes = new Uint8Array(Math.max(...parts.map((p) => p.position + p.data.length)));
+      for (const p of parts) bytes.set(p.data, p.position);
+      blob = new Blob([bytes]);
+    }
+    self.postMessage({ master: { blob, extension: made.extension, action: made.action, ms: Math.round(performance.now() - started) } });
   } catch (error) { self.postMessage({ error: String(error && error.message || error), code: error && error.code }); }
 };` });
+  const aac = await aacEncoderModule();
   browser = await launchBrowser(BROWSER);
   page = await browser.newPage();
   await page.route(`${ORIGIN}/**`, (route) => {
     const name = decodeURIComponent(new URL(route.request().url()).pathname.slice(1));
     if (name === 'probe.js') return route.fulfill({ contentType: 'text/javascript', body: worker.code });
+    if (name === 'aac.js') return route.fulfill({ contentType: 'text/javascript', body: aac });
     if (name === '') return route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>media</title>' });
     return route.fulfill({ contentType: 'application/octet-stream', body: fs.readFileSync(path.join(fixtures.dir, name)) });
   });
@@ -60,11 +79,11 @@ after(async () => {
 const probeInBrowser = (name: string) => inWorker(name, 'probe') as Promise<{ info?: unknown; error?: string }>;
 
 // What the Worker answers for a file; a master's bytes come back in base64.
-const inWorker = (name: string, op: 'probe' | 'image') => page.evaluate(async ([file, op]) => {
+const inWorker = (name: string, op: 'probe' | 'image' | 'video') => page.evaluate(async ([file, op]) => {
   const blob = await (await fetch(`/${encodeURIComponent(file)}`)).blob();
   const worker = new Worker('/probe.js', { type: 'module' });
   try {
-    const answer = await new Promise<{ info?: unknown; error?: string; code?: string; master?: { blob: Blob; extension: string | null; action: string } }>((resolve) => {
+    const answer = await new Promise<{ info?: unknown; error?: string; code?: string; master?: { blob: Blob; extension: string | null; action: string; ms?: number } }>((resolve) => {
       worker.onmessage = ({ data }) => resolve(data);
       worker.onerror = (event) => resolve({ error: event.message || 'the Worker did not load' });
       worker.postMessage({ file: blob, name: file, op });
@@ -73,7 +92,7 @@ const inWorker = (name: string, op: 'probe' | 'image') => page.evaluate(async ([
     const bytes = new Uint8Array(await answer.master.blob.arrayBuffer());
     let text = '';
     for (let at = 0; at < bytes.length; at += 0x8000) text += String.fromCharCode(...bytes.subarray(at, at + 0x8000));
-    return { master: { base64: btoa(text), extension: answer.master.extension, action: answer.master.action } };
+    return { master: { base64: btoa(text), extension: answer.master.extension, action: answer.master.action, ms: answer.master.ms } };
   } finally {
     worker.terminate();
   }
@@ -106,7 +125,11 @@ test(`image masters in ${BROWSER}: the desktop's plan, conformant, fully decoded
       const input = path.join(fixtures.dir, name);
       const source = await probeMedia(input, { tools });
       const answer = await inWorker(name, 'image') as { master?: { base64: string; extension: string | null; action: string }; error?: string; code?: string };
-      if (!answer.master) { rows.push(`${name}: ${answer.code ?? 'error'}`); continue; }
+      if (!answer.master) {
+        assert.match(answer.code ?? '', /^E_MEDIA_(NOT_DECODABLE_HERE|ENCODER_MISSING)$/, `${name}: ${answer.error}`);
+        rows.push(`${name}: ${answer.code}`);
+        continue;
+      }
       const { action, extension } = answer.master;
       const file = path.join(out, `${path.parse(name).name}${extension ?? path.extname(name)}`);
       fs.writeFileSync(file, Buffer.from(answer.master.base64, 'base64'));
@@ -133,6 +156,59 @@ test(`image masters in ${BROWSER}: the desktop's plan, conformant, fully decoded
         rows.push(`${name}: PSNR ${psnr} dB against ffmpeg's`);
         const { stdout }: { stdout: string } = await execute(tools.ffprobe, ['-v', 'error', '-show_entries', 'format_tags:stream_tags', '-of', 'json', file]);
         assert.doesNotMatch(stdout, /"tags"/, `${name}: no tag`);
+      }
+    }
+  } finally {
+    fs.rmSync(out, { recursive: true, force: true });
+  }
+  for (const row of rows) t.diagnostic(row);
+});
+
+const VIDEOS = /\.(mp4|mov|webm|mkv)$/;
+
+test(`video masters in ${BROWSER}: the desktop's plan, an MP4 conformant, fully decoded, without metadata nor date`, { timeout: 600_000 }, async (t) => {
+  if (!tools) return t.skip('ffmpeg and ffprobe not found');
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-browser-videos-'));
+  const rows: string[] = [];
+  const streamHash = async (file: string, stream: string): Promise<string> => (await execute(tools.ffmpeg, ['-v', 'error', '-i', file, '-map', `0:${stream}:0`, '-c', 'copy', '-f', 'hash', '-hash', 'md5', '-'])).stdout.trim();
+  try {
+    for (const name of fixtures.files.filter((file) => VIDEOS.test(file))) {
+      const input = path.join(fixtures.dir, name);
+      const source = await probeMedia(input, { tools });
+      const answer = await inWorker(name, 'video') as { master?: { base64: string; extension: string | null; action: string; ms?: number }; error?: string; code?: string };
+      if (!answer.master) {
+        // What this browser cannot do, said by its code; anything else fails.
+        assert.match(answer.code ?? '', /^E_MEDIA_(NOT_DECODABLE_HERE|ENCODER_MISSING)$/, `${name}: ${answer.error}`);
+        rows.push(`${name}: ${answer.code} ${answer.error ?? ''}`);
+        continue;
+      }
+      const { action } = answer.master;
+      const file = path.join(out, `${path.parse(name).name}.mp4`);
+      fs.writeFileSync(file, Buffer.from(answer.master.base64, 'base64'));
+      const master = await probeMedia(file, { tools });
+      const colour = (await execute(tools.ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=pix_fmt,color_range,color_space,color_transfer,color_primaries', '-of', 'csv=p=0', file])).stdout.trim();
+      rows.push(`${name}: ${action} → ${master.videoCodec} ${master.profile} ${master.width}×${master.height} (${colour}), ${master.audioCodec ?? 'no sound'}, ${master.size} bytes, ${answer.master.ms} ms`);
+      assert.deepEqual(fileMedia(master).reasons.map((r) => r.code), [], `${name}: a conformant master, ${rows.at(-1)}`);
+      const { stderr }: { stderr: string } = await execute(tools.ffmpeg, ['-v', 'error', '-i', file, '-f', 'null', '-']);
+      assert.equal(stderr, '', `${name}: fully decoded`);
+      const { stdout }: { stdout: string } = await execute(tools.ffprobe, ['-v', 'error', '-show_entries', 'format_tags:stream_tags', '-of', 'json', file]);
+      assert.doesNotMatch(stdout, /creation_time|location|title|encoder/i, `${name}: no metadata, no date`);
+      assert.ok(Math.abs((master.duration ?? 0) - (source.duration ?? 0)) < 0.1, `${name}: its duration, ${master.duration} for ${source.duration}`);
+      if (action === 'remux') {
+        assert.equal(await streamHash(file, 'v'), await streamHash(input, 'v'), `${name}: its picture copied`);
+        assert.equal(master.rotation, source.rotation, `${name}: its rotation kept`);
+      } else {
+        assert.equal(action, 'encode');
+        if (source.videoCodec === 'h264' && fileMedia(source).reasons.every((r) => r.stream !== 'video')) assert.equal(await streamHash(file, 'v'), await streamHash(input, 'v'), `${name}: its picture copied, its sound encoded`);
+        else {
+          assert.deepEqual([master.width, master.height], Object.values(presetDimensions(source, 'high')!), `${name}: the high preset's size`);
+          assert.equal(master.rotation, 0, `${name}: turned as it shows`);
+          // Its first picture, the same as the native ffmpeg's turned the same way.
+          const { stderr: compared }: { stderr: string } = await execute(tools.ffmpeg, ['-i', input, '-i', file, '-lavfi', `[0:v]scale=${master.width}:${master.height},format=rgb24[a];[1:v]format=rgb24[b];[a][b]psnr`, '-frames:v', '1', '-f', 'null', '-']);
+          const psnr = Number(/average:([\d.]+|inf)/.exec(compared)?.[1].replace('inf', '99'));
+          assert.ok(psnr > 20, `${name}: PSNR ${psnr} against the desktop's picture`);
+          rows.push(`${name}: PSNR ${psnr} dB against ffmpeg's`);
+        }
       }
     }
   } finally {

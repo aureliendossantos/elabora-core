@@ -77,6 +77,11 @@ export async function makeMediaFixtures(tools: MediaTools): Promise<MediaFixture
     await ffmpeg(...picture('1280x720', 2), ...tone(2), '-shortest', ...x264(), '-c:a', 'aac', plain);
     await ffmpeg('-display_rotation', '90', '-i', plain, '-c', 'copy', '-metadata', 'location=+48.8584+002.2945/', '-f', 'mov', out('phone.mov'));
     fs.rmSync(plain);
+    // Upright and in the full range: re-encoded, turned in its pixels.
+    const full = out('upright-plain.mp4');
+    await ffmpeg(...picture('1280x720', 1), '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-pix_fmt', 'yuvj420p', full);
+    await ffmpeg('-display_rotation', '90', '-i', full, '-c', 'copy', out('upright.mp4'));
+    fs.rmSync(full);
   }
   // A song with its cover.
   if (has('libmp3lame')) await ffmpeg('-i', out('voice.mp3'), '-i', out('alpha.png'), '-map', '0', '-map', '1', '-c:a', 'copy', '-c:v', 'png', '-disposition:v', 'attached_pic', '-id3v2_version', '3', out('song.mp3'));
