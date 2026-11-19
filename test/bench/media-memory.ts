@@ -1,5 +1,5 @@
 // Measures a browser's video masters on a large file (lot 5, « la mémoire »):
-//   node test/bench/media-memory.ts [--seconds 60] [--browser chromium]
+//   node test/bench/media-memory.ts [--seconds 60] [--browser chromium] [--only copy|encode]
 // - a 1080p H.264 video of about 200 MB, its index at the end, copied into an MP4 with its index first;
 // - the same in the full range, encoded again (every picture);
 // - the browser's memory (the anonymous resident memory of every process this bench started, file pages left out) before and at its
@@ -10,7 +10,6 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { launchBrowser } from '@elabora/node/emulator/browser';
 import { findMediaTools } from '@elabora/node/media/index';
 import { bundleForBrowser } from '../browser-bundle.ts';
 import { aacEncoderModule } from '../aac-encoder.ts';
@@ -19,6 +18,7 @@ const args = process.argv.slice(2);
 const option = (name: string, fallback: string) => { const at = args.indexOf(`--${name}`); return at >= 0 ? args[at + 1]! : fallback; };
 const seconds = Number(option('seconds', '60'));
 const browserName = option('browser', 'chromium');
+const only = option('only', '');
 const run = promisify(execFile);
 const tools = await findMediaTools();
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-media-memory-'));
@@ -28,7 +28,7 @@ const ORIGIN = 'https://media.elabora.test';
 // for the encoding.
 const make = (name: string, pixels: string, duration: number, bitrate: string) => run(tools.ffmpeg, ['-v', 'error', '-y', '-f', 'lavfi', '-i', `testsrc2=size=1920x1080:rate=30:duration=${duration}`, '-f', 'lavfi', '-i', `sine=frequency=440:sample_rate=48000:duration=${duration}`, '-shortest',
   '-c:v', 'libx264', '-preset', 'ultrafast', '-b:v', bitrate, '-maxrate', bitrate, '-bufsize', bitrate, '-pix_fmt', pixels, '-c:a', 'aac', path.join(dir, name)], { maxBuffer: 1 << 20 });
-await Promise.all([make('copy.mp4', 'yuv420p', seconds * 3, '8M'), make('encode.mp4', 'yuvj420p', seconds, '25M')]);
+await Promise.all([make('copy.mp4', 'yuv420p', seconds * 3, '8M'), ...(only === 'copy' ? [] : [make('encode.mp4', 'yuvj420p', seconds, '25M')])]);
 await run(tools.ffmpeg, ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=1280x720:rate=30:duration=2', '-c:v', 'libx264', '-preset', 'veryfast', '-pix_fmt', 'yuvj420p', path.join(dir, 'twice.mp4')]);
 
 // The resident memory of this process's descendants: the browser and its helpers.
@@ -82,8 +82,12 @@ self.onmessage = async ({ data }) => {
   } catch (error) { self.postMessage({ error: String(error && error.message || error) }); }
 };` });
 const aac = await aacEncoderModule();
-const browser = await launchBrowser(browserName);
-const page = await browser.newPage();
+// A profile on disk: a throwaway context keeps the origin's private file system in memory, which
+// would count every byte written as the browser's memory.
+const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-media-profile-'));
+const playwright = await import('playwright-core');
+const context = await playwright[browserName as 'chromium' | 'firefox' | 'webkit'].launchPersistentContext(profile, { headless: true });
+const page = context.pages()[0] ?? await context.newPage();
 await page.route(`${ORIGIN}/**`, (route) => {
   const url = new URL(route.request().url());
   const name = url.pathname.slice(1);
@@ -99,7 +103,6 @@ await page.route(`${ORIGIN}/**`, (route) => {
 });
 page.on('crash', () => console.error('the page crashed'));
 page.on('console', (m) => console.error('page:', m.text()));
-browser.on('disconnected', () => console.error('the browser went'));
 await page.goto(`${ORIGIN}/`);
 await page.evaluate(() => { (window as unknown as { media: Worker }).media = new Worker('/media.js', { type: 'module' }); });
 const ask = (message: object) => page.evaluate((m) => new Promise<Record<string, unknown>>((resolve) => {
@@ -109,7 +112,7 @@ const ask = (message: object) => page.evaluate((m) => new Promise<Record<string,
 }), message);
 
 const mb = (bytes: number) => `${(bytes / 1048576).toFixed(0)} MB`;
-for (const name of ['copy.mp4', 'encode.mp4']) {
+for (const name of ['copy.mp4', 'encode.mp4'].filter((file) => !only || file.startsWith(only))) {
   await ask({ op: 'take', name });
   await new Promise((resolve) => setTimeout(resolve, 2000));
   const before = browserMemory();
@@ -119,9 +122,12 @@ for (const name of ['copy.mp4', 'encode.mp4']) {
   clearInterval(sampler);
   console.log(`${name}: ${mb(fs.statSync(path.join(dir, name)).size)} → ${JSON.stringify(made)}; browser ${mb(before)} before, ${mb(peak)} at its peak (+${mb(peak - before)})`);
 }
+if (!only) {
 await ask({ op: 'take', name: 'twice.mp4' });
 const first = await ask({ op: 'master', name: 'twice.mp4', run: 1, hash: true });
 const second = await ask({ op: 'master', name: 'twice.mp4', run: 2, hash: true });
 console.log(`the same encoding twice: ${first.hash === second.hash ? 'the same bytes' : 'other bytes'} (${first.hash}, ${second.hash})`);
-await browser.close();
+}
+await context.close();
 fs.rmSync(dir, { recursive: true, force: true });
+fs.rmSync(profile, { recursive: true, force: true });
