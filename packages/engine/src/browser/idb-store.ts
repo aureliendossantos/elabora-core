@@ -15,6 +15,9 @@ export interface RemoteMedia {
   fetch(hash: string): Promise<Uint8Array>;
 }
 
+// Media the host holds by hash (the examples the app ships, D103): a Blob, or null when it has none.
+export type MediaSource = (hash: string) => Promise<Blob | null>;
+
 export interface IdbCopy extends BrowserStore {
   readMedium(hash: string): Promise<Uint8Array | null>;
   putMedium(bytes: Uint8Array): Promise<string>;
@@ -40,7 +43,7 @@ const result = <T>(request: IDBRequest<T>): Promise<T> => new Promise((resolve, 
 
 // Opens the copy kept under key; seed: the copy as the room gives it, kept when there is none yet.
 // Null: nothing kept, and no seed.
-export async function openIdbCopy(key: string, { seed, remote, membership, onError }: { seed?: { link: CopyLink; confirmed: Files }; remote?: RemoteMedia; membership?: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'>; onError?: (error: unknown) => void } = {}): Promise<IdbCopy | null> {
+export async function openIdbCopy(key: string, { seed, remote, source, membership, onError }: { seed?: { link: CopyLink; confirmed: Files }; remote?: RemoteMedia; source?: MediaSource; membership?: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'>; onError?: (error: unknown) => void } = {}): Promise<IdbCopy | null> {
   const open = indexedDB.open(DB_PREFIX + key, 1);
   open.onupgradeneeded = () => { for (const store of STORES) open.result.createObjectStore(store); };
   const db = await result(open);
@@ -98,10 +101,14 @@ export async function openIdbCopy(key: string, { seed, remote, membership, onErr
     commitMedia: async (upload) => { await remote?.commit(upload); },
     // A copy in a browser takes a medium when something needs it (medium), not as a change brings it.
     async fetchMedium() {},
+    // Kept in the origin's private file system, else the host's (source), else the team's; what is
+    // taken is checked against its hash, then kept.
     async medium(hash) {
       const kept = await media.read(hash);
-      if (kept || !remote) return kept;
-      const bytes = await remote.fetch(hash);
+      if (kept) return kept;
+      const given = await source?.(hash);
+      const bytes = given ? new Uint8Array(await given.arrayBuffer()) : remote ? await remote.fetch(hash) : null;
+      if (!bytes) return null;
       if (await sha256(bytes) !== hash) throw new Error(`The medium ${hash.slice(7, 19)}… does not match its hash.`);
       await media.put(bytes);
       return bytes;

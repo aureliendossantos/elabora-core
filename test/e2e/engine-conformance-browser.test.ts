@@ -23,6 +23,13 @@ const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPL
 const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
 
 type Message = WorkerAnswer | ResponseMessage | EventMessage;
+
+// The media the app ships with an example, by hash: one right, one whose bytes are not its hash's.
+const LINE = 'assets/narration/fr/chemin/chemin-depart.m4a';
+const WRONG = 'assets/narration/fr/chemin/chemin-reseaux.m4a';
+const hashOf = (rel: string) => { const file = readProjectFiles(NETWORK_SAMPLE).files.get(rel); return file?.kind === 'binary' ? file.hash! : ''; };
+const SHIPPED = new Map<string, Buffer>([[hashOf(LINE), fs.readFileSync(path.join(NETWORK_SAMPLE, LINE))], [hashOf(WRONG), fs.readFileSync(path.join(NETWORK_SAMPLE, LINE))]]);
+const shipped: string[] = [];
 let browser: Browser;
 let page: Page;
 const listeners = new Map<number, (message: Message) => void>();
@@ -37,11 +44,21 @@ provideObjects(async () => {
   self.postMessage({ kind: 'event', event: { type: 'error', context: 'objects', message: 'loaded' } });
   return { bundler: { build: async () => ({ outputFiles: [{ text: 'compiled here' }] }) }, libraries: {} };
 });` });
+  // The app's Worker as it gives the media of the examples it ships (provideMedia), by hash.
+  const withMedia = await bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
+provideMedia(async (hash) => { const response = await fetch('/media/' + hash); return response.ok ? response.blob() : null; });` });
   browser = await launchBrowser('chromium');
   page = await browser.newPage();
   await page.route(`${ORIGIN}/**`, (route) => {
     const name = new URL(route.request().url()).pathname;
-    if (name === '/worker.js' || name === '/worker-objects.js') return route.fulfill({ contentType: 'text/javascript', body: name === '/worker.js' ? worker.code : withObjects.code });
+    const scripts: Record<string, string> = { '/worker.js': worker.code, '/worker-objects.js': withObjects.code, '/worker-media.js': withMedia.code };
+    if (scripts[name]) return route.fulfill({ contentType: 'text/javascript', body: scripts[name] });
+    if (name.startsWith('/media/')) {
+      const hash = name.slice('/media/'.length);
+      shipped.push(hash);
+      const bytes = SHIPPED.get(hash);
+      return bytes ? route.fulfill({ contentType: 'application/octet-stream', body: bytes }) : route.fulfill({ status: 404, body: '' });
+    }
     return route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>engine</title>' });
   });
   await page.exposeFunction('deliver', (id: number, message: Message) => listeners.get(id)?.(message));
@@ -185,6 +202,16 @@ test('the app\'s Worker gives a compiler of free objects: loaded at the first ob
   assert.deepEqual(answers.answers.map((answer) => answer.status), ['ok', 'ok', 'ok']);
   assert.equal(answers.answers[0].text, 'compiled here');
   assert.equal(loads, 1);
+  await ask(engine, 'close', {});
+  await engine.end();
+});
+
+test('the app\'s Worker gives the media it ships: a copy opened offline takes a medium from it, checked against its hash, then kept', { timeout: 120_000 }, async () => {
+  const engine = await worker({ kind: 'open', team: 'tm_test', project: 'shipped', seed: seedOf('network'), api: 'http://localhost:1', offline: true }, '/worker-media.js');
+  assert.equal(engine.first.kind, 'opened');
+  const answers = await relayAsks(engine.id, 'canvas', [{ kind: 'file', path: LINE }, { kind: 'file', path: LINE }, { kind: 'file', path: WRONG }, { kind: 'file', path: 'assets/narration/fr/chemin/chemin-diagnostic.m4a' }]);
+  assert.deepEqual(answers.answers.map((answer) => answer.status), ['ok', 'ok', 'failed', 'unavailable']);
+  assert.equal(shipped.filter((hash) => hash === hashOf(LINE)).length, 1, 'taken once, then kept');
   await ask(engine, 'close', {});
   await engine.end();
 });

@@ -3,7 +3,7 @@ import type { CopyLink } from '@elabora/core/sync/copy';
 import type { RoomSocket } from '../base/session-cloud.ts';
 import type { EventMessage, RequestMessage, ResponseMessage, Service } from '../protocol.ts';
 import { openCopy, type BrowserSession } from './session.ts';
-import { openIdbCopy } from './idb-store.ts';
+import { openIdbCopy, type MediaSource } from './idb-store.ts';
 import { roomMedia, roomMembership, roomSeed, roomSocket, type RoomAccess } from './room.ts';
 import type { ObjectCompiler } from './relay.ts';
 import type { NewCourseOptions } from '@elabora/core/commands/new-course';
@@ -39,6 +39,14 @@ const never = (): RoomSocket => ({ readyState: 0, send() {}, close() {}, addEven
 
 let session: BrowserSession | null = null;
 let objects: (() => Promise<ObjectCompiler>) | undefined;
+let source: MediaSource | undefined;
+
+// Media the app holds by hash (the examples it ships, which a copy opened offline does not carry):
+// given by the app's Worker as it loads, like provideObjects. A medium is taken from what the copy
+// kept, else from this source, else from the team's, and checked against its hash before it is kept.
+export function provideMedia(get: MediaSource): void {
+  source = get;
+}
 
 // How free objects are compiled for the relay's frames (D117): the app's Worker, which imports this
 // one, gives it as it loads, before the page's open message. It is called at the first object a page
@@ -70,6 +78,7 @@ async function open(request: WorkerOpen): Promise<void> {
     const online = !request.offline;
     const options = {
       ...(online ? { remote: roomMedia(request), membership: roomMembership(request) } : {}),
+      ...(source ? { source } : {}),
       onError: (error: unknown) => scope.postMessage({ kind: 'event', event: { type: 'error', context: 'keeping the copy in the browser', message: error instanceof Error ? error.message : String(error) } })
     };
     let store = await openIdbCopy(key, { ...options, ...(request.seed ? { seed: { link: request.seed.link, confirmed: new Map(request.seed.confirmed) } } : {}) });
