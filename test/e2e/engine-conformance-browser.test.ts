@@ -251,6 +251,37 @@ test('the app\'s Worker gives the media it ships: a copy opened offline takes a 
   await engine.end();
 });
 
+test('an import in progress is cancelled: its job says so, and nothing comes into the module', { timeout: 120_000 }, async () => {
+  scripts ??= await page.evaluate(async () => {
+    const blob = async (url: string) => URL.createObjectURL(new Blob([await (await fetch(url)).text()], { type: 'text/javascript' }));
+    return { media: await blob('/media.js'), aac: await blob('/aac.js') };
+  });
+  const engine = await worker({ kind: 'open', team: 'tm_test', project: 'cancelled', seed: seedOf('basic'), api: 'http://localhost:1', offline: true, services: ['media'], mediaWorker: scripts.media, aacEncoder: scripts.aac }, '/worker-conformance.js');
+  assert.equal(engine.first.kind, 'opened');
+  const changes: string[] = [];
+  engine.receive((message) => { if (message.kind === 'event' && message.event.type === 'changed') changes.push(message.event.change.command?.name ?? message.event.change.type); });
+  // A minute of sound in a WAV: encoded to AAC, long enough to be stopped.
+  const rate = 48000, seconds = 60;
+  const wav = Buffer.alloc(44 + rate * seconds * 2);
+  wav.write('RIFF', 0, 'latin1'); wav.writeUInt32LE(wav.length - 8, 4); wav.write('WAVEfmt ', 8, 'latin1'); wav.writeUInt32LE(16, 16);
+  wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(rate, 24); wav.writeUInt32LE(rate * 2, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34);
+  wav.write('data', 36, 'latin1'); wav.writeUInt32LE(rate * seconds * 2, 40);
+  for (let i = 0; i < rate * seconds; i++) wav.writeInt16LE(Math.round(8000 * Math.sin(i / 20)), 44 + i * 2);
+  const token = `elabora-file:${'c'.repeat(24)}/long.wav`;
+  picked.set(token, wav.toString('base64'));
+  const imported = await ask<{ path: string; job: { id: string } }>(engine, 'importMedia', { path: token });
+  const cancelled = await ask<{ status: string }>(engine, 'cancelMediaJob', { id: imported.job.id });
+  assert.equal(cancelled.status, 'cancelled');
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  assert.equal((await ask<{ id: string; status: string }[]>(engine, 'mediaJobs', {})).find((job) => job.id === imported.job.id)?.status, 'cancelled');
+  assert.deepEqual(changes, [], 'nothing journaled');
+  assert.equal((await ask<{ path: string }[]>(engine, 'listFiles', { dir: 'assets/audio' })).some((file) => file.path === imported.path), false);
+  // A token without its file: a bad request, never a path read.
+  await assert.rejects(ask(engine, 'importMedia', { path: `elabora-file:${'d'.repeat(24)}/absent.wav` }), (error: { kind?: string }) => error.kind === 'bad-request');
+  await ask(engine, 'close', {});
+  await engine.end();
+});
+
 // Questions of a relay host's pages, through a port transferred to the Worker (relayPort).
 function relayAsks(n: number, host: 'canvas' | 'frames', requests: unknown[]) {
   return page.evaluate(async ([n, host, requests]) => {
