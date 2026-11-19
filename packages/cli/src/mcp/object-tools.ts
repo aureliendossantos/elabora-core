@@ -1,6 +1,6 @@
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import * as edit from '@elabora/node/edit';
-import { defineTool, editResult, errorResult, imageResult, objectSchema, textResult, PLAN_ID, SLUG } from './tool.ts';
+import { fromCommand, defineTool, editResult, errorResult, imageResult, objectSchema, textResult, SLUG } from './tool.ts';
 
 // Free objects: reading, scaffolding, writing their files and running their gates.
 
@@ -30,16 +30,14 @@ export const objectMapTool = defineTool({
 
 export const createObject = defineTool({
   name: 'elabora_create_object',
-  description: 'Scaffold a free object (objects/<id>/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job. decoration: a decoration of the course backdrop instead (theme.backdrop.object; no objectives): a 2D canvas that follows the course (ctx.context with the screen\'s rank, its section\'s, the direction), keeps out of the player\'s bars and lands at once when frames are still.',
-  inputSchema: objectSchema({ id: SLUG, title: { type: 'string' }, objectives: { type: 'array', items: PLAN_ID, minItems: 1 }, items: { type: 'array', items: PLAN_ID }, decoration: { type: 'boolean' } }, ['id', 'title']),
-  handler: (args, { root, author }) => editResult(edit.createObject(root, args, { author }))
+  ...fromCommand('create_object'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'create_object', args, { author }))
 });
 
 export const writeObjectFile = defineTool({
   name: 'elabora_write_object_file',
-  description: 'Write one file of a free object: object.manifest.json, object.js, object.tests.json or object.notes.md. Then run elabora_test_object.',
-  inputSchema: objectSchema({ object: SLUG, file: { enum: ['object.manifest.json', 'object.js', 'object.tests.json', 'object.notes.md'] }, content: { type: 'string' } }, ['object', 'file', 'content']),
-  handler: (args, { root, author }) => editResult(edit.writeObjectFile(root, args, { author }))
+  ...fromCommand('write_object_file'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'write_object_file', args, { author }))
 });
 
 export const replayObject = defineTool({

@@ -54,14 +54,14 @@ function course(): string {
 }
 
 const screenBlock = (dir: string, id: string, screen = 'convertir') => readJSON(dir, `screens/${screen}.json`).blocks.find((block: { id: string }) => block.id === id);
-const convert = (dir: string, block: string, type: string, presentation?: string) => edit.convertBlock(dir, { block, to: { type, ...(presentation ? { presentation } : {}) } }) as ReturnType<typeof edit.convertBlock> & { kept: string; lost: string; added: string; progress: { kept: boolean; lost: string[] } };
+const convert = (dir: string, block: string, type: string, presentation?: string) => edit.run(dir, 'convert_block', { block, to: { type, ...(presentation ? { presentation } : {}) } }) as edit.Ran<'convert_block'> & { kept: string; lost: string; added: string; progress: { kept: boolean; lost: string[] } };
 const errorsOf = (dir: string, screen = 'convertir') => validateDir(dir).diagnostics.filter((d) => d.severity === 'error' && d.file === `screens/${screen}.json`).map((d) => `${d.code} ${d.message}`);
 const refusal = (dir: string, block: string, type: string, presentation?: string) => assert.throws(() => convert(dir, block, type, presentation), (error: Error & { code?: string }) => { assert.equal(error.code, 'E_CONVERT_REFUSED', error.message); return true; });
 
 test('convert: the dry run lists the targets with what each keeps, loses and adds, in French and English; nothing is written', () => {
   const dir = course();
   const before = fs.readFileSync(path.join(dir, 'screens/convertir.json'), 'utf8');
-  const result = edit.convertBlock(dir, { block: 'cv-panels', language: 'fr' });
+  const result = edit.run(dir, 'convert_block', { block: 'cv-panels', language: 'fr' });
   assert.equal(result.change, null);
   assert.equal(fs.readFileSync(path.join(dir, 'screens/convertir.json'), 'utf8'), before);
   assert.deepEqual(result.from, { type: 'accordion', presentation: 'accordion' });
@@ -218,14 +218,14 @@ test('convert: the list reader and titles', () => {
 
 test('convert: translations follow their item ids; learner progress is said; one undo gives the block back', () => {
   const dir = course();
-  edit.exportTranslationChange(dir, { to: 'en' });
+  edit.run(dir, 'export_translation', { to: 'en' });
   const texts = [
     { unit: 'block.cv-cards.items.lien.title', target: 'The link' },
     { unit: 'block.cv-cards.items.lien.markdown', target: 'The box\'s light says whether the cable is plugged in.' },
     { unit: 'block.cv-gallery.images.g1.caption', target: 'On' },
     { unit: 'block.cv-panels.items.nom.title', target: 'The name' }
   ];
-  edit.translateText(dir, { language: 'en', texts: texts.map(({ unit, target }) => ({ unit, target })) });
+  edit.run(dir, 'translate_text', { language: 'en', texts: texts.map(({ unit, target }) => ({ unit, target })) });
   const before = fs.readFileSync(path.join(dir, 'screens/convertir.json'), 'utf8');
   const sort = convert(dir, 'cv-cards', 'sort');
   assert.equal(sort.translations, 6, 'title → items.text and markdown → targets.text for each of the three pairs');
@@ -303,16 +303,16 @@ test('add_block takes optional (only written when true); W_COMPLETION_MISMATCH l
   const mismatch = () => validateDir(dir).diagnostics.filter((d) => d.code === 'W_COMPLETION_MISMATCH' && d.file === 'screens/convertir.json').length;
   assert.equal(mismatch(), 0);
   const quiz = { type: 'quiz', props: { stem: 'Un exercice en plus ?', mode: 'single', options: [{ id: 'a', text: 'Oui', correct: true, feedback: 'Oui.' }, { id: 'b', text: 'Non', correct: false, feedback: 'Non.' }] } };
-  const added = edit.addBlock(dir, { screen: 'convertir', block: { ...quiz, id: 'cv-extra', optional: true } });
+  const added = edit.run(dir, 'add_block', { screen: 'convertir', block: { ...quiz, id: 'cv-extra', optional: true } });
   assert.equal(added.block, 'cv-extra');
   assert.equal(screenBlock(dir, 'cv-extra').optional, true);
   assert.equal(mismatch(), 0, 'an optional activity does not ask for interactions-done');
-  edit.addBlock(dir, { screen: 'convertir', block: { ...quiz, id: 'cv-required', optional: false } });
+  edit.run(dir, 'add_block', { screen: 'convertir', block: { ...quiz, id: 'cv-required', optional: false } });
   assert.equal('optional' in screenBlock(dir, 'cv-required'), false, 'optional: false is not written');
   assert.equal(mismatch(), 1);
   // A course component (a fork of the quiz) converts into nothing: no targets, not an error; convert_block says to detach it.
-  edit.forkComponent(dir, { component: 'quiz', id: 'quiz-maison', title: 'Quiz maison' });
-  edit.updateBlock(dir, { block: 'cv-extra', props: {} });
+  edit.run(dir, 'fork_component', { component: 'quiz', id: 'quiz-maison', title: 'Quiz maison' });
+  edit.run(dir, 'update_block', { block: 'cv-extra', props: {} });
   const forked = readJSON(dir, 'screens/convertir.json');
   forked.blocks.find((block: { id: string }) => block.id === 'cv-extra').type = 'quiz-maison';
   writeJSON(dir, 'screens/convertir.json', forked);

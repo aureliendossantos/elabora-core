@@ -177,7 +177,7 @@ test('translation: a layer\'s lines are units with their anchors\' markers; the 
   assert.equal(unit.pointer, '/layers/0/narration/lines/1/text');
   assert.deepEqual(unit.marks?.map((mark) => mark.id), ['w-poste', 'w-réseau']);
   exportTranslation(dir, { to: 'en' });
-  await edit.translateText(dir, { language: 'en', texts: [{ unit: 'screen.accueil.layer.rappel.narration.r2.text', target: 'We always check the <mrk id="w-poste">computer</mrk> before the <mrk id="w-réseau">network</mrk>.' }] });
+  await edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit: 'screen.accueil.layer.rappel.narration.r2.text', target: 'We always check the <mrk id="w-poste">computer</mrk> before the <mrk id="w-réseau">network</mrk>.' }] });
   const timeline = screenTimeline(loadProjectFromDir(dir), 'accueil', { layer: 'rappel', language: 'en' })!;
   const schema = blockTimings(timeline).get('consigne-schema')!.in!;
   assert.deepEqual(schema.anchor, { line: 'r2', word: 'computer' });
@@ -222,24 +222,24 @@ test('course state: timeline.ended with a layer fires at the end of that layer\'
 
 test('narration commands on a layer: a line added there (its id unique in the screen), changed, removed with its audio; no step', { skip: NO_FFMPEG }, () => {
   const dir = layered();
-  const added = edit.addNarrationLine(dir, { screen: 'accueil', layer: 'rappel', line: { text: 'Et on note ce qu\'on a vu.', speaker: 'guide' } });
+  const added = edit.run(dir, 'add_narration_line', { screen: 'accueil', layer: 'rappel', line: { text: 'Et on note ce qu\'on a vu.', speaker: 'guide' } });
   assert.match(added.line, /^l5-[a-z0-9]{4}$/, 'its rank in the screen, every track counted, and a random suffix (D77)');
-  assert.throws(() => edit.addNarrationLine(dir, { screen: 'accueil', layer: 'rappel', line: { id: 'l1', text: 'Doublon.' } }), /already has a line "l1"/);
-  assert.throws(() => edit.addNarrationLine(dir, { screen: 'accueil', layer: 'rappel', line: { text: 'Étape.', step: 2 } }), /no step/);
-  edit.updateNarrationLine(dir, { screen: 'accueil', line: 'r1', pauseBefore: 0.2, text: 'Un rappel de la règle, rapidement.' });
-  assert.throws(() => edit.updateNarrationLine(dir, { screen: 'accueil', line: 'r1', step: 2 }), /whose timeline has no steps/);
-  edit.updateNarration(dir, { screen: 'accueil', layer: 'rappel', seek: 'none' });
+  assert.throws(() => edit.run(dir, 'add_narration_line', { screen: 'accueil', layer: 'rappel', line: { id: 'l1', text: 'Doublon.' } }), /already has a line "l1"/);
+  assert.throws(() => edit.run(dir, 'add_narration_line', { screen: 'accueil', layer: 'rappel', line: { text: 'Étape.', step: 2 } }), /no step/);
+  edit.run(dir, 'update_narration_line', { screen: 'accueil', line: 'r1', pauseBefore: 0.2, text: 'Un rappel de la règle, rapidement.' });
+  assert.throws(() => edit.run(dir, 'update_narration_line', { screen: 'accueil', line: 'r1', step: 2 }), /whose timeline has no steps/);
+  edit.run(dir, 'update_narration', { screen: 'accueil', layer: 'rappel', seek: 'none' });
   let screen = readJSON(dir, 'screens/accueil.json');
   assert.deepEqual(screen.layers[0].narration.lines.map((line: { id: string }) => line.id), ['r1', 'r2', added.line]);
   assert.equal(screen.layers[0].narration.lines[0].pauseBefore, 0.2);
   assert.equal(screen.layers[0].narration.seek, 'none');
   assert.equal(screen.narration.lines.length, 2, 'the screen\'s narration untouched');
-  edit.moveNarrationLine(dir, { screen: 'accueil', line: added.line, after: null });
-  edit.removeNarrationLine(dir, { screen: 'accueil', line: 'r2' });
+  edit.run(dir, 'move_narration_line', { screen: 'accueil', line: added.line, after: null });
+  edit.run(dir, 'remove_narration_line', { screen: 'accueil', line: 'r2' });
   screen = readJSON(dir, 'screens/accueil.json');
   assert.deepEqual(screen.layers[0].narration.lines.map((line: { id: string }) => line.id), [added.line, 'r1']);
   assert.ok(!fs.existsSync(path.join(dir, narrationAudioPath('fr', 'accueil', 'r2'))), 'its audio goes with it');
-  edit.removeSpeaker(dir, { speaker: 'guide', to: 'narratrice' });
+  edit.run(dir, 'remove_speaker', { speaker: 'guide', to: 'narratrice' });
   screen = readJSON(dir, 'screens/accueil.json');
   assert.ok(screen.layers[0].narration.lines.every((line: { speaker?: string }) => line.speaker === 'narratrice'), 'a layer\'s lines change speaker too');
 });

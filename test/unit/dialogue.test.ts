@@ -5,7 +5,6 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { validateDir, loadProjectFromDir } from '@elabora/node/project-reader';
 import { exportDialogue } from '@elabora/node/dialogue-export';
-import { setDialogueNode, removeDialogueNode, rename } from '@elabora/node/edit';
 import { readLock, assignKeys, statefulEntities } from '@elabora/core/compile/state-model';
 import { compileCourseData } from '@elabora/core/compile/course-data';
 import { dialogueData } from '@elabora/core/dialogue/data';
@@ -25,6 +24,7 @@ import { explorePaths, maxPointsOf } from '@elabora/player/dialogue/paths';
 import type { DialogueBlock } from '@elabora/player/course-data';
 import { courseWithDialogue, MARC_DIALOGUE } from '../dialogue-fixture.ts';
 import { ROOT, readJSON, writeJSON, codes } from '../helpers.ts';
+import * as edit from '@elabora/node/edit';
 
 // Dialogues (D61): the format, the pure walk and its replay, the scores, the saved state, the
 // validation, the tools, the map, the export and the import from Rise.
@@ -281,7 +281,7 @@ test('the course: lock keys, compiled data, a valid fixture, rename keeps the ke
   const lock = assignKeys(project, readLock(project));
   fs.writeFileSync(path.join(dir, 'elabora.lock.json'), JSON.stringify(lock.lock, null, 2));
   const before = lock.keys['choice:appel-marc#ticket.b'];
-  await rename(dir, { from: 'appel-marc', to: 'appel-client' });
+  await edit.run(dir, 'rename', { from: 'appel-marc', to: 'appel-client' });
   const after = readJSON(dir, 'elabora.lock.json').keys;
   assert.equal(after['choice:appel-client#ticket.b'], before);
   assert.equal(readJSON(dir, 'screens/appel.json').events[0].on.target, 'appel-client');
@@ -504,16 +504,16 @@ test('translation units, LESSON.md and the project view carry the dialogue\'s wo
 
 test('set_dialogue_node writes one node whole, remove_dialogue_node removes one', () => {
   const dir = courseWithDialogue();
-  const added = setDialogueNode(dir, { block: 'appel-marc', after: 'ticket', node: { id: 'rappel', lines: [{ id: 'r1', speaker: 'marc', text: 'Je reste joignable.' }] } });
+  const added = edit.run(dir, 'set_dialogue_node', { block: 'appel-marc', after: 'ticket', node: { id: 'rappel', lines: [{ id: 'r1', speaker: 'marc', text: 'Je reste joignable.' }] } });
   assert.equal(added.ok, true);
   const nodes = () => readJSON(dir, 'screens/appel.json').blocks[0].props.nodes.map((node: { id: string }) => node.id);
   assert.deepEqual(nodes(), ['appel', 'premiere-question', 'routeur-redemarre', 'ticket', 'rappel', 'escalade', 'bilan']);
-  setDialogueNode(dir, { block: 'appel-marc', node: { id: 'rappel', lines: [{ id: 'r1', speaker: 'marc', text: 'Je reste joignable, merci.' }] } });
+  edit.run(dir, 'set_dialogue_node', { block: 'appel-marc', node: { id: 'rappel', lines: [{ id: 'r1', speaker: 'marc', text: 'Je reste joignable, merci.' }] } });
   assert.equal(readJSON(dir, 'screens/appel.json').blocks[0].props.nodes[4].lines[0].text, 'Je reste joignable, merci.', 'replaced in place');
-  removeDialogueNode(dir, { block: 'appel-marc', node: 'routeur-redemarre' });
+  edit.run(dir, 'remove_dialogue_node', { block: 'appel-marc', node: 'routeur-redemarre' });
   assert.ok(!nodes().includes('routeur-redemarre'));
   assert.ok(codes(validateDir(dir).diagnostics).includes('E_DIALOGUE_TARGET'), 'option b still goes there');
-  assert.throws(() => setDialogueNode(dir, { block: 'plan-etage', node: { id: 'x' } }), /not a dialogue/);
+  assert.throws(() => edit.run(dir, 'set_dialogue_node', { block: 'plan-etage', node: { id: 'x' } }), /not a dialogue/);
 });
 
 test('Rise: a scenario block becomes a dialogue, its answers options with where they go', () => {

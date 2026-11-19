@@ -4,19 +4,18 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { Sound } from '@elabora/format';
-import { addSound as addSoundCommand } from '@elabora/core/commands/sounds';
-import type { AddSoundResult } from '@elabora/core/commands/sounds';
+import type { AddSoundRequest } from '@elabora/core/commands/sounds';
+import type { HostNeeds } from '@elabora/core/commands/host';
 import { classifyLicence } from '@elabora/core/sounds/licences';
 import { binaryFile } from '@elabora/core/project/files';
 import { CommandError } from '@elabora/core/commands/context';
 import { hashBytes } from '../blobs.ts';
 import { findMediaTools } from '../media/tools.ts';
 import { probeMedia } from '../media/probe.ts';
-import { runCommand, type EditOptions, type EditResult } from '../edit/executor.ts';
+import type { HostOptions } from '../edit/host.ts';
 import { libraryFile, librarySounds } from './library.ts';
 import { openverseSound } from './openverse.ts';
 import { ELABORA_VERSION } from '../bundles.ts';
-import type { AddSoundRequest as AddSoundArgs } from '@elabora/core/commands/sounds';
 
 const run = promisify(execFile);
 
@@ -25,9 +24,6 @@ const run = promisify(execFile);
 // needs no cut is kept as it came (no second lossy encoding before the build); a cut, a fade or a
 // lossless original are written as FLAC, or as AAC at 256 kb/s for an ambience or a long sound.
 
-// A library id (telephone-fixe), openverse:<uuid>, or a file (types.ts, for the engine's protocol).
-export type AddSoundRequest = AddSoundArgs & { signal?: AbortSignal };
-
 // Kept as they come when nothing is cut: FLAC, and the lossy formats (never encoded twice).
 const KEPT = new Map([['flac', '.flac'], ['vorbis', '.ogg'], ['opus', '.opus'], ['aac', '.m4a'], ['mp3', '.mp3']]);
 // Above this, a sound kept as audio a person hears is AAC at 256 kb/s rather than FLAC (D67, measured:
@@ -35,13 +31,15 @@ const KEPT = new Map([['flac', '.flac'], ['vorbis', '.ogg'], ['opus', '.opus'], 
 // to distortion where FLAC keeps 24.0).
 const LONG = 20;
 
-export async function addSound(dir: string, request: AddSoundRequest, options?: EditOptions): Promise<EditResult & AddSoundResult & { source: string; license: string; duration: number }> {
+// What add_sound needs of this computer (sound): the sound read (the library's, downloaded from
+// Openverse, or a file), cut and faded as asked, and its sidecar.
+export async function soundFile<R>(dir: string, request: AddSoundRequest, options: HostOptions, use: (sound: HostNeeds['sound']) => R): Promise<R> {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-sound-'));
   try {
-    const { file, sidecar, id } = await source(request, work, courseLanguage(dir));
+    const { file, sidecar, id } = await source(request, work, courseLanguage(dir), options.signal);
     const licence = classifyLicence(sidecar.license);
     if (!licence.ok) throw new CommandError(`${request.from} is under ${licence.name || 'a licence not given'}: a course may ship CC0, public-domain, CC BY or CC BY-SA sounds, the author's own (--license own) or generated ones.`);
-    const tools = await findMediaTools();
+    const tools = options.tools ?? await findMediaTools();
     const info = await probeMedia(file, { tools });
     if (info.kind !== 'audio' || !info.audioCodec) throw new CommandError(`${request.from} is not a sound ffmpeg can read.`);
     const loops = request.loop ?? sidecar.loop ?? false;
@@ -73,12 +71,7 @@ export async function addSound(dir: string, request: AddSoundRequest, options?: 
     const full: Sound = { ...sidecar, ...(modified.length ? { modified: [...new Set([...(sidecar.modified ?? []), ...modified])] } : {}), ...(request.trim ? { trim: request.trim } : {}), duration, ...(loops ? { loop: true } : {}) };
     const bytes = fs.readFileSync(output);
     const hash = hashBytes(bytes);
-    const result = runCommand(dir, {
-      name: 'add_sound', args: { id: request.id ?? id, from: request.from, ...(request.line ? { line: request.line } : {}) },
-      run: (context) => addSoundCommand(context, { id: request.id ?? id, extension, file: binaryFile(bytes.length, { hash }), sidecar: full, ...(request.line ? { line: request.line } : {}) }),
-      sources: new Map([[hash, output]])
-    }, options);
-    return { ...result, source: full.source ?? 'file', license: full.license, duration };
+    return await use({ id: request.id ?? id, extension, file: binaryFile(bytes.length, { hash }), sidecar: full, bytes: new Map([[hash, output]]) });
   } finally {
     fs.rmSync(work, { recursive: true, force: true });
   }
@@ -92,7 +85,7 @@ export function courseLanguage(dir: string): string {
 const today = () => new Date().toISOString().slice(0, 10);
 
 // language: the course's; a library sound is titled in it (credits and the app name it so).
-async function source(request: AddSoundRequest, work: string, language: string): Promise<{ file: string; sidecar: Sound; id: string }> {
+async function source(request: AddSoundRequest, work: string, language: string, signal?: AbortSignal): Promise<{ file: string; sidecar: Sound; id: string }> {
   const given = (sidecar: Sound): Sound => ({ ...sidecar, ...(request.title ? { title: request.title } : {}), ...(request.caption ? { caption: { ...sidecar.caption, ...request.caption } } : {}) });
   const library = librarySounds().find((sound) => sound.id === request.from);
   if (library) {
@@ -102,8 +95,8 @@ async function source(request: AddSoundRequest, work: string, language: string):
     };
   }
   if (request.from.startsWith('openverse:')) {
-    const found = await openverseSound(request.from, { signal: request.signal });
-    const response = await fetch(found.file, { headers: { 'user-agent': `Elabora/${ELABORA_VERSION} (+https://elabora.studio)` }, signal: request.signal ?? AbortSignal.timeout(60000) }).catch((error: unknown) => { throw new CommandError(`The sound could not be downloaded from ${new URL(found.file).host}: ${error instanceof Error ? error.message : String(error)}`); });
+    const found = await openverseSound(request.from, { signal });
+    const response = await fetch(found.file, { headers: { 'user-agent': `Elabora/${ELABORA_VERSION} (+https://elabora.studio)` }, signal: signal ?? AbortSignal.timeout(60000) }).catch((error: unknown) => { throw new CommandError(`The sound could not be downloaded from ${new URL(found.file).host}: ${error instanceof Error ? error.message : String(error)}`); });
     if (!response.ok) throw new CommandError(`The sound could not be downloaded from ${new URL(found.file).host} (${response.status}).`);
     const file = path.join(work, `download${path.extname(new URL(found.file).pathname) || '.audio'}`);
     fs.writeFileSync(file, Buffer.from(await response.arrayBuffer()));

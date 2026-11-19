@@ -12,7 +12,6 @@ import { finishPlanPdf, PLAN_PDF_ELECTRON, PLAN_PDF_PLAYWRIGHT, PLAN_PDF_WINDOW 
 import { loadProjectFromDir } from './project-reader.ts';
 import { FONTS_DIR } from './fonts/index.ts';
 import { createZip } from './zip.ts';
-import { recordPlanSend } from './edit/index.ts';
 import type { EditOptions } from './edit/index.ts';
 import { writeFileAtomic } from './util/fs.ts';
 import { errorMessage } from './util/values.ts';
@@ -20,6 +19,7 @@ import { PLAN_DOCUMENT_FORMATS } from './plan-document-types.ts';
 import type { PlanDocumentFormat, ExportedPlanDocument } from './plan-document-types.ts';
 import { CHROMIUM_CHANNELS, browserIdentity, launchBrowser } from './emulator/browser.ts';
 import { findElectronRuntime, printWithElectron } from './emulator/electron.ts';
+import { run } from './edit/index.ts';
 
 const require = createRequire(import.meta.url);
 
@@ -127,7 +127,6 @@ export interface ExportPlanDocumentOptions extends PlanDocumentOptions {
   author?: EditOptions['author'];
 }
 
-
 export function defaultPlanDocumentFile(project: Project, format: PlanDocumentFormat): string {
   const id = String(project.course?.id ?? project.plan?.id ?? 'course').replace(/[^A-Za-z0-9._-]+/g, '-');
   return path.join(path.resolve(project.root || '.'), 'dist', `${id}-plan.${format}`);
@@ -154,6 +153,6 @@ export async function exportPlanDocument(dir: string, options: ExportPlanDocumen
   const exported = await writePlanDocument(project, options);
   if (!exported.version) return exported;
   const date = readPlanDocument(project, options).date;
-  recordPlanSend(dir, { version: exported.version, format: options.format, date }, options.author ? { author: options.author } : {});
+  run(dir, 'record_plan_send', { version: exported.version, format: options.format, date }, options.author ? { author: options.author } : {});
   return { ...exported, sent: true };
 }

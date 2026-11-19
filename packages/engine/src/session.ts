@@ -32,7 +32,7 @@ import { sortDiagnostics } from '@elabora/core/diagnostics/index';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
 import type { ValidationOptions } from '@elabora/core/validate/index';
 import * as edit from '@elabora/node/edit';
-import type { EditOptions, EditResult, Written } from '@elabora/node/edit';
+import type { EditOptions, EditResult, HostOptions, Written } from '@elabora/node/edit';
 import { JOURNAL_DIR } from '@elabora/node/journal/journal';
 import { projectDataDir } from '@elabora/node/data-dir';
 import { agentRulesState, claudeMissing, updateAgentRules, AGENTS_FILE, CLAUDE_FILE } from '@elabora/node/agent-rules';
@@ -57,7 +57,6 @@ import type { FileMedia } from '@elabora/core/media/conformance';
 import { isMediaAsset, mediaStatus, probeAssets } from '@elabora/node/store/media';
 import { toSourceFile, withUpdates } from './disk.ts';
 import type { SessionStore } from './disk.ts';
-import { COMMANDS, commandResult, isCommandName, runNamedCommand } from './commands.ts';
 import { SessionCanvas } from './session-canvas.ts';
 import { SessionVoice } from './session-voice.ts';
 import { SessionSounds } from './session-sounds.ts';
@@ -68,7 +67,7 @@ import { SessionActivity } from './session-activity.ts';
 import type { ActivityEntry } from '@elabora/node/activity';
 import { SessionReads, documentOptions } from './base/reads.ts';
 import { Renderer } from './base/render.ts';
-import { namedCommand } from '@elabora/core/commands/table';
+import { COMMAND_NAMES, namedCommand } from '@elabora/core/commands/table';
 import { NEED_SERVICES, SERVICES, isRequestType, notHere, serviceOf } from './base/services.ts';
 import { Batches } from './base/batches.ts';
 import { changeView, diagnosticsEvent } from './base/events.ts';
@@ -515,7 +514,7 @@ export class Session {
       case 'screenTranslation': return this.screenTranslation(request.params.screen, request.params.language);
       case 'buildTranslation': return this.buildTranslation(request.params);
       case 'run': {
-        if (typeof request.params.command !== 'string' || !isCommandName(request.params.command)) throw new EngineError('bad-request', `Unknown command "${String(params.command)}" (commands: ${Object.keys(COMMANDS).join(', ')})`);
+        if (typeof request.params.command !== 'string' || !namedCommand(request.params.command)) throw new EngineError('bad-request', `Unknown command "${String(params.command)}" (commands: ${COMMAND_NAMES.join(', ')})`);
         const need = namedCommand(request.params.command)?.needs;
         if (need && !this.#services.has(NEED_SERVICES[need])) { this.#assertOpen(); throw notHere('run', NEED_SERVICES[need]); }
         return this.run(request.params.command, request.params.args, request.params.author, request.params.expect);
@@ -842,16 +841,17 @@ export class Session {
   // engine (a future in-app assistant) says so.
   // expect: the values the change was decided on (Expectation), checked here, in the write queue and
   // under the lock, after the folder was read again: one changed meanwhile refuses it, nothing written.
-  async run<Name extends CommandName>(name: Name, args: CommandArgs[Name], author: Author = this.author, expect?: readonly Expectation[]): Promise<RunResult> {
+  // host: how this computer makes what the command needs (a voice's aligner, its progress).
+  async run<Name extends CommandName>(name: Name, args: CommandArgs[Name], author: Author = this.author, expect?: readonly Expectation[], host: Omit<HostOptions, keyof EditOptions> = {}): Promise<RunResult> {
     this.#assertOpen();
-    if (!isCommandName(name)) throw new EngineError('bad-request', `Unknown command "${String(name)}"`);
+    if (!namedCommand(name)) throw new EngineError('bad-request', `Unknown command "${String(name)}"`);
     if (expect !== undefined && !Array.isArray(expect)) throw new EngineError('bad-request', 'expect: a list of expected values');
     return this.#change(author, async () => {
       // An outdated course is migrated first, by its own change after a migration version.
       await this.#migrateFormat();
       const unmet = expect?.length ? unmetExpectation(this.#state.project, expect) : null;
       if (unmet) throw new EngineError('refused', `${unmet}: nothing written.`, { code: 'E_EXPECTED' });
-      const result = await runNamedCommand(name, this.root, args, this.#editOptions(author));
+      const result: EditResult = await edit.run(this.root, name, args, { ...this.#editOptions(author), ...host });
       return this.#committed(result);
     }).then(({ result, change }) => this.#runResult(result.op ?? name, result, change));
   }
@@ -1057,7 +1057,7 @@ export class Session {
     const all: Diagnostic[] = [...project];
     for (const list of screens.values()) all.push(...list);
     return {
-      command, change: seq === null ? null : this.#changeView(seq), files: result.files, result: commandResult(result),
+      command, change: seq === null ? null : this.#changeView(seq), files: result.files, result: edit.commandResult(result),
       diagnostics: sortDiagnostics(all.filter((d) => touched.has(d.file ?? '') || (d.severity === 'error' && !d.waived))), summary
     };
   }

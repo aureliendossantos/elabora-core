@@ -85,7 +85,7 @@ const add = defineCommand({
 
 // Runs the edit and says what it wrote: the faces, the tokens and their previous values, the notes.
 function addFont(dir: string, { family, weights, styles, flags }: { family?: string; weights?: number[]; styles?: FontStyle[]; flags: { for?: string[]; subsets?: string[]; from?: string; file?: string[]; license?: string; json: boolean } }): number {
-  const result = edit.addFont(dir, { family, weights, styles, subsets: flags.subsets, for: flags.for, from: flags.from, files: flags.file, license: flags.license });
+  const result = edit.run(dir, 'add_font', { family, weights, styles, subsets: flags.subsets, for: flags.for, from: flags.from, files: flags.file, license: flags.license });
   if (flags.json) { printJson(result); return 0; }
   printFormatMigration(result.formatMigration);
   const { font } = result;

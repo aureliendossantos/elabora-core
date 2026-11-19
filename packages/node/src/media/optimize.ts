@@ -1,9 +1,8 @@
 import path from 'node:path';
 import type { Author } from '@elabora/core/ops/types';
-import { replaceMediaReferences } from '@elabora/core/commands/media';
 import type { MediaMove } from '@elabora/core/commands/media';
 import { readProjectFiles } from '../project-reader.ts';
-import { runCommand } from '../edit/executor.ts';
+import { run } from '../edit/index.ts';
 import type { EditResult } from '../edit/executor.ts';
 import { optimizeInPlace } from './import.ts';
 import { getMediaQueue } from './jobs.ts';
@@ -57,7 +56,7 @@ export async function optimizeMedia(dir: string, paths: readonly string[], optio
     });
     const moves: MediaMove[] = files.filter((f) => f.status === 'done' && f.from !== f.to).map(({ from, to }) => ({ from, to }));
     const change = moves.length
-      ? runCommand(root, { name: 'optimize_media', args: { moves }, run: (context) => replaceMediaReferences(context, { moves }) }, options.author ? { author: options.author } : {})
+      ? run(root, 'optimize_media', { moves }, options.author ? { author: options.author } : {})
       : null;
     return { files, change };
   } finally {

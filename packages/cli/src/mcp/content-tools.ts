@@ -12,134 +12,134 @@ import { defineTool, fromCommand, editResult, errorResult, objectSchema, LANGUAG
 export const createScreen = defineTool({
   name: 'elabora_create_screen',
   ...fromCommand('create_screen'),
-  handler: (args, { root, author }) => editResult(edit.createScreen(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'create_screen', args, { author }))
 });
 
 export const updateScreen = defineTool({
   name: 'elabora_update_screen',
   ...fromCommand('update_screen'),
   // The schema checks the shape of steps, which objectSchema types as a plain record.
-  handler: (args, { root, author }) => editResult(edit.updateScreen(root, args as UpdateScreenArgs, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'update_screen', args as UpdateScreenArgs, { author }))
 });
 
 export const deleteScreen = defineTool({
   name: 'elabora_delete_screen',
   ...fromCommand('delete_screen'),
-  handler: (args, { root, author }) => editResult(edit.deleteScreen(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'delete_screen', args, { author }))
 });
 
 export const moveScreen = defineTool({
   name: 'elabora_move_screen',
   ...fromCommand('move_screen'),
-  handler: (args, { root, author }) => editResult(edit.moveScreen(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'move_screen', args, { author }))
 });
 
 export const addBlock = defineTool({
   name: 'elabora_add_block',
   ...fromCommand('add_block'),
-  handler: (args, { root, author }) => editResult(edit.addBlock(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'add_block', args, { author }))
 });
 
 export const updateBlock = defineTool({
   name: 'elabora_update_block',
   ...fromCommand('update_block'),
-  handler: (args, { root, author }) => editResult(edit.updateBlock(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'update_block', args, { author }))
 });
 
 export const setContinuity = defineTool({
   name: 'elabora_set_continuity',
   ...fromCommand('set_continuity'),
-  handler: (args, { root, author }) => editResult(edit.setContinuity(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'set_continuity', args, { author }))
 });
 
 export const removeBlock = defineTool({
   name: 'elabora_remove_block',
   ...fromCommand('remove_block'),
-  handler: (args, { root, author }) => editResult(edit.removeBlock(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'remove_block', args, { author }))
 });
 
 export const moveBlock = defineTool({
   name: 'elabora_move_block',
   ...fromCommand('move_block'),
-  handler: (args, { root, author }) => editResult(edit.moveBlock(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'move_block', args, { author }))
 });
 
 export const arrangeScreen = defineTool({
   name: 'elabora_arrange_screen',
   ...fromCommand('arrange_screen'),
-  handler: (args, { root, author }) => editResult(edit.arrangeScreen(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'arrange_screen', args, { author }))
 });
 
 export const duplicateBlock = defineTool({
   name: 'elabora_duplicate_block',
   ...fromCommand('duplicate_block'),
-  handler: (args, { root, author }) => editResult(edit.duplicateBlock(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'duplicate_block', args, { author }))
 });
 
 export const detachBlock = defineTool({
   name: 'elabora_detach_block',
   ...fromCommand('detach_block'),
-  handler: (args, { root, author }) => editResult(edit.detachBlock(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'detach_block', args, { author }))
 });
 
 export const convertBlock = defineTool({
   name: 'elabora_convert_block',
   ...fromCommand('convert_block'),
-  handler: (args, { root, author }) => editResult(edit.convertBlock(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'convert_block', args, { author }))
 });
 
 export const rename = defineTool({
   name: 'elabora_rename',
   ...fromCommand('rename'),
-  handler: (args, { root, author }) => editResult(edit.rename(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'rename', args, { author }))
 });
 
 export const upsertLayer = defineTool({
   name: 'elabora_upsert_layer',
   ...fromCommand('upsert_layer'),
-  handler: (args, { root, author }) => editResult(edit.upsertLayer(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'upsert_layer', args, { author }))
 });
 
 export const removeLayer = defineTool({
   name: 'elabora_remove_layer',
   ...fromCommand('remove_layer'),
-  handler: (args, { root, author }) => editResult(edit.removeLayer(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'remove_layer', args, { author }))
 });
 
 export const upsertEvent = defineTool({
   name: 'elabora_upsert_event',
   ...fromCommand('upsert_event'),
-  handler: (args, { root, author }) => editResult(edit.upsertEvent(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'upsert_event', args, { author }))
 });
 
 export const removeEvent = defineTool({
   name: 'elabora_remove_event',
   ...fromCommand('remove_event'),
-  handler: (args, { root, author }) => editResult(edit.removeEvent(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'remove_event', args, { author }))
 });
 
 export const duplicateScreen = defineTool({
   name: 'elabora_duplicate_screen',
   ...fromCommand('duplicate_screen'),
-  handler: (args, { root, author }) => editResult(edit.duplicateScreen(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'duplicate_screen', args, { author }))
 });
 
 export const upsertVariable = defineTool({
   name: 'elabora_upsert_variable',
   ...fromCommand('upsert_variable'),
-  handler: (args, { root, author }) => editResult(edit.upsertVariable(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'upsert_variable', args, { author }))
 });
 
 export const renameVariable = defineTool({
   name: 'elabora_rename_variable',
   ...fromCommand('rename_variable'),
-  handler: (args, { root, author }) => editResult(edit.renameVariable(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'rename_variable', args, { author }))
 });
 
 export const removeVariable = defineTool({
   name: 'elabora_remove_variable',
   ...fromCommand('remove_variable'),
-  handler: (args, { root, author }) => editResult(edit.removeVariable(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'remove_variable', args, { author }))
 });
 
 export const findTextTool = defineTool({
@@ -153,7 +153,7 @@ export const findTextTool = defineTool({
 export const replaceTextTool = defineTool({
   name: 'elabora_replace_text',
   ...fromCommand('replace_text'),
-  handler: (args, { root, author }) => editResult(edit.replaceText(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'replace_text', args, { author }))
 });
 
 // Translations: a language as a bilingual table, and texts translated into it (translations/<lang>.xlf,
@@ -200,7 +200,7 @@ export const translateTextTool = defineTool({
     texts: { type: 'array', minItems: 1, items: { type: 'object', properties: { unit: { type: 'string', minLength: 1 }, target: { type: ['string', 'null'] }, anchors: { type: 'array', items: { type: 'object', properties: { id: { type: 'string', pattern: '^w-' }, word: { type: 'string', minLength: 1 }, occurrence: { type: 'integer', minimum: 1 } }, required: ['id', 'word'], additionalProperties: false } } }, required: ['unit', 'target'], additionalProperties: false } },
     state: { enum: ['translated', 'reviewed', 'final'], default: 'translated' }
   }, ['language', 'texts']),
-  handler: ({ language, texts, state }, { root, author }) => editResult(edit.translateText(root, { language, texts: texts.map((text) => ({ unit: text.unit, target: text.target, ...(text.anchors ? { anchors: text.anchors } : {}), ...(state ? { state } : {}) })) }, { author }))
+  handler: ({ language, texts, state }, { root, author }) => editResult(edit.run(root, 'translate_text', { language, texts: texts.map((text) => ({ unit: text.unit, target: text.target, ...(text.anchors ? { anchors: text.anchors } : {}), ...(state ? { state } : {}) })) }, { author }))
 });
 
 // The translated plan approved by the author (D70): an agent asks them first, as before a paid
@@ -222,12 +222,12 @@ export const approveTranslationTool = defineTool({
       if (ask.state === 'approved' && current) return textResult({ ok: true, alreadyApproved: true, approval: { language, by: current.by, date: current.date, ...(current.agent ? { agent: current.agent } : {}) } });
       return textResult({ ok: false, needsApproval: true, approval: ask, ask: askAuthor(ask) });
     }
-    return editResult(edit.approveTranslation(root, { to: language, ...(authorApproved ? { authorApproved } : {}), ...(by ? { by } : {}), ...(reference ? { reference } : {}) }, { author }));
+    return editResult(edit.run(root, 'approve_translation', { to: language, ...(authorApproved ? { authorApproved } : {}), ...(by ? { by } : {}), ...(reference ? { reference } : {}) }, { author }));
   }
 });
 
 export const updateCourse = defineTool({
   name: 'elabora_update_course',
   ...fromCommand('update_course'),
-  handler: (args, { root, author }) => editResult(edit.updateCourseSettings(root, args, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'update_course', args, { author }))
 });

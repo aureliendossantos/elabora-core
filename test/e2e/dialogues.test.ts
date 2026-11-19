@@ -10,13 +10,13 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import { testPackage } from '@elabora/node/emulator/run';
 import { build } from '@elabora/node/build';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
-import { forkComponent } from '@elabora/node/edit';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import { loadAxe, axeViolations } from '@elabora/node/util/axe';
 import { dialogueCourse } from '../dialogue-fixture.ts';
 import { NO_MEDIA_CODECS, playsMedia, settled } from '../helpers.ts';
 import { voice, hasFfmpeg } from '../narration.ts';
+import { run } from '@elabora/node/edit';
 
 // The dialogue in the learner's player, in Chrome (docs/dialogues.md, D61): the thread (role=log,
 // bubbles inserted whole, the focus in « Votre réponse » once the learner answers, never before), a
@@ -681,7 +681,7 @@ test('voiced lines: the audio\'s own clock and ended event, muting, a refused au
 // options, the score and the debrief all the same.
 test('a fork of dialogue with markup of its own keeps the behaviour', { timeout: 180000 }, async () => {
   const dir = dialogueCourse({ screens: ['appel'] });
-  forkComponent(dir, { component: 'dialogue', id: 'dialogue-sobre' });
+  run(dir, 'fork_component', { component: 'dialogue', id: 'dialogue-sobre' });
   fs.writeFileSync(path.join(dir, 'components/dialogue-sobre/template.html'), [
     '<article class="sobre" data-t-group aria-label="{{title}}">',
     '  <p class="sobre-kicker">{{title}}</p>',

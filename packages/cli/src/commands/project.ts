@@ -138,7 +138,7 @@ const rename = defineCommand({
   run: ({ positionals, flags }) => reportingFailures(() => {
     const [dir, from, to] = positionals.length > 2 ? positionals : ['.', ...positionals];
     if (!from || !to) { console.error('Usage: elabora rename [dir] <old-id> <new-id>'); return 2; }
-    const result = edit.rename(dir, { from, to });
+    const result = edit.run(dir, 'rename', { from, to });
     if (flags.json) { printJson(result); return 0; }
     printFormatMigration(result.formatMigration);
     const { kind, references } = result.renamed;
@@ -157,7 +157,7 @@ const ignore = defineCommand({
   run: ({ positionals, flags }) => reportingFailures(() => {
     const [dir, code, key] = positionals.length >= 3 ? positionals : ['.', ...positionals];
     if (!code || !key) { console.error('Usage: elabora ignore [dir] <code> <key> [--restore]'); return 2; }
-    const result = edit.ignoreFindings(dir, { findings: [{ code, key }], ignored: !flags.restore });
+    const result = edit.run(dir, 'ignore_findings', { findings: [{ code, key }], ignored: !flags.restore });
     if (flags.json) { printJson(result); return 0; }
     printFormatMigration(result.formatMigration);
     console.log(flags.restore ? `✔ ${code} ${key} counts again.` : `✔ ${code} ${key} is ignored by the author until what it found changes.`);

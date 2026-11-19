@@ -20,9 +20,9 @@ import { probeMedia } from '@elabora/node/media/probe';
 import { MediaQueue } from '@elabora/node/media/jobs';
 import { optimizeMedia } from '@elabora/node/media/optimize';
 import { listVersions, readVersion } from '@elabora/node/backups/index';
-import { updateCourseSettings } from '@elabora/node/edit';
 import { projectDataDir } from '@elabora/node/data-dir';
 import { copyExample, readJSON, writeJSON, ROOT } from '../helpers.ts';
+import * as edit from '@elabora/node/edit';
 
 const run = promisify(execFile);
 const tools = await findMediaTools().catch(() => null);
@@ -194,7 +194,7 @@ test('backups before edits leave out media that are not masters yet', async (t) 
   const dir = copyExample();
   place(dir, 'phone.mov', 'assets/video/phone.mov');
   place(dir, 'master.mp4', 'assets/video/master.mp4');
-  updateCourseSettings(dir, { description: 'Edited.' });
+  edit.run(dir, 'update_course', { description: 'Edited.' });
   const [summary] = listVersions(dir);
   assert.ok(summary, 'an automatic version was taken');
   const version = readVersion(dir, summary.id);

@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import * as edit from '@elabora/node/edit';
-import { addResource } from '@elabora/node/edit/resources';
 import { validateDir } from '@elabora/node/project-reader';
 import { ROOT, copyExample, readJSON } from '../helpers.ts';
 import { textPdf } from '../sources-fixtures.ts';
@@ -25,7 +24,7 @@ const titled = (title: string) => Buffer.from(textPdf(['Page']).toString('latin1
 test('a PDF is copied under a readable name, titled by its own title, in one change that undo takes back', () => {
   const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   const pdf = write('Procédure_SUP-NET-04 (v2).pdf', titled('Procédure de diagnostic réseau'));
-  const added = addResource(dir, { path: pdf });
+  const added = edit.run(dir, 'add_resource', { path: pdf });
   assert.equal(added.op, 'add_resource');
   assert.equal(added.path, 'assets/resources/procedure-sup-net-04-v2.pdf');
   assert.equal(added.titleFrom, 'pdf');
@@ -34,7 +33,7 @@ test('a PDF is copied under a readable name, titled by its own title, in one cha
   assert.deepEqual(readJSON(dir, 'course.json').resources.at(-1), added.resource);
   assert.ok(!validateDir(dir).diagnostics.some((d) => d.severity === 'error'));
   // The same content again: named, not copied; another entry.
-  const again = addResource(dir, { path: pdf, title: 'La même, ailleurs' });
+  const again = edit.run(dir, 'add_resource', { path: pdf, title: 'La même, ailleurs' });
   assert.equal(again.reused, true);
   assert.equal(again.path, added.path);
   assert.equal(again.resource.id, 'procedure-sup-net-04-v2-2');
@@ -50,22 +49,22 @@ test('a PDF is copied under a readable name, titled by its own title, in one cha
 test('any file: a name taken by another file, a spreadsheet titled by its name, a CSV kept byte for byte', () => {
   const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   // A file named as one already there, with another content.
-  const sheet = addResource(dir, { path: write('equipements-siege.csv', 'nom;adresse\nimprimante;10.0.0.4\n') });
+  const sheet = edit.run(dir, 'add_resource', { path: write('equipements-siege.csv', 'nom;adresse\nimprimante;10.0.0.4\n') });
   assert.equal(sheet.path, 'assets/resources/equipements-siege-2.csv');
   assert.equal(sheet.resource.title, 'equipements-siege');
   assert.equal(sheet.titleFrom, 'name');
   // Excel's French CSV is Windows-1252: not UTF-8, copied as bytes.
   const latin = Buffer.from('nom;télé\n', 'latin1');
-  const legacy = addResource(dir, { path: write('Inventaire_2026.csv', latin), description: 'Export du tableur.' });
+  const legacy = edit.run(dir, 'add_resource', { path: write('Inventaire_2026.csv', latin), description: 'Export du tableur.' });
   assert.deepEqual(fs.readFileSync(path.join(dir, legacy.path)), latin);
   assert.equal(legacy.resource.title, 'Inventaire 2026');
   assert.equal(legacy.resource.description, 'Export du tableur.');
-  const xlsx = addResource(dir, { path: write('Plan de charge.xlsx', Buffer.from([0x50, 0x4b, 0x03, 0x04, 1, 2, 3])) });
+  const xlsx = edit.run(dir, 'add_resource', { path: write('Plan de charge.xlsx', Buffer.from([0x50, 0x4b, 0x03, 0x04, 1, 2, 3])) });
   assert.equal(xlsx.path, 'assets/resources/plan-de-charge.xlsx');
   assert.equal(xlsx.resource.title, 'Plan de charge');
   // A PDF without a title of its own: its name.
-  assert.equal(addResource(dir, { path: write('scan_0042.pdf', textPdf(['Scan'])) }).resource.title, 'scan 0042');
-  assert.throws(() => addResource(dir, { path: path.join(outside, 'absent.pdf') }), /No file at/);
+  assert.equal(edit.run(dir, 'add_resource', { path: write('scan_0042.pdf', textPdf(['Scan'])) }).resource.title, 'scan 0042');
+  assert.throws(() => edit.run(dir, 'add_resource', { path: path.join(outside, 'absent.pdf') }), /No file at/);
 });
 
 test('the engine runs add_resource as a change of the app', async () => {

@@ -8,7 +8,6 @@ import type { MediaJob } from '@elabora/node/media/jobs';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { packageWeights } from '@elabora/node/packaging/weights';
-import { imageToVideo } from '@elabora/node/media/to-video';
 import { isPresetName } from '@elabora/core/media/presets';
 import { sizeText } from '@elabora/core/lms/package-limits';
 import { bytesAt, durationText, noticedFirst } from '@elabora/core/media/weights';
@@ -16,6 +15,7 @@ import type { MediaUse, MediaWeight } from '@elabora/core/media/weights';
 import { defineCommand, errorMessage, printDiagnostics, printFormatMigration, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
 import { mediaProgress } from '../media-progress.ts';
+import { run } from '@elabora/node/edit';
 
 const HELP = `  media import [dir] <file…> [--to <folder>] [--name <name>] [--no-wait] [--json]
                                                       Bring media into assets/ (video, audio, images): converted in the
@@ -156,7 +156,7 @@ const captions = defineCommand({
     if (!block || !file || extra.length) { console.error('Usage: elabora media captions [dir] <block> <file.vtt|.srt> [--name <name>] [--json]'); return 2; }
     if (notACourse(dir)) { console.error(`✘ ${path.resolve(dir)} is not an Elabora course (no course.json).`); return 1; }
     if (!fs.existsSync(file)) { console.error(`✘ No file ${file}.`); return 1; }
-    const result = edit.setCaptions(dir, { block, text: fs.readFileSync(file, 'utf8'), ...(flags.name ? { name: flags.name } : {}) });
+    const result = edit.run(dir, 'set_captions', { block, text: fs.readFileSync(file, 'utf8'), ...(flags.name ? { name: flags.name } : {}) });
     const touched = new Set(result.files);
     const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file !== undefined && touched.has(d.file));
     if (flags.json) { printJson({ ok: true, block, captions: result.captions, change: result.change, undo: result.undo, files: result.files, diagnostics: own }); return 0; }
@@ -177,7 +177,7 @@ const toVideo = defineCommand({
     const { dir, rest: [block, ...extra] } = courseAndArguments(positionals);
     if (!block || extra.length) { console.error('Usage: elabora media to-video [dir] <block> [--json]'); return 2; }
     if (notACourse(dir)) { console.error(`✘ ${path.resolve(dir)} is not an Elabora course (no course.json).`); return 1; }
-    const result = await imageToVideo(dir, { block });
+    const result = await run(dir, 'image_to_video', { block });
     const touched = new Set(result.files);
     const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file !== undefined && touched.has(d.file));
     if (flags.json) {

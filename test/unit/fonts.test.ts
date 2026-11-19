@@ -145,7 +145,7 @@ test('findFont and selectFontFiles: names, weights and styles', () => {
 test('elabora font add: the files and the licence, the faces, the tokens; undone in one step', () => {
   const dir = course();
   const before = fs.readFileSync(path.join(dir, 'course.json'), 'utf8');
-  const result = edit.addFont(dir, { family: 'EB Garamond' }, { author: { kind: 'agent', name: 'test' } });
+  const result = edit.run(dir, 'add_font', { family: 'EB Garamond' }, { author: { kind: 'agent', name: 'test' } });
   assert.deepEqual(result.files, ['course.json', 'theme/fonts/eb-garamond/OFL.txt', 'theme/fonts/eb-garamond/eb-garamond-latin-wght-italic.woff2', 'theme/fonts/eb-garamond/eb-garamond-latin-wght-normal.woff2']);
   for (const file of vetted('EB Garamond').files.filter((file) => file.subset === 'latin')) {
     assert.deepEqual(fs.readFileSync(path.join(dir, 'theme/fonts/eb-garamond', path.posix.basename(file.path))), fs.readFileSync(path.join(FONTS_DIR, file.path)));
@@ -164,17 +164,17 @@ test('elabora font add: the files and the licence, the faces, the tokens; undone
   assert.ok(!codes(validateDir(dir).diagnostics).some((code) => code.startsWith('W_FONT') || code === 'E_SCHEMA'), JSON.stringify(validateDir(dir).diagnostics.filter((d) => d.code.startsWith('W_FONT'))));
 
   // A monospace goes to a custom token; for names the tokens.
-  const mono = edit.addFont(dir, { family: 'JetBrains Mono' });
+  const mono = edit.run(dir, 'add_font', { family: 'JetBrains Mono' });
   assert.deepEqual(Object.keys(mono.tokens), ['custom font.mono']);
   assert.equal(readJSON(dir, 'course.json').theme.custom['font.mono'], vetted('JetBrains Mono').stack);
-  const heading = edit.addFont(dir, { family: 'Playfair Display', for: ['heading'], styles: ['normal'] });
+  const heading = edit.run(dir, 'add_font', { family: 'Playfair Display', for: ['heading'], styles: ['normal'] });
   assert.deepEqual(heading.tokens, { 'font.heading': { from: vetted('EB Garamond').stack, to: vetted('Playfair Display').stack } });
   assert.equal(readJSON(dir, 'course.json').theme.tokens['font.body'], vetted('EB Garamond').stack);
-  edit.addFont(dir, { family: 'Caveat', for: ['none'] });
+  edit.run(dir, 'add_font', { family: 'Caveat', for: ['none'] });
   assert.equal(readJSON(dir, 'course.json').theme.custom['font.display'], undefined);
 
   // Added again with other styles: its faces are replaced, the file it no longer uses goes.
-  edit.addFont(dir, { family: 'eb garamond', styles: ['normal'], for: ['none'] });
+  edit.run(dir, 'add_font', { family: 'eb garamond', styles: ['normal'], for: ['none'] });
   const fonts = readJSON(dir, 'course.json').theme.fonts;
   assert.deepEqual(fonts.filter((font: { family: string }) => font.family === 'EB Garamond').map((font: { src: string }) => font.src), ['theme/fonts/eb-garamond/eb-garamond-latin-wght-normal.woff2']);
   assert.equal(fonts[0].family, 'EB Garamond', 'it keeps its place');
@@ -188,17 +188,17 @@ test('elabora font add: the files and the licence, the faces, the tokens; undone
 
 test('elabora font add refuses what it cannot embed, and says why', () => {
   const dir = course();
-  assert.throws(() => edit.addFont(dir, { family: 'Comic Sans' }), /not a vetted font.*elabora font list/s);
-  assert.throws(() => edit.addFont(dir, { family: 'Garamond' }), /did you mean EB Garamond/);
-  assert.throws(() => edit.addFont(dir, { family: 'Lato', weights: [300] }), /300 is not among them.*npm pack @fontsource\/lato/s);
-  assert.throws(() => edit.addFont(dir, { family: 'Inter', for: ['Body Text'] }), /body, heading, none/);
-  assert.throws(() => edit.addFont(dir, { family: 'Inter', subsets: ['cyrillic'] }), /Inter has no cyrillic files in the vetted list \(latin, latin-ext\)\.$/);
+  assert.throws(() => edit.run(dir, 'add_font', { family: 'Comic Sans' }), /not a vetted font.*elabora font list/s);
+  assert.throws(() => edit.run(dir, 'add_font', { family: 'Garamond' }), /did you mean EB Garamond/);
+  assert.throws(() => edit.run(dir, 'add_font', { family: 'Lato', weights: [300] }), /300 is not among them.*npm pack @fontsource\/lato/s);
+  assert.throws(() => edit.run(dir, 'add_font', { family: 'Inter', for: ['Body Text'] }), /body, heading, none/);
+  assert.throws(() => edit.run(dir, 'add_font', { family: 'Inter', subsets: ['cyrillic'] }), /Inter has no cyrillic files in the vetted list \(latin, latin-ext\)\.$/);
   // theme.fonts holds 24 faces at most: one per file, so per subset.
   const both = ['latin', 'latin-ext'];
-  edit.addFont(dir, { family: 'Lato', subsets: both });
-  edit.addFont(dir, { family: 'Poppins', subsets: both });
-  edit.addFont(dir, { family: 'Inter', subsets: both });
-  assert.throws(() => edit.addFont(dir, { family: 'JetBrains Mono', subsets: both }), /at most 24 font faces: 24 are taken by other families and JetBrains Mono needs 4\. Take fewer weights, styles or subsets/);
+  edit.run(dir, 'add_font', { family: 'Lato', subsets: both });
+  edit.run(dir, 'add_font', { family: 'Poppins', subsets: both });
+  edit.run(dir, 'add_font', { family: 'Inter', subsets: both });
+  assert.throws(() => edit.run(dir, 'add_font', { family: 'JetBrains Mono', subsets: both }), /at most 24 font faces: 24 are taken by other families and JetBrains Mono needs 4\. Take fewer weights, styles or subsets/);
   assert.equal(readJSON(dir, 'course.json').theme.fonts.length, 24);
   assert.ok(!codes(validateDir(dir).diagnostics).includes('E_SCHEMA'));
 });
@@ -213,7 +213,7 @@ test('latin-ext when a language of the course needs it: one face per file, with 
   fs.copyFileSync(fontFile('Inter'), path.join(dir, 'theme/inter.woff2'));
   const inter = vetted('Inter');
   const range = (subset: string) => inter.files.find((file) => file.subset === subset)!.unicodeRange;
-  const result = edit.addFont(dir, { family: 'Inter' });
+  const result = edit.run(dir, 'add_font', { family: 'Inter' });
   assert.deepEqual(result.notes, ['No longer declared: theme/inter.woff2 (left in place; delete them if nothing else uses them).']);
   assert.deepEqual(result.font.faces.map((face) => `${face.style} ${face.subset}`), ['normal latin', 'normal latin-ext', 'italic latin', 'italic latin-ext']);
   assert.deepEqual(readJSON(dir, 'course.json').theme.fonts, [
@@ -235,22 +235,22 @@ test('latin-ext when a language of the course needs it: one face per file, with 
   assert.equal(courseData.fonts[1].unicodeRange, range('latin-ext'), 'the course data gives free objects the range of each file');
 
   // Asked for latin alone, or a family without latin-ext: the course is told which letters fall back.
-  const latin = edit.addFont(dir, { family: 'Inter', subsets: ['latin'], for: ['none'] });
+  const latin = edit.run(dir, 'add_font', { family: 'Inter', subsets: ['latin'], for: ['none'] });
   assert.deepEqual(readJSON(dir, 'course.json').theme.fonts.map((font: { src: string; unicodeRange?: string }) => [font.src, font.unicodeRange]), [
     ['theme/fonts/inter/inter-latin-wght-normal.woff2', undefined], ['theme/fonts/inter/inter-latin-wght-italic.woff2', undefined]
   ], 'one subset: no range to tell files apart');
   assert.deepEqual(latin.notes, ['The course is in pl, whose letters need the latin-ext subset, and it was embedded without its latin-ext files (subsets: latin, latin-ext): those letters are drawn by the next fonts of the stack.']);
-  const fraktur = edit.addFont(dir, { family: 'UnifrakturMaguntia', for: ['none'] });
+  const fraktur = edit.run(dir, 'add_font', { family: 'UnifrakturMaguntia', for: ['none'] });
   assert.deepEqual(fraktur.notes, ['The course is in pl, whose letters need the latin-ext subset, and UnifrakturMaguntia has no latin-ext files: those letters are drawn by the next fonts of the stack.']);
 
   // The languages of the translations count, a language no subset writes gets a note.
   const french = course();
   fs.mkdirSync(path.join(french, 'translations'), { recursive: true });
   fs.writeFileSync(path.join(french, 'translations/cs.xlf'), '<?xml version="1.0" encoding="UTF-8"?>\n<xliff version="1.2"/>\n');
-  assert.deepEqual(edit.addFont(french, { family: 'Lora', styles: ['normal'] }).font.faces.map((face) => face.subset), ['latin', 'latin-ext']);
+  assert.deepEqual(edit.run(french, 'add_font', { family: 'Lora', styles: ['normal'] }).font.faces.map((face) => face.subset), ['latin', 'latin-ext']);
   const russian = course();
   writeJSON(russian, 'course.json', { ...readJSON(russian, 'course.json'), language: 'ru' });
-  const cyrillic = edit.addFont(russian, { family: 'Lora', styles: ['normal'] });
+  const cyrillic = edit.run(russian, 'add_font', { family: 'Lora', styles: ['normal'] });
   assert.deepEqual(cyrillic.font.faces.map((face) => face.subset), ['latin']);
   assert.match(cyrillic.notes.join('\n'), /The files hold the latin subset and the course is in ru: letters outside them are drawn by the next fonts of the stack\. Embed a font that holds them: its Fontsource package with the subset of its script \(from, subsets: cyrillic/);
 
@@ -332,7 +332,7 @@ test('a font from a Fontsource package (folder or npm pack tarball), with its li
   // The tarball of a variable package.
   const tarball = path.join(work, 'fontsource-variable-lora-5.3.0.tgz');
   fs.writeFileSync(tarball, tgz(fontsourcePackage('Lora')));
-  const result = edit.addFont(dir, { from: tarball, family: 'Lora Text', for: ['body'] });
+  const result = edit.run(dir, 'add_font', { from: tarball, family: 'Lora Text', for: ['body'] });
   assert.equal(result.origin, 'Fontsource package lora');
   assert.equal(result.font.folder, 'theme/fonts/lora-text');
   assert.deepEqual(result.font.faces.map((face) => `${face.weight} ${face.style}`), ['400 700 normal', '400 700 italic']);
@@ -340,13 +340,13 @@ test('a font from a Fontsource package (folder or npm pack tarball), with its li
   assert.equal(readJSON(dir, 'course.json').theme.tokens['font.body'], '"Lora Text", Georgia, "Times New Roman", serif');
   // The folder of a static package: 400 and 700 unless weights say otherwise.
   const folder = unpack(fontsourcePackage('Lato', { variable: false }), path.join(work, 'node_modules/@fontsource/lato'));
-  const lato = edit.addFont(dir, { from: folder, styles: ['normal'], for: ['none'] });
+  const lato = edit.run(dir, 'add_font', { from: folder, styles: ['normal'], for: ['none'] });
   assert.deepEqual(lato.font.faces.map((face) => face.src), ['theme/fonts/lato/lato-latin-400-normal.woff2', 'theme/fonts/lato/lato-latin-700-normal.woff2']);
   assert.match(lato.notes[0], /static: took the weights 400, 700/);
-  assert.throws(() => edit.addFont(dir, { from: folder, weights: [300] }), /no lato-latin-300-normal\.woff2/);
+  assert.throws(() => edit.run(dir, 'add_font', { from: folder, weights: [300] }), /no lato-latin-300-normal\.woff2/);
   fs.rmSync(path.join(folder, 'LICENSE'));
-  assert.throws(() => edit.addFont(dir, { from: folder }), /has no LICENSE/);
-  assert.throws(() => edit.addFont(dir, { from: path.join(work, 'absent') }), /not found/);
+  assert.throws(() => edit.run(dir, 'add_font', { from: folder }), /has no LICENSE/);
+  assert.throws(() => edit.run(dir, 'add_font', { from: path.join(work, 'absent') }), /not found/);
   assert.ok(!codes(validateDir(dir).diagnostics).includes('W_FONT_LICENSE_MISSING'));
 });
 
@@ -358,28 +358,28 @@ test('a Fontsource package in the subsets the course needs or asks for, with the
   const range = (subset: string) => lora.files.find((file) => file.subset === subset)!.unicodeRange;
   const tarball = path.join(work, 'lora.tgz');
   fs.writeFileSync(tarball, tgz(fontsourcePackage('Lora')));
-  const result = edit.addFont(dir, { from: tarball, styles: ['normal'], for: ['none'] });
+  const result = edit.run(dir, 'add_font', { from: tarball, styles: ['normal'], for: ['none'] });
   assert.deepEqual(readJSON(dir, 'course.json').theme.fonts, [
     { family: 'Lora', src: 'theme/fonts/lora/lora-latin-wght-normal.woff2', weight: '400 700', unicodeRange: range('latin') },
     { family: 'Lora', src: 'theme/fonts/lora/lora-latin-ext-wght-normal.woff2', weight: '400 700', unicodeRange: range('latin-ext') }
   ]);
   assert.deepEqual(result.notes, []);
-  assert.throws(() => edit.addFont(dir, { from: tarball, subsets: ['cyrillic'] }), /Lora has no cyrillic subset in its Fontsource package \(latin, latin-ext\)/);
+  assert.throws(() => edit.run(dir, 'add_font', { from: tarball, subsets: ['cyrillic'] }), /Lora has no cyrillic subset in its Fontsource package \(latin, latin-ext\)/);
   // Without unicode.json the files of two subsets cannot be told apart; one subset still can.
   const older = path.join(work, 'lora-older.tgz');
   fs.writeFileSync(older, tgz(fontsourcePackage('Lora', { ranges: false })));
-  assert.throws(() => edit.addFont(dir, { from: older }), /give no unicode range for their subsets.*embed one subset/s);
-  edit.addFont(dir, { from: older, subsets: ['latin'], styles: ['normal'], for: ['none'] });
+  assert.throws(() => edit.run(dir, 'add_font', { from: older }), /give no unicode range for their subsets.*embed one subset/s);
+  edit.run(dir, 'add_font', { from: older, subsets: ['latin'], styles: ['normal'], for: ['none'] });
   assert.deepEqual(readJSON(dir, 'course.json').theme.fonts, [{ family: 'Lora', src: 'theme/fonts/lora/lora-latin-wght-normal.woff2', weight: '400 700' }]);
   // A package that lists latin-ext without all its files: its latin files, and the note.
   const partial = fontsourcePackage('Lora');
   partial.delete('package/files/lora-latin-ext-wght-italic.woff2');
   const incomplete = path.join(work, 'lora-partial.tgz');
   fs.writeFileSync(incomplete, tgz(partial));
-  const latinOnly = edit.addFont(dir, { from: incomplete, for: ['none'] });
+  const latinOnly = edit.run(dir, 'add_font', { from: incomplete, for: ['none'] });
   assert.deepEqual(latinOnly.font.faces.map((face) => face.subset), ['latin', 'latin']);
   assert.deepEqual(latinOnly.notes, ['The course is in hu, whose letters need the latin-ext subset, and Lora has no latin-ext files: those letters are drawn by the next fonts of the stack.']);
-  assert.throws(() => edit.addFont(dir, { from: incomplete, subsets: ['latin', 'latin-ext'] }), /has no lora-latin-ext-wght-italic\.woff2/);
+  assert.throws(() => edit.run(dir, 'add_font', { from: incomplete, subsets: ['latin', 'latin-ext'] }), /has no lora-latin-ext-wght-italic\.woff2/);
 
   // Any subset of the package by name, such as the script of a Russian course.
   const russian = course();
@@ -390,11 +390,11 @@ test('a Fontsource package in the subsets the course needs or asks for, with the
   cyrillic.set('package/unicode.json', Buffer.from(JSON.stringify({ ...JSON.parse(cyrillic.get('package/unicode.json')!.toString()), cyrillic: 'U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116' })));
   for (const style of ['normal', 'italic']) cyrillic.set(`package/files/lora-cyrillic-wght-${style}.woff2`, cyrillic.get(`package/files/lora-latin-wght-${style}.woff2`)!);
   const folder = unpack(cyrillic, path.join(work, 'node_modules/@fontsource-variable/lora'));
-  const taken = edit.addFont(russian, { from: folder, subsets: ['latin', 'cyrillic'], for: ['none'] });
+  const taken = edit.run(russian, 'add_font', { from: folder, subsets: ['latin', 'cyrillic'], for: ['none'] });
   assert.deepEqual(taken.font.faces.map((face) => `${face.style} ${face.subset}`), ['normal latin', 'normal cyrillic', 'italic latin', 'italic cyrillic']);
   assert.equal(readJSON(russian, 'course.json').theme.fonts[1].unicodeRange, 'U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116');
   assert.deepEqual(taken.notes, [], 'a subset taken for the script of the course: no note');
-  edit.addFont(russian, { from: folder, subsets: ['cyrillic'], styles: ['normal'], for: ['none'] });
+  edit.run(russian, 'add_font', { from: folder, subsets: ['cyrillic'], styles: ['normal'], for: ['none'] });
   assert.deepEqual(readJSON(russian, 'course.json').theme.fonts, [{ family: 'Lora', src: 'theme/fonts/lora/lora-cyrillic-wght-normal.woff2', weight: '400 700', unicodeRange: 'U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116' }], 'a subset beyond latin keeps its range, even alone');
   // Large scripts come in numbered slices: refused, a font file is the way.
   const japanese = fontsourcePackage('Lora');
@@ -402,9 +402,9 @@ test('a Fontsource package in the subsets the course needs or asks for, with the
   japanese.set('package/unicode.json', Buffer.from(JSON.stringify({ '[0]': 'U+3000-30FF', '[1]': 'U+4E00-4FFF', latin: range('latin') })));
   const sliced = path.join(work, 'sliced.tgz');
   fs.writeFileSync(sliced, tgz(japanese));
-  assert.throws(() => edit.addFont(russian, { from: sliced, subsets: ['japanese'] }), /splits its japanese letters into numbered slices \(2 files\).*files, license/s);
+  assert.throws(() => edit.run(russian, 'add_font', { from: sliced, subsets: ['japanese'] }), /splits its japanese letters into numbered slices \(2 files\).*files, license/s);
   // Local files are embedded whole.
-  assert.throws(() => edit.addFont(russian, { files: [fontFile('Lora')], license: path.join(FONTS_DIR, lora.license.path), subsets: ['latin'] }), /local files are embedded whole/);
+  assert.throws(() => edit.run(russian, 'add_font', { files: [fontFile('Lora')], license: path.join(FONTS_DIR, lora.license.path), subsets: ['latin'] }), /local files are embedded whole/);
 });
 
 test('local font files with their licence: weights, style and family read from the files', () => {
@@ -415,10 +415,10 @@ test('local font files with their licence: weights, style and family read from t
     fs.copyFileSync(path.join(FONTS_DIR, file.path), target);
     return target;
   });
-  assert.throws(() => edit.addFont(dir, { files }), /needs its licence/);
+  assert.throws(() => edit.run(dir, 'add_font', { files }), /needs its licence/);
   const license = path.join(work, 'LICENSE');
   fs.copyFileSync(path.join(FONTS_DIR, vetted('Figtree').license.path), license);
-  const result = edit.addFont(dir, { files, license });
+  const result = edit.run(dir, 'add_font', { files, license });
   assert.equal(result.font.family, 'Figtree');
   assert.deepEqual(result.font.faces, [
     { src: 'theme/fonts/figtree/Figtree-wght-normal.woff2', weight: '300 900', style: 'normal' },
@@ -429,16 +429,16 @@ test('local font files with their licence: weights, style and family read from t
   // A licence Elabora does not recognise is copied, with a note.
   const other = path.join(work, 'EULA-licence.txt');
   fs.writeFileSync(other, 'Web font licence of Example Foundry. Embedding in e-learning packages is allowed.\n');
-  const custom = edit.addFont(dir, { files: [files[0]], license: other, family: 'Brand Sans' });
+  const custom = edit.run(dir, 'add_font', { files: [files[0]], license: other, family: 'Brand Sans' });
   assert.equal(custom.font.license, 'theme/fonts/brand-sans/EULA-licence.txt');
   assert.match(custom.notes[0], /not recognised: check that it allows embedding/);
   // Not WOFF2 or WOFF, not a font.
   const ttf = path.join(work, 'font.ttf');
   fs.writeFileSync(ttf, 'x');
-  assert.throws(() => edit.addFont(dir, { files: [ttf], license }), /WOFF2.*fonttools/s);
+  assert.throws(() => edit.run(dir, 'add_font', { files: [ttf], license }), /WOFF2.*fonttools/s);
   const fake = path.join(work, 'fake.woff2');
   fs.writeFileSync(fake, 'not a font at all');
-  assert.throws(() => edit.addFont(dir, { files: [fake], license }), /Not a WOFF2, WOFF/);
+  assert.throws(() => edit.run(dir, 'add_font', { files: [fake], license }), /Not a WOFF2, WOFF/);
 });
 
 test('W_FONT_LICENSE_MISSING: a font file without a licence next to it, one finding per folder', () => {
@@ -463,7 +463,7 @@ test('W_FONT_LICENSE_MISSING: a font file without a licence next to it, one find
 
 test('the build carries the licence of each packaged font next to it', async () => {
   const dir = course();
-  edit.addFont(dir, { family: 'Source Sans 3' });
+  edit.run(dir, 'add_font', { family: 'Source Sans 3' });
   fs.writeFileSync(path.join(dir, 'theme/fonts/source-sans-3/unused.woff2'), fs.readFileSync(fontFile('Inter')));
   const result = await build(dir, { out: scratch() });
   assert.ok(result.ok && result.zipPath, JSON.stringify(result.diagnostics.filter((d) => d.severity === 'error')));

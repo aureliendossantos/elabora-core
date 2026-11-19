@@ -4,7 +4,6 @@ import crypto from 'node:crypto';
 import { parseJSON } from '@elabora/core/util/json';
 import { slugify } from '@elabora/core/util/slug';
 import type { Author } from '@elabora/core/ops/types';
-import { updateCourseSettings } from '../edit/index.ts';
 import { dataLocation } from '../data-dir.ts';
 import { listProjectFiles, type FileInfo } from '../project-files.ts';
 import { copySources, sourcesSize } from '../sources/index.ts';
@@ -19,6 +18,7 @@ import { appendMark } from '../journal/journal.ts';
 import { LibraryError } from './errors.ts';
 import { ELABORA_VERSION, MODULE_ID_PREFIX, copyProjectFile, folderSize, isEmptyShell, isProjectId, newProjectId, readProjectId, removeTree, renameWithRetries, writeProjectId } from './files.ts';
 import { appLanguage, ensureLibrary, libraryEntries, libraryRoot, stagingFolder } from './location.ts';
+import { run } from '../edit/index.ts';
 
 // Projects of the library: one folder per project, named by its project id. The folders are the
 // truth; what the home screen shows is read from them (course.json, file times and sizes), plus a
@@ -476,7 +476,7 @@ export async function renameProject(id: string, title: string, options: { author
   const dir = libraryProjectDir(id);
   const trimmed = title.trim();
   if (!trimmed) throw new LibraryError('E_INVALID_ARGUMENT', 'A project title cannot be empty.');
-  const result = updateCourseSettings(dir, { title: trimmed }, { author: options.author });
+  const result = run(dir, 'update_course', { title: trimmed }, { author: options.author });
   cacheValidation(dir, result.summary as { errors: number; warnings: number; infos: number; waived: number });
   return getProject(id);
 }

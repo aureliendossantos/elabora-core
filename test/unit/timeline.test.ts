@@ -130,11 +130,11 @@ function timed({ words = true }: { words?: boolean } = {}) {
 
 test('set_block_timing: in and out as patches, null removes; the screen\'s timeline, report and course data follow', { skip: NO_FFMPEG }, async () => {
   const dir = timed();
-  let result = await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' } });
+  let result = await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' } });
   assert.deepEqual(result.timing, { in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' } });
-  result = await edit.setBlockTiming(dir, { block: 'accueil-illustration', out: { at: { line: 'l3' } }, in: { duration: 0.8 } });
+  result = await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', out: { at: { line: 'l3' } }, in: { duration: 0.8 } });
   assert.deepEqual(readJSON(dir, 'screens/accueil.json').blocks[1].timing, { in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise', duration: 0.8 }, out: { at: { line: 'l3' } } });
-  assert.throws(() => edit.setBlockTiming(dir, { block: 'accueil-situation', in: { effect: 'fade' } }), /needs a moment/);
+  assert.throws(() => edit.run(dir, 'set_block_timing', { block: 'accueil-situation', in: { effect: 'fade' } }), /needs a moment/);
   const project = loadProjectFromDir(dir);
   const timeline = screenTimeline(project, 'accueil')!;
   const l2 = timeline.lines.find((line) => line.id === 'l2')!;
@@ -160,20 +160,20 @@ test('set_block_timing: in and out as patches, null removes; the screen\'s timel
   assert.deepEqual(compiled.timing, { in: { at: block.in!.at, effect: 'rise', duration: 0.8 }, out: { at: block.out!.at, effect: 'fade', duration: 0.4 } });
   assert.ok(render.course.screens[0].narration!.lines[1].words!.length > 5);
   // Removed: the block shows with its step again.
-  result = await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: null, out: null });
+  result = await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: null, out: null });
   assert.equal(result.timing, null);
   assert.equal(readJSON(dir, 'screens/accueil.json').blocks[1].timing, undefined);
 });
 
 test('a line\'s new text takes its word anchors along; an anchor whose words are gone is a finding', { skip: NO_FFMPEG }, async () => {
   const dir = timed();
-  await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
-  await edit.upsertEvent(dir, { screen: 'accueil', event: { id: 'imprimante-entendue', on: { type: 'timeline.reached', at: { line: 'l2', word: 'ni', occurrence: 2 } }, do: [{ type: 'pause-timeline' }] } });
-  let result = await edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l2', text: "Ni le copieur, ni l'imprimante, ni le partage de fichiers ne marchent." });
+  await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
+  await edit.run(dir, 'upsert_event', { screen: 'accueil', event: { id: 'imprimante-entendue', on: { type: 'timeline.reached', at: { line: 'l2', word: 'ni', occurrence: 2 } }, do: [{ type: 'pause-timeline' }] } });
+  let result = await edit.run(dir, 'update_narration_line', { screen: 'accueil', line: 'l2', text: "Ni le copieur, ni l'imprimante, ni le partage de fichiers ne marchent." });
   assert.deepEqual(result.anchors?.moved, [{ where: 'imprimante-entendue', word: 'ni' }]);
   assert.equal(readJSON(dir, 'screens/accueil.json').events.at(-1).on.at.occurrence, 3, 'the second « ni » is now the third');
   assert.deepEqual(codes(validateDir(dir).diagnostics).filter((code) => code.startsWith('E_TIMELINE')), []);
-  result = await edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l2', text: "Ni le copieur, ni l'imprimante, ni les dossiers ne marchent." });
+  result = await edit.run(dir, 'update_narration_line', { screen: 'accueil', line: 'l2', text: "Ni le copieur, ni l'imprimante, ni les dossiers ne marchent." });
   assert.deepEqual(result.anchors?.lost, [{ where: 'accueil-illustration in', word: 'partage' }]);
   const found = validateDir(dir).diagnostics.filter((d) => d.code === 'E_TIMELINE_ANCHOR_MISSING');
   assert.equal(found.length, 1);
@@ -216,7 +216,7 @@ test('validation: anchors, seconds, effects, layers, stacks, order, reading time
 
 test('word anchors without word times are estimated, and said so', { skip: NO_FFMPEG }, async () => {
   const dir = timed({ words: false });
-  await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
+  await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
   const finding = validateDir(dir).diagnostics.find((d) => d.code === 'I_TIMELINE_WORDS_ESTIMATED');
   assert.match(finding?.message ?? '', /Line "l2" .* "partage" \(accueil-illustration\)/);
   const timeline = screenTimeline(loadProjectFromDir(dir), 'accueil')!;
@@ -252,8 +252,8 @@ test('a screen timed in seconds, without narration: its timeline, its cues, seek
 
 test('XLIFF: word anchors travel as markers; the translator places them, the translated course anchors to their words', { skip: NO_FFMPEG }, async () => {
   const dir = timed();
-  await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' } });
-  await edit.upsertEvent(dir, { screen: 'accueil', event: { id: 'partage-entendu', on: { type: 'timeline.reached', at: { line: 'l2', word: 'partage' } }, do: [{ type: 'pause-timeline' }] } });
+  await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' } });
+  await edit.run(dir, 'upsert_event', { screen: 'accueil', event: { id: 'partage-entendu', on: { type: 'timeline.reached', at: { line: 'l2', word: 'partage' } }, do: [{ type: 'pause-timeline' }] } });
   exportTranslation(dir, { to: 'en' });
   const xlf = fs.readFileSync(translationFile(dir, 'en'), 'utf8');
   assert.match(xlf, /<source>Ni l'<mrk id="w-imprimante" type="elabora:anchor">imprimante<\/mrk>, ni le <mrk id="w-partage" type="elabora:anchor">partage<\/mrk> de fichiers ne marchent\.<\/source>/);
@@ -262,7 +262,7 @@ test('XLIFF: word anchors travel as markers; the translator places them, the tra
   // Every other text as is; l2 with one marker placed, the other not yet.
   let table = translationTable(loadProjectFromDir(dir), 'en');
   const others = table.rows.filter((row) => row.id !== unit).map((row) => ({ unit: row.id, target: row.source }));
-  await edit.translateText(dir, { language: 'en', texts: [...others, { unit, target: 'Neither the <mrk id="w-imprimante">printer</mrk> nor file sharing work.' }] });
+  await edit.run(dir, 'translate_text', { language: 'en', texts: [...others, { unit, target: 'Neither the <mrk id="w-imprimante">printer</mrk> nor file sharing work.' }] });
   table = translationTable(loadProjectFromDir(dir), 'en');
   const row = table.rows.find((candidate) => candidate.id === unit)!;
   assert.equal(row.target, 'Neither the printer nor file sharing work.', 'the target is the words; its markers apart');
@@ -286,15 +286,15 @@ test('XLIFF: word anchors travel as markers; the translator places them, the tra
   assert.deepEqual(draft.unplaced, [{ screen: 'accueil', line: 'l2', word: 'partage', where: 'partage-entendu' }]);
   assert.deepEqual((draft.files.get('screens/accueil.json') as Screen).events!.at(-1)!.on, { type: 'timeline.reached', at: { line: 'l2' } });
   // Placed by naming the words (the editor's « Accrocher »); the markers already there stay.
-  assert.throws(() => edit.translateText(dir, { language: 'en', texts: [{ unit, target: 'Neither the printer nor file sharing work.', anchors: [{ id: 'w-partage', word: 'copier' }] }] }), /"copier" is not in the translation/);
-  assert.throws(() => edit.translateText(dir, { language: 'en', texts: [{ unit, target: 'Neither the <mrk id="w-copieur">printer</mrk> nor file sharing work.' }] }), /has no anchor w-copieur \(its anchors: w-imprimante, w-partage\)/);
-  await edit.translateText(dir, { language: 'en', texts: [{ unit, target: 'Neither the printer nor file sharing work.', anchors: [{ id: 'w-partage', word: 'file sharing' }] }] });
+  assert.throws(() => edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit, target: 'Neither the printer nor file sharing work.', anchors: [{ id: 'w-partage', word: 'copier' }] }] }), /"copier" is not in the translation/);
+  assert.throws(() => edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit, target: 'Neither the <mrk id="w-copieur">printer</mrk> nor file sharing work.' }] }), /has no anchor w-copieur \(its anchors: w-imprimante, w-partage\)/);
+  await edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit, target: 'Neither the printer nor file sharing work.', anchors: [{ id: 'w-partage', word: 'file sharing' }] }] });
   const marked = translationTable(loadProjectFromDir(dir), 'en').rows.find((candidate) => candidate.id === unit)!;
   assert.equal(marked.targetMarked, 'Neither the <mrk id="w-imprimante">printer</mrk> nor <mrk id="w-partage">file sharing</mrk> work.');
   const [placed] = translationStatus(dir, { to: 'en' });
   assert.deepEqual(placed.exists && placed.anchors.toPlace, []);
   // Another unit translated again: the line's markers stay in the file.
-  await edit.translateText(dir, { language: 'en', texts: [{ unit: others[0].unit, target: `${others[0].target} ` }] });
+  await edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit: others[0].unit, target: `${others[0].target} ` }] });
   assert.match(fs.readFileSync(translationFile(dir, 'en'), 'utf8'), /<target>Neither the <mrk id="w-imprimante" type="elabora:anchor">printer<\/mrk> nor <mrk id="w-partage" type="elabora:anchor">file sharing<\/mrk> work\.<\/target>/);
   // The translated course: anchors on the English words, its own voice gives them their times.
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-anchors-')), 'en');
@@ -317,8 +317,8 @@ test('XLIFF: word anchors travel as markers; the translator places them, the tra
 
 test('marks of a timed screen: its start, blocks that come and go, cues and steps\' ends, at the time each settles', { skip: NO_FFMPEG }, async () => {
   const dir = timed();
-  await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' }, out: { at: { line: 'l3' } } });
-  await edit.upsertEvent(dir, { screen: 'accueil', event: { id: 'partage-entendu', on: { type: 'timeline.reached', at: { line: 'l2', word: 'partage' } }, do: [{ type: 'pause-timeline' }] } });
+  await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' }, out: { at: { line: 'l3' } } });
+  await edit.run(dir, 'upsert_event', { screen: 'accueil', event: { id: 'partage-entendu', on: { type: 'timeline.reached', at: { line: 'l2', word: 'partage' } }, do: [{ type: 'pause-timeline' }] } });
   const project = loadProjectFromDir(dir);
   const timeline = screenTimeline(project, 'accueil')!;
   const marks = timelineMarks(project, 'accueil')!;
@@ -336,13 +336,13 @@ test('marks of a timed screen: its start, blocks that come and go, cues and step
 test('split_step (« Couper à une réplique »): the line and those after it start the next step; later steps, blocks on moved lines and anchors follow', { skip: NO_FFMPEG }, async () => {
   const dir = timed();
   // Step 1: l1, l2; step 2: l3. The illustration comes on « partage » of l2.
-  await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
+  await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.steps = { 2: { opens: 'answered' } };
   screen.events = [...(screen.events ?? []), { id: 'vers-la-fin', on: { type: 'timeline.reached', at: { step: 2, edge: 'end' } }, do: [{ type: 'reveal-step', step: 2 }] }];
   writeJSON(dir, 'screens/accueil.json', screen);
-  assert.throws(() => edit.splitStep(dir, { screen: 'accueil', line: 'l1' }), /already starts step 1/);
-  const result = await edit.splitStep(dir, { screen: 'accueil', line: 'l2' });
+  assert.throws(() => edit.run(dir, 'split_step', { screen: 'accueil', line: 'l1' }), /already starts step 1/);
+  const result = await edit.run(dir, 'split_step', { screen: 'accueil', line: 'l2' });
   assert.deepEqual([result.step, result.lines, result.blocks], [2, ['l2'], ['accueil-illustration']]);
   const after = readJSON(dir, 'screens/accueil.json');
   assert.deepEqual(after.narration.lines.map((line: { id: string; step?: number }) => [line.id, line.step ?? 1]), [['l1', 1], ['l2', 2], ['l3', 3]]);
@@ -357,7 +357,7 @@ test('split_step (« Couper à une réplique »): the line and those after it st
 
 test('duplicate_screen: the copy says its lines with the same audio, its sidecars naming it', { skip: NO_FFMPEG }, async () => {
   const dir = timed();
-  const result = await edit.duplicateScreen(dir, { id: 'accueil', newId: 'accueil-bis' });
+  const result = await edit.run(dir, 'duplicate_screen', { id: 'accueil', newId: 'accueil-bis' });
   assert.equal(result.screen, 'accueil-bis');
   const sidecar = readJSON(dir, narrationSidecarPath('fr', 'accueil-bis', 'l2'));
   assert.equal(sidecar.screen, 'accueil-bis');
@@ -379,11 +379,11 @@ test('« Reprendre la voix off du plan »: the screen\'s script from the voice-o
   const { planVoiceover } = await import('@elabora/core/commands/index');
   assert.equal(planVoiceover(loadProjectFromDir(dir), 'accueil').length, 2);
   assert.deepEqual(planVoiceover(loadProjectFromDir(dir), 'bilan'), []);
-  const result = await edit.narrationFromPlan(dir, { screen: 'accueil' });
+  const result = await edit.run(dir, 'narration_from_plan', { screen: 'accueil' });
   assert.deepEqual(result.lines, ['l1', 'l2']);
   assert.deepEqual(readJSON(dir, 'screens/accueil.json').narration.lines, [{ id: 'l1', speaker: 'marc', text: "Bonjour, c'est Marc. Rien ne s'imprime." }, { id: 'l2', text: 'Voyons le trajet de la demande.' }], 'an unknown speaker is left to the default');
-  assert.throws(() => edit.narrationFromPlan(dir, { screen: 'accueil' }), /already has a narration/);
-  assert.throws(() => edit.narrationFromPlan(dir, { screen: 'bilan' }), /gives no voice-over/);
+  assert.throws(() => edit.run(dir, 'narration_from_plan', { screen: 'accueil' }), /already has a narration/);
+  assert.throws(() => edit.run(dir, 'narration_from_plan', { screen: 'bilan' }), /gives no voice-over/);
   // The voice-over is a text of the plan to translate.
   const units = translationTable(loadProjectFromDir(dir), 'en').rows.map((row) => row.id);
   assert.ok(units.includes(`plan.item.${covered}.voiceover.1`), units.filter((unit) => unit.startsWith('plan.item')).join(', '));

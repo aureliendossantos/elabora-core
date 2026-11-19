@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { narrationLines, readNarrationSidecar } from '@elabora/core/narration/narration';
 import type { FileHash } from '@elabora/core/project/files';
-import { addNarrationLineWithAudioChange, setNarrationTextFromAudioChange } from '../edit/index.ts';
-import type { EditOptions } from '../edit/executor.ts';
+import type { HostNeeds } from '@elabora/core/commands/host';
+import type { HostOptions } from '../edit/host.ts';
 import { findMediaTools } from '../media/tools.ts';
 import type { MediaTools } from '../media/tools.ts';
 import { alignAudio, alignsAtOnce } from '../align/index.ts';
@@ -20,35 +20,23 @@ import type { LineFromAudioFileArgs, TextFromAudioFileArgs } from '@elabora/core
 // its text is given; its words are timed on that text by the word aligner when it is on this
 // computer (D27), and the line, its text and its audio are written in one undoable change.
 
-type Transcribing = Pick<TranscribeOptions, 'service' | 'install' | 'approvedPercent' | 'signal' | 'onProgress'>;
-
-// What runs a job, beside its arguments (which the engine's protocol carries).
-interface Running {
-  signal?: AbortSignal;
-  onProgress?: TranscribeOptions['onProgress'];
-  tools?: MediaTools;
-}
-
-export type LineFromAudioArgs = LineFromAudioFileArgs & Running;
-
-export async function addNarrationLineFromAudio(dir: string, args: LineFromAudioArgs, options?: EditOptions) {
+// What a recording made a line needs of this computer (recording): its audio as the course keeps
+// it, its text (given, or heard by the transcriber in the audio the line keeps, its silence trimmed,
+// so that word times match), its words timed.
+export async function recording<R>(dir: string, args: LineFromAudioFileArgs, options: HostOptions, use: (heard: HostNeeds['recording']) => R): Promise<R> {
   const project = loadProjectFromDir(dir);
   const language = args.language || project.course?.language || '';
   if (!project.screens.has(args.screen)) throw new TranscriptionError('E_NARRATION_SCREEN', `Unknown screen "${args.screen}".`);
-  const tools = args.tools ?? await findMediaTools();
+  const tools = options.tools ?? await findMediaTools();
   return withLineAudio(args.file, { trim: args.trim !== false, tools }, async (audio) => {
-    // What the voice says, heard in the audio the line keeps (its silence trimmed), so that word times match.
-    const transcript = args.text?.trim() ? null : await transcribeAudio(audio.file, language, { ...transcribing(args), tools });
+    const transcript = args.text?.trim() ? null : await transcribeAudio(audio.file, language, { ...transcribing(args, options), tools });
     const text = (args.text ?? transcript?.text ?? '').replace(/\s+/g, ' ').trim();
     if (!text) throw new TranscriptionError('E_TRANSCRIBE_EMPTY', `${path.basename(args.file)}: the transcriber heard no words in it. Give its text (--text).`);
-    const timed = await timedWords(audio.file, text, language, tools, args.signal);
-    const written = await addNarrationLineWithAudioChange(dir, {
-      screen: args.screen, ...(args.after !== undefined ? { after: args.after } : {}), ...(args.layer !== undefined ? { layer: args.layer } : {}), language,
-      line: { text, ...(args.speaker ? { speaker: args.speaker } : {}), ...(typeof args.step === 'number' ? { step: args.step } : {}) },
-      audio: { size: audio.bytes.length, hash: audio.hash }, duration: audio.duration, provider: 'recording', voice: path.basename(args.file), generated: false,
-      ...(timed ?? {}), createdAt: createdAt()
-    }, new Map([[audio.hash, audio.bytes]]), options);
-    return { ...written, text, ...(transcript ? { transcript } : {}) };
+    const timed = await timedWords(audio.file, text, language, tools, options.signal);
+    return use({
+      language, text, ...(transcript ? { transcript } : {}), audio: { size: audio.bytes.length, hash: audio.hash }, duration: audio.duration, voice: path.basename(args.file),
+      ...(timed ?? {}), createdAt: createdAt(), bytes: new Map([[audio.hash, audio.bytes]])
+    });
   });
 }
 
@@ -66,35 +54,32 @@ function recordingOf(dir: string, screen: string, line: string, language?: strin
   return { file: path.join(project.root ?? dir, info.audio), text: info.text ?? '', audioHash: sidecar.audioHash as FileHash | undefined, language: lang };
 }
 
-export type TextFromAudioArgs = TextFromAudioFileArgs & Running;
-
 // What the line's recording says, beside its text now: what « Régénérer le texte d'après l'audio »
 // shows before anything is written (the old text and the new).
-export async function transcribeNarrationLine(dir: string, args: Omit<TextFromAudioArgs, 'text' | 'audioHash'>): Promise<{ before: string; transcript: Transcript; audioHash: FileHash | null }> {
+export async function transcribeNarrationLine(dir: string, args: Omit<TextFromAudioFileArgs, 'text' | 'audioHash'>, options: HostOptions = {}): Promise<{ before: string; transcript: Transcript; audioHash: FileHash | null }> {
   const recording = recordingOf(dir, args.screen, args.line, args.language);
-  const heard = await transcribeAudio(recording.file, recording.language, { ...transcribing(args), ...(args.tools ? { tools: args.tools } : {}) });
+  const heard = await transcribeAudio(recording.file, recording.language, { ...transcribing(args, options), ...(options.tools ? { tools: options.tools } : {}) });
   const transcript = { ...heard, text: withApostrophesOf(heard.text, recording.text) };
   return { before: recording.text, transcript, audioHash: recording.audioHash ?? null };
 }
 
-export async function setNarrationTextFromAudio(dir: string, args: TextFromAudioArgs, options?: EditOptions) {
+// What set_narration_text_from_audio needs of this computer (heardText): what the line's recording
+// says (given, or heard now), its words timed on that text.
+export async function heardText<R>(dir: string, args: TextFromAudioFileArgs, options: HostOptions, use: (heard: HostNeeds['heardText']) => R): Promise<R> {
   const recording = recordingOf(dir, args.screen, args.line, args.language);
-  const tools = args.tools ?? await findMediaTools();
-  const transcript = args.text?.trim() ? null : await transcribeAudio(recording.file, recording.language, { ...transcribing(args), tools });
+  const tools = options.tools ?? await findMediaTools();
+  const transcript = args.text?.trim() ? null : await transcribeAudio(recording.file, recording.language, { ...transcribing(args, options), tools });
   const text = (args.text ?? withApostrophesOf(transcript?.text ?? '', recording.text)).replace(/\s+/g, ' ').trim();
   if (!text) throw new TranscriptionError('E_TRANSCRIBE_EMPTY', `The transcriber heard no words in the recording of line "${args.line}": its text stays.`);
   const audioHash = args.audioHash ?? recording.audioHash;
-  const timed = await timedWords(recording.file, text, recording.language, tools, args.signal);
-  const written = setNarrationTextFromAudioChange(dir, {
-    screen: args.screen, line: args.line, language: recording.language, text, ...(audioHash ? { audioHash } : {}), ...(timed ?? {})
-  }, options);
-  return { ...written, ...(transcript ? { transcript } : {}) };
+  const timed = await timedWords(recording.file, text, recording.language, tools, options.signal);
+  return use({ language: recording.language, text, ...(audioHash ? { audioHash } : {}), ...(timed ?? {}), ...(transcript ? { transcript } : {}) });
 }
 
-const transcribing = (args: Transcribing): TranscribeOptions => ({
+const transcribing = (args: Pick<TextFromAudioFileArgs, 'service' | 'install' | 'approvedPercent'>, options: HostOptions): TranscribeOptions => ({
   ...(args.service ? { service: args.service } : {}), ...(args.install ? { install: true } : {}),
   ...(typeof args.approvedPercent === 'number' ? { approvedPercent: args.approvedPercent } : {}),
-  ...(args.signal ? { signal: args.signal } : {}), ...(args.onProgress ? { onProgress: args.onProgress } : {})
+  ...(options.signal ? { signal: options.signal } : {}), ...(options.onTranscribe ? { onProgress: options.onTranscribe } : {})
 });
 
 // The text's words on the audio, when the language's aligner is here (an alignment that fails

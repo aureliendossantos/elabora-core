@@ -24,7 +24,7 @@ async function callJSON(client: Client, name: string, args: Record<string, unkno
 test('diff: adding a screen keeps learner progress; losing the lock breaks it', async () => {
   const dir = copyExample();
   const v1 = await build(dir, { profiles: ['docebo', '360learning'], out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-d1-')) });
-  edit.createScreen(dir, { id: 'complement', title: 'Complément', covers: ['ITEM-2'], after: 'chemin' });
+  edit.run(dir, 'create_screen', { id: 'complement', title: 'Complément', covers: ['ITEM-2'], after: 'chemin' });
   const v2 = await build(dir, { profiles: ['docebo', '360learning'], out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-d2-')) });
   assert.ok(v1.ok && v2.ok);
   const d = diffReports(readReport(v1.reportPath), readReport(v2.reportPath));
@@ -33,7 +33,7 @@ test('diff: adding a screen keeps learner progress; losing the lock breaks it', 
   assert.equal(d.perProfile.find((p) => p.profile === 'docebo')?.verdict, 'safe');
   assert.equal(d.perProfile.find((p) => p.profile === '360learning')?.verdict, 'progress-lost');
   fs.rmSync(path.join(dir, 'elabora.lock.json'));
-  edit.createScreen(dir, { id: 'intro-bis', title: 'Intro bis', covers: ['ITEM-1'], position: 0, section: 'decouvrir' });
+  edit.run(dir, 'create_screen', { id: 'intro-bis', title: 'Intro bis', covers: ['ITEM-1'], position: 0, section: 'decouvrir' });
   const v3 = await build(dir, { profiles: ['docebo'], out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-d3-')) });
   assert.ok(v3.ok);
   assert.equal(diffReports(readReport(v1.reportPath), readReport(v3.reportPath)).learnerState.resume, 'broken');

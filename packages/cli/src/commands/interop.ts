@@ -39,7 +39,7 @@ const importCommand = defineCommand({
       if (fs.existsSync(from)) { fs.mkdirSync(path.dirname(path.join(dir, 'assets', asset.to)), { recursive: true }); fs.copyFileSync(from, path.join(dir, 'assets', asset.to)); }
     }
     const { screen } = lesson;
-    const result = edit.createScreen(dir, { id: screen.id, title: screen.title, covers: screen.covers, section: flags.section, after: flags.after, completeWhen: screen.completeWhen, blocks: screen.blocks });
+    const result = edit.run(dir, 'create_screen', { id: screen.id, title: screen.title, covers: screen.covers, section: flags.section, after: flags.after, completeWhen: screen.completeWhen, blocks: screen.blocks });
     console.log(`✔ Screen "${screen.id}" created with ${screen.blocks.length} block(s).`);
     for (const loss of lesson.losses) console.log(`  - ${loss}`);
     printDiagnostics(result.diagnostics.filter((d) => d.file === `screens/${screen.id}.json`));
