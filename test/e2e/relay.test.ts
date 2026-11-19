@@ -6,7 +6,7 @@ import type { Browser, BrowserContext, Frame, Page } from 'playwright-core';
 import { launchChromium } from '@elabora/node/emulator/browser';
 import { startHosts } from '../relay-hosts.ts';
 import type { Hosts } from '../relay-hosts.ts';
-import { APP, CANVAS, FRAMES, MODULES, POLICY, REVIEW, SPACE, handlers, reached, relay, scratch, setRelayScript } from '../relay-site.ts';
+import { APP, CANVAS, FRAMES, MODULES, POLICY, REVIEW, SPACE, handlers, reached, relay, scratch, setRelayDelay, setRelayScript } from '../relay-site.ts';
 
 // The relay of the web app (D118, D119) in real browsers, on the app's real names (an app, a canvas and a
 // frames host, two sites): the canvas shown from files that no host has, which a stand-in for the engine gives
@@ -36,14 +36,16 @@ const canvasFrame = (page: Page): Frame => page.frames().find((frame) => frame.u
 const objectFrames = (page: Page): Frame[] => page.frames().filter((frame) => frame.url().startsWith(`${FRAMES}/canvas/objects/`));
 
 // The app's page on a module, the relay pages open, a screen shown and ready.
-async function openApp(context: BrowserContext, module: 'a' | 'b', { show = true, parts = false } = {}): Promise<{ page: Page; route: string }> {
+async function openApp(context: BrowserContext, module: 'a' | 'b', { show = true, parts = false, early = false, screen = MODULES[module]!.screen } = {}): Promise<{ page: Page; route: string }> {
   const page = await context.newPage();
   page.on('console', (message) => { if (process.env.RELAY_DEBUG) console.log('[console]', message.type(), message.text().slice(0, 200)); });
   page.on('pageerror', (error) => { if (process.env.RELAY_DEBUG) console.log('[pageerror]', String(error).slice(0, 200)); });
   await page.goto(`${APP}/?module=${module}&canvas=${encodeURIComponent(CANVAS)}&frames=${encodeURIComponent(FRAMES)}${parts ? '&parts=1' : ''}`);
-  await page.waitForFunction(() => (window as unknown as { app?: { log: Array<{ type: string }> } }).app?.log.filter((message) => message.type === 'relay/opened').length === 2, null, { timeout: 30000 }).catch(async (error) => { throw new Error(`${String(error).split('\n')[0]} ${JSON.stringify(await page.evaluate(() => (window as unknown as { app?: { log: unknown[] } }).app?.log))}`); });
+  // The engine does not wait for the relay: with `early`, the first render is pushed as soon as the app exists.
+  if (early) await page.waitForFunction(() => !!(window as unknown as { app?: unknown }).app, null, { timeout: 30000 });
+  else await page.waitForFunction(() => (window as unknown as { app?: { log: Array<{ type: string }> } }).app?.log.filter((message) => message.type === 'relay/opened').length === 2, null, { timeout: 30000 }).catch(async (error) => { throw new Error(`${String(error).split('\n')[0]} ${JSON.stringify(await page.evaluate(() => (window as unknown as { app?: { log: unknown[] } }).app?.log))}`); });
   if (show) {
-    const id = await page.evaluate((screen) => (window as unknown as { app: { show(screen: string): Promise<number> } }).app.show(screen), MODULES[module]!.screen);
+    const id = await page.evaluate((screen) => (window as unknown as { app: { show(screen: string): Promise<number> } }).app.show(screen), screen);
     for (let i = 0; i < 100 && !canvasFrame(page); i++) await page.waitForTimeout(100);
     if (!canvasFrame(page)) throw new Error(`no canvas frame among ${JSON.stringify(page.frames().map((frame) => frame.url()))}`);
     await canvasFrame(page).waitForFunction((wanted) => (window as unknown as { __elaboraCanvas: { layout(): { id: unknown } } }).__elaboraCanvas.layout().id === wanted, id, { timeout: 30000 });
@@ -210,6 +212,33 @@ for (const name of wanted) {
       assert.deepEqual(after, { status: 200, text: '{' });
       setRelayScript(relay['relay.js']!);
     } finally {
+      await context.close();
+      await browser.close();
+      hosts.close();
+    }
+  });
+}
+
+for (const name of wanted) {
+  test(`relay (${name}): on a first visit, the first draw asks the relay for the module's pictures, never the network`, { timeout: 300000 }, async (t) => {
+    const hosts = await startHosts(handlers());
+    const browser = await launch(name, hosts);
+    if (!browser) { t.skip(`${name} is not here`); hosts.close(); return; }
+    // A browser that has no relay yet: the pages are not controlled when they load, and the first render must wait for the relay.
+    const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1280, height: 800 }, serviceWorkers: 'allow' });
+    try {
+      const missesBefore = reached.length;
+      // The relay's script comes slowly: the pages are drawn long before it controls them.
+      setRelayDelay(2000);
+      const { page } = await openApp(context, 'a', { screen: 'accueil', early: true });
+      const canvas = canvasFrame(page);
+      await canvas.waitForFunction(() => [...document.images].some((image) => image.currentSrc.includes('/canvas/assets/')), null, { timeout: 30000 });
+      await canvas.waitForFunction(() => [...document.images].filter((image) => image.currentSrc.includes('/canvas/assets/')).every((image) => image.complete && image.naturalWidth > 0), null, { timeout: 30000 });
+      const files = await page.evaluate(() => (window as unknown as { app: { requests: Array<{ kind: string; path?: string }> } }).app.requests.filter((request) => request.kind === 'file').map((request) => request.path));
+      assert.ok(files.some((file) => file?.startsWith('assets/images/')), `the picture came from the engine: ${JSON.stringify(files)}`);
+      assert.deepEqual(reached.slice(missesBefore).filter((file) => file.startsWith('canvas/canvas/')), [], 'no file of the module was asked of the canvas host\'s network');
+    } finally {
+      setRelayDelay(0);
       await context.close();
       await browser.close();
       hosts.close();

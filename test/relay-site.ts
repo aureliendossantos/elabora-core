@@ -25,8 +25,9 @@ export const POLICY = {
   frames: `default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'none'; worker-src 'self'; ${COMMON}; frame-ancestors ${CANVAS} ${APP}`
 };
 
-export const MODULES: Record<string, { root: string; object: string; screen: string }> = {
-  a: { root: EXAMPLE, object: 'diagnostic-reseau', screen: 'simulation' },
+export const MODULES: Record<string, { root: string; object: string; screen: string; more?: string[] }> = {
+  // more: other screens the tests show (this one has pictures: a first draw asks for files the first screen does not).
+  a: { root: EXAMPLE, object: 'diagnostic-reseau', screen: 'simulation', more: ['accueil'] },
   b: { root: path.join(ROOT, 'examples', 'clockwork'), object: 'clockwork', screen: 'centre' }
 };
 
@@ -37,8 +38,10 @@ const renders = new Map<string, string>();
 const compiled = new Map<string, string>();
 for (const [name, module] of Object.entries(MODULES)) {
   const project = loadProjectFromDir(module.root);
-  const render = renderScreen(project, module.screen, {}, createRenderContext(project));
-  renders.set(`${name}/${module.screen}`, JSON.stringify({ screen: render.screen, course: render.course, view: render.view, styles: render.styles, files: render.files.map(({ path: file, kind, hash }) => ({ path: file, kind, hash })), ...(render.outline ? { outline: render.outline } : {}) }));
+  for (const screen of [module.screen, ...(module.more ?? [])]) {
+    const shown = renderScreen(project, screen, {}, createRenderContext(project));
+    renders.set(`${name}/${screen}`, JSON.stringify({ screen: shown.screen, course: shown.course, view: shown.view, styles: shown.styles, files: shown.files.map(({ path: file, kind, hash }) => ({ path: file, kind, hash })), ...(shown.outline ? { outline: shown.outline } : {}) }));
+  }
   compiled.set(`${name}/${module.object}`, await compileObjectCode(path.join(module.root, 'objects', module.object)));
 }
 // A video of the module's, 20 s, for the ranges: written where the module's files are read from.
@@ -63,6 +66,9 @@ let relayScript = relayBuilt['relay.js']!;
 // The relay's script as the canvas and frames hosts serve it now (a test replaces it).
 export const setRelayScript = (script: string): void => { relayScript = script; };
 export const reached: string[] = [];
+// How long the hosts take to give the relay's script (a slow network on a first visit: the pages load before the relay controls them).
+let relayDelay = 0;
+export const setRelayDelay = (ms: number): void => { relayDelay = ms; };
 const serveBytes = (request: import('node:http').IncomingMessage, response: import('node:http').ServerResponse, file: string, headers: Record<string, string> = {}) => {
   const stat = fs.statSync(file);
   const range = /^bytes=(\d+)-(\d*)$/.exec(request.headers.range ?? '');
@@ -81,7 +87,7 @@ export const handlers = (): Record<string, Handler> => {
     // The host's Worker: the relay's script after one line that says its policy, no other script of a worker.
     if (url.pathname === '/relay.js') {
       const line = `self.ELABORA_HOST = Object.freeze(${JSON.stringify({ policy: POLICY[host], frameAncestors: POLICY[host].split('; ').find((part) => part.startsWith('frame-ancestors')), ...(host === 'frames' ? { appOrigin: APP } : {}) })});\n`;
-      response.writeHead(200, { ...base, 'content-type': 'text/javascript', 'service-worker-allowed': '/' }).end(line + relayScript);
+      setTimeout(() => response.writeHead(200, { ...base, 'content-type': 'text/javascript', 'service-worker-allowed': '/' }).end(line + relayScript), relayDelay);
       return;
     }
     const file = player.get(url.pathname);
