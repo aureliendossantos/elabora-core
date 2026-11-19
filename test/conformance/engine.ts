@@ -233,7 +233,7 @@ export function engineConformance(target: ConformanceTarget): void {
     const { client, next } = await engine('empty');
     assert.equal((await client.request('summary', {})).course, null);
     const run = await client.request('run', { command: 'create_course', args: { id: 'premier-module', title: 'Premier module', language: 'fr' } });
-    assert.deepEqual([run.result, [...run.files].sort()], [{ created: true }, ['.gitignore', 'AGENTS.md', 'CLAUDE.md', 'course.json', 'plan.json', 'screens/intro.json']]);
+    assert.deepEqual([run.result, [...run.files].sort()], [{ created: true }, ['AGENTS.md', 'CLAUDE.md', 'course.json', 'plan.json', 'screens/intro.json']]);
     assert.equal(run.change?.command?.name, 'create_course');
     await next(changed('create_course'));
     const summary = await client.request('summary', {});
