@@ -13,7 +13,11 @@
 // Whatever the source, an object never gets the origin of the page that shows it: a source that
 // would give it that (the page's own port or origin) leaves the frame sandboxed, as in a package.
 
-export type FramesSource = { port: number } | { origin: string };
+// route: the relay's route of the view (relay-protocol.ts), which the frame's address carries so that the
+// relay answers it by the port of the tab that holds it (D119).
+export type FramesSource = { port: number } | { origin: string; route?: string };
+
+import { isRoute } from './relay-protocol.ts';
 
 const LOOPBACK = new Set(['127.0.0.1', 'localhost', '[::1]']);
 
@@ -31,7 +35,9 @@ export function objectFrame(dir: string, permissions: readonly string[], frames:
   } else {
     const origin = framesOrigin(frames.origin);
     if (!origin || origin === url.origin) return packaged;
-    return { src: new URL(url.pathname + url.search, origin).href, sandbox: [...sandbox, 'allow-same-origin'].join(' ') };
+    const framed = new URL(url.pathname + url.search, origin);
+    if (frames.route !== undefined && isRoute(frames.route)) framed.searchParams.set('route', frames.route);
+    return { src: framed.href, sandbox: [...sandbox, 'allow-same-origin'].join(' ') };
   }
   return { src: url.href, sandbox: [...sandbox, 'allow-same-origin'].join(' ') };
 }
@@ -53,5 +59,7 @@ export function pageFrames(source: 'meta' | 'url'): FramesSource | null {
   if (!value) return null;
   if (/^\d{1,5}$/.test(value)) return { port: Number(value) };
   const origin = framesOrigin(value);
-  return origin ? { origin } : null;
+  if (!origin) return null;
+  const route = source === 'url' ? new URLSearchParams(location.search).get('route') : null;
+  return isRoute(route) ? { origin, route } : { origin };
 }

@@ -74,7 +74,7 @@
     "test:matrix": "node --test --test-force-exit --test-global-setup=test/isolate.ts --import ./scripts/heavy-slots.ts --test-concurrency=2 \"test/matrix/*.test.ts\"",
     "test:all": "pnpm test && pnpm run test:e2e && pnpm run test:matrix",
     "test:affected": "node scripts/test-affected.ts",
-    "typecheck": "tsc -p packages/format && tsc -p packages/player && tsc -p packages/fonts && tsc -p packages/core && tsc -p packages/node && tsc -p packages/engine && tsc -p packages/engine/src/base && tsc -p packages/engine/src/browser && tsc -p packages/cli && tsc -p .",
+    "typecheck": "tsc -p packages/format && tsc -p packages/player && tsc -p packages/player/src/worker && tsc -p packages/fonts && tsc -p packages/core && tsc -p packages/node && tsc -p packages/engine && tsc -p packages/engine/src/base && tsc -p packages/engine/src/browser && tsc -p packages/cli && tsc -p .",
     "vendor": "node scripts/vendor-three.ts",
     "docs": "node scripts/gen-docs.ts",
     "gen": "node scripts/gen-format.ts && node scripts/gen-builtin-templates.ts && node scripts/gen-agent-rules.ts && node scripts/gen-ai-costs.ts",

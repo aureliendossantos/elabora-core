@@ -25,6 +25,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D116](decisions/D116.md) | Free objects' frames from an origin of their own, for a page served on the web | 18 Nov 2026 |
 | [D117](decisions/D117.md) | A free object's code is bundled by a part that needs no Node, given esbuild and its libraries | 18 Nov 2026 |
 | [D118](decisions/D118.md) | The relay's protocol: the questions a host answers about a module's files, and the messages that carry them | 19 Nov 2026 |
+| [D119](decisions/D119.md) | The relay: one service worker for the canvas host and the frames host, a route per view of a module, and what its pages and a free object's code can and cannot do | 19 Nov 2026 |
 | [D12](decisions/D12.md) | TypeScript workspace packages, run directly by Node | revised 6 Oct 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |

@@ -220,12 +220,35 @@ export function parseAppToRelay(value: unknown): AppToRelay | 'protocol' | 'rout
   return { type: value.type, protocol: RELAY_PROTOCOL, route: value.route };
 }
 
+// What the app's page takes from a relay page. A relay page may be taken over by the code of a free object
+// of the frames host (same origin), so nothing in it is trusted for more than it says: a version, a state
+// of a route, a refusal. Anything else is null.
+export function parseRelayToApp(value: unknown): RelayToApp | null {
+  if (!isRecord(value) || value.protocol !== RELAY_PROTOCOL) return null;
+  const { type } = value;
+  if (type === 'relay/ready' && typeof value.version === 'string' && value.version.length <= 100 && (value.host === 'canvas' || value.host === 'frames')) return { type, protocol: RELAY_PROTOCOL, version: value.version, host: value.host };
+  if ((type === 'relay/opened' || type === 'relay/closed') && isRoute(value.route)) return { type, protocol: RELAY_PROTOCOL, route: value.route };
+  if (type === 'relay/refused' && (value.reason === 'protocol' || value.reason === 'route' || value.reason === 'port')) return { type, protocol: RELAY_PROTOCOL, reason: value.reason, ...(isRoute(value.route) ? { route: value.route } : {}) };
+  if (type === 'relay/updated' && typeof value.version === 'string' && value.version.length <= 100) return { type, protocol: RELAY_PROTOCOL, version: value.version };
+  if (type === 'relay/error' && typeof value.message === 'string') return { type, protocol: RELAY_PROTOCOL, message: value.message.slice(0, 500) };
+  return null;
+}
+
+// What a port of a relay host may ask. The frames host's page can be taken over by the code of a free
+// object (D119): its port answers what an object's frame asks of the relay (the frame's page, its code,
+// the files of the object's own folder), not the module's other files.
+export function hostMayAsk(host: RelayHost, request: RelayRequest): boolean {
+  return host === 'canvas' || request.kind !== 'file' || request.path.startsWith('objects/');
+}
+
 // ── The engine's end of a route's port ──────────────────────────────────────────────────────────────
 
 // Answers a route's port from a source: each request is checked, asked of the source (cancelled when the
-// relay says the browser stopped waiting), and answered; a request that is not one is answered `refused`.
-// Returns what ends it: it says `relay/bye` and closes the port.
-export function serveRelayPort(port: MessagePort, source: RelaySource): () => void {
+// relay says the browser stopped waiting), and answered; a request that is not one, or that the port's host
+// may not ask (hostMayAsk), is answered `refused`. `host`: the relay page the port was given to; the app makes
+// one port per page, so the frames host's gets the narrower answers. Returns what ends it: it says
+// `relay/bye` and closes the port.
+export function serveRelayPort(port: MessagePort, source: RelaySource, host: RelayHost = 'canvas'): () => void {
   const running = new Map<number, AbortController>();
   port.onmessage = (event: MessageEvent<unknown>) => {
     const message = event.data;
@@ -236,7 +259,7 @@ export function serveRelayPort(port: MessagePort, source: RelaySource): () => vo
     const answer = (result: RelayAnswer) => { if (running.delete(id)) port.postMessage({ type: 'relay/answer', id, answer: result } satisfies EnginePortMessage); };
     const request = parseRelayRequest(message.request);
     if (running.has(id)) return;
-    if (!request) { port.postMessage({ type: 'relay/answer', id, answer: { status: 'refused', message: 'Not a request of the relay' } } satisfies EnginePortMessage); return; }
+    if (!request || !hostMayAsk(host, request)) { port.postMessage({ type: 'relay/answer', id, answer: { status: 'refused', message: 'Not a request of the relay' } } satisfies EnginePortMessage); return; }
     const control = new AbortController();
     running.set(id, control);
     source.get(request, control.signal).then(
