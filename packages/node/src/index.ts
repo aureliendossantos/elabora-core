@@ -50,7 +50,7 @@ export type { MeasuredContrast } from './contrast.ts';
 // The editor canvas: one screen served with the player, updated in place by pushed render data.
 export { startCanvasHost, createCanvasHandler } from './canvas/host.ts';
 export type { CanvasHost, CanvasHandler, CanvasHostOptions } from './canvas/host.ts';
-export { serveFile, byteRange, mimeType, MIME_TYPES } from './canvas/files.ts';
+export { serveFile, mimeType, MIME_TYPES } from './canvas/files.ts';
 
 // Scaffolding, asset generators, component migrations.
 export { initProject, TEMPLATES_DIR } from './scaffold.ts';

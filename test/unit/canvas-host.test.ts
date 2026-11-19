@@ -5,11 +5,15 @@ import path from 'node:path';
 import http from 'node:http';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { startCanvasHost } from '@elabora/node/canvas/host';
-import { byteRange, mimeType } from '@elabora/node/canvas/files';
+import { mimeType } from '@elabora/node/canvas/files';
+import { parseRange, resolveRange } from '@elabora/player/relay-protocol';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { HostMessage } from '@elabora/player/canvas-protocol';
 import { ROOT, GEARSET, copyExample } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
+
+// What a Range header asks of a file of that size (the one place that reads it: the relay and the local servers).
+const byteRange = (header: string | undefined, size: number) => { const range = parseRange(header); return range === null ? null : resolveRange(range, size); };
 
 test('byte ranges: first, open, last bytes; several ranges serve the whole file', () => {
   assert.deepEqual(byteRange('bytes=0-99', 1000), { start: 0, end: 99 });

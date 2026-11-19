@@ -1,8 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RELAY_PROTOCOL, hostMayAsk, isRoute, parseRelayToApp, isStaticPath, parseAppToRelay, parseRange, parseRelayAnswer, parseRelayRequest, relayPathOf, relayRequestOf, resolveRange, serveRelayPort } from '@elabora/player/relay-protocol';
+import { RELAY_PROTOCOL, hostMayAsk, isRoute, parseRelayToApp, relayResponse, isStaticPath, parseAppToRelay, parseRange, parseRelayAnswer, parseRelayRequest, relayPathOf, relayRequestOf, resolveRange, serveRelayPort } from '@elabora/player/relay-protocol';
 import type { EnginePortMessage, RelayAnswer, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
-import { byteRange } from '@elabora/node/canvas/files';
 
 test('relay: a URL of a relay host asks for a path of the module, nothing that leaves it', () => {
   assert.equal(relayPathOf('/canvas/assets/a.png'), 'assets/a.png');
@@ -25,16 +24,42 @@ test('relay: a path of the module is a file, an object\'s frame or its code', ()
   assert.deepEqual(relayRequestOf('objects/lab/sub/frame.html'), { kind: 'file', path: 'objects/lab/sub/frame.html' });
 });
 
-test('relay: ranges as the desktop\'s server reads them, one range or none', () => {
-  const sizes = [0, 1, 1000];
-  for (const header of ['bytes=0-99', 'bytes=900-', 'bytes=-100', 'bytes=-5000', 'bytes=990-2000', 'bytes=1000-', 'bytes=5-1', 'bytes=0-1,5-9', 'bytes=-', 'bytes=-0', 'bytes=abc', undefined, '']) {
-    for (const size of sizes) {
-      const range = parseRange(header);
-      const mine = range === null ? null : resolveRange(range, size);
-      assert.deepEqual(mine, byteRange(header, size), `${header} of ${size}`);
-    }
-  }
+test('relay: a Range header is read as one range or none, and resolved against the size of the file', () => {
+  const read = (header: string | undefined, size: number) => { const range = parseRange(header); return range === null ? null : resolveRange(range, size); };
+  assert.deepEqual(read('bytes=0-99', 1000), { start: 0, end: 99 });
+  assert.deepEqual(read('bytes=900-', 1000), { start: 900, end: 999 });
+  assert.deepEqual(read('bytes=-100', 1000), { start: 900, end: 999 });
+  assert.deepEqual(read('bytes=-5000', 1000), { start: 0, end: 999 });
+  assert.deepEqual(read('bytes=990-2000', 1000), { start: 990, end: 999 });
+  for (const past of ['bytes=1000-', 'bytes=5-1', 'bytes=-0']) assert.equal(read(past, 1000), 'unsatisfiable', past);
+  assert.equal(read('bytes=0-', 0), 'unsatisfiable');
+  assert.deepEqual(read('bytes=0-', 1), { start: 0, end: 0 });
+  for (const none of ['bytes=0-1,5-9', 'bytes=-', 'bytes=abc', '', undefined]) assert.equal(read(none, 1000), null, String(none));
   assert.deepEqual(parseRange('bytes=0-'), { start: 0 });
+});
+
+test('relay: the HTTP answer to a request: 200 whole, 206 for a range of the whole or of a part, 416 past the end, never 206 or 416 without a Range', () => {
+  const file = (body: string, extra: object = {}): RelayAnswer => ({ status: 'ok', type: 'text/plain', size: body.length, body, ...extra });
+  const whole = relayResponse(file('0123456789', { hash: 'sha256:ab' }), null);
+  assert.equal(whole.status, 200);
+  assert.deepEqual(whole.headers, { 'content-type': 'text/plain', 'accept-ranges': 'bytes', etag: '"sha256:ab"', 'content-length': '10' });
+  const ranged = relayResponse(file('0123456789'), { start: 2, end: 4 });
+  assert.equal(ranged.status, 206);
+  assert.equal(ranged.headers['content-range'], 'bytes 2-4/10');
+  assert.equal(ranged.headers['content-length'], '3');
+  assert.equal(relayResponse(file('0123456789'), { last: 3 }).headers['content-range'], 'bytes 7-9/10');
+  const past = relayResponse(file('0123456789'), { start: 10 });
+  assert.deepEqual([past.status, past.headers['content-range'], past.body], [416, 'bytes */10', null]);
+  // The source gave only a part of a bigger file: the range inside it is served, one outside it is not.
+  const part = file('23456', { size: 100, part: { start: 2, end: 6 } });
+  assert.equal(relayResponse(part, { start: 3, end: 4 }).headers['content-range'], 'bytes 3-4/100');
+  assert.equal(relayResponse(part, { start: 0, end: 4 }).status, 503);
+  assert.equal(relayResponse(part, null).status, 503, 'a part is never a whole answer');
+  // A HEAD has its headers and no body; a refusal its status; a type that is not one is read as nothing.
+  assert.equal(relayResponse(file('abc'), null, true).body, null);
+  assert.deepEqual(['not-found', 'refused', 'unavailable', 'failed'].map((status) => relayResponse({ status } as RelayAnswer, null).status), [404, 403, 503, 500]);
+  assert.equal(relayResponse(file('abc', { type: 'text/html\r\nx: y' }), null).headers['content-type'], 'application/octet-stream');
+  assert.equal(relayResponse(file('abc', { etag: '1f-3a' }), null).headers.etag, '"1f-3a"');
 });
 
 test('relay: what a port says is checked: a request names a path of the module or an object, an answer is a file or a refusal', () => {
@@ -71,6 +96,7 @@ function source(files: Record<string, string>, log: string[] = []): RelaySource 
       log.push(JSON.stringify(request));
       if (request.kind === 'object-frame') return { status: 'ok', type: 'text/html', size: 4, body: '<p/>' };
       if (request.kind === 'object-code') throw new Error('no bundler here');
+      if (request.path === 'throws') throw new Error('disk gone');
       if (request.path === 'slow') await new Promise<void>((resolve) => signal?.addEventListener('abort', () => { log.push('aborted'); resolve(); }));
       if (request.path === 'bad') return { status: 'ok', size: -1 } as unknown as RelayAnswer;
       const text = files[request.path];
@@ -97,7 +123,9 @@ test('relay: the engine\'s end of a port answers each request from its source, r
     assert.ok(refused.type === 'relay/answer' && refused.id === 3 && refused.answer.status === 'refused');
     assert.equal(log.some((line) => line.includes('secret')), false, 'a path outside the module never reaches the source');
     relay.postMessage({ type: 'relay/request', id: 4, request: { kind: 'object-code', object: 'lab' } });
-    assert.deepEqual(await next(), { type: 'relay/answer', id: 4, answer: { status: 'failed', message: 'no bundler here' } });
+    assert.deepEqual(await next(), { type: 'relay/answer', id: 4, answer: { status: 'refused', message: 'Not a request of the relay' } }, 'the canvas host\'s port asks files only');
+    relay.postMessage({ type: 'relay/request', id: 8, request: { kind: 'file', path: 'throws' } });
+    assert.deepEqual(await next(), { type: 'relay/answer', id: 8, answer: { status: 'failed', message: 'disk gone' } });
     relay.postMessage({ type: 'relay/request', id: 5, request: { kind: 'file', path: 'bad' } });
     const notAnswer = await next();
     assert.ok(notAnswer.type === 'relay/answer' && notAnswer.answer.status === 'failed');
@@ -120,6 +148,8 @@ test('relay: the engine\'s end of a port answers each request from its source, r
 
 test('relay: the frames host\'s port answers what an object\'s frame asks, not the module\'s other files; what a relay page says is data', async () => {
   assert.equal(hostMayAsk('canvas', { kind: 'file', path: 'assets/a.png' }), true);
+  assert.equal(hostMayAsk('canvas', { kind: 'object-code', object: 'lab' }), false, 'the canvas page asks files only');
+  assert.equal(hostMayAsk('canvas', { kind: 'object-frame', object: 'lab' }), false);
   assert.equal(hostMayAsk('frames', { kind: 'file', path: 'assets/a.png' }), false);
   assert.equal(hostMayAsk('frames', { kind: 'file', path: 'objects/lab/models/a.glb' }), true);
   assert.equal(hostMayAsk('frames', { kind: 'object-code', object: 'lab' }), true);

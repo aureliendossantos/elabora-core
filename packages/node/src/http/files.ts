@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pipeline } from 'node:stream';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { mediaTypeOf } from '@elabora/core/util/media-types';
+import { parseRange, resolveRange } from '@elabora/player/relay-protocol';
 
 // Files served by the local servers (preview, LMS emulator, editor canvas): streamed from disk
 // (never read whole, never copied), with HTTP range requests, which <video> and <audio> need to
@@ -11,27 +12,6 @@ import { mediaTypeOf } from '@elabora/core/util/media-types';
 export { MIME_TYPES } from '@elabora/core/util/media-types';
 
 export const mimeType = (file: string): string => mediaTypeOf(file);
-
-// A byte range of a file of size bytes (inclusive), or null when the header asks for none we serve
-// (several ranges: the whole file is sent, as RFC 9110 allows), or 'unsatisfiable'.
-export function byteRange(header: string | undefined, size: number): { start: number; end: number } | null | 'unsatisfiable' {
-  const match = header ? /^bytes=(\d*)-(\d*)$/.exec(header.trim()) : null;
-  if (!match || (!match[1] && !match[2])) return null;
-  let start: number;
-  let end: number;
-  if (!match[1]) {
-    // The last n bytes.
-    const length = Number(match[2]);
-    if (!length) return 'unsatisfiable';
-    start = Math.max(0, size - length);
-    end = size - 1;
-  } else {
-    start = Number(match[1]);
-    end = match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
-  }
-  if (start >= size || start > end) return 'unsatisfiable';
-  return { start, end };
-}
 
 // Answers a GET or HEAD for a file: 200, 206 for a range, 304 when the page has it, 404, 416.
 // Files change while the app runs (an agent writes them): the page revalidates them every time.
@@ -45,7 +25,8 @@ export function serveFile(request: IncomingMessage, response: ServerResponse, fi
   };
   if (request.headers['if-none-match'] === etag) { response.writeHead(304, headers).end(); return; }
   const ifRange = request.headers['if-range'];
-  const range = ifRange && ifRange !== etag ? null : byteRange(request.headers.range, stat.size);
+  const asked = ifRange && ifRange !== etag ? null : parseRange(request.headers.range);
+  const range = asked === null ? null : resolveRange(asked, stat.size);
   if (range === 'unsatisfiable') { response.writeHead(416, { ...headers, 'content-range': `bytes */${stat.size}` }).end(); return; }
   const { start, end } = range || { start: 0, end: stat.size - 1 };
   const length = stat.size ? end - start + 1 : 0;

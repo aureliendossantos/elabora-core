@@ -28,6 +28,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D118](decisions/D118.md) | The relay's protocol: the questions a host answers about a module's files, and the messages that carry them | 19 Nov 2026 |
 | [D119](decisions/D119.md) | The relay: one service worker for the canvas host and the frames host, a route per view of a module, and what its pages and a free object's code can and cannot do | 19 Nov 2026 |
 | [D12](decisions/D12.md) | TypeScript workspace packages, run directly by Node | revised 6 Oct 2026 |
+| [D120](decisions/D120.md) | The desktop's local canvas server answers the relay's questions from the project's folder | 19 Nov 2026 |
 | [D125](decisions/D125.md) | A medium's facts go by its hash, beside the reference, in elabora-sync/1 | 19 Nov 2026 |
 | [D126](decisions/D126.md) | A copy that holds a medium gives its facts: with the change that writes it, and in passing for those already there | 19 Nov 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |

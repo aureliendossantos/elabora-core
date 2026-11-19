@@ -1,17 +1,16 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import crypto from 'node:crypto';
+import { pipeline, Readable } from 'node:stream';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { ObjectManifest } from '@elabora/format';
 import type { RenderedFileKind, RenderedScreen } from '@elabora/core/render/screen';
 import type { AnswerMessage, AskMessage, AskName, CanvasAsks, HostMessage, RenderView, ScreenRender } from '@elabora/player/canvas-protocol';
-import { projectPath } from '@elabora/core/project/files';
 import { startServer } from '../emulator/server.ts';
 import type { RouteHandler } from '../emulator/server.ts';
-import { runtimeFiles, runtimeBundle, vendorThree, compileObjectCode, bundleErrorMessage, canvasPageHtml } from '../bundles.ts';
-import { objectFrameHtml } from '@elabora/core/objects/bundle';
+import { runtimeFiles, runtimeBundle, vendorThree, canvasPageHtml } from '../bundles.ts';
+import { parseRange, relayPathOf, relayRequestOf, relayResponse } from '@elabora/player/relay-protocol';
+import type { RelayAnswer, RelayRange } from '@elabora/player/relay-protocol';
 import { errorMessage } from '../util/values.ts';
-import { serveFile, mimeType } from './files.ts';
+import { mimeType } from './files.ts';
+import { folderRelaySource } from './source.ts';
 
 // The Node host of the editor canvas: what the engine drives. It serves, under /canvas/:
 //   index.html                the canvas page (elabora/player.css, elabora/canvas.js, the connector)
@@ -67,11 +66,6 @@ export interface CanvasHost extends Omit<CanvasHandler, 'close'> {
 }
 
 const PREFIX = '/canvas/';
-// A narration line's audio (docs/decisions.md D24), which no render lists: the editor plays it.
-const NARRATION_AUDIO = /^assets\/narration\/[^/]+\/[^/]+\/[^/]+\.m4a$/;
-// A sound of the course (D67): the editor's sound browser and inspector play it on any screen, and a
-// sound just added or made is in no render yet.
-const COURSE_SOUND = /^assets\/sounds\/[^/]+\.(?:flac|m4a|mp3|ogg|oga|opus|wav)$/;
 const ANSWER_LIMIT = 1024 * 1024;
 // A page waits 3 s for the render and 4 s for its images and objects, by timers of its own: a page whose main
 // thread is busy (a free object's WebGL starting in software, 20 s or more on a loaded computer) answers late, not never.
@@ -100,7 +94,6 @@ interface Page {
 }
 
 export function createCanvasHandler({ root, debug = true, token = crypto.randomBytes(16).toString('hex') }: CanvasHostOptions): CanvasHandler {
-  const folder = path.resolve(root);
   const pages = new Set<Page>();
   // Project files the renders listed, by path: the only ones served.
   const allowed = new Map<string, RenderedFileKind>();
@@ -109,8 +102,9 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
   const asked = new Map<number, { message: AskMessage; to: Set<Page>; resolve: (result: unknown) => void; reject: (error: Error) => void; timer: NodeJS.Timeout }>();
   let requests = 0;
   let language = 'en';
+  // What the folder answers of the relay's questions: the files the renders listed, an object's frame and code.
+  const source = folderRelaySource({ root, debug, allowed: () => allowed, language: () => language });
   const runtime = new Map<string, Promise<string | Buffer>>();
-  const objectCode = new Map<string, { signature: string; code: Promise<string> }>();
 
   const send = (page: Page, message: HostMessage) => { page.response.write(`data: ${JSON.stringify(message)}\n\n`); };
   const sendRender = (page: Page, id: string | number | undefined, render: ScreenRender) => {
@@ -130,17 +124,6 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
     else if (name.startsWith('elabora/vendor/')) { const vendor = vendorThree()[name]; file = vendor ? Promise.resolve(vendor) : null; }
     if (file) runtime.set(name, file);
     return file;
-  }
-
-  // object.js of an object, bundled again when a file of its folder changed.
-  function compiledObject(id: string): Promise<string> {
-    const dir = path.join(folder, 'objects', id);
-    const signature = folderSignature(dir);
-    const cached = objectCode.get(id);
-    if (cached && cached.signature === signature) return cached.code;
-    const code = compileObjectCode(dir, { minify: !debug });
-    objectCode.set(id, { signature, code });
-    return code;
   }
 
   async function answer(request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> {
@@ -178,26 +161,32 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
       response.writeHead(200, { 'content-type': mimeType(name), 'cache-control': 'no-cache' }).end(request.method === 'HEAD' ? undefined : content);
       return;
     }
-    const rel = projectPath(name);
-    const kind = rel === null ? undefined : allowed.get(rel) ?? (NARRATION_AUDIO.test(rel) || COURSE_SOUND.test(rel) ? 'asset' : undefined);
-    if (rel === null || !kind) return text(404, 'not found');
-    const object = /^objects\/([^/]+)\//.exec(rel)?.[1];
-    if (object && kind === 'object-frame') {
-      const manifest = readManifest(path.join(folder, 'objects', object, 'object.manifest.json'));
-      if (!manifest) return text(404, 'no object manifest');
-      response.writeHead(200, { 'content-type': mimeType(rel), 'cache-control': 'no-store' }).end(objectFrameHtml(manifest, { language }));
+    const path = relayPathOf(url.pathname);
+    if (path === null) return text(404, 'not found');
+    const range = parseRange(request.headers.range);
+    const answered = await source.get(relayRequestOf(path, range));
+    sendAnswer(request, response, answered, range);
+  }
+
+  // The answer to a question as HTTP (relayResponse, which the relay's service worker uses too): 200, 206 for a range,
+  // 304 when the page has the file, and what a refusal says.
+  function sendAnswer(request: IncomingMessage, response: ServerResponse, answered: RelayAnswer, range: RelayRange | null): void {
+    const head = request.method === 'HEAD';
+    let http = relayResponse(answered, range, head);
+    const etag = http.headers.etag;
+    const cache = etag ? 'no-cache' : 'no-store';
+    if (etag && request.headers['if-none-match'] === etag) { response.writeHead(304, { etag, 'cache-control': cache }).end(); return; }
+    const ifRange = request.headers['if-range'];
+    if (etag && ifRange && ifRange !== etag && range) http = relayResponse(answered, null, head);
+    if (http.body === null && http.status !== 416 && !(head && http.status < 300)) {
+      const words = answered.status === 'ok' ? 'unavailable' : answered.message && answered.status === 'failed' ? answered.message : { 'not-found': 'not found', refused: 'forbidden', unavailable: 'unavailable', failed: 'failed' }[answered.status];
+      response.writeHead(http.status, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' }).end(words);
       return;
     }
-    if (object && kind === 'object-code') {
-      try {
-        const code = await compiledObject(object);
-        response.writeHead(200, { 'content-type': mimeType(rel), 'cache-control': 'no-store' }).end(request.method === 'HEAD' ? undefined : code);
-      } catch (error) {
-        text(500, `Build of objects/${object}/object.js failed: ${bundleErrorMessage(error)}`);
-      }
-      return;
-    }
-    serveFile(request, response, path.join(folder, ...rel.split('/')));
+    response.writeHead(http.status, { ...http.headers, 'cache-control': cache });
+    if (http.body === null || http.body.size === 0) { response.end(); return; }
+    // A page that seeks closes the stream it no longer needs: nothing to report then.
+    pipeline(Readable.fromWeb(http.body.stream() as import('node:stream/web').ReadableStream), response, () => {});
   }
 
   // A page's answer, posted with its token: it settles the question it names (one that is settled or
@@ -278,24 +267,4 @@ export async function startCanvasHost({ port = 0, ...options }: CanvasHostOption
     handle: handler.handle, push: handler.push, view: handler.view, ask: handler.ask,
     close: async () => { handler.close(); await server.close(); }
   };
-}
-
-function readManifest(file: string): ObjectManifest | null {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')) as ObjectManifest; } catch { return null; }
-}
-
-// Paths, sizes and modification times of the files of a folder: it changes when one of them does.
-function folderSignature(dir: string): string {
-  const parts: string[] = [];
-  const walk = (current: string) => {
-    let entries: fs.Dirent[];
-    try { entries = fs.readdirSync(current, { withFileTypes: true }); } catch { return; }
-    for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-      const file = path.join(current, entry.name);
-      if (entry.isDirectory()) walk(file);
-      else if (entry.isFile()) { try { const stat = fs.statSync(file); parts.push(`${file}:${stat.size}:${stat.mtimeMs}`); } catch { /* removed meanwhile */ } }
-    }
-  };
-  walk(dir);
-  return parts.join('|');
 }
