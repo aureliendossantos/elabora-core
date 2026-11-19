@@ -121,3 +121,30 @@ test('browser storage: a change is kept across a closing; a second tab is told t
   assert.equal(never.first.kind, 'missing');
   await never.end();
 });
+
+test('a copy the browser does not hold is taken from the room\'s project, with the web session\'s cookie', { timeout: 120_000 }, async () => {
+  const API = 'https://api.elabora.test';
+  const { files } = readProjectFiles(EXAMPLE);
+  const snapshot = [...files].map(([rel, file]) => (file.kind === 'text' ? { path: rel, text: file.text } : { path: rel, blob: file.hash, size: file.size }));
+  const asked: string[] = [];
+  await page.route(`${API}/**`, (route) => {
+    const url = new URL(route.request().url());
+    asked.push(`${url.pathname} ${route.request().headers().cookie ?? 'no cookie'}`);
+    const headers = { 'Access-Control-Allow-Origin': ORIGIN, 'Access-Control-Allow-Credentials': 'true', 'Content-Type': 'application/json' };
+    if (url.pathname === '/v1/account') return route.fulfill({ headers, body: JSON.stringify({ account: { id: 'acc_bea', handle: 'bea', displayName: 'Béa' } }) });
+    if (url.pathname === '/v1/teams/tm_test/projects/taken/files') return route.fulfill({ headers, body: JSON.stringify({ head: 7, files: snapshot }) });
+    return route.fulfill({ status: 404, headers, body: JSON.stringify({ error: { code: 'not-found', message: 'Not here.' } }) });
+  });
+  await page.context().addCookies([{ name: '__Host-elabora-web', value: 'session-of-the-test', url: `${API}/`, secure: true, httpOnly: true, sameSite: 'Strict' }]);
+  try {
+    const engine = await worker({ kind: 'open', team: 'tm_test', project: 'taken', api: API });
+    assert.deepEqual(engine.first, { kind: 'opened', taken: true });
+    const summary = await ask<{ course: { id: string } | null; journal: { seq: number } }>(engine, 'summary', {});
+    assert.equal(summary.course?.id, 'diagnostic-reseau');
+    assert.ok(asked.includes('/v1/account __Host-elabora-web=session-of-the-test'), asked.join('\n'));
+    await ask(engine, 'close', {});
+    await engine.end();
+  } finally {
+    await page.unroute(`${API}/**`);
+  }
+});

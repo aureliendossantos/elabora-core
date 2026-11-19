@@ -4,7 +4,7 @@ import type { BrowserStore } from './store.ts';
 
 // A browser's copy kept for good (D103, D104): in IndexedDB its link, the files the room confirmed and
 // its journal, one database a copy; in the origin's private file system (OPFS) the team's media by their
-// hash. What it holds is read whole before the session opens (D100: the copy reads what was confirmed
+// hash, each taken when something needs it (medium). What it holds is read whole before the session opens (D100: the copy reads what was confirmed
 // once, as it starts); an entry of the journal is written before anything shows it; the copy's state
 // is saved in the order the copy saves it (IndexedDB runs transactions on the same stores in order).
 
@@ -16,7 +16,9 @@ export interface RemoteMedia {
 }
 
 export interface IdbCopy extends BrowserStore {
-  // A medium's bytes, kept here (OPFS).
+  // A medium's bytes, kept here (OPFS), or taken from the team's media and kept (null: not kept, and
+  // the project cannot be reached).
+  medium(hash: string): Promise<Uint8Array | null>;
   readMedium(hash: string): Promise<Uint8Array | null>;
   putMedium(bytes: Uint8Array): Promise<string>;
   close(): void;
@@ -97,12 +99,15 @@ export async function openIdbCopy(key: string, { seed, remote, membership, onErr
       });
     },
     commitMedia: async (upload) => { await remote?.commit(upload); },
-    async fetchMedium(hash) {
-      if (await media.has(hash)) return;
-      if (!remote) throw new Error(`The medium ${hash.slice(7, 19)}… is not kept in this browser, and the project cannot be reached.`);
+    // A copy in a browser takes a medium when something needs it (medium), not as a change brings it.
+    async fetchMedium() {},
+    async medium(hash) {
+      const kept = await media.read(hash);
+      if (kept || !remote) return kept;
       const bytes = await remote.fetch(hash);
       if (await sha256(bytes) !== hash) throw new Error(`The medium ${hash.slice(7, 19)}… does not match its hash.`);
       await media.put(bytes);
+      return bytes;
     },
     membership: membership ?? (async () => 'unknown'),
     close: () => db.close()
@@ -128,9 +133,7 @@ async function mediaFolder(key: string) {
   const dir = await root.getDirectoryHandle(`${DB_PREFIX}${key}`, { create: true });
   const writing = new Map<string, Promise<void>>();
   const name = (hash: string) => hash.replace(/^sha256:/, '');
-  const has = async (hash: string) => { await writing.get(hash); return dir.getFileHandle(name(hash)).then(() => true, () => false); };
   return {
-    has,
     async read(hash: string): Promise<Uint8Array | null> {
       await writing.get(hash);
       try {
