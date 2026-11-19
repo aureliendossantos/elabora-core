@@ -20,6 +20,8 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D103](decisions/D103.md) | The browser engine: a session of the base, on a copy, in @elabora/engine | 19 Nov 2026 |
 | [D104](decisions/D104.md) | A copy's journal: its numbers, its history, its undo | 19 Nov 2026 |
 | [D105](decisions/D105.md) | The browser engine's relay: a port per route and host, given by `relayPort` | 19 Nov 2026 |
+| [D106](decisions/D106.md) | Media in a browser: a Worker of its own, the rules both hosts read in the core | 19 Nov 2026 |
+| [D107](decisions/D107.md) | Media in a browser: Mediabunny, and AAC only where the browser has its encoder | 19 Nov 2026 |
 | [D11](decisions/D11.md) | LESSON.md for simple blocks |  |
 | [D110](decisions/D110.md) | Every command in the table, each saying what it expects from its host | 19 Nov 2026 |
 | [D115](decisions/D115.md) | What the canvas shows is asked of it by messages, not by scripts injected into its page | 18 Nov 2026 |

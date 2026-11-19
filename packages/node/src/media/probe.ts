@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile, spawnSync } from 'node:child_process';
 import { projectDataDir } from '../data-dir.ts';
-import { extensionOf, mediaKindOfPath } from '@elabora/core/media/conformance';
+import { emptyMediaInfo, extensionOf, mediaKindOfPath } from '@elabora/core/media/conformance';
 import type { MediaInfo } from '@elabora/core/media/conformance';
 import { readSync } from '@elabora/core/media/bytes';
-import { mp4LayoutSteps, ORIENTATION_DEGREES } from '@elabora/core/media/metadata';
+import { AVIF_BRANDS, HEIF_BRANDS, mp4LayoutSteps, ORIENTATION_DEGREES } from '@elabora/core/media/metadata';
 import type { Mp4Layout } from '@elabora/core/media/metadata';
 import { readImageMetadata, reader, withFile } from './metadata.ts';
 import { findMediaTools, findProberSync, MediaToolsError } from './tools.ts';
@@ -30,8 +30,6 @@ export class MediaProbeError extends Error {
 export interface ProbeOptions { tools?: MediaTools }
 
 const IMAGE_CODECS: Readonly<Record<string, string>> = { mjpeg: 'jpeg', png: 'png', apng: 'png', webp: 'webp', gif: 'gif', tiff: 'tiff', bmp: 'bmp', hevc: 'heif', av1: 'avif' };
-const HEIF_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1']);
-const AVIF_BRANDS = new Set(['avif', 'avis']);
 
 // The probe of a file as steps: each yield asks for an ffprobe run with these arguments and
 // receives its output. major: the ffmpeg major version (stream groups need 7 or later).
@@ -39,7 +37,7 @@ function* probeSteps(file: string, major: number | null): Generator<string[], Me
   let stat: fs.Stats | null = null;
   try { stat = fs.statSync(file); } catch { /* reported below */ }
   if (!stat?.isFile()) throw new MediaProbeError(file, 'file not found');
-  if (extensionOf(file) === '.svg') return emptyInfo('vector', 'svg', stat.size);
+  if (extensionOf(file) === '.svg') return emptyMediaInfo('vector', 'svg', stat.size);
   const output = yield ['-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', ...(major !== null && major >= 7 ? ['-show_stream_groups'] : []), file];
   let raw: FfprobeOutput;
   try { raw = JSON.parse(output) as FfprobeOutput; } catch { throw new MediaProbeError(file, 'ffprobe gave no readable answer'); }
@@ -60,7 +58,7 @@ function* probeSteps(file: string, major: number | null): Generator<string[], Me
   const kind = video && imageFormat ? 'image' : video ? 'video' : audio ? 'audio' : null;
   if (!kind) throw new MediaProbeError(file, 'no audio or video stream');
 
-  const info = emptyInfo(kind, containerName(formatName, brand, kind === 'image' ? video?.codec_name : undefined, file), stat.size);
+  const info = emptyMediaInfo(kind, containerName(formatName, brand, kind === 'image' ? video?.codec_name : undefined, file), stat.size);
   if (kind !== 'image') {
     info.duration = number(format.duration) ?? number(video?.duration) ?? number(audio?.duration);
     info.bitrate = number(format.bit_rate) ?? (info.duration ? Math.round((stat.size * 8) / info.duration) : null);
@@ -143,16 +141,6 @@ export function probeMediaSync(file: string, prober: Prober | null = findProberS
     step = steps.next(run.stdout);
   }
   return step.value;
-}
-
-function emptyInfo(kind: MediaInfo['kind'], container: string, size: number): MediaInfo {
-  return {
-    kind, container, size, duration: null, bitrate: null,
-    videoCodec: null, profile: null, pixelFormat: null, width: null, height: null, rotation: 0, pixelAspect: 1, fps: null, videoBitrate: null,
-    hdr: null, alpha: false, animated: false,
-    audioCodec: null, audioBitrate: null, channels: null, sampleRate: null, coverArt: false,
-    faststart: null, location: false
-  };
 }
 
 function containerName(formatName: string, brand: string, imageCodec: string | undefined, file: string): string {

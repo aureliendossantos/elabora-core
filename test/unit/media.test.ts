@@ -14,6 +14,7 @@ import {
 import { projectDataDir } from '@elabora/node/data-dir';
 import { withProjectLock } from '@elabora/node/journal/lock';
 import type { MediaInfo, MediaTools } from '@elabora/node/media/index';
+import { exifSegment } from '../media-fixtures.ts';
 
 const run = promisify(execFile);
 const tools: MediaTools | null = await findMediaTools().catch(() => null);
@@ -49,26 +50,6 @@ const removeProject = (dir: string) => {
   fs.rmSync(dir, { recursive: true, force: true });
 };
 const fixture = (name: string) => path.join(fixtures, name);
-
-// APP1 EXIF segment: orientation and a GPS latitude, as phones write them.
-function exifSegment(orientation: number): Buffer {
-  const tiff = Buffer.alloc(8 + 2 + 2 * 12 + 4 + 2 + 12 + 4 + 24);
-  tiff.write('MM', 0, 'latin1');
-  tiff.writeUInt16BE(42, 2);
-  tiff.writeUInt32BE(8, 4);
-  tiff.writeUInt16BE(2, 8);
-  const gpsIfd = 8 + 2 + 2 * 12 + 4;
-  tiff.writeUInt16BE(0x0112, 10); tiff.writeUInt16BE(3, 12); tiff.writeUInt32BE(1, 14); tiff.writeUInt16BE(orientation, 18);
-  tiff.writeUInt16BE(0x8825, 22); tiff.writeUInt16BE(4, 24); tiff.writeUInt32BE(1, 26); tiff.writeUInt32BE(gpsIfd, 30);
-  tiff.writeUInt16BE(1, gpsIfd);
-  tiff.writeUInt16BE(0x0002, gpsIfd + 2); tiff.writeUInt16BE(5, gpsIfd + 4); tiff.writeUInt32BE(3, gpsIfd + 6); tiff.writeUInt32BE(gpsIfd + 18, gpsIfd + 10);
-  for (let i = 0; i < 3; i++) { tiff.writeUInt32BE([48, 51, 30][i], gpsIfd + 18 + i * 8); tiff.writeUInt32BE(1, gpsIfd + 22 + i * 8); }
-  const payload = Buffer.concat([Buffer.from('Exif\0\0', 'latin1'), tiff]);
-  const head = Buffer.alloc(4);
-  head.writeUInt16BE(0xffe1, 0);
-  head.writeUInt16BE(payload.length + 2, 2);
-  return Buffer.concat([head, payload]);
-}
 
 function info(overrides: Partial<MediaInfo>): MediaInfo {
   return {

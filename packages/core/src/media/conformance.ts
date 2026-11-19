@@ -35,6 +35,17 @@ export interface MediaInfo {
   location: boolean;             // GPS position in the metadata (phone videos and photos)
 }
 
+// What a probe starts from: nothing known but the kind, the container and the size.
+export function emptyMediaInfo(kind: MediaKind, container: string, size: number): MediaInfo {
+  return {
+    kind, container, size, duration: null, bitrate: null,
+    videoCodec: null, profile: null, pixelFormat: null, width: null, height: null, rotation: 0, pixelAspect: 1, fps: null, videoBitrate: null,
+    hdr: null, alpha: false, animated: false,
+    audioCodec: null, audioBitrate: null, channels: null, sampleRate: null, coverArt: false,
+    faststart: null, location: false
+  };
+}
+
 const EXTENSION_KINDS: Readonly<Record<string, MediaKind>> = {
   '.mp4': 'video', '.m4v': 'video', '.mov': 'video', '.qt': 'video', '.webm': 'video', '.mkv': 'video', '.avi': 'video',
   '.wmv': 'video', '.mpg': 'video', '.mpeg': 'video', '.3gp': 'video', '.ogv': 'video', '.mts': 'video', '.m2ts': 'video', '.flv': 'video',

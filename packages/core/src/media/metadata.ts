@@ -108,10 +108,10 @@ export function* strippedImageSteps(size: number, container: ImageContainer): By
 
 // --- JPEG
 
-interface JpegSegment { marker: number; payload: Uint8Array }
+export interface JpegSegment { marker: number; payload: Uint8Array }
 
 // Segments before the first scan (SOS); dataStart is the offset of the SOS marker.
-function* jpegHead(): ByteSteps<{ segments: JpegSegment[]; dataStart: number } | null> {
+export function* jpegHead(): ByteSteps<{ segments: JpegSegment[]; dataStart: number } | null> {
   let buffer = yield { position: 0, length: 256 * 1024 };
   function* ensure(end: number): ByteSteps<boolean> {
     if (end <= buffer.length) return true;
@@ -204,10 +204,10 @@ function* jpegDataEnd(start: number): ByteSteps<number> {
 const PNG_SIGNATURE = Uint8Array.of(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
 const PNG_METADATA = new Set(['eXIf', 'tEXt', 'zTXt', 'iTXt', 'tIME']);
 
-interface Chunk { type: string; start: number; dataStart: number; length: number; end: number }
+export interface Chunk { type: string; start: number; dataStart: number; length: number; end: number }
 
 // Every chunk up to IEND; none when the file is cut or not a PNG.
-function* pngChunks(size: number): ByteSteps<Chunk[]> {
+export function* pngChunks(size: number): ByteSteps<Chunk[]> {
   if (!startsWith(yield { position: 0, length: 8 }, PNG_SIGNATURE)) return [];
   const chunks: Chunk[] = [];
   let p = 8;
@@ -236,7 +236,7 @@ function pngChunk(type: string, data: Uint8Array): Uint8Array {
 
 // --- WebP (RIFF)
 
-function* webpChunks(size: number): ByteSteps<Chunk[] | null> {
+export function* webpChunks(size: number): ByteSteps<Chunk[] | null> {
   const header = yield { position: 0, length: 12 };
   if (header.length < 12 || latin1(header, 0, 4) !== 'RIFF' || latin1(header, 8, 12) !== 'WEBP') return null;
   const end = Math.min(size, 8 + u32le(header, 4));
@@ -309,6 +309,10 @@ function minimalTiff(orientation: number): Uint8Array {
 }
 
 // --- MP4 top-level boxes
+
+// The major brands of an ISO file that holds a still image, not a video.
+export const HEIF_BRANDS: ReadonlySet<string> = new Set(['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1']);
+export const AVIF_BRANDS: ReadonlySet<string> = new Set(['avif', 'avis']);
 
 export interface Mp4Layout {
   brand: string | null;      // major brand of ftyp
