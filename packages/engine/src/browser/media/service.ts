@@ -120,6 +120,7 @@ export class BrowserMedia {
       if (signal.aborted) return;
       job.status = 'failed';
       job.error = error instanceof Error ? error.message : String(error);
+      if (error instanceof EngineError && error.code) job.code = error.code;
     }
     job.finishedAt = new Date().toISOString();
     this.#emitJob(job);

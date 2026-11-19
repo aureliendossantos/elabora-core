@@ -28,3 +28,15 @@ test('a bundle for a browser fails at an import of Node, naming it and what impo
   await assert.rejects(bundleForBrowser({ source: 'import \'fs\';' }), /Node in a browser's bundle: fs, imported by entry\.ts/);
   await assert.rejects(bundleForBrowser({ source: 'import \'@elabora/node/cloud/link\';' }), /Node in a browser's bundle: @elabora\/node\/cloud\/link/);
 });
+
+// The two Workers of a browser's engine (D106, D107): the engine's carries no media library, the
+// media Worker carries Mediabunny but never the AAC encoder in wasm, which it only loads by an
+// address its host gives.
+test('the engine\'s Worker carries no media library; the media Worker carries Mediabunny, never the AAC encoder in wasm', async () => {
+  const engine = await bundleForBrowser({ file: 'packages/engine/src/browser/worker.ts' });
+  assert.deepEqual(engine.inputs.filter((input) => input.includes('mediabunny')), [], 'nothing of Mediabunny in the engine\'s Worker');
+  const media = await bundleForBrowser({ file: 'packages/engine/src/browser/media/worker.ts' });
+  assert.ok(media.inputs.some((input) => input.includes('node_modules/mediabunny/')), 'Mediabunny in the media Worker');
+  assert.deepEqual(media.inputs.filter((input) => input.includes('aac-encoder')), [], 'no AAC encoder in the media Worker');
+  assert.doesNotMatch(media.code, /\0asm|AGFzbQ/, 'no wasm module inlined');
+});

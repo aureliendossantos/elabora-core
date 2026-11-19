@@ -238,6 +238,10 @@ export interface MediaJobInfo {
   replaces: string | null;
   progress: number;
   error: string | null;
+  // Why it failed, when the reason has a code: in a browser, E_MEDIA_ENCODER_MISSING (what it must
+  // encode, this browser cannot), E_MEDIA_NOT_DECODABLE_HERE (what it must read, it cannot decode),
+  // E_MEDIA_UNREADABLE (not a medium it reads).
+  code?: string;
   warnings: string[];
   createdAt: string;
   finishedAt: string | null;
