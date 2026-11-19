@@ -10,7 +10,7 @@ import { promisify } from 'node:util';
 import { findMediaTools, probeMedia, stripImageMetadata } from '@elabora/node/media/index';
 import type { MediaInfo, MediaTools } from '@elabora/node/media/index';
 import { fileMedia, masterPlan, presetDimensions } from '@elabora/core/media/conformance';
-import { PEAKS_RATE, peaksOf } from '@elabora/core/media/audio';
+import { PEAKS_RATE, peaksOf, soundPlan } from '@elabora/core/media/audio';
 import { bundleForBrowser } from '../browser-bundle.ts';
 import { makeMediaFixtures } from '../media-fixtures.ts';
 import { aacEncoderModule } from '../aac-encoder.ts';
@@ -247,7 +247,9 @@ test(`narration lines and sounds in ${BROWSER}: the desktop's M4A, its silence c
   try {
     for (const name of SOUNDS.filter((file) => fixtures.files.includes(file))) {
       const input = path.join(fixtures.dir, name);
-      await t.test(`${name}: a line`, { skip: GSTREAMER && 'its sound is encoded to AAC by GStreamer in WebKitGTK, not by Safari\'s encoder' }, async (st) => {
+      const source = await probeMedia(input, { tools });
+      const kept = source.container === 'mp4' && source.audioCodec === 'aac' && source.channels === 1 && source.kind === 'audio' && source.faststart !== false && !/\.(wav|mp3)$/.test(name);
+      await t.test(`${name}: a line`, { skip: GSTREAMER && !kept && 'its sound is encoded to AAC by GStreamer in WebKitGTK, not by Safari\'s encoder' }, async (st) => {
         const answer = await inWorker(name, 'line') as { master?: { base64: string; action: string }; error?: string; code?: string };
         assert.ok(answer.master, `${name}: ${answer.code} ${answer.error}`);
         const file = write(`line-${name}.m4a`, answer.master.base64);
@@ -292,7 +294,8 @@ test(`narration lines and sounds in ${BROWSER}: the desktop's M4A, its silence c
       });
     }
     for (const name of ['voice.wav', 'voice.mp3', 'voice.m4a'].filter((file) => fixtures.files.includes(file))) {
-      await t.test(`${name}: a sound of the course`, { skip: GSTREAMER && 'its sound may be encoded to AAC by GStreamer in WebKitGTK' }, async (st) => {
+      const kept = soundPlan(await probeMedia(path.join(fixtures.dir, name), { tools })).keep;
+      await t.test(`${name}: a sound of the course`, { skip: GSTREAMER && !kept && 'its sound is encoded by GStreamer in WebKitGTK, not by Safari\'s encoder' }, async (st) => {
         const answer = await inWorker(name, 'sound') as { master?: { base64: string; action: string; extension: string | null }; error?: string; code?: string };
         assert.ok(answer.master, `${name}: ${answer.code} ${answer.error}`);
         const file = write(`sound-${name}${answer.master.extension ?? ''}`, answer.master.base64);
