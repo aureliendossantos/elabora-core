@@ -6,7 +6,8 @@
 
 import type { MediaInfo } from '@elabora/core/media/conformance';
 import { probeFile, MediaUnreadable } from './probe.ts';
-import { imageMaster, MediaEncoderMissing, MediaNotDecodable } from './image.ts';
+import { canWriteWebp, imageMaster, MediaEncoderMissing, MediaNotDecodable } from './image.ts';
+import { masterPlan } from '@elabora/core/media/conformance';
 import { fileTarget, videoMaster } from './video.ts';
 import { lineAudio, linePeaks, soundMaster } from './audio.ts';
 import { provideAac } from './encoders.ts';
@@ -18,7 +19,8 @@ export type MediaAsk =
   | { op: 'peaks'; file: Blob; name: string; perSecond: number; duration: number | null };
 
 export type MediaAnswer =
-  | { info: MediaInfo }
+  // extension: the master's an import will write (null: the input's).
+  | { info: MediaInfo; extension: string | null }
   // file: the master (the input itself when kept as it is), info: its facts; extension: null when the input's.
   | { master: { file: Blob; extension: string | null; action: string; info: MediaInfo } }
   | { peaks: Uint8Array }
@@ -49,7 +51,7 @@ const codeOf = (error: unknown): string | undefined =>
 async function answer(id: number, ask: MediaAsk, signal: AbortSignal): Promise<MediaAnswer> {
   if (ask.op === 'peaks') return { peaks: await linePeaks(ask.file, ask.name, ask.perSecond, ask.duration) };
   const info = await probeFile(ask.file, ask.name);
-  if (ask.op === 'probe') return { info };
+  if (ask.op === 'probe') return { info, extension: info.kind === 'vector' ? null : masterPlan(info, { importing: true, webp: info.kind !== 'image' || await canWriteWebp() }).extension };
   if (info.kind === 'image' && ask.kind === 'import') {
     const made = await imageMaster(ask.file, ask.name, info);
     return { master: { file: made.blob, extension: made.extension, action: made.action, info: made.action === 'copy' ? info : await probeFile(made.blob, `master${made.extension ?? ''}`) } };

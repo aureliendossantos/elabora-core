@@ -9,6 +9,7 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import type { EventMessage, RequestMessage, ResponseMessage } from '@elabora/engine/protocol';
 import type { WorkerAnswer, WorkerOpen } from '@elabora/engine/browser/worker';
 import { bundleForBrowser } from '../browser-bundle.ts';
+import { aacEncoderModule } from '../aac-encoder.ts';
 import { engineConformance, type ConformanceTarget, type Sample } from '../conformance/engine.ts';
 import { EXAMPLE, BILINGUAL, NETWORK_SAMPLE } from '../helpers.ts';
 
@@ -30,6 +31,8 @@ const WRONG = 'assets/narration/fr/chemin/chemin-reseaux.m4a';
 const hashOf = (rel: string) => { const file = readProjectFiles(NETWORK_SAMPLE).files.get(rel); return file?.kind === 'binary' ? file.hash! : ''; };
 const SHIPPED = new Map<string, Buffer>([[hashOf(LINE), fs.readFileSync(path.join(NETWORK_SAMPLE, LINE))], [hashOf(WRONG), fs.readFileSync(path.join(NETWORK_SAMPLE, LINE))]]);
 const shipped: string[] = [];
+// Every medium of the samples, by hash.
+const SAMPLE_MEDIA = new Map<string, Buffer>([NETWORK_SAMPLE, EXAMPLE, BILINGUAL].flatMap((dir) => [...readProjectFiles(dir).files].flatMap(([rel, file]) => (file.kind === 'binary' && file.hash ? [[file.hash, fs.readFileSync(path.join(dir, rel))] as [string, Buffer]] : []))));
 let browser: Browser;
 let page: Page;
 const listeners = new Map<number, (message: Message) => void>();
@@ -47,12 +50,22 @@ provideObjects(async () => {
   // The app's Worker as it gives the media of the examples it ships (provideMedia), by hash.
   const withMedia = await bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
 provideMedia(async (hash) => { const response = await fetch('/media/' + hash); return response.ok ? response.blob() : null; });` });
+  // The conformance's Worker: the samples' media given by hash (provideMedia), as the app gives an
+  // example's, so that a copy opened offline reads its lines; and the media Worker beside it.
+  const conformance = await bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
+provideMedia(async (hash) => { const response = await fetch('/sample-media/' + hash); return response.ok ? response.blob() : null; });` });
+  const media = await bundleForBrowser({ file: 'packages/engine/src/browser/media/worker.ts' });
+  const aac = await aacEncoderModule();
   browser = await launchBrowser('chromium');
   page = await browser.newPage();
   await page.route(`${ORIGIN}/**`, (route) => {
     const name = new URL(route.request().url()).pathname;
-    const scripts: Record<string, string> = { '/worker.js': worker.code, '/worker-objects.js': withObjects.code, '/worker-media.js': withMedia.code };
+    const scripts: Record<string, string> = { '/worker.js': worker.code, '/worker-objects.js': withObjects.code, '/worker-media.js': withMedia.code, '/worker-conformance.js': conformance.code, '/media.js': media.code, '/aac.js': aac };
     if (scripts[name]) return route.fulfill({ contentType: 'text/javascript', body: scripts[name] });
+    if (name.startsWith('/sample-media/')) {
+      const bytes = SAMPLE_MEDIA.get(name.slice('/sample-media/'.length));
+      return bytes ? route.fulfill({ contentType: 'application/octet-stream', body: bytes }) : route.fulfill({ status: 404, body: '' });
+    }
     if (name.startsWith('/media/')) {
       const hash = name.slice('/media/'.length);
       shipped.push(hash);
@@ -90,7 +103,11 @@ async function worker(open: WorkerOpen, script = '/worker.js'): Promise<{ id: nu
   }, [id, open, script] as unknown as [number, object, string]);
   return {
     id, first: await Promise.race([answered, new Promise<WorkerAnswer>((resolve) => setTimeout(() => resolve({ kind: 'failed', message: 'no answer in 30 s' }), 30_000))]),
-    send: (message) => page.evaluate(([n, m]) => (window as unknown as Page$).workers.get(n)!.postMessage(m), [id, message] as unknown as [number, object]),
+    // The files a request names by token go beside it (D108), as the window sends them.
+    send: (message) => page.evaluate(([n, m, files]) => {
+      const attachments = Object.fromEntries(Object.entries(files as Record<string, string>).map(([token, base64]) => [token, new Blob([Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))])]));
+      (window as unknown as Page$).workers.get(n)!.postMessage(Object.keys(attachments).length ? { ...(m as object), attachments } : m);
+    }, [id, message, attachedTo(message)] as unknown as [number, object, Record<string, string>]),
     receive: (listener) => { received.push(listener); },
     end: () => page.evaluate((n) => { const scope = window as unknown as Page$; scope.workers.get(n)?.terminate(); scope.workers.delete(n); }, id)
   };
@@ -99,16 +116,34 @@ async function worker(open: WorkerOpen, script = '/worker.js'): Promise<{ id: nu
 const seedOf = (sample: Sample) => ({ link, confirmed: [...readProjectFiles(SAMPLES[sample]).files] });
 let copies = 0;
 
+// A file the person picks: a token the request carries, its bytes kept to go beside the request.
+const picked = new Map<string, string>();
+let scripts: { media: string; aac: string } | undefined;
+let picks = 0;
+function attachedTo(message: unknown): Record<string, string> {
+  const tokens = JSON.stringify(message).match(/elabora-file:[0-9a-f]{24}\/[^"\\/]+/g) ?? [];
+  return Object.fromEntries(tokens.filter((token) => picked.has(token)).map((token) => [token, picked.get(token)!]));
+}
+
 const chromium: ConformanceTarget = {
   name: 'browser (Chromium, IndexedDB)',
-  services: ['canvas'],
+  services: ['canvas', 'media'],
   async open(sample, { services } = {}) {
-    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, services: [...(services ?? ['canvas'])] });
+    // A Worker a Worker starts does not go through the test's routes: the page gives both scripts by blob addresses.
+    scripts ??= await page.evaluate(async () => {
+      const blob = async (url: string) => URL.createObjectURL(new Blob([await (await fetch(url)).text()], { type: 'text/javascript' }));
+      return { media: await blob('/media.js'), aac: await blob('/aac.js') };
+    });
+    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, services: [...(services ?? ['canvas', 'media'])], mediaWorker: scripts.media, aacEncoder: scripts.aac }, '/worker-conformance.js');
     assert.equal(engine.first.kind, 'opened', JSON.stringify(engine.first));
     return {
       send: (message) => void engine.send(message),
       receive: (listener) => engine.receive(listener),
-      pick: (name) => name,
+      pick: (name, from) => {
+        const token = `elabora-file:${(++picks).toString(16).padStart(24, '0')}/${name}`;
+        picked.set(token, fs.readFileSync(path.join(SAMPLES[sample], from)).toString('base64'));
+        return token;
+      },
       saveAs: (name) => name,
       dispose: () => engine.end()
     };

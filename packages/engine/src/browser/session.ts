@@ -16,6 +16,9 @@ import { ProjectState } from '../base/project-state.ts';
 import { SessionReads } from '../base/reads.ts';
 import { Renderer } from '../base/render.ts';
 import { SessionCanvas } from '../base/canvas.ts';
+import { BrowserMedia } from './media/service.ts';
+import type { Attachments } from './media/service.ts';
+import type { MediaWorker } from './media/client.ts';
 import { screenRenderOf } from '@elabora/core/render/screen';
 import { WriteQueue } from '../base/queue.ts';
 import { Batches } from '../base/batches.ts';
@@ -55,10 +58,14 @@ export interface CopyOptions {
   // How free objects are compiled for the relay's frames (esbuild-wasm, D117): without it, an object's
   // code is not served.
   objects?: () => Promise<ObjectCompiler>;
+  // The media Worker (D106): with it, the media service (imports, a narration's waveform, recordings,
+  // what the commands that need media are given); without it, none.
+  media?: MediaWorker;
 }
 
-// The services this engine has a provider for: the canvas, whose renders go out as events (D105).
-const PROVIDED: ReadonlySet<Service> = new Set(['canvas']);
+// The services this engine has a provider for: the canvas, whose renders go out as events (D105), and
+// media when its host gives it a media Worker (D106).
+const PROVIDED: ReadonlySet<Service> = new Set(['canvas', 'media']);
 
 // How far back a chat's turn is looked for: no turn lasts a day.
 const TURN_LOOKBACK_MS = 24 * 60 * 60 * 1000;
@@ -81,6 +88,7 @@ export class BrowserSession {
   readonly #entries: JournalEntry[];
   readonly #renderer = new Renderer();
   readonly #canvas: SessionCanvas;
+  readonly #media: BrowserMedia | null;
   readonly #reads: SessionReads;
   readonly #batches: Batches;
   readonly #changes: CopyChanges;
@@ -99,7 +107,18 @@ export class BrowserSession {
     this.#store = options.store;
     this.#known = readKnownMedia(options.store.link.media);
     this.author = options.author ?? { kind: 'human' };
-    this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service)));
+    this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service) && (service !== 'media' || options.media)));
+    this.#media = options.media && this.#services.has('media') ? new BrowserMedia(options.media, {
+      files: () => this.#state.files, project: () => this.#state.project, store: options.store,
+      journal: (contents) => this.#queue.run(async () => {
+        try {
+          return await this.#changes.write(() => this.#changes.journal(contents));
+        } finally {
+          await this.#afterChange();
+        }
+      }),
+      emit: (event) => this.#emit(event)
+    }) : null;
     this.#objects = options.objects;
     const entries = [...options.store.journal()];
     this.#entries = entries;
@@ -165,21 +184,22 @@ export class BrowserSession {
 
   // ── protocol ───────────────────────────────────────────────────────
 
-  // ports: what came transferred with the message (relayPort's).
-  async handle(message: unknown, ports: readonly MessagePort[] = []): Promise<ResponseMessage> {
+  // ports: what came transferred with the message (relayPort's); attachments: the files it names by
+  // their tokens (D108: importMedia's path, a command's file).
+  async handle(message: unknown, ports: readonly MessagePort[] = [], attachments: Attachments = new Map()): Promise<ResponseMessage> {
     const request = (message ?? {}) as Partial<RequestMessage>;
     const id = typeof request.id === 'string' ? request.id : '';
     const type = typeof request.type === 'string' ? request.type : '';
     try {
       if (!id || request.kind !== 'request' || !isRequestType(type)) throw new EngineError('bad-request', `Not a request of the engine protocol: ${JSON.stringify(message)?.slice(0, 200)}`);
-      const result = await this.#dispatch(request as RequestMessage, ports);
+      const result = await this.#dispatch(request as RequestMessage, ports, attachments);
       return { kind: 'response', id, type, ok: true, result } as ResponseMessage;
     } catch (error) {
       return { kind: 'response', id, type, ok: false, error: protocolError(error) };
     }
   }
 
-  async #dispatch(request: RequestMessage, ports: readonly MessagePort[]): Promise<RequestResult<RequestType>> {
+  async #dispatch(request: RequestMessage, ports: readonly MessagePort[], attachments: Attachments): Promise<RequestResult<RequestType>> {
     const service = serviceOf(request.type);
     if (service && !this.#services.has(service)) {
       this.#assertOpen();
@@ -217,7 +237,7 @@ export class BrowserSession {
         const command = typeof name === 'string' ? namedCommand(name) : null;
         if (!command) throw new EngineError('bad-request', `Unknown command "${String(name)}"`);
         if (command.needs && !this.#services.has(NEED_SERVICES[command.needs])) { this.#assertOpen(); throw notHere('run', NEED_SERVICES[command.needs]); }
-        return this.run(command.name, request.params.args, request.params.author, request.params.expect);
+        return this.run(command.name, request.params.args, request.params.author, request.params.expect, attachments);
       }
       case 'undo': return this.undo(request.params.seq);
       case 'redo': return this.redo();
@@ -227,6 +247,11 @@ export class BrowserSession {
       case 'migrate': return this.migrate();
       case 'close': return this.close();
       case 'relayPort': return this.relayPort(request.params?.host, ports[0]);
+      case 'importMedia': this.#assertOpen(); return this.#media!.importMedia(request.params, attachments, this.#stamp(this.author));
+      case 'mediaJobs': this.#assertOpen(); return this.#media!.jobs();
+      case 'cancelMediaJob': this.#assertOpen(); return this.#media!.cancel(request.params.id);
+      case 'narrationPeaks': this.#assertOpen(); return this.#media!.narrationPeaks(request.params.screen, request.params.language, request.params.perSecond);
+      case 'importNarrationFiles': this.#assertOpen(); return this.#media!.importNarrationFiles(request.params, attachments, async (args) => (await this.run('set_narration_audio', args, this.author, undefined, attachments)).change?.seq ?? null);
       case 'openCanvas': this.#assertOpen(); return this.#canvas.open();
       case 'canvasView': this.#assertOpen(); return this.#canvas.view(request.params ?? {});
       case 'closeCanvas': return this.#canvas.close();
@@ -237,22 +262,25 @@ export class BrowserSession {
   // ── changes ────────────────────────────────────────────────────────
 
   // A command on the view (D104): its operations and their inverse kept as an entry of the copy's journal.
-  async run(name: string, args: unknown, author: Author = this.author, expect?: readonly Expectation[]): Promise<RunResult> {
+  async run(name: string, args: unknown, author: Author = this.author, expect?: readonly Expectation[], attachments: Attachments = new Map()): Promise<RunResult> {
     this.#assertOpen();
     const command = namedCommand(name);
     if (!command) throw new EngineError('bad-request', `Unknown command "${name}"`);
     if (expect !== undefined && !Array.isArray(expect)) throw new EngineError('bad-request', 'expect: a list of expected values');
     const by = this.#stamp(author);
+    // What the command needs of its host, made before it runs (D110): the media service's work.
+    const given = command.needs ? await this.#media?.provide(command.needs, isRecord(args) ? args : {}, attachments) : undefined;
+    if (command.needs && given === undefined) throw notHere('run', NEED_SERVICES[command.needs]);
     const { entry, result } = await this.#change(by, async () => {
       const unmet = expect?.length ? unmetExpectation(this.#state.project, expect) : null;
       if (unmet) throw new EngineError('refused', `${unmet}: nothing written.`, { code: 'E_EXPECTED' });
       const before = this.#state.files;
-      const executed = executeCommand(before, name, (context) => command.run(context, args, undefined), { author: by, root: this.id });
+      const executed = executeCommand(before, name, (context) => command.run(context, args, given as never), { author: by, root: this.id });
       if (!executed.ops.length) return { entry: null, result: executed.result };
       const id = newId();
       const at = new Date().toISOString();
       const kept = await this.#changes.append({
-        type: 'change', id, at, author: by, batch: this.#batchOf(id, at, by), command: command.journal(args, undefined),
+        type: 'change', id, at, author: by, batch: this.#batchOf(id, at, by), command: command.journal(args, given as never),
         ops: executed.ops, inverse: executed.inverse, files: touched(executed.ops)
       });
       this.#adopt(before, executed.after as ProjectFiles);
@@ -329,6 +357,7 @@ export class BrowserSession {
   close(): Promise<{ version: string | null }> {
     this.#closing ??= (async () => {
       await this.#canvas.close();
+      this.#media?.close();
       for (const end of this.#relays) end();
       this.#relays.clear();
       this.#cloud?.stop();

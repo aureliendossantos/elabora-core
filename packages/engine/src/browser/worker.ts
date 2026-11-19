@@ -6,6 +6,7 @@ import { openCopy, type BrowserSession } from './session.ts';
 import { openIdbCopy, type MediaSource } from './idb-store.ts';
 import { roomMedia, roomMembership, roomSeed, roomSocket, type RoomAccess } from './room.ts';
 import type { ObjectCompiler } from './relay.ts';
+import { mediaWorker } from './media/client.ts';
 import type { NewCourseOptions } from '@elabora/core/commands/new-course';
 
 // The browser engine in a Worker (D103): one module a Worker. The page opens it, then speaks the
@@ -19,6 +20,10 @@ export type WorkerOpen = RoomAccess & {
   // without an account); without it, the room gives it.
   seed?: { link: CopyLink; confirmed: [string, FileContent][] };
   services?: Service[];
+  // The media Worker's script, which the app serves beside this one (D106): with it, the media service
+  // may be had; the AAC encoder's address, for a browser without its own (D107: tests only for now).
+  mediaWorker?: string;
+  aacEncoder?: string;
   // No connection to the room: nothing is sent nor taken (a module tried offline, a test).
   offline?: boolean;
   // A project just made in the window (« Nouveau module »): its first files, written as its first
@@ -55,15 +60,19 @@ export function provideObjects(load: () => Promise<ObjectCompiler>): void {
   let loading: Promise<ObjectCompiler> | null = null;
   objects = () => (loading ??= load().catch((error: unknown) => { loading = null; throw error; }));
 }
-const waiting: { message: RequestMessage; ports: readonly MessagePort[] }[] = [];
+// A request and the files it names (D108): `attachments`, by token, beside the message.
+type Envelope = RequestMessage & { attachments?: Record<string, Blob> };
+const waiting: { message: RequestMessage; ports: readonly MessagePort[]; attachments: Map<string, Blob> }[] = [];
 
-scope.onmessage = ({ data, ports }: MessageEvent<WorkerOpen | RequestMessage>) => {
+scope.onmessage = ({ data, ports }: MessageEvent<WorkerOpen | Envelope>) => {
   if (data.kind === 'open') {
     open(data).catch((error: unknown) => scope.postMessage({ kind: 'failed', message: error instanceof Error ? error.message : String(error), ...(typeof (error as { code?: unknown }).code === 'string' ? { code: (error as { code: string }).code } : {}) }));
     return;
   }
-  if (session) void session.handle(data, ports).then((response) => scope.postMessage(response));
-  else waiting.push({ message: data, ports });
+  const { attachments: given, ...message } = data;
+  const attachments = new Map(Object.entries(given ?? {}).filter((entry): entry is [string, Blob] => entry[1] instanceof Blob));
+  if (session) void session.handle(message, ports, attachments).then((response) => scope.postMessage(response));
+  else waiting.push({ message: message as RequestMessage, ports, attachments });
 };
 
 // The copy's key in the browser's storage: its team and project.
@@ -88,12 +97,12 @@ async function open(request: WorkerOpen): Promise<void> {
       taken = true;
     }
     if (!store) { scope.postMessage({ kind: 'missing' }); return; }
-    const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}), ...(objects ? { objects } : {}) });
+    const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}), ...(objects ? { objects } : {}), ...(request.mediaWorker ? { media: mediaWorker(new URL(request.mediaWorker, self.location.href).href, request.aacEncoder ? { aacEncoder: new URL(request.aacEncoder, self.location.href).href } : {}) } : {}) });
     session = opened;
     opened.subscribe((message) => scope.postMessage(message));
     if (request.newCourse) await opened.run('create_course', request.newCourse);
     scope.postMessage({ kind: 'opened', taken });
-    for (const { message, ports } of waiting.splice(0)) void opened.handle(message, ports).then((response) => scope.postMessage(response));
+    for (const { message, ports, attachments } of waiting.splice(0)) void opened.handle(message, ports, attachments).then((response) => scope.postMessage(response));
     // Held until the session closes.
     await new Promise<void>((resolve) => opened.subscribe(({ event }) => { if (event.type === 'closed') resolve(); }));
     store.close();
