@@ -1,6 +1,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { openProject, type Session } from '@elabora/engine/session';
 import { openCopy, type BrowserSession } from '@elabora/engine/browser/session';
@@ -11,6 +12,7 @@ import { readProjectFiles } from '@elabora/node/project-reader';
 import { isMediaAsset } from '@elabora/node/store/media';
 import { putBytes } from '@elabora/node/blobs';
 import type { ProjectSummary, ScreenView, UndoView } from '@elabora/engine/protocol';
+import { newCourseFiles } from '@elabora/core/commands/new-course';
 import { copyExample } from '../helpers.ts';
 import { Room } from '../sync/room.ts';
 
@@ -120,4 +122,26 @@ test('a browser\'s copy knows the size and the facts of the media it never took,
   }
   assert.equal(kept.link.media?.[media[0]!.hash]?.facts?.width, 1);
   assert.deepEqual(taken, []);
+});
+
+test('a project of a team just made: its new module\'s files made at once by two copies, the browser offline, give one module, the last placed person\'s values winning (D74)', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-empty-'));
+  const room = new Room(new Map());
+  const folder = await desktop(room, dir);
+  const copy = await browser(room);
+  await settled(room, folder, copy);
+  const course = { id: 'premier-module', title: 'Premier module', language: 'fr' };
+
+  room.out('cbrowser');
+  await ask(copy, 'run', { command: 'create_course', args: { ...course, title: 'Du navigateur' } });
+  await ask(folder, 'run', { command: 'create_course', args: course });
+  room.back('cbrowser');
+  await settled(room, folder, copy);
+  // The desktop's placed first, the browser's merged over it: the same module, the browser's title.
+  for (const [rel, text] of newCourseFiles({ ...course, title: 'Du navigateur' })) {
+    const written = fs.readFileSync(path.join(dir, rel), 'utf8');
+    if (rel.endsWith('.json')) assert.deepEqual(JSON.parse(written), JSON.parse(text), rel);
+    else assert.equal(written, text, rel);
+  }
+  assert.deepEqual([await title(copy, 'intro'), await title(folder, 'intro'), (await ask<ProjectSummary>(copy, 'summary', {})).course?.id], ['Du navigateur', 'Du navigateur', 'premier-module']);
 });

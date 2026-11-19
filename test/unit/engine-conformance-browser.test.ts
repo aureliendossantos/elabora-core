@@ -1,6 +1,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import * as wasm from 'esbuild-wasm';
 import { readProjectFiles } from '@elabora/node/project-reader';
@@ -20,7 +21,7 @@ import { EXAMPLE, BILINGUAL, NETWORK_SAMPLE } from '../helpers.ts';
 // never answers), with the one service it has a provider for, the canvas (D105): every case of another
 // service is skipped, and the case of a service not here judges them.
 
-const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPLE, bilingual: BILINGUAL };
+const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPLE, bilingual: BILINGUAL, empty: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-empty-')) };
 
 // A room that never answers: the copy keeps its changes waiting.
 const offline = (): RoomSocket => ({ readyState: 0, send() {}, close() {}, addEventListener() {} });

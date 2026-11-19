@@ -21,6 +21,11 @@ if (import.meta.main) {
     fs.writeFileSync(HISTORY, `${JSON.stringify(history, null, 2)}\n`);
   }
   console.log(path.relative(ROOT, HISTORY));
+  // The core carries the template of a new course and these rules (D111): written before the courses
+  // below are given the rules, which the core's module says.
+  const { courseTemplateModule, OUTPUT } = await import('./gen-course-template.ts');
+  fs.writeFileSync(OUTPUT, courseTemplateModule());
+  console.log(path.relative(ROOT, OUTPUT));
   // The examples, the module templates and the test courses in the current format carry the current rules and their CLAUDE.md (tests run
   // commands in copies of them: rules that Elabora would bring up to date there would be written by
   // every test).

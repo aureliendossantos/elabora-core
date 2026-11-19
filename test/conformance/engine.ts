@@ -23,7 +23,9 @@ export type Sample =
   // A smaller module without narration (test/fixtures/format-0.1/diagnostic-reseau), for what builds.
   | 'basic'
   // A module of two languages, its French translation approved (test/fixtures/format-0.1/orbital-rendezvous).
-  | 'bilingual';
+  | 'bilingual'
+  // A project with no file yet: a project of a team just made (D112).
+  | 'empty';
 
 export interface ConformanceTarget {
   name: string;
@@ -225,6 +227,23 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal((await client.request('summary', {})).journal.seq, seq);
     const plan = (await client.request('readScreen', { screen: 'chemin' })).data.blocks?.find((block) => block.id === 'chemin-plan');
     assert.equal((plan?.props as { alt?: string }).alt, 'Plan du réseau');
+  });
+
+  it('a project with no file: a new module\'s files are its first change, then its first screen reads; undone, it is empty again', async () => {
+    const { client, next } = await engine('empty');
+    assert.equal((await client.request('summary', {})).course, null);
+    const run = await client.request('run', { command: 'create_course', args: { id: 'premier-module', title: 'Premier module', language: 'fr' } });
+    assert.deepEqual([run.result, [...run.files].sort()], [{ created: true }, ['.gitignore', 'AGENTS.md', 'CLAUDE.md', 'course.json', 'plan.json', 'screens/intro.json']]);
+    assert.equal(run.change?.command?.name, 'create_course');
+    await next(changed('create_course'));
+    const summary = await client.request('summary', {});
+    assert.deepEqual([summary.course?.id, summary.outline.flatMap((section) => section.screens.map((screen) => screen.id))], ['premier-module', ['intro']]);
+    assert.equal((await client.request('readScreen', { screen: 'intro' })).data.title, 'Premier module');
+    assert.deepEqual(run.diagnostics.filter((finding) => finding.severity === 'error'), []);
+    // Made again (another copy opened it too): nothing written.
+    assert.deepEqual([(await client.request('run', { command: 'create_course', args: { id: 'premier-module', title: 'Premier module' } })).change], [null]);
+    await client.request('undo', {});
+    assert.equal((await client.request('summary', {})).course, null);
   });
 
   it('a message that is not a request of the protocol is answered as a bad request', async () => {

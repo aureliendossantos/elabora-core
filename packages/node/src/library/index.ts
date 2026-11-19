@@ -6,7 +6,7 @@ export {
   listProjects, getProject, findProjectsByCourseId, resolveProjectId, readCourseInfo, libraryProjectDir, createProject, createModule, newCourseId, duplicateProject, renameProject, validateLibraryProject,
   THUMBNAIL_FILE, ORIGIN_FILE, type LibraryProject, type ProjectOrigin, type ValidationSummary, type ListOptions, type CreateProjectOptions, type NewModuleOptions, type NewModule, type DuplicateOptions
 } from './projects.ts';
-export type { CourseBrief } from '../scaffold.ts';
+export type { CourseBrief } from '@elabora/core/commands/new-course';
 export { trashProject, listTrash, restoreFromTrash, deleteFromTrash, emptyTrash, TRASH_RETENTION_DAYS, type TrashEntry, type TrashReason, type EmptyTrashResult } from './trash.ts';
 export {
   exportProject, inspectArchive, importArchive, importFolder, archiveName, ARCHIVE_FORMAT, ARCHIVE_EXTENSION, MANIFEST_NAME,

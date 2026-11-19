@@ -10,8 +10,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stringifyJSON } from '@elabora/core/util/json';
 import { agentsFile, courseNotes, CLAUDE_FILE, CLAUDE_TEXT } from './agent-rules.ts';
-import { checkBrief, TEMPLATES_DIR } from './scaffold.ts';
-import type { CourseBrief } from './scaffold.ts';
+import { checkBrief, type CourseBrief } from '@elabora/core/commands/new-course';
+import { TEMPLATES_DIR } from './scaffold.ts';
 import { buildTranslation } from './translate.ts';
 import { fieldOf } from './util/values.ts';
 

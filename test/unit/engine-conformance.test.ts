@@ -38,7 +38,7 @@ process.env.ELABORA_ELEVENLABS_URL = 'http://127.0.0.1:9';
 const { openProject } = await import('@elabora/engine');
 const { engineConformance } = await import('../conformance/engine.ts');
 
-const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPLE, bilingual: BILINGUAL };
+const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPLE, bilingual: BILINGUAL, empty: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-empty-')) };
 
 const desktop: ConformanceTarget = {
   name: 'desktop',
