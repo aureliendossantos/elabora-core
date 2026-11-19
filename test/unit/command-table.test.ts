@@ -176,3 +176,11 @@ test('a new module\'s files are the first change of an empty project, and a proj
   // Two copies that both make it: the second writes nothing.
   assert.deepEqual(executeCommand(made.after as ProjectFiles, 'create_course', (context) => entry.run(context, args), { author: PERSON }).ops, []);
 });
+
+test('a command that writes as text a file a project reads as bytes is refused, nothing written', () => {
+  const files = readProjectFiles(path.join(ROOT, 'examples/canal-locks')).files as ProjectFiles;
+  const writing = (rel: string) => (context: { files: ProjectFiles }) => ({ files: new Map([...context.files, [rel, textFile('dist/\n')]]) as ProjectFiles, result: {} });
+  assert.throws(() => executeCommand(files, 'write_design_file', writing('.gitignore')), /\.gitignore would be written as text, where a project reads bytes/);
+  assert.throws(() => executeCommand(files, 'write_design_file', writing('theme/notes')), /theme\/notes would be written as text/);
+  assert.equal(executeCommand(files, 'write_design_file', writing('theme/notes.txt')).ops.length, 1);
+});
