@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Author } from '@elabora/core/ops/types';
 import type { CopyLink, Person } from '@elabora/core/sync/copy';
 import { projectDataDir } from '../data-dir.ts';
 import { readJSONFile, writeJSONFile } from '../util/fs.ts';
@@ -43,12 +42,4 @@ export function unlinkFolder(root: string): void {
   fs.rmSync(linkFile(root), { force: true });
 }
 
-
-// The author a linked folder's journal writes (D78): the folder's person, and as the one who
-// launched them, for agents and files edited by their own tools.
-export function stampAuthor(author: Author, person: Person | null | undefined): Author {
-  if (!person) return author;
-  if (author.kind === 'human' || author.kind === 'system') return author.id ? author : { ...author, id: person.id, ...(author.kind === 'human' && !author.name && person.name ? { name: person.name } : {}) };
-  return author.by ? author : { ...author, by: person.id };
-}
-
+export { stampAuthor } from '@elabora/core/sync/copy';

@@ -1,4 +1,4 @@
-import type { Files, Op } from '../ops/types.ts';
+import type { Author, Files, Op } from '../ops/types.ts';
 import type { LocalChange } from './client.ts';
 
 // A copy of a project in the cloud as its host keeps it (docs/architecture/sync.md, D100): what the
@@ -53,3 +53,12 @@ export const roomUrl = (api: string, team: string, project: string): string =>
 export function blobsOf(ops: readonly Op[]): string[] {
   return [...new Set(ops.flatMap((op) => (op.op === 'write' && 'blob' in op ? [op.blob] : [])))];
 }
+
+// The author a copy's journal writes (D78): the folder's person, and as the one who
+// launched them, for agents and files edited by their own tools.
+export function stampAuthor(author: Author, person: Person | null | undefined): Author {
+  if (!person) return author;
+  if (author.kind === 'human' || author.kind === 'system') return author.id ? author : { ...author, id: person.id, ...(author.kind === 'human' && !author.name && person.name ? { name: person.name } : {}) };
+  return author.by ? author : { ...author, by: person.id };
+}
+

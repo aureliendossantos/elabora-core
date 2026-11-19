@@ -5,17 +5,19 @@ import path from 'node:path';
 import { bundleForBrowser } from '../browser-bundle.ts';
 import { ROOT } from '../helpers.ts';
 
-// The session's base (packages/engine/src/base/, D100) bundled for a browser, as a Worker will import
-// it: every one of its files, with what they import, and not one import of Node.
+// The session's base (packages/engine/src/base/, D100) and the browser engine (src/browser/, D103)
+// bundled for a browser, as a Worker imports them: every one of their files, with what they import, and
+// not one import of Node.
 
-const BASE = 'packages/engine/src/base';
+// The base (D100) and the browser engine (D103).
+const FOLDERS = ['base', 'browser'];
 
-test('the session\'s base bundles for a browser without Node', async () => {
-  const files = fs.readdirSync(path.join(ROOT, BASE)).filter((name) => name.endsWith('.ts')).sort();
-  assert.ok(files.includes('session-cloud.ts') && files.includes('reads.ts'), files.join(', '));
-  const source = files.map((name, i) => `export * as m${i} from '@elabora/engine/base/${name.replace(/\.ts$/, '')}';`).join('\n');
+test('the session\'s base and the browser engine bundle for a browser without Node', async () => {
+  const files = FOLDERS.flatMap((folder) => fs.readdirSync(path.join(ROOT, 'packages/engine/src', folder)).filter((name) => name.endsWith('.ts')).sort().map((name) => `${folder}/${name}`));
+  assert.ok(files.includes('base/session-cloud.ts') && files.includes('browser/session.ts'), files.join(', '));
+  const source = files.map((file, i) => `export * as m${i} from '@elabora/engine/${file.replace(/\.ts$/, '')}';`).join('\n');
   const bundle = await bundleForBrowser({ source });
-  for (const name of files) assert.ok(bundle.inputs.includes(`${BASE}/${name}`), `${name} is in the bundle`);
+  for (const file of files) assert.ok(bundle.inputs.includes(`packages/engine/src/${file}`), `${file} is in the bundle`);
   assert.ok(bundle.inputs.some((input) => input.startsWith('packages/core/src/sync/')), 'with the core it imports');
   assert.deepEqual(bundle.inputs.filter((input) => input.startsWith('packages/node/')), []);
 });

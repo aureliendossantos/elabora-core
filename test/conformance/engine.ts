@@ -66,6 +66,9 @@ const WAIT_MS = 30_000;
 
 type Changed = Extract<EngineEvent, { type: 'changed' }>;
 const changed = (command?: string) => (event: EngineEvent): event is Changed => event.type === 'changed' && (!command || event.change.command?.name === command);
+// An author as the session wrote it, without who it is in a project of the cloud (D78: a person's id,
+// the person who launched an agent), which a copy of the cloud adds and a folder of this computer does not.
+const who = (author: { kind: string; name?: string; chat?: string } | undefined) => author && { kind: author.kind, ...(author.kind !== 'human' && author.name ? { name: author.name } : {}), ...(author.chat ? { chat: author.chat } : {}) };
 const refused = (kind: string, code?: string | RegExp) => (error: unknown) => {
   const { kind: actual, code: given, message } = error as { kind?: string; code?: string; message?: string };
   assert.equal(actual, kind, message);
@@ -192,7 +195,7 @@ export function engineConformance(target: ConformanceTarget): void {
     const { client, events, next } = await engine('network');
     const run = await client.request('run', { command: 'update_screen', args: { id: 'chemin', title: 'Le chemin' } });
     assert.equal(run.command, 'update_screen');
-    assert.deepEqual([run.change?.command?.name, run.change?.author, run.files], ['update_screen', { kind: 'human' }, ['screens/chemin.json']]);
+    assert.deepEqual([run.change?.command?.name, who(run.change?.author), run.files], ['update_screen', { kind: 'human' }, ['screens/chemin.json']]);
     const event = await next(changed('update_screen'));
     assert.deepEqual([event.source, event.change.id], ['engine', run.change?.id]);
     assert.equal((await client.request('readScreen', { screen: 'chemin' })).data.title, 'Le chemin');
@@ -270,7 +273,7 @@ export function engineConformance(target: ConformanceTarget): void {
     const agent = { kind: 'agent', name: 'assistant', chat: 'conversation-1' } as const;
     const wrote = await client.request('run', { command: 'update_screen', args: { id: 'chemin', title: 'Le chemin des données' }, author: agent });
     assert.equal(wrote.change?.batch, mark.mark.id);
-    assert.deepEqual(wrote.change?.author, agent);
+    assert.deepEqual(who(wrote.change?.author), agent);
     assert.equal((await client.request('summary', {})).journal.openBatch, mark.mark.id);
     const ended = await client.request('endTurn', { turn: mark.mark.id });
     assert.deepEqual(ended, { batch: mark.mark.id, changes: 1 });
@@ -442,7 +445,7 @@ export function engineConformance(target: ConformanceTarget): void {
     const built = await client.request('build', { profiles: ['moodle'] });
     assert.ok(built.ok && built.zip && built.report, JSON.stringify(built.errors));
     assert.ok(Math.abs(weights.qualities[0]!.bytes - built.size) < 16 * 1024, `weighed ${weights.qualities[0]!.bytes}, built ${built.size}`);
-    assert.deepEqual([built.change?.author, built.change?.command?.name], [{ kind: 'system' }, 'build']);
+    assert.deepEqual([who(built.change?.author), built.change?.command?.name], [{ kind: 'system' }, 'build']);
     assert.equal((await next(changed('build'))).change.id, built.change?.id);
     assert.ok((await client.request('build', null as never)).ok, 'a request without parameters: the defaults');
     for (const params of [{ mediaQuality: 'ultra' }, { profiles: 'moodle' }, { release: 'yes' }, { name: 3 }, { target: 'web', profiles: ['moodle'] }]) {
@@ -457,7 +460,7 @@ export function engineConformance(target: ConformanceTarget): void {
     const imported = await client.request('importMedia', { path: connection.pick('Schéma Réseau.svg', 'assets/images/chemin-impression.svg') });
     assert.match(imported.path, /^assets\/images\/schema-reseau\.svg$/);
     const change = await next(changed('import_media'));
-    assert.deepEqual([change.source, change.change.author, change.change.files], ['media', { kind: 'human' }, [imported.path]]);
+    assert.deepEqual([change.source, who(change.change.author), change.change.files], ['media', { kind: 'human' }, [imported.path]]);
     assert.ok((await next((event): event is Extract<EngineEvent, { type: 'mediaJob' }> => event.type === 'mediaJob' && event.job.id === imported.job.id && event.job.status === 'done')));
     assert.equal((await client.request('mediaJobs', {})).find((job) => job.id === imported.job.id)?.status, 'done');
     assert.ok((await client.request('listFiles', { dir: 'assets/images' })).some((file) => file.path === imported.path));
@@ -476,7 +479,7 @@ export function engineConformance(target: ConformanceTarget): void {
     await client.request('run', { command: 'update_screen', args: { id: 'accueil', title: 'Accueil modifié' } });
     const restored = await client.request('restoreBackup', { version: named!.id, paths: ['screens/chemin.json'] });
     assert.equal(restored.version, named?.id);
-    assert.deepEqual([restored.change?.author, restored.change?.command?.name, restored.change?.files], [{ kind: 'human' }, 'restore_backup', ['screens/chemin.json']]);
+    assert.deepEqual([who(restored.change?.author), restored.change?.command?.name, restored.change?.files], [{ kind: 'human' }, 'restore_backup', ['screens/chemin.json']]);
     assert.equal((await next(changed('restore_backup'))).change.id, restored.change?.id);
     assert.equal((await client.request('readScreen', { screen: 'chemin' })).data.title, original);
     assert.equal((await client.request('readScreen', { screen: 'accueil' })).data.title, 'Accueil modifié');
