@@ -32,18 +32,15 @@ async function launch(name: string, hosts: Hosts): Promise<Browser | null> {
   return null;
 }
 
-let counter = 0;
-const newRoute = () => `route${String(++counter).padStart(4, '0')}${'A'.repeat(18)}`;
 const canvasFrame = (page: Page): Frame => page.frames().find((frame) => frame.url().startsWith(`${CANVAS}/canvas/index.html`))!;
 const objectFrames = (page: Page): Frame[] => page.frames().filter((frame) => frame.url().startsWith(`${FRAMES}/canvas/objects/`));
 
 // The app's page on a module, the relay pages open, a screen shown and ready.
 async function openApp(context: BrowserContext, module: 'a' | 'b', { show = true, parts = false } = {}): Promise<{ page: Page; route: string }> {
-  const route = newRoute();
   const page = await context.newPage();
   page.on('console', (message) => { if (process.env.RELAY_DEBUG) console.log('[console]', message.type(), message.text().slice(0, 200)); });
   page.on('pageerror', (error) => { if (process.env.RELAY_DEBUG) console.log('[pageerror]', String(error).slice(0, 200)); });
-  await page.goto(`${APP}/?module=${module}&route=${route}&canvas=${encodeURIComponent(CANVAS)}&frames=${encodeURIComponent(FRAMES)}${parts ? '&parts=1' : ''}`);
+  await page.goto(`${APP}/?module=${module}&canvas=${encodeURIComponent(CANVAS)}&frames=${encodeURIComponent(FRAMES)}${parts ? '&parts=1' : ''}`);
   await page.waitForFunction(() => (window as unknown as { app?: { log: Array<{ type: string }> } }).app?.log.filter((message) => message.type === 'relay/opened').length === 2, null, { timeout: 30000 }).catch(async (error) => { throw new Error(`${String(error).split('\n')[0]} ${JSON.stringify(await page.evaluate(() => (window as unknown as { app?: { log: unknown[] } }).app?.log))}`); });
   if (show) {
     const id = await page.evaluate((screen) => (window as unknown as { app: { show(screen: string): Promise<number> } }).app.show(screen), MODULES[module]!.screen);
@@ -51,6 +48,8 @@ async function openApp(context: BrowserContext, module: 'a' | 'b', { show = true
     if (!canvasFrame(page)) throw new Error(`no canvas frame among ${JSON.stringify(page.frames().map((frame) => frame.url()))}`);
     await canvasFrame(page).waitForFunction((wanted) => (window as unknown as { __elaboraCanvas: { layout(): { id: unknown } } }).__elaboraCanvas.layout().id === wanted, id, { timeout: 30000 });
   }
+  // The route the host made for this view, from the address of its canvas page.
+  const route = await page.evaluate(() => new URL((window as unknown as { app: { info: { url: string } } }).app.info.url).searchParams.get('route')!);
   return { page, route };
 }
 
@@ -155,6 +154,30 @@ for (const name of wanted) {
       const shown = await read(review, 'review');
       assert.ok(shown === null || !/^\s*\{/.test(shown), `under the review page and a space the answer must not show: ${shown?.slice(0, 40)}`);
       await review.close();
+
+      // The canvas host for a page: what the canvas says arrives read as data, a question is answered, a page loaded again is
+      // given its render again, and what a window or a frame that is not the canvas's says is nothing.
+      const layouts = await page.evaluate(() => (window as unknown as { app: { messages: Array<{ type: string; id?: unknown; blocks?: unknown[] }> } }).app.messages.filter((message) => message.type === 'elabora/layout').map((message) => ({ id: message.id, blocks: message.blocks?.length })));
+      assert.ok(layouts.length > 0 && layouts.at(-1)!.blocks! > 0, JSON.stringify(layouts.slice(-1)));
+      const measured = await page.evaluate(() => (window as unknown as { app: { host: { ask(name: string, params: object): Promise<{ overflow: number; fields: unknown[] }> } } }).app.host.ask('measure', { id: 1 }));
+      assert.ok(typeof measured.overflow === 'number' && Array.isArray(measured.fields));
+      const heard = () => page.evaluate(() => (window as unknown as { app: { messages: unknown[]; log: unknown[] } }).app.messages.length + (window as unknown as { app: { log: unknown[] } }).app.log.length);
+      const quiet = await heard();
+      await page.evaluate(() => {
+        // From the app's own window, and from a frame that is not the canvas's (srcdoc: the app's origin): not the canvas frame's window.
+        postMessage({ type: 'relay/ready', protocol: 'elabora-relay/1', version: 'forged', host: 'canvas' }, '*');
+        postMessage({ type: 'elabora/error', id: null, message: 'forged' }, '*');
+        const stranger = document.createElement('iframe');
+        stranger.srcdoc = '<script>parent.postMessage({ type: "elabora/error", id: null, message: "forged" }, "*"); parent.postMessage({ type: "relay/opened", protocol: "elabora-relay/1", route: "k3J0aXq9Zr1T5mYb8WcD7g" }, "*");</script>';
+        document.body.append(stranger);
+      });
+      await page.waitForTimeout(800);
+      assert.equal(await heard(), quiet, 'nothing a window that is not the canvas\'s says is heard');
+      const again = await page.evaluate(() => { const app = (window as unknown as { app: { messages: unknown[]; reload(): void } }).app; const count = app.messages.length; app.reload(); return count; });
+      await page.waitForFunction((count) => (window as unknown as { app: { log: Array<{ type: string }> } }).app.log.filter((message) => message.type === 'relay/opened').length >= count, 3, { timeout: 30000 }).catch(async (error) => { throw new Error(`${String(error).split('\n')[0]} ${JSON.stringify(await page.evaluate(() => (window as unknown as { app: { log: Array<{ from: string; type: string }>; host: { relays(): unknown } } }).app.log.map((message) => `${message.from}:${message.type}`).concat([JSON.stringify((window as unknown as { app: { host: { relays(): unknown } } }).app.host.relays())])))}`); });
+      await page.waitForFunction((count) => (window as unknown as { app: { messages: Array<{ type: string }> } }).app.messages.slice(count).some((message) => message.type === 'elabora/layout'), again, { timeout: 30000 });
+      const afterReload = await canvasFrame(page).evaluate(async () => { const response = await fetch('/canvas/course.json'); return { status: response.status, screen: (window as unknown as { __elaboraCanvas: { screen: string | null } }).__elaboraCanvas.screen }; });
+      assert.deepEqual(afterReload, { status: 200, screen: MODULES.a!.screen }, 'a page loaded again has its route open again and its render');
 
       // 6. A version of the relay replaced without reloading the app.
       await page.evaluate(() => { (window as unknown as { marker?: string }).marker = 'kept'; });
