@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { animatedImageSource, commandContext, CommandError, imageToVideo as imageToVideoCommand } from '@elabora/core/commands/index';
-import type { ImageToVideoResult } from '@elabora/core/commands/index';
+import type { ImageToVideoRequest, ImageToVideoResult } from '@elabora/core/commands/index';
 import { fileMedia } from '@elabora/core/media/conformance';
 import { binaryFile } from '@elabora/core/project/files';
 import { hashFile } from '../blobs.ts';
@@ -20,11 +20,6 @@ import type { MediaTools } from './tools.ts';
 // frame) are made in the project's data folder, then one journaled change brings them in, turns the
 // block into the video and removes the image's file when nothing else names it: an undo puts the
 // image back. The lighter qualities make their renditions of the MP4, as of any video.
-
-export interface ImageToVideoRequest {
-  block: string;
-  blocks?: string[]; // other image blocks showing the same file (the app's « Transformer en vidéo » of a media)
-}
 
 export interface ImageToVideoOptions extends EditOptions {
   tools?: MediaTools;

@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { addResource as addResourceCommand } from '@elabora/core/commands/resources';
+import { addResource as addResourceCommand, titleFromName } from '@elabora/core/commands/resources';
+
+export { titleFromName };
 import type { AddResourceRequest, AddResourceResult } from '@elabora/core/commands/resources';
 import { binaryFile, isTextPath, textFile } from '@elabora/core/project/files';
 import type { SourceFile } from '@elabora/core/project/files';
@@ -17,9 +19,6 @@ import { runCommand, type EditOptions, type EditResult } from './executor.ts';
 // a font's do, so that a redo or a version brings it back).
 
 const UTF8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
-
-// A title from a file's name: « fiche_reflexe-impression v2.pdf » → « fiche reflexe-impression v2 ».
-export const titleFromName = (name: string): string => name.replace(/\.[A-Za-z0-9]{1,8}$/, '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim();
 
 export function addResource(dir: string, args: AddResourceRequest, options?: EditOptions): EditResult & AddResourceResult & { titleFrom: 'given' | 'pdf' | 'name' } {
   const file = path.resolve(args.path);

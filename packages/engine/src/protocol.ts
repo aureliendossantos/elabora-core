@@ -21,8 +21,10 @@ import type { ActivityEntry } from '@elabora/node/activity-types';
 import type { VoiceInfo, VoiceStatus, GenerateResult, TakeInfo, VoiceProgress, VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate } from '@elabora/node/voice/types';
 import type { AlignerView, AlignProgress, AlignResult } from '@elabora/node/align/types';
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/types';
-import type { NarrationPeaks, ImportedFile, LineFromAudioFileArgs, TextFromAudioFileArgs } from '@elabora/node/narration/types';
-import type { AddSoundArgs, GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
+import type { NarrationPeaks, ImportedFile } from '@elabora/node/narration/types';
+import type { LineFromAudioFileArgs, TextFromAudioFileArgs } from '@elabora/core/commands/narration';
+import type { AddSoundRequest as AddSoundArgs } from '@elabora/core/commands/sounds';
+import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
 import type { CourseSound } from '@elabora/core/sounds/sounds';
 import type {
   Expectation, CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, PlaceBlockArgs, ArrangeScreenArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,

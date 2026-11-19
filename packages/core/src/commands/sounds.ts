@@ -14,6 +14,28 @@ import { addNarrationLine } from './narration.ts';
 // (a play-sound, a background track) is another change, except a sound line of a narration: line
 // places one in the same change (the app's « Placer dans le script »).
 
+// What the app, the CLI and agents ask (add_sound): a sound of the library (its id), one found
+// through Openverse (openverse:<uuid>) or a file (on a computer, an absolute path). Its host reads it
+// (downloads it, cuts and fades it as asked) and gives the command the file and its sidecar.
+export interface AddSoundRequest {
+  from: string;
+  id?: string;
+  // The part kept (seconds) and a fade out at its end (seconds).
+  trim?: { start: number; end: number };
+  fade?: number;
+  loop?: boolean;
+  // For a file: what its source says.
+  title?: string;
+  author?: string;
+  license?: string;
+  url?: string;
+  caption?: Record<string, string>;
+  // Made by an AI service (sound generate).
+  generated?: Sound['generated'];
+  // A sound line saying it in a narration, placed in the same change (« Placer dans le script »).
+  line?: AddedSoundLine;
+}
+
 export interface AddSoundArgs {
   id: string;
   extension: string; // .flac, .ogg, .opus, .m4a, .mp3

@@ -78,7 +78,7 @@ An undo is a change that names what it undoes (`undoes`: the changes, the batch)
 
 ## Commands by name
 
-A room runs commands as well as changes: a tool of the cloud sends a command's name and arguments, the room runs it on its head (`executeCommand`, D76) and places the result as a change of the tool's author. `@elabora/core` `commands/table.ts` is the list (D84): the commands that need nothing but the project's files, each with the JSON Schema of its arguments, what a tool says of it, whether it removes content or is a person's only, and the function that runs it. `namedCommand(name)` finds one by its own name only. The schema is what a tool may send; the command checks its arguments itself and refuses with `CommandError`.
+A room runs commands as well as changes: a tool of the cloud sends a command's name and arguments, the room runs it on its head (`executeCommand`, D76) and places the result as a change of the tool's author. `@elabora/core` `commands/table.ts` is the list (D84, D110): every command, each with the JSON Schema of its arguments, what a tool says of it, whether it removes content or is a person's only, what it needs of its host, and the function that runs it. `namedCommand(name)` finds one by its own name only. A room gives a command nothing but the files: it refuses one that needs its host (a font's files, a line's audio made from a file). The schema is what a tool may send; the command checks its arguments itself and refuses with `CommandError`.
 
 ## Messages
 

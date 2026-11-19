@@ -18,6 +18,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D101](decisions/D101.md) | Where a session's changes come from and go, behind one interface | 18 Nov 2026 |
 | [D102](decisions/D102.md) | A service a session does not have: not here, and which it has | 19 Nov 2026 |
 | [D11](decisions/D11.md) | LESSON.md for simple blocks |  |
+| [D110](decisions/D110.md) | Every command in the table, each saying what it expects from its host | 19 Nov 2026 |
 | [D115](decisions/D115.md) | What the canvas shows is asked of it by messages, not by scripts injected into its page | 18 Nov 2026 |
 | [D116](decisions/D116.md) | Free objects' frames from an origin of their own, for a page served on the web | 18 Nov 2026 |
 | [D117](decisions/D117.md) | A free object's code is bundled by a part that needs no Node, given esbuild and its libraries | 18 Nov 2026 |
@@ -93,7 +94,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D81](decisions/D81.md) | The schemas a course writes: the keywords the interpreter reads, and a clear refusal for the others | 12 Nov 2026 |
 | [D82](decisions/D82.md) | Where Ajv stays, and the proof in a Worker | 12 Nov 2026 |
 | [D83](decisions/D83.md) | A folder linked to a project in the cloud: the engine's session syncs it; an agent's run goes as one change | 12 Nov 2026 |
-| [D84](decisions/D84.md) | The commands by name, with the schema of their arguments, in the core | 12 Nov 2026 |
+| [D84](decisions/D84.md) | The commands by name, with the schema of their arguments, in the core, revised by D110 | 12 Nov 2026 |
 | [D85](decisions/D85.md) | A room's refusals are named in the protocol | 12 Nov 2026 |
 | [D86](decisions/D86.md) | A project's validation kept change by change, in the core | 12 Nov 2026 |
 | [D87](decisions/D87.md) | An undo carries what it left out, through a project's server | 12 Nov 2026 |

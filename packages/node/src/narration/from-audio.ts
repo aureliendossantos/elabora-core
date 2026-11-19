@@ -11,9 +11,7 @@ import { transcribeAudio, TranscriptionError } from '../transcribe/index.ts';
 import type { TranscribeOptions, Transcript } from '../transcribe/index.ts';
 import { withApostrophesOf } from '../transcribe/text.ts';
 import { createdAt, withLineAudio } from './audio.ts';
-import type { LineFromAudioFileArgs, TextFromAudioFileArgs } from './types.ts';
-
-export type { LineFromAudioFileArgs, TextFromAudioFileArgs } from './types.ts';
+import type { LineFromAudioFileArgs, TextFromAudioFileArgs } from '@elabora/core/commands/narration';
 
 // Lines and their recordings (docs/decisions.md D46): a new line made from an audio file (« Nouvelle
 // réplique depuis un fichier audio… », elabora narration add-from-audio), and the text of a line
