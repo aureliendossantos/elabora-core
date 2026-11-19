@@ -1,35 +1,50 @@
 import type { Project } from '@elabora/core/project/model';
 import type { RenderedScreen } from '@elabora/core/render/screen';
-import { startCanvasHost } from '@elabora/node/canvas/host';
-import type { CanvasHost } from '@elabora/node/canvas/host';
-import { affects, dependenciesOf, momentTime } from './base/render.ts';
-import type { Renderer } from './base/render.ts';
-import type { Dependencies } from './base/render.ts';
+import type { RenderView } from '@elabora/player/canvas-protocol';
+import { affects, dependenciesOf, momentTime } from './render.ts';
+import type { Renderer } from './render.ts';
+import type { Dependencies } from './render.ts';
 import { EngineError } from './errors.ts';
-import type { CanvasInfo, CanvasView } from './protocol.ts';
+import type { CanvasInfo, CanvasView } from '../protocol.ts';
 
-// The canvas of the session: the host whose pages show one screen, sent again after each change that
-// affects it, rendered by the session's renderer (base/render.ts: its memoised renders serve
-// renderScreen too, a read of the base).
+// Where the canvas's renders go: the desktop's local host, whose pages it serves (@elabora/node
+// canvas/host.ts), or the browser's events, which the window gives its page (canvasRender,
+// canvasView). url, base and token are the page's: empty where the engine does not hold it.
+export interface CanvasSink {
+  readonly url: string;
+  readonly base: string;
+  readonly token: string;
+  // Pages that get what is sent.
+  readonly pages: number;
+  push(render: RenderedScreen, options: { id: string | number }): unknown;
+  view(view: Partial<RenderView>, options: { id: string | number }): number;
+  close(): Promise<void> | void;
+}
+
+export type OpenCanvasSink = (options: { port?: number; debug?: boolean }) => Promise<CanvasSink>;
+
+// The canvas of the session: the sink whose pages show one screen, sent again after each change that
+// affects it, rendered by the session's renderer (render.ts: its memoised renders serve renderScreen
+// too, a read of the base).
 export class SessionCanvas {
   readonly #renderer: Renderer;
   // chrome: what the bars showed in the last render pushed (the outline, the items that show…).
-  #canvas: { host: CanvasHost; view: CanvasView; shown: Dependencies | null; views: number; chrome: string | null } | null = null;
-  readonly #root: string;
+  #canvas: { host: CanvasSink; view: CanvasView; shown: Dependencies | null; views: number; chrome: string | null } | null = null;
+  readonly #sink: OpenCanvasSink;
   readonly #project: () => Project;
   readonly #reportError: (error: unknown, context: string) => void;
 
-  constructor({ root, project, renderer, reportError }: { root: string; project: () => Project; renderer: Renderer; reportError: (error: unknown, context: string) => void }) {
-    this.#root = root;
+  constructor({ sink, project, renderer, reportError }: { sink: OpenCanvasSink; project: () => Project; renderer: Renderer; reportError: (error: unknown, context: string) => void }) {
+    this.#sink = sink;
     this.#renderer = renderer;
     this.#project = project;
     this.#reportError = reportError;
   }
 
-  // Starts the canvas host of the project (once): the app shows its page in a frame.
+  // Opens the sink (once): the app shows its page in a frame.
   async open(options: { port?: number; debug?: boolean } = {}): Promise<CanvasInfo> {
     if (!this.#canvas) {
-      const host = await startCanvasHost({ root: this.#root, port: options.port, debug: options.debug });
+      const host = await this.#sink(options);
       this.#canvas = { host, view: { screen: null, state: 'initial', step: null, layer: null, language: null }, shown: null, views: 0, chrome: null };
     }
     const { host, view } = this.#canvas;

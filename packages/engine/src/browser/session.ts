@@ -15,6 +15,8 @@ import { isRecord } from '@elabora/core/util/values';
 import { ProjectState } from '../base/project-state.ts';
 import { SessionReads } from '../base/reads.ts';
 import { Renderer } from '../base/render.ts';
+import { SessionCanvas } from '../base/canvas.ts';
+import { screenRenderOf } from '@elabora/core/render/screen';
 import { WriteQueue } from '../base/queue.ts';
 import { Batches } from '../base/batches.ts';
 import { changeView, diagnosticsEvent } from '../base/events.ts';
@@ -47,7 +49,7 @@ export interface CopyOptions {
   backoff?: number[];
   author?: Author;
   // The services its host provides (D102): a service named here that this engine has no provider for is
-  // not had (none yet: media, voices, word times and packages come later).
+  // not had (the canvas has one; media, voices, word times and packages come later).
   services?: readonly Service[];
   validation?: ValidationOptions;
   // How free objects are compiled for the relay's frames (esbuild-wasm, D117): without it, an object's
@@ -55,8 +57,8 @@ export interface CopyOptions {
   objects?: () => Promise<ObjectCompiler>;
 }
 
-// The services this engine has a provider for: none yet.
-const PROVIDED: ReadonlySet<Service> = new Set();
+// The services this engine has a provider for: the canvas, whose renders go out as events (D105).
+const PROVIDED: ReadonlySet<Service> = new Set(['canvas']);
 
 // How far back a chat's turn is looked for: no turn lasts a day.
 const TURN_LOOKBACK_MS = 24 * 60 * 60 * 1000;
@@ -78,6 +80,7 @@ export class BrowserSession {
   readonly #listeners = new Set<(message: EventMessage) => void>();
   readonly #entries: JournalEntry[];
   readonly #renderer = new Renderer();
+  readonly #canvas: SessionCanvas;
   readonly #reads: SessionReads;
   readonly #batches: Batches;
   readonly #changes: CopyChanges;
@@ -125,6 +128,16 @@ export class BrowserSession {
     this.#state = new ProjectState(this.id, new Map([...view].map(([rel, file]) => [rel, this.#sourceOf(rel, file) as SourceFile])), [], options.validation);
     this.#changes = new CopyChanges({ state: this.#state, store: this.#store, host: { taken: (taken, source) => this.#taken(taken, source), afterChange: () => this.#afterChange(), emit: (event) => this.#emit(event) } });
     this.#batches = new Batches({ idleMs: 5 * 60_000, run: (work) => this.#queue.run(work), version: async () => null, emit: (event) => this.#emit(event), reportError: (error, context) => this.#emitError(error, context) });
+    // The canvas's renders go to the window as events: it holds the page (url, base and token are its own).
+    this.#canvas = new SessionCanvas({
+      project: () => this.#state.project, renderer: this.#renderer, reportError: (error, context) => this.#emitError(error, context),
+      sink: async () => ({
+        url: '', base: '', token: '', pages: 1,
+        push: (render, { id }) => this.#emit({ type: 'canvasRender', id, render: screenRenderOf(render) }),
+        view: (view, { id }) => { this.#emit({ type: 'canvasView', id, view }); return 1; },
+        close: () => {}
+      })
+    });
     this.#reads = new SessionReads({
       root: this.id, state: this.#state, renderer: this.#renderer, entries: () => this.#entries, journalSeq: () => this.#changes.lastSeq, openBatch: () => this.#batches.open,
       mediaJobs: () => [], migrate: undefined, services: [...this.#services], assertOpen: () => this.#assertOpen()
@@ -214,6 +227,9 @@ export class BrowserSession {
       case 'migrate': return this.migrate();
       case 'close': return this.close();
       case 'relayPort': return this.relayPort(request.params?.host, ports[0]);
+      case 'openCanvas': this.#assertOpen(); return this.#canvas.open();
+      case 'canvasView': this.#assertOpen(); return this.#canvas.view(request.params ?? {});
+      case 'closeCanvas': return this.#canvas.close();
       default: throw new EngineError('bad-request', `${request.type} is not a request of this session`);
     }
   }
@@ -312,6 +328,7 @@ export class BrowserSession {
 
   close(): Promise<{ version: string | null }> {
     this.#closing ??= (async () => {
+      await this.#canvas.close();
       for (const end of this.#relays) end();
       this.#relays.clear();
       this.#cloud?.stop();
@@ -414,7 +431,7 @@ export class BrowserSession {
 
   async #afterChange(): Promise<void> {
     this.#takeFacts();
-    this.#renderer.invalidate(this.#state.takeChanged());
+    this.#canvas.changed(this.#state.takeChanged(), this.#changes.lastSeq);
     const delta = this.#state.validate();
     if (delta) this.#emit(diagnosticsEvent(delta));
     await this.#batches.flush();

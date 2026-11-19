@@ -13,6 +13,7 @@ import type { ExportedDialogue, DialogueExportFormat } from '@elabora/node/dialo
 import type { DialogueView } from '@elabora/core/dialogue/view';
 import type { PlayReport } from '@elabora/core/dialogue/play';
 import type { RenderedScreen } from '@elabora/core/render/screen';
+import type { RenderView, ScreenRender } from '@elabora/player/canvas-protocol';
 import type { MigrationNote } from '@elabora/core/format/migrations/types';
 import type { PresetName } from '@elabora/core/media/presets';
 import type { PackageWeights } from '@elabora/core/media/weights';
@@ -633,6 +634,11 @@ export type EngineEvent =
   // findings when they changed, and the summary over everything.
   | { type: 'diagnostics'; screens: Record<string, Diagnostic[]>; removed: string[]; project?: Diagnostic[]; summary: Summary }
   | { type: 'mediaJob'; job: MediaJobInfo }
+  // The canvas of a browser's session (D105): a render of the screen shown, as its page takes it
+  // (elabora/render), and a change of what the page shows of it (elabora/view). The window gives
+  // them to the canvas's page; the desktop's sessions push them to their local host instead.
+  | { type: 'canvasRender'; id: string | number; render: ScreenRender }
+  | { type: 'canvasView'; id: string | number; view: Partial<RenderView> }
   // A voice model downloading (phase install) or a line being said (phase line: its fraction).
   | { type: 'voiceProgress'; screen?: string; progress: VoiceProgress }
   // The word aligner downloading (phase install) or timing a line.

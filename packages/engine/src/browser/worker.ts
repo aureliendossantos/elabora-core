@@ -5,6 +5,7 @@ import type { EventMessage, RequestMessage, ResponseMessage, Service } from '../
 import { openCopy, type BrowserSession } from './session.ts';
 import { openIdbCopy } from './idb-store.ts';
 import { roomMedia, roomMembership, roomSeed, roomSocket, type RoomAccess } from './room.ts';
+import type { ObjectCompiler } from './relay.ts';
 
 // The browser engine in a Worker (D103): one module a Worker. The page opens it, then speaks the
 // engine's protocol to it by messages. One tab holds a module at a time (Web Locks): a second one is
@@ -33,6 +34,15 @@ const scope = self as unknown as { onmessage: ((event: MessageEvent) => void) | 
 const never = (): RoomSocket => ({ readyState: 0, send() {}, close() {}, addEventListener() {} });
 
 let session: BrowserSession | null = null;
+let objects: (() => Promise<ObjectCompiler>) | undefined;
+
+// How free objects are compiled for the relay's frames (D117): the app's Worker, which imports this
+// one, gives it as it loads, before the page's open message. It is called at the first object a page
+// asks for, once (again only if it failed): a module without a free object loads nothing.
+export function provideObjects(load: () => Promise<ObjectCompiler>): void {
+  let loading: Promise<ObjectCompiler> | null = null;
+  objects = () => (loading ??= load().catch((error: unknown) => { loading = null; throw error; }));
+}
 const waiting: { message: RequestMessage; ports: readonly MessagePort[] }[] = [];
 
 scope.onmessage = ({ data, ports }: MessageEvent<WorkerOpen | RequestMessage>) => {
@@ -65,7 +75,7 @@ async function open(request: WorkerOpen): Promise<void> {
       taken = true;
     }
     if (!store) { scope.postMessage({ kind: 'missing' }); return; }
-    const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}) });
+    const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}), ...(objects ? { objects } : {}) });
     session = opened;
     opened.subscribe((message) => scope.postMessage(message));
     scope.postMessage({ kind: 'opened', taken });

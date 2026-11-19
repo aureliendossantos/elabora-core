@@ -78,6 +78,12 @@ export interface RenderedScreen extends ScreenRender {
   files: RenderedFile[];
 }
 
+// A render as the canvas's page takes it (elabora/render): its files by path, kind and hash alone.
+export function screenRenderOf(render: RenderedScreen): ScreenRender {
+  const { screen, course, view, styles, files, outline } = render;
+  return { screen, course, view, styles, files: files.map(({ path, kind, hash }) => ({ path, kind, hash })), ...(outline ? { outline } : {}) };
+}
+
 export interface RenderContext {
   // The project the context was made from.
   readonly source: Project;
