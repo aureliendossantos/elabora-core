@@ -691,6 +691,8 @@ test('a folder gives the facts of its media in passing to a room that keeps them
   const started = Date.now();
   while (!room.facts.has(hash) && Date.now() - started < 20_000) await new Promise((resolve) => setTimeout(resolve, 25));
   assert.deepEqual([room.facts.get(hash)?.kind, room.facts.get(hash)?.width, room.mediaMessages], ['image', 1, 1]);
-  await settled(room, a);
+  // The room's answer to what the folder gave comes after it: its link keeps the room's word once the copy took it in.
+  const answered = Date.now();
+  while (!readLink(A)?.media?.[hash]?.facts && Date.now() - answered < 20_000) await new Promise((resolve) => setTimeout(resolve, 25));
   assert.deepEqual(readLink(A)?.media?.[hash], { size: point.length, facts: room.facts.get(hash) });
 });
