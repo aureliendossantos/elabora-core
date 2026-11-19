@@ -22,6 +22,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D105](decisions/D105.md) | The browser engine's relay: a port per route and host, given by `relayPort`; its canvas by events | 19 Nov 2026, revised 19 Nov 2026 |
 | [D106](decisions/D106.md) | Media in a browser: a Worker of its own, the rules both hosts read in the core | 19 Nov 2026 |
 | [D107](decisions/D107.md) | Media in a browser: Mediabunny, and AAC only where the browser has its encoder | 19 Nov 2026 |
+| [D108](decisions/D108.md) | A browser's media service: its requests, the files that come beside them, what its commands are given | 19 Nov 2026 |
 | [D11](decisions/D11.md) | LESSON.md for simple blocks |  |
 | [D110](decisions/D110.md) | Every command in the table, each saying what it expects from its host | 19 Nov 2026 |
 | [D111](decisions/D111.md) | A new module's files made by the core, from a template it carries | 19 Nov 2026 |

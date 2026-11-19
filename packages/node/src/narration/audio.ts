@@ -15,6 +15,7 @@ import { runFfmpeg } from '../media/encode.ts';
 import { ALIGNER_MODELS, alignAudio, alignsAtOnce } from '../align/index.ts';
 import { loadProjectFromDir } from '../project-reader.ts';
 import { narrationLines } from '@elabora/core/narration/narration';
+import { linesByName, recordingLines } from '@elabora/core/narration/recordings';
 import type { ImportedFile } from './types.ts';
 import { lineMouth, mouthWords } from './mouth.ts';
 
@@ -133,8 +134,6 @@ export function importNarration(dir: string, { screen, line, language, file, voi
 
 export type { ImportedFile } from './types.ts';
 
-const slugOf = (name: string): string => name.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[\s_.]+/g, '-').replace(/[^a-z0-9-]/g, '');
-
 // Recordings of several lines at once (« Importer des enregistrements »): each file goes to the line
 // its name gives (a line id, <screen>-<line>, or the line's number in the screen), the others to
 // the line whose text the voice says, when the aligner of the language is on this computer; one
@@ -144,21 +143,16 @@ export async function importNarrationFiles(dir: string, { screen, files, languag
   const project = loadProjectFromDir(dir);
   const lang = language || project.course?.language || '';
   if (screen && !project.screens.has(screen)) throw new Error(`Unknown screen "${screen}".`);
-  const screens = screen ? [screen] : [...project.screens.keys()];
-  const lines = screens.flatMap((id) => (narrationLines(project, id, lang) ?? []).map((info, index) => ({ screen: id, line: info.id, index, text: info.text })));
+  const lines = recordingLines(project, screen, lang);
   if (!lines.length) throw new Error(screen ? `Screen "${screen}" has no narration.` : 'The course has no narrated screen.');
   const results: ImportedFile[] = [];
   const taken = new Set<string>();
   const key = (line: { screen: string; line: string }) => `${line.screen}/${line.line}`;
   const pending: string[] = [];
-  for (const file of files) {
-    const name = slugOf(path.basename(file).replace(/\.[^.]+$/, ''));
-    const number = /^(\d{1,3})(?:-|$)/.exec(name);
-    const found = lines.find((line) => !taken.has(key(line)) && [slugOf(line.line), `${line.screen}-${slugOf(line.line)}`].includes(name))
-      ?? (screen && number ? lines.find((line) => line.index === Number(number[1]) - 1 && !taken.has(key(line))) : undefined);
-    if (found) { taken.add(key(found)); results.push({ file, status: 'imported', screen: found.screen, line: found.line, by: 'name' }); }
-    else pending.push(file);
-  }
+  linesByName(lines, files.map((file) => path.basename(file)), screen, taken).forEach((found, i) => {
+    if (found) results.push({ file: files[i]!, status: 'imported', screen: found.screen, line: found.line, by: 'name' });
+    else pending.push(files[i]!);
+  });
   // The others by what they say: each to the free line of the screen the aligner finds best in it.
   if (pending.length && screen && alignsAtOnce(lang)) {
     const scored: { file: string; line: (typeof lines)[number]; score: number }[] = [];

@@ -119,6 +119,12 @@ test('browser relay: the canvas gets the module\'s files, texts and media by has
     const audio = await canvas.get({ kind: 'file', path: 'assets/narration/fr/chemin/chemin-depart.m4a' });
     assert.ok(audio.status === 'ok' && audio.type === 'audio/mp4' && /^sha256:/.test(audio.hash ?? ''));
     assert.deepEqual(await bytesOf(audio), new Uint8Array(fs.readFileSync(path.join(NETWORK_SAMPLE, 'assets/narration/fr/chemin/chemin-depart.m4a'))));
+    // A range of a medium: that part alone, its place in the whole said (C103).
+    const part = await canvas.get({ kind: 'file', path: 'assets/narration/fr/chemin/chemin-depart.m4a', range: { start: 100, end: 1099 } });
+    const whole = new Uint8Array(fs.readFileSync(path.join(NETWORK_SAMPLE, 'assets/narration/fr/chemin/chemin-depart.m4a')));
+    assert.ok(part.status === 'ok' && part.size === whole.length);
+    assert.deepEqual(part.part, { start: 100, end: 1099 });
+    assert.deepEqual(await bytesOf(part), whole.slice(100, 1100));
     assert.equal((await canvas.get({ kind: 'file', path: 'assets/absent.png' })).status, 'not-found');
     assert.equal((await canvas.get({ kind: 'file', path: '../course.json' })).status, 'refused', 'a path that leaves the module');
     assert.equal((await canvas.get({ kind: 'object-code', object: 'diagnostic-reseau' })).status, 'refused', 'an object is the frames host\'s');

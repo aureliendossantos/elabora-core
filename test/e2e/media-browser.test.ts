@@ -10,6 +10,7 @@ import { promisify } from 'node:util';
 import { findMediaTools, probeMedia, stripImageMetadata } from '@elabora/node/media/index';
 import type { MediaInfo, MediaTools } from '@elabora/node/media/index';
 import { fileMedia, masterPlan, presetDimensions } from '@elabora/core/media/conformance';
+import { PEAKS_RATE, peaksOf, soundPlan } from '@elabora/core/media/audio';
 import { bundleForBrowser } from '../browser-bundle.ts';
 import { makeMediaFixtures } from '../media-fixtures.ts';
 import { aacEncoderModule } from '../aac-encoder.ts';
@@ -35,18 +36,24 @@ before(async () => {
 import { imageMaster } from './packages/engine/src/browser/media/image.ts';
 import { fileTarget, videoMaster } from './packages/engine/src/browser/media/video.ts';
 import { provideAac } from './packages/engine/src/browser/media/encoders.ts';
+import { lineAudio, linePeaks, monoSamples, soundMaster } from './packages/engine/src/browser/media/audio.ts';
 const aac = provideAac('/aac.js');
 self.onmessage = async ({ data }) => {
   try {
     const info = await probeFile(data.file, data.name);
     if (data.op === 'probe') return self.postMessage({ info });
     if (data.op === 'image') return self.postMessage({ master: await imageMaster(data.file, data.name, info) });
+    if (data.op === 'samples') return self.postMessage({ samples: Array.from(await monoSamples(data.file, data.name, 16000, info.duration)) });
+    if (data.op === 'peaks') return self.postMessage({ samples: Array.from(await linePeaks(data.file, data.name, 50, info.duration)) });
     // The origin's private file system; Playwright's WebKit has none in its throwaway profiles: in memory there.
     const handle = await navigator.storage.getDirectory().then((root) => root.getFileHandle('master-' + data.name + '.mp4', { create: true }), () => null);
     const parts = [];
     const memory = new WritableStream({ write(chunk) { if (chunk.type === 'write') parts.push(chunk); } });
     const started = performance.now();
-    const made = await videoMaster(data.file, data.name, info, { target: handle ? await fileTarget(handle) : memory, aac });
+    const target = handle ? await fileTarget(handle) : memory;
+    const made = data.op === 'line' ? { ...(await lineAudio(data.file, data.name, info, { trim: data.name.endsWith('.wav') || data.name.endsWith('.mp3'), target, aac })), extension: '.m4a' }
+      : data.op === 'sound' ? await soundMaster(data.file, data.name, info, { target, aac })
+      : await videoMaster(data.file, data.name, info, { target, aac });
     let blob = data.file;
     if (made.action !== 'copy' && handle) blob = await handle.getFile();
     else if (made.action !== 'copy') {
@@ -79,11 +86,11 @@ after(async () => {
 const probeInBrowser = (name: string) => inWorker(name, 'probe') as Promise<{ info?: unknown; error?: string }>;
 
 // What the Worker answers for a file; a master's bytes come back in base64.
-const inWorker = (name: string, op: 'probe' | 'image' | 'video') => page.evaluate(async ([file, op]) => {
+const inWorker = (name: string, op: 'probe' | 'image' | 'video' | 'line' | 'sound' | 'samples' | 'peaks') => page.evaluate(async ([file, op]) => {
   const blob = await (await fetch(`/${encodeURIComponent(file)}`)).blob();
   const worker = new Worker('/probe.js', { type: 'module' });
   try {
-    const answer = await new Promise<{ info?: unknown; error?: string; code?: string; master?: { blob: Blob; extension: string | null; action: string; ms?: number } }>((resolve) => {
+    const answer = await new Promise<{ info?: unknown; error?: string; code?: string; samples?: number[]; master?: { blob: Blob; extension: string | null; action: string; ms?: number } }>((resolve) => {
       worker.onmessage = ({ data }) => resolve(data);
       worker.onerror = (event) => resolve({ error: event.message || 'the Worker did not load' });
       worker.postMessage({ file: blob, name: file, op });
@@ -219,6 +226,84 @@ test(`video masters in ${BROWSER}: the desktop's plan, an MP4 conformant, fully 
             st.diagnostic(`PSNR ${psnr} dB against ffmpeg's`);
           }
         }
+      });
+    }
+  } finally {
+    fs.rmSync(out, { recursive: true, force: true });
+  }
+});
+
+const SOUNDS = ['recording.wav', 'voice.mp3', 'voice.m4a', 'line.m4a', 'voice.wav', 'screen.webm'];
+const LINE_SILENCE = 'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.1,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.1,areverse';
+const decoded = async (file: string, rate: number, filters: string[] = []) => {
+  const { stdout } = await execute(tools!.ffmpeg, ['-v', 'error', '-i', file, ...filters, '-ac', '1', '-ar', String(rate), '-f', 'f32le', '-'], { encoding: 'buffer', maxBuffer: 1 << 26 });
+  return new Float32Array(stdout.buffer, stdout.byteOffset, stdout.length / 4);
+};
+
+test(`narration lines and sounds in ${BROWSER}: the desktop's M4A, its silence cut by the core's rule, the samples and the waveform the desktop reads`, { timeout: 600_000 }, async (t) => {
+  if (!tools) return t.skip('ffmpeg and ffprobe not found');
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-browser-sounds-'));
+  const write = (name: string, base64: string) => { const file = path.join(out, name); fs.writeFileSync(file, Buffer.from(base64, 'base64')); return file; };
+  try {
+    for (const name of SOUNDS.filter((file) => fixtures.files.includes(file))) {
+      const input = path.join(fixtures.dir, name);
+      const source = await probeMedia(input, { tools });
+      const kept = source.container === 'mp4' && source.audioCodec === 'aac' && source.channels === 1 && source.kind === 'audio' && source.faststart !== false && !/\.(wav|mp3)$/.test(name);
+      await t.test(`${name}: a line`, { skip: GSTREAMER && !kept && 'its sound is encoded to AAC by GStreamer in WebKitGTK, not by Safari\'s encoder' }, async (st) => {
+        const answer = await inWorker(name, 'line') as { master?: { base64: string; action: string }; error?: string; code?: string };
+        assert.ok(answer.master, `${name}: ${answer.code} ${answer.error}`);
+        const file = write(`line-${name}.m4a`, answer.master.base64);
+        const line = await probeMedia(file, { tools });
+        assert.deepEqual([line.container, line.audioCodec, line.channels, line.faststart, line.kind], ['mp4', 'aac', 1, true, 'audio'], name);
+        if (answer.master.action === 'encode') assert.equal(line.sampleRate, 48000);
+        assert.deepEqual(fileMedia(line, 'assets/narration/fr/s/l.m4a').reasons, [], `${name}: conformant`);
+        const { stderr }: { stderr: string } = await execute(tools.ffmpeg, ['-v', 'error', '-i', file, '-f', 'null', '-']);
+        assert.equal(stderr, '', `${name}: fully decoded`);
+        // A line already right is kept as it is, as at the desktop; one made here says nothing of itself.
+        const { stdout }: { stdout: string } = await execute(tools.ffprobe, ['-v', 'error', '-show_entries', 'format_tags:stream_tags', '-of', 'json', file]);
+        if (answer.master.action === 'encode') assert.doesNotMatch(stdout, /creation_time|title|encoder|Mediabunny/i, `${name}: no metadata`);
+        // The desktop's length: its silence cut by ffmpeg when it is a recording (a WAV, an MP3 here).
+        const trimmed = name.endsWith('.wav') || name.endsWith('.mp3');
+        const desktop = (await decoded(input, 48000, trimmed ? ['-af', LINE_SILENCE] : [])).length / 48000;
+        assert.ok(Math.abs((line.duration ?? 0) - desktop) < 0.03, `${name}: ${line.duration} s, the desktop's ${desktop} s`);
+        // As loud as the desktop's: a stereo recording mixed down as ffmpeg mixes it.
+        const rms = (samples: Float32Array) => Math.sqrt(samples.reduce((sum, value) => sum + value * value, 0) / samples.length);
+        const ratio = rms(await decoded(file, 16000)) / rms(await decoded(input, 16000, trimmed ? ['-af', LINE_SILENCE] : []));
+        assert.ok(Math.abs(20 * Math.log10(ratio)) < 0.5, `${name}: ${(20 * Math.log10(ratio)).toFixed(2)} dB from the desktop's`);
+        st.diagnostic(`${answer.master.action} → ${line.duration} s (the desktop's ${desktop.toFixed(3)} s), ${(20 * Math.log10(ratio)).toFixed(2)} dB from it, ${line.size} bytes`);
+      });
+      await t.test(`${name}: its samples at 16 kHz and its waveform`, async (st) => {
+        const answer = await inWorker(name, 'samples') as { samples?: number[]; error?: string };
+        assert.ok(answer.samples, answer.error);
+        const theirs = await decoded(input, 16000);
+        const n = Math.min(theirs.length, answer.samples.length);
+        assert.ok(Math.abs(theirs.length - answer.samples.length) <= 16000 * 0.03, `${name}: ${answer.samples.length} samples, ffmpeg's ${theirs.length}`);
+        // Compared by their loudness every 10 ms, what the waveform and the aligner read: a phase a few
+        // samples apart (an Opus stream's start in WebM) changes nothing there.
+        const envelope = (samples: ArrayLike<number>) => Array.from({ length: Math.floor(n / 160) }, (_, w) => { let sum = 0; for (let i = w * 160; i < (w + 1) * 160; i++) sum += samples[i] ** 2; return Math.sqrt(sum / 160); });
+        const [x, y] = [envelope(theirs), envelope(answer.samples)];
+        const loudness = x.reduce((sum, value) => sum + value, 0) / x.length;
+        const apart = x.reduce((sum, value, i) => sum + Math.abs(value - y[i]), 0) / x.length / Math.max(loudness, 1e-9);
+        assert.ok(apart < 0.05, `${name}: loudness ${(apart * 100).toFixed(1)} % apart from ffmpeg's`);
+        const peaks = (await inWorker(name, 'peaks') as { samples: number[] }).samples;
+        const desktop = peaksOf(await decoded(input, PEAKS_RATE), PEAKS_RATE, 50);
+        const gaps = desktop.slice(0, Math.min(desktop.length, peaks.length) - 1).map((value, i) => Math.abs(value - peaks[i]));
+        const gap = Math.max(...gaps), mean = gaps.reduce((sum, g) => sum + g, 0) / gaps.length;
+        assert.ok(mean <= 3 && gap <= 40, `${name}: waveform ${mean.toFixed(1)} of 255 from the desktop's on average, ${gap} at most`);
+        st.diagnostic(`loudness ${(apart * 100).toFixed(2)} % apart from ffmpeg's 16 kHz, waveform ${mean.toFixed(1)} of 255 from the desktop's on average, ${gap} at most`);
+      });
+    }
+    for (const name of ['voice.wav', 'voice.mp3', 'voice.m4a'].filter((file) => fixtures.files.includes(file))) {
+      const kept = soundPlan(await probeMedia(path.join(fixtures.dir, name), { tools })).keep;
+      await t.test(`${name}: a sound of the course`, { skip: GSTREAMER && !kept && 'its sound is encoded by GStreamer in WebKitGTK, not by Safari\'s encoder' }, async (st) => {
+        const answer = await inWorker(name, 'sound') as { master?: { base64: string; action: string; extension: string | null }; error?: string; code?: string };
+        assert.ok(answer.master, `${name}: ${answer.code} ${answer.error}`);
+        const file = write(`sound-${name}${answer.master.extension ?? ''}`, answer.master.base64);
+        const sound = await probeMedia(file, { tools });
+        assert.deepEqual(fileMedia(sound, `assets/sounds/${path.basename(file)}`).reasons, [], `${name}: conformant`);
+        const { stderr }: { stderr: string } = await execute(tools.ffmpeg, ['-v', 'error', '-i', file, '-f', 'null', '-']);
+        assert.equal(stderr, '', `${name}: fully decoded`);
+        st.diagnostic(`${answer.master.action} → ${answer.master.extension} ${sound.audioCodec}, ${sound.size} bytes`);
       });
     }
   } finally {

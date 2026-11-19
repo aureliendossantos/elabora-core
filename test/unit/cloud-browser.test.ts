@@ -13,6 +13,7 @@ import { isMediaAsset } from '@elabora/node/store/media';
 import { putBytes } from '@elabora/node/blobs';
 import type { ProjectSummary, ScreenView, UndoView } from '@elabora/engine/protocol';
 import { newCourseFiles } from '@elabora/core/commands/new-course';
+import { isTextPath } from '@elabora/core/project/files';
 import { copyExample } from '../helpers.ts';
 import { Room } from '../sync/room.ts';
 
@@ -62,6 +63,15 @@ async function settled(room: Room, folder: Session, copy: BrowserSession): Promi
       await folder.flush();
       if (caughtUp()) return;
     } else await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+}
+
+// A wait bounded for failures only.
+async function waitFor(done: () => boolean): Promise<void> {
+  const started = Date.now();
+  while (!done()) {
+    if (Date.now() - started > 20_000) throw new Error('not reached in 20 s');
+    await new Promise((resolve) => setTimeout(resolve, 25));
   }
 }
 
@@ -135,13 +145,31 @@ test('a project of a team just made: its new module\'s files made at once by two
   room.out('cbrowser');
   await ask(copy, 'run', { command: 'create_course', args: { ...course, title: 'Du navigateur' } });
   await ask(folder, 'run', { command: 'create_course', args: course });
+  // The desktop's placed first, then the browser back: its change merged over it, the same module, its title.
+  await waitFor(() => room.head === 1);
   room.back('cbrowser');
   await settled(room, folder, copy);
-  // The desktop's placed first, the browser's merged over it: the same module, the browser's title.
   for (const [rel, text] of newCourseFiles({ ...course, title: 'Du navigateur' })) {
+    if (!isTextPath(rel)) continue;
     const written = fs.readFileSync(path.join(dir, rel), 'utf8');
     if (rel.endsWith('.json')) assert.deepEqual(JSON.parse(written), JSON.parse(text), rel);
     else assert.equal(written, text, rel);
   }
   assert.deepEqual([await title(copy, 'intro'), await title(folder, 'intro'), (await ask<ProjectSummary>(copy, 'summary', {})).course?.id], ['Du navigateur', 'Du navigateur', 'premier-module']);
+});
+
+test('a new module made by a browser\'s copy, taken by a desktop\'s folder: a file edited there by hand goes to the room alone, and nothing else waits', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-empty-'));
+  const room = new Room(new Map());
+  const folder = await desktop(room, dir);
+  const copy = await browser(room);
+  await settled(room, folder, copy);
+  await ask(copy, 'run', { command: 'create_course', args: { id: 'premier-module', title: 'Premier module', language: 'fr' } });
+  await settled(room, folder, copy);
+  // The folder read again from the disk, as a computer reads a module: every file as the room has it.
+  const screen = path.join(dir, 'screens', 'intro.json');
+  fs.writeFileSync(screen, fs.readFileSync(screen, 'utf8').replace('"title": "Premier module"', '"title": "À la main"'));
+  await waitFor(() => room.head === 2);
+  await settled(room, folder, copy);
+  assert.deepEqual([room.head, room.log[1]!.ops.map((op) => op.file), await title(copy, 'intro')], [2, ['screens/intro.json'], 'À la main']);
 });

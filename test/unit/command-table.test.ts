@@ -167,12 +167,20 @@ test('a new module\'s files are the first change of an empty project, and a proj
   assert.equal(entry.needs, null);
   assert.ok(ajv.validate(entry.args, args), ajv.errorsText(ajv.errors));
   const made = executeCommand(new Map() as ProjectFiles, 'create_course', (context) => entry.run(context, args), { author: PERSON });
-  assert.deepEqual([made.result, [...made.after.keys()].sort()], [{ created: true }, ['.gitignore', 'AGENTS.md', 'CLAUDE.md', 'course.json', 'plan.json', 'screens/intro.json']]);
+  assert.deepEqual([made.result, [...made.after.keys()].sort()], [{ created: true }, ['AGENTS.md', 'CLAUDE.md', 'course.json', 'plan.json', 'screens/intro.json']]);
   // The bytes a computer writes for the same course (initProject), and a course with nothing to fix.
-  for (const [rel, text] of newCourseFiles(args)) assert.equal((made.after.get(rel) as { text: string }).text, text, rel);
+  for (const [rel, text] of newCourseFiles(args)) if (rel !== '.gitignore') assert.equal((made.after.get(rel) as { text: string }).text, text, rel);
   assert.deepEqual(validateProject(loadProject(made.after as ProjectFiles)).diagnostics.filter((d) => d.severity === 'error'), []);
   // Undone, the project is empty again.
   assert.deepEqual([...applyOps(made.after, made.inverse).keys()], []);
   // Two copies that both make it: the second writes nothing.
   assert.deepEqual(executeCommand(made.after as ProjectFiles, 'create_course', (context) => entry.run(context, args), { author: PERSON }).ops, []);
+});
+
+test('a command that writes as text a file a project reads as bytes is refused, nothing written', () => {
+  const files = readProjectFiles(path.join(ROOT, 'examples/canal-locks')).files as ProjectFiles;
+  const writing = (rel: string) => (context: { files: ProjectFiles }) => ({ files: new Map([...context.files, [rel, textFile('dist/\n')]]) as ProjectFiles, result: {} });
+  assert.throws(() => executeCommand(files, 'write_design_file', writing('.gitignore')), /\.gitignore would be written as text, where a project reads bytes/);
+  assert.throws(() => executeCommand(files, 'write_design_file', writing('theme/notes')), /theme\/notes would be written as text/);
+  assert.equal(executeCommand(files, 'write_design_file', writing('theme/notes.txt')).ops.length, 1);
 });

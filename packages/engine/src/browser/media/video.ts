@@ -30,7 +30,9 @@ export interface VideoOptions {
 export async function videoMaster(file: Blob, name: string, info: MediaInfo, { target, aac = () => canEncodeAudio('aac'), onProgress, signal }: VideoOptions): Promise<VideoMaster> {
   const plan = masterPlan(info, { importing: true });
   if (plan.action === 'copy') return { action: 'copy', extension: null };
-  const input = new Input({ source: new BlobSource(file), formats: ALL_FORMATS });
+  // Read by slices as the conversion asks: a stream reader runs ahead of a copy that writes as fast
+  // (a third more memory at 290 MB, test/bench/media-memory.ts).
+  const input = new Input({ source: new BlobSource(file, { useStreamReader: false }), formats: ALL_FORMATS });
   try {
     const preset = PRESETS.high.video;
     let video: ConversionVideoOptions = { codec: 'avc' };
@@ -84,7 +86,7 @@ export async function videoMaster(file: Blob, name: string, info: MediaInfo, { t
 const ascii = (text: string) => Uint8Array.from(text, (c) => c.charCodeAt(0));
 const padded = (text: string, length: number) => { const out = new Uint8Array(length); out.set(ascii(text)); return out; };
 
-function withoutNames(target: WritableStream<StreamTargetChunk>): WritableStream<StreamTargetChunk> {
+export function withoutNames(target: WritableStream<StreamTargetChunk>): WritableStream<StreamTargetChunk> {
   const writer = target.getWriter();
   return new WritableStream<StreamTargetChunk>({
     write: (chunk) => writer.write(chunk.type === 'write' ? { ...chunk, data: scrub(chunk.data) } : chunk),

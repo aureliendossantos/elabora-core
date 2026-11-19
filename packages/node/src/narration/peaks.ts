@@ -9,28 +9,14 @@ import type { MediaTools } from '../media/tools.ts';
 import { decodeSamples } from './tracks.ts';
 import { writeFileAtomic } from '../util/fs.ts';
 import type { LinePeaks, NarrationPeaks } from './types.ts';
+import { PEAKS_RATE, peaksOf } from '@elabora/core/media/audio';
 
 // The waveform of a narrated screen's lines, for the editor's Chronologie view (the words of the
 // narration laid on it): the loudest sample of each slice of a line's audio, 0 to 255, perSecond
-// slices a second. Decoded by ffmpeg once per audio file and slice length, kept in the project's
+// slices a second (@elabora/core/media/audio, peaksOf). Decoded by ffmpeg once per audio file and slice length, kept in the project's
 // data (<data>/cache/peaks/), never in the course.
 
 export type { LinePeaks, NarrationPeaks } from './types.ts';
-
-const RATE = 8000;
-
-async function peaksOf(file: string, perSecond: number, tools: MediaTools): Promise<Uint8Array> {
-  const samples = await decodeSamples(tools, file, RATE);
-  const slice = RATE / perSecond;
-  const peaks = new Uint8Array(Math.ceil(samples.length / slice));
-  for (let i = 0; i < peaks.length; i++) {
-    let peak = 0;
-    const end = Math.min(samples.length, Math.round((i + 1) * slice));
-    for (let s = Math.round(i * slice); s < end; s++) { const value = Math.abs(samples[s]); if (value > peak) peak = value; }
-    peaks[i] = Math.min(255, Math.round(peak * 255));
-  }
-  return peaks;
-}
 
 export async function narrationPeaks(root: string, project: Project, screen: string, { language, perSecond = 50, tools }: { language?: string; perSecond?: number; tools?: MediaTools } = {}): Promise<NarrationPeaks | null> {
   const lang = language || project.course?.language || '';
@@ -47,7 +33,7 @@ export async function narrationPeaks(root: string, project: Project, screen: str
     let peaks: Uint8Array;
     if (fs.existsSync(cached)) peaks = new Uint8Array(fs.readFileSync(cached));
     else {
-      peaks = await peaksOf(file, rate, tools ??= await findMediaTools());
+      peaks = peaksOf(await decodeSamples(tools ??= await findMediaTools(), file, PEAKS_RATE), PEAKS_RATE, rate);
       fs.mkdirSync(cache, { recursive: true });
       writeFileAtomic(cached, Buffer.from(peaks));
     }

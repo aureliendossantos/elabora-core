@@ -1,6 +1,6 @@
 import { getProfile } from '../lms/profiles.ts';
 import { stringifyJSON } from '../util/json.ts';
-import { textFile } from '../project/files.ts';
+import { isTextPath, textFile } from '../project/files.ts';
 import { AGENT_RULES, COURSE_TEMPLATE } from '../project/course-template.generated.ts';
 import { CommandError, type CommandContext, type CommandOutput } from './context.ts';
 
@@ -126,11 +126,12 @@ export function checkBrief(brief: CourseBrief): void {
 
 // create_course (D112): a new module's files as the first change of an empty project. A project that
 // has a course.json already is left as it is (created: false): two copies that open the same empty
-// project and both make it write it once.
+// project and both make it write it once. Its files are those a project reads as text: .gitignore,
+// which a folder reads as bytes (isTextPath), is a folder's own file for git, not the project's.
 export function createCourse(context: CommandContext, options: NewCourseOptions): CommandOutput<{ created: boolean }> {
   if (context.files.has('course.json')) return { files: context.files, result: { created: false } };
   const made = newCourseFiles(options);
   const files = new Map(context.files);
-  for (const [rel, text] of made) files.set(rel, textFile(text));
+  for (const [rel, text] of made) if (isTextPath(rel)) files.set(rel, textFile(text));
   return { files, result: { created: true } };
 }

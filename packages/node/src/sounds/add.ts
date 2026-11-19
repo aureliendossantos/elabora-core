@@ -9,6 +9,7 @@ import type { HostNeeds } from '@elabora/core/commands/host';
 import { classifyLicence } from '@elabora/core/sounds/licences';
 import { binaryFile } from '@elabora/core/project/files';
 import { CommandError } from '@elabora/core/commands/context';
+import { soundPlan } from '@elabora/core/media/audio';
 import { hashBytes } from '../blobs.ts';
 import { findMediaTools } from '../media/tools.ts';
 import { probeMedia } from '../media/probe.ts';
@@ -24,12 +25,9 @@ const run = promisify(execFile);
 // needs no cut is kept as it came (no second lossy encoding before the build); a cut, a fade or a
 // lossless original are written as FLAC, or as AAC at 256 kb/s for an ambience or a long sound.
 
-// Kept as they come when nothing is cut: FLAC, and the lossy formats (never encoded twice).
-const KEPT = new Map([['flac', '.flac'], ['vorbis', '.ogg'], ['opus', '.opus'], ['aac', '.m4a'], ['mp3', '.mp3']]);
-// Above this, a sound kept as audio a person hears is AAC at 256 kb/s rather than FLAC (D67, measured:
-// a 45 s ambience is 3.6 MB as FLAC, 1.4 MB as AAC 256, and its package file keeps 22.3 dB of signal
-// to distortion where FLAC keeps 24.0).
-const LONG = 20;
+// What a sound is kept as is the core's (soundPlan, D67). AAC at 256 kb/s rather than FLAC above 20 s,
+// measured: a 45 s ambience is 3.6 MB as FLAC, 1.4 MB as AAC 256, and its package file keeps 22.3 dB
+// of signal to distortion where FLAC keeps 24.0.
 
 // What add_sound needs of this computer (sound): the sound read (the library's, downloaded from
 // Openverse, or a file), cut and faded as asked, and its sidecar.
@@ -43,14 +41,13 @@ export async function soundFile<R>(dir: string, request: AddSoundRequest, option
     const info = await probeMedia(file, { tools });
     if (info.kind !== 'audio' || !info.audioCodec) throw new CommandError(`${request.from} is not a sound ffmpeg can read.`);
     const loops = request.loop ?? sidecar.loop ?? false;
-    // A FLAC that loops or lasts is written as AAC 256 like any lossless original (D67).
-    const keep = !request.trim && !request.fade && KEPT.has(info.audioCodec) && (info.audioCodec !== 'flac' || (!loops && (info.duration ?? 0) <= LONG)) && (info.audioCodec !== 'aac' || info.container === 'mp4') && (info.audioCodec !== 'opus' || info.container === 'ogg') && (info.audioCodec !== 'vorbis' || info.container === 'ogg');
+    const plan = soundPlan(info, { loops, trim: request.trim ?? null, fade: request.fade ?? null });
+    const keep = plan.keep;
     let output = file;
-    let extension = keep ? KEPT.get(info.audioCodec)! : '.flac';
+    let extension = plan.extension;
     const modified: Sound['modified'] = [];
     if (!keep) {
       const length = request.trim ? request.trim.end - request.trim.start : info.duration ?? 0;
-      if (loops || length > LONG) extension = '.m4a';
       const filters = [request.trim ? `atrim=start=${request.trim.start}:end=${request.trim.end},asetpts=PTS-STARTPTS` : null, request.fade ? `afade=t=out:st=${Math.max(0, length - request.fade)}:d=${request.fade}` : null].filter(Boolean);
       const encode = (to: string) => run(tools.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', file, '-vn', '-map_metadata', '-1', ...(filters.length ? ['-af', filters.join(',')] : []), ...(to === '.flac' ? ['-c:a', 'flac'] : ['-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart']), '-fflags', '+bitexact', '-flags:a', '+bitexact', path.join(work, `out${to}`)]);
       try {

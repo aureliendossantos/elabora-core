@@ -68,6 +68,9 @@ export async function makeMediaFixtures(tools: MediaTools): Promise<MediaFixture
     // Sounds
     ffmpeg(...tone(2, 44100), '-c:a', 'pcm_s16le', out('voice.wav')),
     ffmpeg(...tone(2), '-ac', '1', '-c:a', 'aac', '-b:a', '96k', out('voice.m4a')),
+    ffmpeg(...tone(2), '-ac', '1', '-c:a', 'aac', '-b:a', '96k', '-movflags', '+faststart', out('line.m4a')),
+    // A voice recorded by hand: a second of silence before it, most of one after, in stereo at 44.1 kHz.
+    ffmpeg('-f', 'lavfi', '-i', 'aevalsrc=if(between(t\\,1\\,2.2)\\,0.3*sin(2*PI*220*t)*(1+sin(2*PI*3*t))/2\\,0)|if(between(t\\,1\\,2.2)\\,0.25*sin(2*PI*330*t)\\,0):s=44100:d=3', '-c:a', 'pcm_s16le', out('recording.wav')),
     ...(has('libmp3lame') ? [ffmpeg(...tone(2, 44100), '-c:a', 'libmp3lame', '-b:a', '128k', out('voice.mp3'))] : [])
   ];
   await Promise.all(made);
