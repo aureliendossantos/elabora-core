@@ -2,7 +2,7 @@ import type { Author, Files, Op, TextFile } from '../ops/types.ts';
 import { applyOps, invertOps, touchedFiles } from '../ops/apply.ts';
 import { diffFiles } from '../ops/diff.ts';
 import { documentOf, formatJson, isJsonPath } from '../ops/json.ts';
-import type { ProjectFiles } from '../project/files.ts';
+import { isTextPath, type ProjectFiles } from '../project/files.ts';
 import { CommandError, commandContext, type CommandContext, type CommandOutput } from './context.ts';
 import { schemaProblems } from './schemas.ts';
 import { namedCommand } from './table.ts';
@@ -35,6 +35,10 @@ export function executeCommand<Result>(files: ProjectFiles, name: string, run: (
   const ops = output.ops ?? opsBetween(files, output.files);
   if (!ops.length) return { ops, inverse: [], after: files, result: output.result };
   const after = applyOps(files, ops);
+  // A file is text where a project reads it as text (isTextPath), bytes elsewhere: a text written at
+  // another path would be read back as bytes by a folder, and copies would drift (D112).
+  const misread = touchedFiles(ops).filter((rel) => after.get(rel)?.kind === 'text' && !isTextPath(rel));
+  if (misread.length) throw new CommandError(`${name} refused: ${misread.join(', ')} would be written as text, where a project reads bytes`);
   const problems = options.skipSchemaCheck ? [] : schemaProblems(after, touchedFiles(ops));
   if (problems.length) throw new CommandError(`${name} refused: the result does not match the schema`, problems);
   return { ops, inverse: invertOps(files, ops), after, result: withRemoved(name, output.result, ops) };
