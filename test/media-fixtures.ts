@@ -44,6 +44,7 @@ export async function makeMediaFixtures(tools: MediaTools): Promise<MediaFixture
   const made: Promise<unknown>[] = [
     // Pictures
     ffmpeg(...picture('640x320', 1), '-frames:v', '1', '-q:v', '3', out('plain.jpg')),
+    ffmpeg(...picture('4000x3000', 1), '-frames:v', '1', '-q:v', '3', out('camera.jpg')),
     ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=300x200,format=rgba,geq=r=r(X\\,Y):g=g(X\\,Y):b=b(X\\,Y):a=X', '-frames:v', '1', out('alpha.png')),
     ffmpeg(...picture('4000x2250', 1), '-frames:v', '1', out('large.png')),
     ffmpeg(...picture('160x90', 0.3, 10), '-f', 'gif', out('moving.gif')),
@@ -80,8 +81,11 @@ export async function makeMediaFixtures(tools: MediaTools): Promise<MediaFixture
   // A song with its cover.
   if (has('libmp3lame')) await ffmpeg('-i', out('voice.mp3'), '-i', out('alpha.png'), '-map', '0', '-map', '1', '-c:a', 'copy', '-c:v', 'png', '-disposition:v', 'attached_pic', '-id3v2_version', '3', out('song.mp3'));
   // A phone's photo: turned, with its place, as EXIF says.
-  const jpeg = fs.readFileSync(out('plain.jpg'));
-  fs.writeFileSync(out('photo.jpg'), Buffer.concat([jpeg.subarray(0, 2), exifSegment(6), jpeg.subarray(2)]));
+  for (const [from, to] of [['plain.jpg', 'photo.jpg'], ['camera.jpg', 'phone-photo.jpg']]) {
+    const jpeg = fs.readFileSync(out(from));
+    fs.writeFileSync(out(to), Buffer.concat([jpeg.subarray(0, 2), exifSegment(6), jpeg.subarray(2)]));
+  }
+  fs.rmSync(out('camera.jpg'));
   fs.writeFileSync(out('logo.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>');
   return { dir, files: fs.readdirSync(dir).sort(), remove: () => fs.rmSync(dir, { recursive: true, force: true }) };
 }
