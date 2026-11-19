@@ -460,7 +460,7 @@ const TABLE = {
   }),
 
   create_course: command({
-    description: 'A new module\'s first files in an empty project (D112), as « Nouveau module » writes them (D111): course.json, plan.json (a draft), an intro screen, the rules for agents (AGENTS.md, CLAUDE.md) and .gitignore. id: the course\'s id; brief: what the author said of it (D51). A project that has a course.json already is left as it is (created: false).',
+    description: 'A new module\'s first files in an empty project (D112), as « Nouveau module » writes them (D111): course.json, plan.json (a draft), an intro screen and the rules for agents (AGENTS.md, CLAUDE.md); a folder\'s .gitignore is not the project\'s. id: the course\'s id; brief: what the author said of it (D51). A project that has a course.json already is left as it is (created: false).',
     args: objectSchema({
       id: SLUG, title: { type: 'string', minLength: 1 }, language: LANGUAGE,
       brief: formatValue<CourseBrief>()({
