@@ -639,16 +639,18 @@ export function engineConformance(target: ConformanceTarget): void {
 
   // ── a service not here ───────────────────────────────────────────────
 
-  it('a session without a service: each of its requests answers not-available, E_NOT_HERE; the summary says which it has', async () => {
+  it('a session without a service: each of its requests, and a command that needs it, answer not-available, E_NOT_HERE; the summary says which it has', async () => {
     const connection = await target.open('basic', { services: [] });
     const answers = new Map<string, ResponseMessage>();
     connection.receive((message) => { if (message.kind === 'response') answers.set(message.id, message); });
     try {
       const types = SERVICES.flatMap((service) => SERVICE_REQUESTS[service]);
       for (const type of [...types, 'summary' as const]) connection.send({ kind: 'request', id: type, type, params: {} } as RequestMessage);
+      // A command whose need belongs to a service the session does not have (a sound of the library).
+      connection.send({ kind: 'request', id: 'run', type: 'run', params: { command: 'add_sound', args: { from: 'applaudissements' } } } as RequestMessage);
       const deadline = Date.now() + WAIT_MS;
-      while (answers.size <= types.length && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20));
-      for (const type of types) {
+      while (answers.size <= types.length + 1 && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20));
+      for (const type of [...types, 'run' as const]) {
         const answer = answers.get(type);
         assert.ok(answer && !answer.ok, `${type}: ${JSON.stringify(answer)}`);
         assert.deepEqual([answer.error.kind, answer.error.code], ['not-available', 'E_NOT_HERE'], type);

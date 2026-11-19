@@ -235,8 +235,9 @@ export interface ProjectSummary {
 // What a session may have besides the project, as its host gives it (D102; base/services.ts says
 // which requests each holds): media jobs and the tools that read media, local and paid voices, word
 // times, transcription, sounds, packages, the canvas, versions, documents printed and written, the
-// agents' activity on this computer.
-export type Service = 'media' | 'voices' | 'align' | 'transcribe' | 'sounds' | 'build' | 'canvas' | 'backups' | 'documents' | 'activity';
+// agents' activity on this computer, and the computer's libraries (fonts, components, object templates:
+// commands that need them, D104).
+export type Service = 'media' | 'voices' | 'align' | 'transcribe' | 'sounds' | 'build' | 'canvas' | 'backups' | 'documents' | 'activity' | 'library';
 
 export interface FileEntry {
   path: string;

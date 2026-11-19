@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { DELIVERY_FORMATS, isDeliveryFormat } from '@elabora/core/lms/formats';
-import type { Author, ChangeLike, Files, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
+import type { Author, ChangeLike, Files, JournalEntry, MarkEntry } from '@elabora/core/ops/types';
 import { readChat } from '@elabora/node/chats';
 import { sameContent } from '@elabora/core/ops/json';
 import { isAiAuthor } from '@elabora/core/ops/batch';
@@ -46,7 +46,6 @@ import { FsStore } from '@elabora/node/store/fs-store';
 import { readSnapshot } from '@elabora/node/store/snapshot';
 import type { MediaJob } from '@elabora/node/media/jobs';
 import { ProjectState } from './base/project-state.ts';
-import type { DiagnosticsDelta } from './base/project-state.ts';
 import { JournalTail } from './journal-tail.ts';
 import { WriteQueue } from './base/queue.ts';
 import { MediaSupervisor, jobInfo } from './media.ts';
@@ -69,8 +68,10 @@ import { SessionActivity } from './session-activity.ts';
 import type { ActivityEntry } from '@elabora/node/activity';
 import { SessionReads, documentOptions } from './base/reads.ts';
 import { Renderer } from './base/render.ts';
-import { SERVICES, notHere, serviceOf } from './base/services.ts';
+import { namedCommand } from '@elabora/core/commands/table';
+import { NEED_SERVICES, SERVICES, isRequestType, notHere, serviceOf } from './base/services.ts';
 import { Batches } from './base/batches.ts';
+import { changeView, diagnosticsEvent } from './base/events.ts';
 import { FolderChanges, fileOf } from './session-folder.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { build } from '@elabora/node/build';
@@ -515,6 +516,8 @@ export class Session {
       case 'buildTranslation': return this.buildTranslation(request.params);
       case 'run': {
         if (typeof request.params.command !== 'string' || !isCommandName(request.params.command)) throw new EngineError('bad-request', `Unknown command "${String(params.command)}" (commands: ${Object.keys(COMMANDS).join(', ')})`);
+        const need = namedCommand(request.params.command)?.needs;
+        if (need && !this.#services.has(NEED_SERVICES[need])) { this.#assertOpen(); throw notHere('run', NEED_SERVICES[need]); }
         return this.run(request.params.command, request.params.args, request.params.author, request.params.expect);
       }
       case 'undo': return this.undo(request.params.seq);
@@ -1304,21 +1307,6 @@ export class Session {
 
 // ── helpers ──────────────────────────────────────────────────────────
 
-// Every request of the protocol, checked complete by the compiler (a request missing here would be
-// refused as bad-request).
-const REQUEST_TYPES: Record<RequestType, true> = {
-  summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
-  translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, redo: true, undoBatch: true, history: true, mark: true, endTurn: true,
-  diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
-  renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, packageWeights: true, close: true, narration: true, voices: true,
-  installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
-  setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true, courseSounds: true, soundEstimate: true, generateSound: true,
-  alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true
-};
-
-const isRequestType = (type: string): type is RequestType => Object.hasOwn(REQUEST_TYPES, type);
-
-
 // What the build request asks of @elabora/node build; the session's validation options by default,
 // so the package is checked as the app's findings are.
 function buildOptions(params: BuildParams, validation: ValidationOptions = {}): BuildOptions {
@@ -1371,23 +1359,6 @@ function publishName(language: string | undefined, date = new Date()): string {
   const french = (language ?? '').slice(0, 2) === 'fr';
   const day = date.toLocaleDateString(french ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   return french ? `Publié le ${day}` : `Published on ${day}`;
-}
-
-export function changeView(entry: ChangeLike): ChangeView {
-  return {
-    type: entry.type, id: entry.id, seq: entry.seq, at: entry.at, author: entry.author, batch: entry.batch,
-    ...(entry.command ? { command: entry.command } : {}),
-    files: entry.files.map((file) => file.path), ops: entry.ops as Op[],
-    ...(entry.unavailable?.length ? { unavailable: entry.inverse.flatMap((op) => (op.op === 'write' && 'blob' in op && entry.unavailable?.includes(op.blob) ? [op.file] : [])) } : {}),
-    ...(entry.type === 'undo' ? { undoes: entry.undoes, skipped: entry.skipped } : {})
-  };
-}
-
-function diagnosticsEvent(delta: DiagnosticsDelta): EngineEvent {
-  return {
-    type: 'diagnostics', screens: Object.fromEntries(delta.screens), removed: delta.removed, summary: delta.summary,
-    ...(delta.project ? { project: delta.project } : {})
-  };
 }
 
 function backupSummary(version: VersionSummary): BackupSummary {

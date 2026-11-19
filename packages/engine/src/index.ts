@@ -2,7 +2,8 @@
 //   const session = await openProject(dir);
 //   session.subscribe((message) => port.postMessage(message));
 //   port.onmessage = async ({ data }) => port.postMessage(await session.handle(data));
-export { openProject, Session, changeView, type OpenOptions, type BackupOptions, type CloseOptions } from './session.ts';
+export { openProject, Session, type OpenOptions, type BackupOptions, type CloseOptions } from './session.ts';
+export { changeView } from './base/events.ts';
 export { ProjectState, type DiagnosticsDelta } from './base/project-state.ts';
 export { EngineError, protocolError } from './errors.ts';
 export { COMMANDS, isCommandName } from './commands.ts';
