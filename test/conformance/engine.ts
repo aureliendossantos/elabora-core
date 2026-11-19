@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ProtocolClient } from '@elabora/engine/protocol';
-import type { EngineEvent, EventMessage, RequestMessage, RequestType, ResponseMessage } from '@elabora/engine/protocol';
+import type { EngineEvent, EventMessage, RequestMessage, RequestType, ResponseMessage, Service } from '@elabora/engine/protocol';
+import { SERVICES, SERVICE_REQUESTS, serviceOf } from '@elabora/engine/base/services';
 
 // The engine's protocol, played against a session (docs/architecture/engine.md, The protocol): each
 // request of packages/engine/src/protocol.ts at least once, judged on its answer and on the events
@@ -26,7 +27,11 @@ export type Sample =
 
 export interface ConformanceTarget {
   name: string;
-  open(sample: Sample): Promise<Connection>;
+  // The services its sessions have (D102): every one by default. A case of another is skipped.
+  services?: readonly Service[];
+  // services: those the session opened has, fewer than the target's (none for the case of a service
+  // that is not here).
+  open(sample: Sample, options?: { services?: readonly Service[] }): Promise<Connection>;
 }
 
 export interface Connection {
@@ -78,6 +83,7 @@ interface Engine {
 }
 
 export function engineConformance(target: ConformanceTarget): void {
+  const services = new Set(target.services ?? SERVICES);
   const sent = new Set<string>();
   // The sessions a case opened, closed when it ends.
   const open: Engine[] = [];
@@ -107,7 +113,8 @@ export function engineConformance(target: ConformanceTarget): void {
     return made;
   }
 
-  const it = (name: string, run: () => Promise<void>) => test(`${target.name}: ${name}`, async () => {
+  // A case of services the target does not have is skipped (the case of a service not here judges them).
+  const it = (name: string, run: () => Promise<void>, needs: readonly Service[] = []) => test(`${target.name}: ${name}`, { skip: needs.some((service) => !services.has(service)) && `no ${needs.filter((service) => !services.has(service)).join(', ')} service here` }, async () => {
     try {
       await run();
     } finally {
@@ -135,6 +142,7 @@ export function engineConformance(target: ConformanceTarget): void {
     const versions = await client.request('planVersions', {});
     assert.deepEqual([summary.plan.state, summary.plan.latest, summary.plan.validated, summary.plan.unversioned], [versions.state, 2, 2, versions.current.unversioned]);
     assert.equal(summary.plan.items, 7);
+    assert.deepEqual([...summary.services].sort(), [...services].sort());
 
     const recording = await client.request('readFile', { path: 'assets/narration/fr/chemin/chemin-depart.m4a' });
     assert.ok(recording.kind === 'binary' && recording.size > 0 && /^sha256:/.test(recording.hash ?? ''));
@@ -160,6 +168,7 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.deepEqual(one.screens.chemin, screen.diagnostics);
 
     assert.equal((await client.request('effects', {}))[0]?.name, 'none');
+    assert.deepEqual(await client.request('courseSounds', {}), [], 'no sound in the module');
   });
 
   it('what the events of a screen can name: its blocks, steps and layers, the course\'s screens and variables', async () => {
@@ -283,7 +292,7 @@ export function engineConformance(target: ConformanceTarget): void {
 
   // ── narration ────────────────────────────────────────────────────────
 
-  it('a narrated screen: its lines, timeline, a moment, its marks, its waveform, the plan\'s voice-over', async () => {
+  it('a narrated screen: its lines, timeline, a moment, its marks, the plan\'s voice-over', async () => {
     const { client } = await engine('network');
     const narration = await client.request('narration', { screen: 'chemin' });
     assert.deepEqual(narration?.lines.map((line) => [line.id, line.status]), [['chemin-depart', 'ok'], ['chemin-reseaux', 'ok'], ['chemin-diagnostic', 'ok']]);
@@ -305,19 +314,18 @@ export function engineConformance(target: ConformanceTarget): void {
     const marks = await client.request('timelineMarks', { screen: 'chemin' });
     assert.ok(marks && marks[0]?.time === 0 && marks.every((mark, i) => i === 0 || mark.time >= marks[i - 1]!.time));
 
-    const peaks = await client.request('narrationPeaks', { screen: 'chemin', perSecond: 20 });
-    assert.deepEqual(peaks?.lines.map((line) => line.line), ['chemin-depart', 'chemin-reseaux', 'chemin-diagnostic']);
-    assert.equal(peaks?.perSecond, 20);
-    assert.ok(peaks?.lines.every((line) => line.peaks.length > 0));
-    assert.equal(await client.request('narrationPeaks', { screen: 'bilan' }), null);
-
     const voiceover = await client.request('planVoiceover', { screen: 'chemin' });
     assert.ok(Array.isArray(voiceover) && voiceover.every((part) => typeof part.item === 'string' && typeof part.text === 'string'));
     await assert.rejects(client.request('planVoiceover', { screen: 'absent' }), refused('not-found'));
   });
 
-  it('recordings imported together: each to the line its name gives, one change a line', async () => {
+  it('recordings: a screen\'s waveform; several imported together, each to the line its name gives, one change a line', async () => {
     const { client, connection, next } = await engine('network');
+    const peaks = await client.request('narrationPeaks', { screen: 'chemin', perSecond: 20 });
+    assert.deepEqual(peaks?.lines.map((line) => line.line), ['chemin-depart', 'chemin-reseaux', 'chemin-diagnostic']);
+    assert.equal(peaks?.perSecond, 20);
+    assert.ok(peaks?.lines.every((line) => line.peaks.length > 0));
+    assert.equal(await client.request('narrationPeaks', { screen: 'bilan' }), null);
     const file = connection.pick('chemin-depart.m4a', 'assets/narration/fr/chemin/chemin-reseaux.m4a');
     const imported = await client.request('importNarrationFiles', { files: [file], screen: 'chemin', keepSilence: true });
     assert.equal(imported.language, 'fr');
@@ -325,12 +333,12 @@ export function engineConformance(target: ConformanceTarget): void {
     const event = await next(changed('set_narration_audio'));
     assert.ok(event.change.files.some((path) => path.startsWith('assets/narration/fr/chemin/chemin-depart')));
     await assert.rejects(client.request('importNarrationFiles', { files: [] }), refused('bad-request'));
-  });
+  }, ['media']);
 
   // ── the plan ─────────────────────────────────────────────────────────
 
-  it('the plan: its versions, what changed between two, its document as data, as a page and as a file', async () => {
-    const { client, connection, next } = await engine('network');
+  it('the plan: its versions, what changed between two, its document as data', async () => {
+    const { client } = await engine('network');
     const versions = await client.request('planVersions', {});
     assert.deepEqual([versions.latest, versions.validated], [2, 2]);
     assert.deepEqual(versions.versions.map((version) => version.number), [1, 2]);
@@ -345,22 +353,12 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal(document?.plan.version, 'V2');
     assert.equal((await client.request('planDocument', { version: 'current' }))?.plan.version, null);
     await assert.rejects(client.request('planDocument', { version: 'V2' as never }), refused('bad-request'));
-    const page = await client.request('planDocumentPage', { date: '2026-11-18' });
-    assert.match(page.html, /^<!doctype html>/i);
-    assert.deepEqual([page.date, page.version, page.title], ['2026-11-18', 'V2', document?.title]);
-
-    const exported = await client.request('exportPlanDocument', { format: 'html', file: connection.saveAs('plan.html'), date: '2026-11-18' });
-    assert.ok(exported.bytes > 1000);
-    assert.deepEqual([exported.format, exported.version, exported.sent], ['html', 'V2', true]);
-    const sent = await next(changed('record_plan_send'));
-    assert.deepEqual(sent.change.command?.args, { version: 'V2', format: 'html', date: '2026-11-18' });
-    await assert.rejects(client.request('exportPlanDocument', { format: 'odt' as never, file: connection.saveAs('plan.odt') }), refused('bad-request'));
   });
 
   // ── a dialogue ───────────────────────────────────────────────────────
 
-  it('a dialogue: its view, a path played, its page and its export', async () => {
-    const { client, connection } = await engine('network');
+  it('a dialogue: its view, a path played', async () => {
+    const { client } = await engine('network');
     const view = await client.request('dialogue', { block: 'appel-marc' });
     assert.deepEqual([view?.id, view?.screen], ['appel-marc', 'premier-reflexe']);
     assert.ok(view && view.map.nodes.length > 1);
@@ -374,13 +372,29 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal(wrong.ok, false);
     assert.ok(wrong.error);
     await assert.rejects(client.request('dialoguePlay', { block: 'absent', choices: [] }), refused('not-found'));
-    const page = await client.request('dialoguePage', { block: 'appel-marc', date: '2026-11-18' });
-    assert.match(page.html, /^<!doctype html>/i);
-    assert.equal(page.date, '2026-11-18');
-    const exported = await client.request('exportDialogue', { block: 'appel-marc', format: 'html', file: connection.saveAs('dialogue.html'), date: '2026-11-18' });
-    assert.ok(exported.bytes > 1000 && exported.format === 'html');
-    await assert.rejects(client.request('exportDialogue', { block: 'appel-marc', format: 'docx' as never, file: connection.saveAs('dialogue.docx') }), refused('bad-request'));
   });
+
+  it('documents: the plan\'s and a dialogue\'s as a page to print and as a file, the plan\'s send recorded', async () => {
+    const { client, connection, next } = await engine('network');
+    const document = await client.request('planDocument', { date: '2026-11-18' });
+    const page = await client.request('planDocumentPage', { date: '2026-11-18' });
+    assert.match(page.html, /^<!doctype html>/i);
+    assert.deepEqual([page.date, page.version, page.title], ['2026-11-18', 'V2', document?.title]);
+
+    const exported = await client.request('exportPlanDocument', { format: 'html', file: connection.saveAs('plan.html'), date: '2026-11-18' });
+    assert.ok(exported.bytes > 1000);
+    assert.deepEqual([exported.format, exported.version, exported.sent], ['html', 'V2', true]);
+    const sent = await next(changed('record_plan_send'));
+    assert.deepEqual(sent.change.command?.args, { version: 'V2', format: 'html', date: '2026-11-18' });
+    await assert.rejects(client.request('exportPlanDocument', { format: 'odt' as never, file: connection.saveAs('plan.odt') }), refused('bad-request'));
+
+    const dialoguePage = await client.request('dialoguePage', { block: 'appel-marc', date: '2026-11-18' });
+    assert.match(dialoguePage.html, /^<!doctype html>/i);
+    assert.equal(dialoguePage.date, '2026-11-18');
+    const dialogue = await client.request('exportDialogue', { block: 'appel-marc', format: 'html', file: connection.saveAs('dialogue.html'), date: '2026-11-18' });
+    assert.ok(dialogue.bytes > 1000 && dialogue.format === 'html');
+    await assert.rejects(client.request('exportDialogue', { block: 'appel-marc', format: 'docx' as never, file: connection.saveAs('dialogue.docx') }), refused('bad-request'));
+  }, ['documents']);
 
   // ── texts and languages ──────────────────────────────────────────────
 
@@ -417,7 +431,7 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.deepEqual([built.language, built.ok, built.untranslated], ['fr', true, 0]);
     assert.ok(built.zip && built.size > 0 && built.units > 0);
     await assert.rejects(client.request('buildTranslation', { language: 3 as never }), refused('bad-request'));
-  });
+  }, ['build']);
 
   // ── publishing ───────────────────────────────────────────────────────
 
@@ -434,7 +448,7 @@ export function engineConformance(target: ConformanceTarget): void {
     for (const params of [{ mediaQuality: 'ultra' }, { profiles: 'moodle' }, { release: 'yes' }, { name: 3 }, { target: 'web', profiles: ['moodle'] }]) {
       await assert.rejects(client.request('build', params as never), refused('bad-request'), JSON.stringify(params));
     }
-  });
+  }, ['build']);
 
   // ── media ────────────────────────────────────────────────────────────
 
@@ -448,7 +462,7 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal((await client.request('mediaJobs', {})).find((job) => job.id === imported.job.id)?.status, 'done');
     assert.ok((await client.request('listFiles', { dir: 'assets/images' })).some((file) => file.path === imported.path));
     await assert.rejects(client.request('cancelMediaJob', { id: 'absent' }), refused('not-found'));
-  });
+  }, ['media']);
 
   // ── versions ─────────────────────────────────────────────────────────
 
@@ -468,11 +482,11 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal((await client.request('readScreen', { screen: 'accueil' })).data.title, 'Accueil modifié');
     assert.ok((await client.request('backups', {})).some((version) => version.id === restored.before));
     await assert.rejects(client.request('restoreBackup', { version: 'absent' }), refused('not-found'));
-  });
+  }, ['backups']);
 
   // ── the canvas ───────────────────────────────────────────────────────
 
-  it('the canvas: a screen rendered, then the page opened, shown another view, closed', async () => {
+  it('a screen rendered as the player shows it', async () => {
     const { client } = await engine('network');
     const render = await client.request('renderScreen', { screen: 'chemin', step: 1 });
     assert.equal(render.screen, 'chemin');
@@ -480,8 +494,11 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.deepEqual(render.view, { state: 'initial', step: 1, layer: null });
     assert.ok(render.files.some((file) => file.kind === 'asset' && file.path.startsWith('assets/images/')));
     await assert.rejects(client.request('renderScreen', { screen: 'absent' }), refused('not-found'));
-    await assert.rejects(client.request('canvasView', { screen: 'chemin' }), refused('not-available'));
+  });
 
+  it('the canvas: the page opened, shown another view, closed', async () => {
+    const { client } = await engine('network');
+    await assert.rejects(client.request('canvasView', { screen: 'chemin' }), refused('not-available'));
     const canvas = await client.request('openCanvas', {});
     assert.ok(canvas.url.includes(canvas.token));
     const view = await client.request('canvasView', { screen: 'chemin', step: 1 });
@@ -489,7 +506,7 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.ok(view.id);
     assert.deepEqual(await client.request('closeCanvas', {}), { closed: true });
     await assert.rejects(client.request('canvasView', { screen: 'accueil' }), refused('not-available'));
-  });
+  }, ['canvas']);
 
   // ── voices ───────────────────────────────────────────────────────────
 
@@ -528,26 +545,20 @@ export function engineConformance(target: ConformanceTarget): void {
     const sample = await client.request('voiceSample', { voice: 'claire', provider: 'pocket-tts', text: 'Bonjour.' });
     assert.ok(sample.audio instanceof Uint8Array && sample.duration > 0);
     assert.equal(new TextDecoder().decode(sample.audio.slice(0, 4)), 'RIFF');
-  });
+  }, ['voices']);
 
   it('ElevenLabs without a key: refused with its code; a key given is kept masked, ElevenLabs out of reach said not available, the key forgotten', async () => {
     const { client } = await engine('network');
     await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));
-    await assert.rejects(client.request('generateSound', { prompt: 'Un clic de souris' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));
-    await assert.rejects(client.request('soundEstimate', { duration: 2 }), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('setVoiceKey', { provider: 'elevenlabs', key: 'not a key' }), refused('refused', 'E_VOICE_KEY_FORMAT'));
     const key = 'sk_0123456789abcdef0123456789abcdef';
     const given = await client.request('setVoiceKey', { provider: 'elevenlabs', key });
     assert.ok(given.key && given.key !== key && given.key.endsWith(key.slice(-4)));
-    // ElevenLabs out of reach: its account not possible now; an estimate made without the quota, the
-    // author's approval asked.
+    // ElevenLabs out of reach: its account not possible now.
     await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('not-available', 'E_VOICE_OFFLINE'));
-    const estimate = await client.request('soundEstimate', { duration: 2 });
-    assert.deepEqual([estimate.quota, estimate.percent, estimate.needsApproval], [null, null, true]);
-    assert.ok(estimate.credits > 0);
     assert.deepEqual(await client.request('setVoiceKey', { provider: 'elevenlabs', key: null }), { key: null });
-  });
+  }, ['voices']);
 
   it('transcription: what can transcribe, a recording heard, a line\'s recording beside its text', async () => {
     const { client, connection } = await engine('network');
@@ -567,7 +578,7 @@ export function engineConformance(target: ConformanceTarget): void {
     // What ElevenLabs would take of the quota: its key first.
     await assert.rejects(client.request('transcriptionEstimate', { screen: 'chemin', line: 'chemin-depart' }), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('transcriptionEstimate', { screen: 'chemin', line: 'absent' }), refused('not-found'));
-  });
+  }, ['transcribe', 'media']);
 
   it('word times: the aligners of a language; lines already timed by the same aligner are left', async () => {
     const { client, events } = await engine('network');
@@ -579,7 +590,7 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.deepEqual(result.changes, []);
     assert.ok(!events.slice(before).some(changed()), 'nothing written');
     await assert.rejects(client.request('alignNarration', { screen: 'chemin', lines: ['absent'] }), refused('not-found', 'E_ALIGN_LINE'));
-  });
+  }, ['align']);
 
   // ── sounds ───────────────────────────────────────────────────────────
 
@@ -597,15 +608,58 @@ export function engineConformance(target: ConformanceTarget): void {
     await next(changed('add_sound'));
     const sounds = await client.request('courseSounds', {});
     assert.deepEqual(sounds.map((one) => one.path), [added.result.path]);
-  });
+  }, ['sounds']);
+
+  it('a sound made with ElevenLabs: refused without a key; with one and ElevenLabs out of reach, estimated without the quota, the author\'s approval asked', async () => {
+    const { client } = await engine('network');
+    await assert.rejects(client.request('generateSound', { prompt: 'Un clic de souris' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));
+    await assert.rejects(client.request('soundEstimate', { duration: 2 }), refused('refused', 'E_VOICE_KEY_MISSING'));
+    await client.request('setVoiceKey', { provider: 'elevenlabs', key: 'sk_0123456789abcdef0123456789abcdef' });
+    try {
+      const estimate = await client.request('soundEstimate', { duration: 2 });
+      assert.deepEqual([estimate.quota, estimate.percent, estimate.needsApproval], [null, null, true]);
+      assert.ok(estimate.credits > 0);
+    } finally {
+      await client.request('setVoiceKey', { provider: 'elevenlabs', key: null });
+    }
+  }, ['sounds', 'voices']);
 
   // ── the module's format and its agents ───────────────────────────────
 
-  it('a module in the format this Elabora writes needs no migration; agents did nothing yet', async () => {
+  it('a module in the format this Elabora writes needs no migration', async () => {
     const { client } = await engine('basic');
     assert.equal(await client.request('migrate', {}), null);
+  });
+
+  it('agents did nothing in a module just opened', async () => {
+    const { client } = await engine('basic');
     assert.deepEqual(await client.request('activity', {}), []);
     assert.deepEqual(await client.request('activity', { limit: 5 }), []);
+  }, ['activity']);
+
+  // ── a service not here ───────────────────────────────────────────────
+
+  it('a session without a service: each of its requests answers not-available, E_NOT_HERE; the summary says which it has', async () => {
+    const connection = await target.open('basic', { services: [] });
+    const answers = new Map<string, ResponseMessage>();
+    connection.receive((message) => { if (message.kind === 'response') answers.set(message.id, message); });
+    try {
+      const types = SERVICES.flatMap((service) => SERVICE_REQUESTS[service]);
+      for (const type of [...types, 'summary' as const]) connection.send({ kind: 'request', id: type, type, params: {} } as RequestMessage);
+      const deadline = Date.now() + WAIT_MS;
+      while (answers.size <= types.length && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20));
+      for (const type of types) {
+        const answer = answers.get(type);
+        assert.ok(answer && !answer.ok, `${type}: ${JSON.stringify(answer)}`);
+        assert.deepEqual([answer.error.kind, answer.error.code], ['not-available', 'E_NOT_HERE'], type);
+      }
+      const summary = answers.get('summary');
+      assert.ok(summary?.ok && summary.type === 'summary');
+      assert.deepEqual((summary.result as { services: Service[] }).services, []);
+      connection.send({ kind: 'request', id: 'close', type: 'close', params: {} });
+    } finally {
+      await connection.dispose();
+    }
   });
 
   // ── closing ──────────────────────────────────────────────────────────
@@ -618,14 +672,14 @@ export function engineConformance(target: ConformanceTarget): void {
     await next((event): event is Extract<EngineEvent, { type: 'closed' }> => event.type === 'closed');
     await assert.rejects(client.request('summary', {}), refused('closed'));
     await assert.rejects(client.request('run', { command: 'update_screen', args: { id: 'chemin', title: 'Encore' } }), refused('closed'));
-    // Every request, those that call no file of the module included.
+    // Every request, those that call no file of the module included, those of a service too.
     await assert.rejects(client.request('setVoiceKey', { provider: 'elevenlabs', key: null }), refused('closed'));
     await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('closed'));
     await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('closed'));
   });
 
-  // Last: every request of the protocol was sent by a case above.
+  // Last: every request of the protocol was sent by a case above (those of the target's services).
   it('every request of the protocol has its case', async () => {
-    assert.deepEqual(Object.keys(REQUESTS).filter((type) => !sent.has(type)), []);
+    assert.deepEqual((Object.keys(REQUESTS) as RequestType[]).filter((type) => !sent.has(type) && !(serviceOf(type) && !services.has(serviceOf(type)!))), []);
   });
 }

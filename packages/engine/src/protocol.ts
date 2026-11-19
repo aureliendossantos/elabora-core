@@ -226,7 +226,15 @@ export interface ProjectSummary {
   diagnostics: Summary;
   journal: { seq: number; openBatch: string | null };
   media: { queued: number; running: number };
+  // The services this session has (D102): a request of another one answers not-available, E_NOT_HERE.
+  services: Service[];
 }
+
+// What a session may have besides the project, as its host gives it (D102; base/services.ts says
+// which requests each holds): media jobs and the tools that read media, local and paid voices, word
+// times, transcription, sounds, packages, the canvas, versions, documents printed and written, the
+// agents' activity on this computer.
+export type Service = 'media' | 'voices' | 'align' | 'transcribe' | 'sounds' | 'build' | 'canvas' | 'backups' | 'documents' | 'activity';
 
 export interface FileEntry {
   path: string;
@@ -685,7 +693,8 @@ export type RequestMessage = { [Type in RequestType]: { kind: 'request'; id: str
 //                  E_CONFLICT, E_SCHEMA…; diagnostics say why)
 //   not-found      no such file, screen, change, batch, version or media job
 //   bad-request    the message is not a request the engine knows
-//   not-available  not possible in this session (media off, no canvas open)
+//   not-available  not possible in this session (media off, no canvas open); code E_NOT_HERE: the
+//                  session has no such service (D102), whatever the parameters
 //   closed         the session is closed
 //   internal       a bug or an I/O failure (message says which)
 export type ErrorKind = 'refused' | 'not-found' | 'bad-request' | 'not-available' | 'closed' | 'internal';

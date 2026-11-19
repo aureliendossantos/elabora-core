@@ -33,7 +33,7 @@ import type { Renderer } from './render.ts';
 import type { ProjectState } from './project-state.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import type {
-  CanvasMoment, RenderScreenParams, ConversionsParams, ConversionsView, DiagnosticsView, FileEntry, FileView, FormatStatus, HistoryView, ProjectSummary, ScreenView
+  CanvasMoment, RenderScreenParams, Service, ConversionsParams, ConversionsView, DiagnosticsView, FileEntry, FileView, FormatStatus, HistoryView, ProjectSummary, ScreenView
 } from '../protocol.ts';
 
 // The requests that only read the project in memory (docs/architecture/engine.md, The base without
@@ -53,6 +53,8 @@ export interface ReadsHost {
   // The media jobs queued and running.
   mediaJobs(): readonly { status: string }[];
   readonly migrate: 'ask' | 'auto' | 'never' | undefined;
+  // The services the session has (D102).
+  readonly services: readonly Service[];
   assertOpen(): void;
 }
 
@@ -101,7 +103,8 @@ export class SessionReads {
       })(),
       diagnostics: this.#state.summary,
       journal: { seq: this.#host.journalSeq(), openBatch: this.#host.openBatch() },
-      media: { queued: jobs.filter((job) => job.status === 'queued').length, running: jobs.filter((job) => job.status === 'running').length }
+      media: { queued: jobs.filter((job) => job.status === 'queued').length, running: jobs.filter((job) => job.status === 'running').length },
+      services: [...this.#host.services]
     };
   }
 

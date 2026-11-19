@@ -42,11 +42,11 @@ const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPL
 
 const desktop: ConformanceTarget = {
   name: 'desktop',
-  async open(sample) {
+  async open(sample, { services } = {}) {
     const dir = copyExample(SAMPLES[sample]);
     const files = fs.mkdtempSync(path.join(temp, 'files-'));
     // As the app opens a module, without the schedules that run on their own clock.
-    const session = await openProject(dir, { author: { kind: 'human' }, migrate: 'auto', backups: { onOpen: false, prune: false }, rescanIntervalMs: 0 });
+    const session = await openProject(dir, { author: { kind: 'human' }, migrate: 'auto', backups: { onOpen: false, prune: false }, rescanIntervalMs: 0, ...(services ? { services } : {}) });
     const listeners: ((message: never) => void)[] = [];
     session.subscribe((message) => { for (const listener of listeners) listener(structuredClone(message) as never); });
     return {

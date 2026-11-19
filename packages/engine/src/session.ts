@@ -70,6 +70,7 @@ import { SessionActivity } from './session-activity.ts';
 import type { ActivityEntry } from '@elabora/node/activity';
 import { SessionReads, documentOptions } from './base/reads.ts';
 import { Renderer } from './base/render.ts';
+import { SERVICES, notHere, serviceOf } from './base/services.ts';
 import { FolderChanges, fileOf } from './session-folder.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { build } from '@elabora/node/build';
@@ -84,7 +85,7 @@ import type { Presence } from '@elabora/core/sync/protocol';
 import type {
   BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, ExternalNotes, FileEntry, FileView,
   FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, BatchCloseReason, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
-  RequestResult, RequestType, ResponseMessage, RestoreView, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
+  RequestResult, RequestType, ResponseMessage, RestoreView, Service, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
 } from './protocol.ts';
 import { takeDialogue } from '@elabora/node/voice/index';
 import type { VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate, GenerateResult, TakeInfo } from '@elabora/node/voice/index';
@@ -135,6 +136,8 @@ export interface OpenOptions {
   migrate?: 'ask' | 'auto' | 'never';
   // A folder linked to a project in the cloud (D83): the session syncs it with the project's room.
   cloud?: CloudOptions;
+  // The services the session offers over the protocol (D102): every one by default.
+  services?: readonly Service[];
 }
 
 // Running media jobs at close: cancel them (default: an interrupted conversion of a dropped file is
@@ -207,6 +210,7 @@ export class Session {
   readonly #voice: SessionVoice;
   readonly #sounds: SessionSounds;
   readonly #reads: SessionReads;
+  readonly #services: ReadonlySet<Service>;
   // Media: the hash each media file was probed at, what could not be read, whether ffprobe is there,
   // and whether media jobs started or finished since the media status was last given.
   readonly #mediaChecked = new Map<string, string>();
@@ -226,13 +230,14 @@ export class Session {
     this.author = init.options.author ?? { kind: 'human' };
     const project = () => this.#state.project;
     const reportError = (error: unknown, context: string) => this.#emitError(error, context);
+    this.#services = new Set(init.options.services ?? SERVICES);
     const renderer = new Renderer();
     this.#canvas = new SessionCanvas({ root: this.root, project, renderer, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#reads = new SessionReads({
       root: this.root, state: this.#state, renderer, entries: () => this.#entries, journalSeq: () => this.#folder.lastSeq, openBatch: () => this.openBatch,
-      mediaJobs: () => this.#media?.jobs() ?? [], migrate: init.options.migrate, assertOpen: () => this.#assertOpen()
+      mediaJobs: () => this.#media?.jobs() ?? [], migrate: init.options.migrate, services: init.options.services ?? SERVICES, assertOpen: () => this.#assertOpen()
     });
     this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
     // The rescan reads the agents' activity too: a line its watcher missed shows at the next one.
@@ -463,6 +468,11 @@ export class Session {
   }
 
   async #dispatch(request: RequestMessage): Promise<RequestResult<RequestType>> {
+    const service = serviceOf(request.type);
+    if (service && !this.#services.has(service)) {
+      this.#assertOpen();
+      throw notHere(request.type, service);
+    }
     const params = (request.params ?? {}) as Record<string, unknown>;
     switch (request.type) {
       case 'summary': return this.summary();
