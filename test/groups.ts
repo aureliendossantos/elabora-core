@@ -59,7 +59,7 @@ export const groups: TestMap = {
     { name: 'phishing-by-numbers', files: ['examples/phishing-by-numbers/**'], checks: [matrix('phishing')] },
     { name: 'clockwork', files: ['examples/clockwork/**'], checks: [matrix('clockwork')] },
     // The copy of a project in the cloud and the session's base, as a browser runs them (D100).
-    { name: 'sync, the base and the engine in a browser', files: ['test/sync/**', 'packages/core/src/sync/**', 'packages/engine/src/base/**', 'packages/engine/src/browser/**', 'test/browser-bundle.ts', 'test/conformance/**'], checks: [e2e('sync-convergence-browser'), e2e('engine-conformance-browser')] },
+    { name: 'sync, the base and the engine in a browser', files: ['test/sync/**', 'packages/core/src/sync/**', 'packages/engine/src/base/**', 'packages/engine/src/browser/**', 'test/browser-bundle.ts', 'test/conformance/**'], checks: [e2e('sync-convergence-browser'), e2e('engine-conformance-browser'), e2e('engine-webkit')] },
     { name: 'the network sample of the engine tests', files: ['test/fixtures/diagnostic-reseau-v1/**'], checks: [e2e('player'), e2e('canvas'), e2e('canvas-live'), e2e('timeline')] },
     { name: 'diagnostic-reseau and orbital-rendezvous', files: ['examples/diagnostic-reseau/**', 'examples/orbital-rendezvous/**'], checks: [matrix('lms-matrix'), e2e('player')] }
   ]

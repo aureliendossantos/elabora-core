@@ -131,7 +131,8 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
       const bytes = given ? new Uint8Array(await given.arrayBuffer()) : remote ? await remote.fetch(hash) : null;
       if (!bytes) return null;
       if (await sha256(bytes) !== hash) throw new Error(`The medium ${hash.slice(7, 19)}… does not match its hash.`);
-      await media.put(bytes);
+      // Kept for next time; a browser that cannot keep it still gives it now, and says why.
+      await media.put(bytes).catch((error: unknown) => onError?.(error));
       return bytes;
     },
     membership: membership ?? (async () => 'unknown'),
@@ -157,11 +158,12 @@ async function mediaFolder(key: string) {
   const name = (hash: string) => hash.replace(/^sha256:/, '');
   return {
     async file(hash: string): Promise<File | null> {
-      await writing.get(hash);
+      await writing.get(hash)?.catch(() => {});
       try { return await (await dir.getFileHandle(name(hash))).getFile(); } catch { return null; }
     },
     async read(hash: string): Promise<Uint8Array | null> {
-      await writing.get(hash);
+      // A write that failed leaves nothing under the hash: read as not kept.
+      await writing.get(hash)?.catch(() => {});
       try {
         const file = await (await dir.getFileHandle(name(hash))).getFile();
         return new Uint8Array(await file.arrayBuffer());
@@ -177,7 +179,8 @@ async function mediaFolder(key: string) {
         const stream = await temporary.createWritable();
         await stream.write(bytes as Uint8Array<ArrayBuffer>);
         await stream.close();
-        await (temporary as FileSystemFileHandle & { move(name: string): Promise<void> }).move(name(hash));
+        // move(folder, name): WebKit takes no other form (Chromium and Firefox take this one too).
+        await (temporary as FileSystemFileHandle & { move(folder: FileSystemDirectoryHandle, name: string): Promise<void> }).move(dir, name(hash));
       });
       writing.set(hash, write);
       try { await write; } finally { if (writing.get(hash) === write) writing.delete(hash); }
