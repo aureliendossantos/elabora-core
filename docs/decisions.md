@@ -16,6 +16,9 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D10](decisions/D10.md) | Agent interface: MCP + short skills + AGENTS.md |  |
 | [D100](decisions/D100.md) | The session's base without Node, and a project's copy behind its store | 18 Nov 2026 |
 | [D11](decisions/D11.md) | LESSON.md for simple blocks |  |
+| [D115](decisions/D115.md) | What the canvas shows is asked of it by messages, not by scripts injected into its page | 18 Nov 2026 |
+| [D116](decisions/D116.md) | Free objects' frames from an origin of their own, for a page served on the web | 18 Nov 2026 |
+| [D117](decisions/D117.md) | A free object's code is bundled by a part that needs no Node, given esbuild and its libraries | 18 Nov 2026 |
 | [D12](decisions/D12.md) | TypeScript workspace packages, run directly by Node | revised 6 Oct 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
@@ -99,5 +102,3 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D92](decisions/D92.md) | Two warnings: a chart's item brought before its chart appears, a screen in a section of another part of the plan | 12 Nov 2026 |
 | [D93](decisions/D93.md) | A role changed while connected: the room says it, the copy takes it | 12 Nov 2026 |
 | [D94](decisions/D94.md) | The role in `welcome`: a copy knows it before sending anything | 12 Nov 2026 |
-| [D115](decisions/D115.md) | What the canvas shows is asked of it by messages, not by scripts injected into its page | 18 Nov 2026 |
-| [D116](decisions/D116.md) | Free objects' frames from an origin of their own, for a page served on the web | 18 Nov 2026 |

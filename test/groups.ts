@@ -17,7 +17,7 @@ export const groups: TestMap = {
     'packages/player/src/course-data.ts', 'packages/player/src/course-state.ts', 'packages/player/src/screen-*.ts', 'packages/player/src/chrome.ts',
     'packages/player/src/tokens.ts', 'packages/player/src/layout-report.ts', 'packages/player/src/resources.ts', 'packages/player/src/state-codec.ts',
     'packages/core/src/compile/**', 'packages/core/src/format/**', 'packages/core/src/project/**', 'packages/core/src/validate/**', 'packages/core/src/util/**', 'packages/core/src/index.ts',
-    'packages/format/**', 'packages/node/src/build.ts', 'packages/node/src/build-types.ts', 'packages/node/src/bundles.ts', 'packages/node/src/util/**',
+    'packages/format/**', 'packages/node/src/build.ts', 'packages/node/src/build-types.ts', 'packages/node/src/bundles.ts', 'packages/core/src/objects/**', 'packages/node/src/util/**',
     'packages/node/src/project-*.ts', 'packages/node/src/index.ts', 'packages/engine/**',
     'packages/core/src/player/**', 'packages/core/src/diagnostics/**', 'packages/*/package.json', 'packages/*/tsconfig.json', 'test/fixtures/format-0.1/**',
     'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig*.json', '.gitattributes', '.gitignore', 'test/helpers.ts', 'test/isolate.ts'
