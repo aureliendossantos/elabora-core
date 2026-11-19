@@ -26,8 +26,10 @@ export async function startHosts(handlers: Record<string, Handler>): Promise<Hos
   const names = Object.keys(handlers);
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1', '-subj', '/CN=elabora relay tests', '-addext', `subjectAltName=${names.map((name) => `DNS:${name}`).join(',')}`, '-keyout', join(dir, 'key.pem'), '-out', join(dir, 'cert.pem')], { stdio: 'ignore' });
   const spki = execFileSync('sh', ['-c', `openssl x509 -in '${join(dir, 'cert.pem')}' -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64`], { encoding: 'utf8' }).trim();
+  // A closed table by name: what the request says only selects among the handlers given.
+  const table = new Map(Object.entries(handlers));
   const tls = createHttpsServer({ key: readFileSync(join(dir, 'key.pem')), cert: readFileSync(join(dir, 'cert.pem')) }, (request, response) => {
-    const handler = handlers[(request.headers.host ?? '').split(':')[0]!];
+    const handler = table.get((request.headers.host ?? '').split(':')[0]!);
     if (!handler) { response.writeHead(404).end('no such name'); return; }
     handler(request, response);
   });

@@ -1,22 +1,29 @@
 // The web app's page in the relay's tests: it holds the two relay pages (the canvas and the frames host's),
 // gives them a port per route, and answers the ports as the engine will: from a module's files served by
 // the test (a stand-in for the engine in a Worker). window.app is what the test drives.
-import { RELAY_PROTOCOL, serveRelayPort } from '@elabora/player/relay-protocol';
+import { RELAY_PROTOCOL, isRoute, serveRelayPort } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 import { objectFrameHtml } from '@elabora/core/objects/bundle';
 
+// What the test's address says is taken from closed lists and checked shapes, never put in an address as it is.
 const params = new URLSearchParams(location.search);
-const MODULE = params.get('module')!;
-const ROUTE = params.get('route')!;
-const CANVAS = params.get('canvas')!;
-const FRAMES = params.get('frames')!;
-const TOKEN = params.get('token') ?? 'test-token';
+const oneOf = <T extends string>(value: string | null, allowed: readonly T[]): T => {
+  const found = allowed.find((candidate) => candidate === value);
+  if (found === undefined) throw new Error(`Not an allowed value: ${String(value)}`);
+  return found;
+};
+const MODULE = oneOf(params.get('module'), ['a', 'b']);
+const ROUTE = params.get('route') ?? '';
+if (!isRoute(ROUTE)) throw new Error('Not a route');
+const CANVAS = oneOf(params.get('canvas'), ['https://canvas.elabora.page']);
+const FRAMES = oneOf(params.get('frames'), ['https://frames.elabora.page']);
+const TOKEN = oneOf(params.get('token') ?? 'test-token', ['test-token']);
 // A medium answered in pieces, as the engine does while it takes it from the server.
 const PARTS = params.get('parts') === '1';
 
 const log: unknown[] = [];
 const requests: RelayRequest[] = [];
-const url = (path: string) => `/module/${MODULE}/${path}`;
+const url = (path: string) => `/module/${MODULE}/${path.split('/').map(encodeURIComponent).join('/')}`;
 
 const source: RelaySource = {
   async get(request: RelayRequest): Promise<RelayAnswer> {
@@ -27,7 +34,7 @@ const source: RelaySource = {
       return { status: 'ok', type: 'text/html; charset=utf-8', size: 0, body: objectFrameHtml(await manifest.json(), { language: 'en' }) };
     }
     if (request.kind === 'object-code') {
-      const code = await fetch(`/compiled/${MODULE}/${request.object}.js`);
+      const code = await fetch(`/compiled/${MODULE}/${encodeURIComponent(request.object)}.js`);
       return code.ok ? { status: 'ok', type: 'text/javascript; charset=utf-8', size: 0, body: await code.text() } : { status: 'not-found' };
     }
     const range = request.range;
@@ -83,7 +90,7 @@ const api = {
   say(host: string, message: object, ports: Transferable[] = []) { pages[host]!.frame.contentWindow!.postMessage(message, pages[host]!.origin, ports); },
   update() { for (const host of ['canvas', 'frames']) api.say(host, { type: 'relay/update', protocol: RELAY_PROTOCOL }); },
   async show(screen: string) {
-    const render = await (await fetch(`/render/${MODULE}/${screen}.json`)).json();
+    const render = await (await fetch(`/render/${MODULE}/${encodeURIComponent(screen)}.json`)).json();
     canvas.contentWindow!.postMessage({ type: 'elabora/render', id: ++renderId, token: TOKEN, render }, CANVAS);
     return renderId;
   },
@@ -91,5 +98,7 @@ const api = {
 };
 (window as unknown as { app: typeof api }).app = api;
 
-canvas.src = `${CANVAS}/canvas/index.html?token=${TOKEN}&route=${ROUTE}&frames=${encodeURIComponent(FRAMES)}&scrollbars=none&placing=editor`;
-relay.src = `${FRAMES}/relay.html`;
+const canvasAddress = new URL('/canvas/index.html', CANVAS);
+for (const [name, value] of [['token', TOKEN], ['route', ROUTE], ['frames', FRAMES], ['scrollbars', 'none'], ['placing', 'editor']] as const) canvasAddress.searchParams.set(name, value);
+canvas.src = canvasAddress.href;
+relay.src = new URL('/relay.html', FRAMES).href;

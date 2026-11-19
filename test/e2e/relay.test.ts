@@ -131,7 +131,7 @@ for (const name of wanted) {
       assert.deepEqual(await askedBy(second.page), ['clockwork']);
       // The canvas page asks by the route in its own address, whatever a request says of itself.
       const strangers = await canvas.evaluate(async () => (await Promise.all(['/canvas/course.json?route=nobody', '/canvas/objects/clockwork/object.js'].map(async (url) => (await fetch(url)).status))));
-      assert.deepEqual(strangers, [200, 404], 'the canvas page of a tab asks by its own route, and the engine of this tab has no such object');
+      assert.deepEqual(strangers, [200, 403], 'the canvas page of a tab asks by its own route, and its port asks files only (an object\'s code is the frames host\'s)');
       assert.equal(await (async () => { const withoutRoute = await second.page.context().newPage(); const response = await withoutRoute.goto(`${FRAMES}/canvas/objects/clockwork/frame.html`); const status = response?.status(); await withoutRoute.close(); return status; })(), 404, 'a navigation at the top, with no route');
 
       // 5. A frame that has not the app above it is refused, the route known or not: the review page of the app's site

@@ -6,7 +6,7 @@
 //
 // The role is on the script's tag: <script src="/relay-page.js" data-relay-role="canvas|frames">.
 
-import { RELAY_ANSWER_MS, RELAY_PROTOCOL, parseAppToRelay, parseRelayAnswer } from './relay-protocol.ts';
+import { RELAY_ANSWER_MS, RELAY_PROTOCOL, parseAppToRelay, parseRelayAnswer, parseRelayRequest } from './relay-protocol.ts';
 import type { EnginePortMessage, RelayAnswer, RelayHost, RelayPortMessage, RelayToApp } from './relay-protocol.ts';
 import type { PageToWorker, WorkerHello, WorkerToPage } from './relay-link.ts';
 import { isRecord } from './json.ts';
@@ -35,7 +35,8 @@ function askWorker(): Promise<WorkerHello | null> {
     port1.onmessage = (event: MessageEvent<unknown>) => {
       clearTimeout(timer);
       const data = event.data;
-      resolve(isRecord(data) && typeof data.version === 'string' ? { version: data.version, appOrigin: typeof data.appOrigin === 'string' ? data.appOrigin : null } : null);
+      // The app's origin is the target of what this page says and the one it takes messages from: an origin and nothing more.
+      resolve(isRecord(data) && typeof data.version === 'string' ? { version: data.version, appOrigin: typeof data.appOrigin === 'string' && /^https?:\/\/[^/?#\s]+$/.test(data.appOrigin) ? data.appOrigin : null } : null);
     };
     controller.postMessage({ type: 'relay/hello' } satisfies PageToWorker, [port2]);
   });
@@ -94,7 +95,11 @@ navigator.serviceWorker.addEventListener('message', (event) => {
   const data: unknown = event.data;
   if (!isRecord(data)) return;
   if (data.type === 'relay/awake') { declare(); return; }
-  if (data.type === 'relay/fetch' && typeof data.route === 'string' && isRecord(data.request) && event.ports[0]) forward(data.route, data.request as never, event.ports[0]);
+  if (data.type === 'relay/fetch' && typeof data.route === 'string' && event.ports[0]) {
+    const request = parseRelayRequest(data.request);
+    if (request) forward(data.route, request, event.ports[0]);
+    else { event.ports[0].postMessage({ status: 'refused' } satisfies RelayAnswer); event.ports[0].close(); }
+  }
 });
 
 window.addEventListener('message', (event) => {
