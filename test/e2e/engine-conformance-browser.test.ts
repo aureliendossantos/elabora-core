@@ -1,5 +1,8 @@
 import { test, after, before } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import type { Browser, Page } from 'playwright-core';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { launchBrowser } from '@elabora/node/emulator/browser';
@@ -16,7 +19,7 @@ import { EXAMPLE, BILINGUAL, NETWORK_SAMPLE } from '../helpers.ts';
 
 // A secure context: Web Locks and the origin's private file system need one.
 const ORIGIN = 'https://engine.elabora.test';
-const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPLE, bilingual: BILINGUAL };
+const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPLE, bilingual: BILINGUAL, empty: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-empty-')) };
 const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
 
 type Message = WorkerAnswer | ResponseMessage | EventMessage;
