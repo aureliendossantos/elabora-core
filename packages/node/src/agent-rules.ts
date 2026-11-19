@@ -5,6 +5,8 @@ import { CommandError, Draft } from '@elabora/core/commands/index';
 import { textFile } from '@elabora/core/project/files';
 import { FORMAT } from '@elabora/format';
 import { fileURLToPath } from 'node:url';
+import { AGENT_RULES } from '@elabora/core/project/course-template.generated';
+import { AGENTS_FILE, CLAUDE_FILE, CLAUDE_TEXT, NOTES, agentsFile, courseNotes } from '@elabora/core/commands/new-course';
 import { runCommand, type EditOptions, type EditResult } from './edit/executor.ts';
 
 // ── The rules a course gives its agents (docs/decisions.md D34) ───────
@@ -26,16 +28,11 @@ import { runCommand, type EditOptions, type EditResult } from './edit/executor.t
 
 export interface AgentRulesRevision { revision: number; sha: string; date: string }
 
-const TEMPLATES_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../templates');
-const TEMPLATE = path.join(TEMPLATES_DIR, 'course', 'AGENTS.md');
-const HISTORY = path.join(TEMPLATES_DIR, 'agents-revisions.json');
-export const AGENTS_FILE = 'AGENTS.md';
-export const CLAUDE_FILE = 'CLAUDE.md';
-export const CLAUDE_TEXT = '@AGENTS.md\n';
+const HISTORY = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../templates/agents-revisions.json');
+export { AGENTS_FILE, CLAUDE_FILE, CLAUDE_TEXT, agentsFile, courseNotes };
 // A file with Windows line ends (git's autocrlf) is read too (its rules then count as edited: their
 // fingerprint is of the text Elabora wrote).
 const START = /^<!-- elabora:rules revision=(\d+) sha256=([0-9a-f]{16})[^\r\n]*-->\r?\n/;
-const END = '\n<!-- elabora:rules end -->\n';
 const ANY_END = /\r?\n<!-- elabora:rules end -->\r?\n/g;
 // Where the rules end: the end marker under either name, with its length.
 function rulesEnd(text: string, from: number): { at: number; length: number } {
@@ -43,34 +40,17 @@ function rulesEnd(text: string, from: number): { at: number; length: number } {
   const found = ANY_END.exec(text);
   return found ? { at: found.index, length: found[0].length } : { at: -1, length: 0 };
 }
-const NOTES = '\n## Notes for this course\n<!-- What agents should know about this course: its audience, its voice, decisions taken. Elabora never changes this part. -->\n';
-
-// The notes of a new course: what the author said as they created it (D51), in their words.
-export const courseNotes = (text?: string): string => (text?.trim() ? `${NOTES}\n${text.trim()}\n` : NOTES);
 
 const fingerprint = (text: string): string => crypto.createHash('sha256').update(text).digest('hex').slice(0, 16);
 
-let cached: { text: string; revision: number; revisions: AgentRulesRevision[] } | null = null;
-// The rules of this Elabora: the template's text and its revision.
+// The rules of this Elabora: the template's text and its revision, as the core carries them (D111).
 export function currentRules(): { text: string; revision: number; sha: string } {
-  if (!cached) {
-    const text = fs.readFileSync(TEMPLATE, 'utf8');
-    const revisions = (JSON.parse(fs.readFileSync(HISTORY, 'utf8')) as { revisions: AgentRulesRevision[] }).revisions;
-    const sha = fingerprint(text);
-    const known = revisions.find((entry) => entry.sha === sha);
-    // A template edited without pnpm run gen counts as a revision after the last one.
-    cached = { text, revisions, revision: known?.revision ?? (revisions.at(-1)?.revision ?? 0) + 1 };
-  }
-  return { text: cached.text, revision: cached.revision, sha: fingerprint(cached.text) };
+  return { text: AGENT_RULES.text, revision: AGENT_RULES.revision, sha: AGENT_RULES.sha };
 }
 
-const revisionOf = (sha: string): number | null => (currentRules(), cached!.revisions.find((entry) => entry.sha === sha)?.revision ?? null);
-
-// AGENTS.md as Elabora writes it: the rules between their markers, then the notes (kept as they were).
-export function agentsFile(notes: string = NOTES): string {
-  const { text, revision, sha } = currentRules();
-  return `<!-- elabora:rules revision=${revision} sha256=${sha} · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->\n${text.endsWith('\n') ? text.slice(0, -1) : text}${END}${notes}`;
-}
+// The revisions of the rules Elabora wrote before (older courses' AGENTS.md).
+let revisions: AgentRulesRevision[] | null = null;
+const revisionOf = (sha: string): number | null => (revisions ??= (JSON.parse(fs.readFileSync(HISTORY, 'utf8')) as { revisions: AgentRulesRevision[] }).revisions).find((entry) => entry.sha === sha)?.revision ?? null;
 
 // A course whose AGENTS.md has no CLAUDE.md beside it (whatever the rules are: an author's own too).
 export const claudeMissing = (agents: string | null, claude: boolean): boolean => agents !== null && !claude;

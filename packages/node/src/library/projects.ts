@@ -12,7 +12,7 @@ import { initProject } from '../scaffold.ts';
 import { createFromTemplate, moduleTemplate } from '../module-templates.ts';
 import { copyCharter } from '../charter.ts';
 import type { ModuleTemplate } from '../module-templates.ts';
-import type { CourseBrief } from '../scaffold.ts';
+import type { CourseBrief } from '@elabora/core/commands/new-course';
 import { withProjectLock } from '../journal/lock.ts';
 import { appendMark } from '../journal/journal.ts';
 import { LibraryError } from './errors.ts';

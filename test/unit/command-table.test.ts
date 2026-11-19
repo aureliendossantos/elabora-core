@@ -7,6 +7,10 @@ import { MULTIPLE_OF_PRECISION } from '@elabora/format';
 import { COMMAND_NAMES, NAMED_COMMANDS, namedCommand } from '@elabora/core/commands/table';
 import { commandContext, executeCommand, OBJECT_FILES } from '@elabora/core/commands/index';
 import { textFile } from '@elabora/core/project/files';
+import { newCourseFiles } from '@elabora/core/commands/new-course';
+import { loadProject } from '@elabora/core/project/load';
+import { validateProject } from '@elabora/core/validate/index';
+import { applyOps } from '@elabora/core/ops/apply';
 import { translationTable } from '@elabora/core/i18n/translate';
 import type { ProjectFiles } from '@elabora/core/project/files';
 import type { Files } from '@elabora/core/ops/types';
@@ -155,4 +159,20 @@ test('a change a host journals is a command of the table, and each host gives wh
     assert.equal(typeof PROVIDERS[needs], 'function', `${name}: this computer gives ${needs}`);
     assert.ok(NEED_SERVICES[needs], `${name}: the engines know the service of ${needs}`);
   }
+});
+
+test('a new module\'s files are the first change of an empty project, and a project with a course is left as it is', () => {
+  const args = { id: 'canal-tour', title: 'Le canal « pas à pas »', language: 'fr', brief: { audience: 'Éclusiers', duration: { max: 15 }, notes: 'Ton : direct.' } };
+  const entry = namedCommand('create_course')!;
+  assert.equal(entry.needs, null);
+  assert.ok(ajv.validate(entry.args, args), ajv.errorsText(ajv.errors));
+  const made = executeCommand(new Map() as ProjectFiles, 'create_course', (context) => entry.run(context, args), { author: PERSON });
+  assert.deepEqual(made.result, { created: true, files: ['course.json', 'plan.json', 'screens/intro.json', 'AGENTS.md', 'CLAUDE.md', '.gitignore'] });
+  // The bytes a computer writes for the same course (initProject), and a course with nothing to fix.
+  for (const [rel, text] of newCourseFiles(args)) assert.equal((made.after.get(rel) as { text: string }).text, text, rel);
+  assert.deepEqual(validateProject(loadProject(made.after as ProjectFiles)).diagnostics.filter((d) => d.severity === 'error'), []);
+  // Undone, the project is empty again.
+  assert.deepEqual([...applyOps(made.after, made.inverse).keys()], []);
+  // Two copies that both make it: the second writes nothing.
+  assert.deepEqual(executeCommand(made.after as ProjectFiles, 'create_course', (context) => entry.run(context, args), { author: PERSON }).ops, []);
 });

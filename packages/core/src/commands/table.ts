@@ -33,6 +33,7 @@ import { addSound, type AddSoundRequest } from './sounds.ts';
 import { imageToVideo, replaceMediaReferences, setCaptions, type ImageToVideoRequest } from './media.ts';
 import { settleImportReport } from './import-report.ts';
 import { upgradeThemeCascade } from './theme.ts';
+import { createCourse, type CourseBrief } from './new-course.ts';
 import type { CourseGlossary } from '@elabora/format';
 
 // The commands by name (docs/decisions.md D84, D110): every command of the core, by the names the
@@ -456,6 +457,21 @@ const TABLE = {
     args: objectSchema({ component: SLUG, file: { enum: COMPONENT_FILES }, content: { type: 'string' } }, ['component', 'file', 'content']),
     run: writeComponentFile,
     journal: (args) => ({ name: 'write_component_file', args: { component: args.component, file: args.file, bytes: args.content.length } })
+  }),
+
+  create_course: command({
+    description: 'A new module\'s first files in an empty project (D112), as « Nouveau module » writes them (D111): course.json, plan.json (a draft), an intro screen, the rules for agents (AGENTS.md, CLAUDE.md) and .gitignore. id: the course\'s id; brief: what the author said of it (D51). A project that has a course.json already is left as it is (created: false).',
+    args: objectSchema({
+      id: SLUG, title: { type: 'string', minLength: 1 }, language: LANGUAGE,
+      brief: formatValue<CourseBrief>()({
+        type: 'object', additionalProperties: false, properties: {
+          audience: { type: 'string', maxLength: 200 }, businessGoal: { type: 'string', maxLength: 1000 },
+          duration: { type: 'object', additionalProperties: false, properties: { min: { type: 'integer', minimum: 1, maximum: 600 }, max: { type: 'integer', minimum: 1, maximum: 600 } } },
+          presentation: { enum: ['scroll', 'slides'] }, lms: { type: 'array', items: { type: 'string' } }, notes: { type: 'string' }
+        }
+      })
+    }, ['id', 'title']),
+    run: createCourse
   }),
 
   // ── what needs its host (host.ts) ─────────────────────────────────────
