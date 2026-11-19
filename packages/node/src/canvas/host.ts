@@ -8,7 +8,7 @@ import type { AnswerMessage, AskMessage, AskName, CanvasAsks, HostMessage, Rende
 import { projectPath } from '@elabora/core/project/files';
 import { startServer } from '../emulator/server.ts';
 import type { RouteHandler } from '../emulator/server.ts';
-import { runtimeFiles, runtimeBundle, vendorThree, compileObjectCode, bundleErrorMessage } from '../bundles.ts';
+import { runtimeFiles, runtimeBundle, vendorThree, compileObjectCode, bundleErrorMessage, canvasPageHtml } from '../bundles.ts';
 import { objectFrameHtml } from '@elabora/core/objects/bundle';
 import { errorMessage } from '../util/values.ts';
 import { serveFile, mimeType } from './files.ts';
@@ -52,7 +52,7 @@ export interface CanvasHandler {
   view(view: Partial<RenderView>, options?: { id?: string | number }): number;
   // Asks the pages what is on screen (canvas-protocol.ts, CanvasAsks): the question goes to every page
   // connected (or, with none, to the first that connects); the first answer is the result. Rejects after
-  // timeoutMs (default 10 s), when the host closes, or when every page it went to is gone.
+  // timeoutMs (default 30 s), when the host closes, or when every page it went to is gone.
   ask<Name extends AskName>(ask: Name, params: CanvasAsks[Name]['params'], options?: { timeoutMs?: number }): Promise<CanvasAsks[Name]['result']>;
   // Ends the event streams.
   close(): void;
@@ -73,7 +73,10 @@ const NARRATION_AUDIO = /^assets\/narration\/[^/]+\/[^/]+\/[^/]+\.m4a$/;
 // sound just added or made is in no render yet.
 const COURSE_SOUND = /^assets\/sounds\/[^/]+\.(?:flac|m4a|mp3|ogg|oga|opus|wav)$/;
 const ANSWER_LIMIT = 1024 * 1024;
-const ASK_TIMEOUT_MS = 10000;
+// A page waits 3 s for the render and 4 s for its images and objects, by timers of its own: a page whose main
+// thread is busy (a free object's WebGL starting in software, 20 s or more on a loaded computer) answers late, not never.
+// The wait here is a watchdog for a page that does not answer, not the page's own bound.
+const ASK_TIMEOUT_MS = 30000;
 const LOCAL_HOST = /^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i;
 
 // The connector of the page served by this host: render data arrives as server-sent events, answers leave by POST.
@@ -88,23 +91,6 @@ const CONNECT_SCRIPT = `// Connects the canvas page to its Node host: messages a
     fetch('elabora/answer?token=' + encodeURIComponent(token), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(message) }).catch(function () {});
   });
 })();
-`;
-
-const PAGE = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="data:,">
-<title>Elabora canvas</title>
-<link rel="stylesheet" href="elabora/player.css">
-</head>
-<body>
-<div id="elabora-app"></div>
-<script src="elabora/canvas.js"></script>
-<script src="elabora/canvas-connect.js"></script>
-</body>
-</html>
 `;
 
 interface Page {
@@ -166,7 +152,7 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
     try { name = decodeURIComponent(url.pathname).slice(PREFIX.length); } catch { return text(400, 'bad path'); }
     if (name === 'elabora/answer') return takeAnswer(request, response, url);
     if (request.method !== 'GET' && request.method !== 'HEAD') return text(405, 'method not allowed');
-    if (name === '' || name === 'index.html') { response.writeHead(200, { 'content-type': mimeType('index.html'), 'cache-control': 'no-store' }).end(PAGE); return; }
+    if (name === '' || name === 'index.html') { response.writeHead(200, { 'content-type': mimeType('index.html'), 'cache-control': 'no-store' }).end(canvasPageHtml()); return; }
     if (name === 'elabora/events') {
       response.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', connection: 'keep-alive' });
       response.write('retry: 500\n\n');

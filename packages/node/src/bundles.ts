@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -111,4 +112,43 @@ export function bundleErrorMessage(error: unknown): string {
   const messages = fieldOf(error, 'errors');
   const texts = Array.isArray(messages) ? messages.map((message) => fieldOf(message, 'text')).filter((text) => typeof text === 'string') : [];
   return texts.join('; ') || errorMessage(error);
+}
+
+// The canvas page. It sits where the root of a package sits, so that the paths of the course data resolve as in a
+// package. Its connector is the Node host's event stream (a script this host serves), or the relay page's script
+// (the web app's canvas host: its files and the relay are static there).
+export function canvasPageHtml(connector: 'events' | 'relay' = 'events'): string {
+  const script = connector === 'events' ? '<script src="elabora/canvas-connect.js"></script>' : '<script src="/relay-page.js" data-relay-role="canvas"></script>';
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Elabora canvas</title>
+<link rel="stylesheet" href="elabora/player.css">
+</head>
+<body>
+<div id="elabora-app"></div>
+<script src="elabora/canvas.js"></script>
+${script}
+</body>
+</html>
+`;
+}
+
+// The web app's relay (D118, D119): its service worker (/relay.js, one script for the canvas host and the
+// frames host, whose Worker writes its policy before it), the script of the relay pages (/relay-page.js),
+// the frames host's page (/relay.html) and the canvas page for the relay. The script's version changes
+// with it.
+export async function relayFiles({ debug = false }: { debug?: boolean } = {}): Promise<Record<string, string>> {
+  const build = async (entry: string, define: Record<string, string> = {}) => (await esbuild.build({ entryPoints: [path.join(RUNTIME, entry)], bundle: true, format: 'iife', target: 'es2020', minify: !debug, write: false, legalComments: 'none', logLevel: 'error', charset: 'utf8', define })).outputFiles[0].text;
+  const unversioned = await build('worker/relay.ts');
+  const version = `${ELABORA_VERSION}-${crypto.createHash('sha256').update(unversioned).digest('hex').slice(0, 12)}`;
+  return {
+    'relay.js': await build('worker/relay.ts', { __RELAY_VERSION__: JSON.stringify(version) }),
+    'relay-page.js': await build('relay-page.ts'),
+    'relay.html': '<!doctype html>\n<meta charset="utf-8">\n<title>Elabora relay</title>\n<script src="/relay-page.js" data-relay-role="frames"></script>\n',
+    'canvas/index.html': canvasPageHtml('relay')
+  };
 }

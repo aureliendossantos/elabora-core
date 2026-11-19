@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RELAY_PROTOCOL, isRoute, isStaticPath, parseAppToRelay, parseRange, parseRelayAnswer, parseRelayRequest, relayPathOf, relayRequestOf, resolveRange, serveRelayPort } from '@elabora/player/relay-protocol';
+import { RELAY_PROTOCOL, hostMayAsk, isRoute, parseRelayToApp, isStaticPath, parseAppToRelay, parseRange, parseRelayAnswer, parseRelayRequest, relayPathOf, relayRequestOf, resolveRange, serveRelayPort } from '@elabora/player/relay-protocol';
 import type { EnginePortMessage, RelayAnswer, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 import { byteRange } from '@elabora/node/canvas/files';
 
@@ -115,5 +115,31 @@ test('relay: the engine\'s end of a port answers each request from its source, r
     assert.deepEqual(await next(), { type: 'relay/bye' });
   } finally {
     relay.close();
+  }
+});
+
+test('relay: the frames host\'s port answers what an object\'s frame asks, not the module\'s other files; what a relay page says is data', async () => {
+  assert.equal(hostMayAsk('canvas', { kind: 'file', path: 'assets/a.png' }), true);
+  assert.equal(hostMayAsk('frames', { kind: 'file', path: 'assets/a.png' }), false);
+  assert.equal(hostMayAsk('frames', { kind: 'file', path: 'objects/lab/models/a.glb' }), true);
+  assert.equal(hostMayAsk('frames', { kind: 'object-code', object: 'lab' }), true);
+  const { port1: relay, port2: engine } = new MessageChannel();
+  const log: string[] = [];
+  serveRelayPort(engine, source({ 'assets/a.png': 'x', 'objects/lab/a.txt': 'y' }, log), 'frames');
+  const next = () => new Promise<EnginePortMessage>((resolve) => { relay.onmessage = (event) => { resolve(event.data as EnginePortMessage); }; });
+  try {
+    relay.postMessage({ type: 'relay/request', id: 1, request: { kind: 'file', path: 'assets/a.png' } });
+    const refused = await next();
+    assert.ok(refused.type === 'relay/answer' && refused.answer.status === 'refused');
+    assert.equal(log.length, 0, 'the source never saw it');
+    relay.postMessage({ type: 'relay/request', id: 2, request: { kind: 'file', path: 'objects/lab/a.txt' } });
+    const served = await next();
+    assert.ok(served.type === 'relay/answer' && served.answer.status === 'ok');
+  } finally { relay.close(); }
+  const route = 'k3J0aXq9Zr1T5mYb8WcD7g';
+  assert.deepEqual(parseRelayToApp({ type: 'relay/ready', protocol: RELAY_PROTOCOL, version: '1-abc', host: 'frames', extra: 1 }), { type: 'relay/ready', protocol: RELAY_PROTOCOL, version: '1-abc', host: 'frames' });
+  assert.deepEqual(parseRelayToApp({ type: 'relay/opened', protocol: RELAY_PROTOCOL, route }), { type: 'relay/opened', protocol: RELAY_PROTOCOL, route });
+  for (const bad of [null, 'relay/ready', { type: 'relay/ready', protocol: 'other', version: 'v', host: 'canvas' }, { type: 'relay/ready', protocol: RELAY_PROTOCOL, version: 'v'.repeat(101), host: 'canvas' }, { type: 'relay/ready', protocol: RELAY_PROTOCOL, version: 'v', host: 'elsewhere' }, { type: 'relay/opened', protocol: RELAY_PROTOCOL, route: 'x' }, { type: 'relay/refused', protocol: RELAY_PROTOCOL, reason: 'because' }, { type: 'elabora/render' }]) {
+    assert.equal(parseRelayToApp(bad), null, JSON.stringify(bad));
   }
 });
