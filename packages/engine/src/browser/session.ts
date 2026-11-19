@@ -3,6 +3,8 @@ import { applyOps, invertOps } from '@elabora/core/ops/apply';
 import { assignBatch, isAiAuthor } from '@elabora/core/ops/batch';
 import { planUndo, undoOps, type UndoPlan } from '@elabora/core/ops/undo-plan';
 import { binaryFile, type ProjectFiles, type SourceFile } from '@elabora/core/project/files';
+import { fileMedia } from '@elabora/core/media/conformance';
+import { readKnownMedia, type KnownMedium, type MediaFacts } from '@elabora/core/sync/media';
 import { executeCommand } from '@elabora/core/commands/execute';
 import { namedCommand } from '@elabora/core/commands/table';
 import { unmetExpectation, type Expectation } from '@elabora/core/commands/index';
@@ -82,6 +84,8 @@ export class BrowserSession {
   readonly #services: ReadonlySet<Service>;
   readonly #pending: ChangeLike[];
   #cloud: SessionCloud | null;
+  // What the link kept of the media (D125), for a copy whose machine ended.
+  readonly #known: ReadonlyMap<string, KnownMedium>;
   #closing: Promise<{ version: string | null }> | null = null;
   readonly #objects: (() => Promise<ObjectCompiler>) | undefined;
   // The relay's ports served (relayPort), each ended with relay/bye as the session closes.
@@ -90,6 +94,7 @@ export class BrowserSession {
   constructor(options: CopyOptions) {
     this.id = options.id;
     this.#store = options.store;
+    this.#known = readKnownMedia(options.store.link.media);
     this.author = options.author ?? { kind: 'human' };
     this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service)));
     this.#objects = options.objects;
@@ -106,7 +111,7 @@ export class BrowserSession {
       }),
       write: async (before, after, author, batch, seq) => {
         const updates = new Map<string, SourceFile | null>();
-        for (const rel of new Set([...before.keys(), ...after.keys()])) if (before.get(rel) !== after.get(rel)) updates.set(rel, sourceOf(after.get(rel)));
+        for (const rel of new Set([...before.keys(), ...after.keys()])) if (before.get(rel) !== after.get(rel)) updates.set(rel, this.#sourceOf(rel, after.get(rel)));
         await this.#changes.journal({ updates, author, command: { name: 'sync', args: { seq } }, source: 'cloud', ...(batch ? { batch } : {}) });
       },
       emit: (event) => this.#emit(event),
@@ -117,7 +122,7 @@ export class BrowserSession {
     // What the journal kept that the copy had not taken in yet: shown at once, taken in as the copy starts.
     this.#pending = entries.filter((entry): entry is ChangeLike => entry.type !== 'mark' && entry.seq > options.store.link.journal);
     const view = this.#pending.reduce((files, entry) => applyOps(files, entry.ops), this.#cloud.view);
-    this.#state = new ProjectState(this.id, new Map([...view].map(([rel, file]) => [rel, sourceOf(file) as SourceFile])), [], options.validation);
+    this.#state = new ProjectState(this.id, new Map([...view].map(([rel, file]) => [rel, this.#sourceOf(rel, file) as SourceFile])), [], options.validation);
     this.#changes = new CopyChanges({ state: this.#state, store: this.#store, host: { taken: (taken, source) => this.#taken(taken, source), afterChange: () => this.#afterChange(), emit: (event) => this.#emit(event) } });
     this.#batches = new Batches({ idleMs: 5 * 60_000, run: (work) => this.#queue.run(work), version: async () => null, emit: (event) => this.#emit(event), reportError: (error, context) => this.#emitError(error, context) });
     this.#reads = new SessionReads({
@@ -361,7 +366,7 @@ export class BrowserSession {
   // The state takes the files the change wrote.
   #adopt(before: ProjectFiles, after: ProjectFiles): void {
     const updates = new Map<string, SourceFile | null>();
-    for (const [rel, file] of after) if (before.get(rel) !== file) updates.set(rel, sourceOf(file));
+    for (const [rel, file] of after) if (before.get(rel) !== file) updates.set(rel, this.#sourceOf(rel, file));
     for (const rel of before.keys()) if (!after.has(rel)) updates.set(rel, null);
     if (updates.size) this.#state.update(updates);
   }
@@ -408,10 +413,35 @@ export class BrowserSession {
   }
 
   async #afterChange(): Promise<void> {
+    this.#takeFacts();
     this.#renderer.invalidate(this.#state.takeChanged());
     const delta = this.#state.validate();
     if (delta) this.#emit(diagnosticsEvent(delta));
     await this.#batches.flush();
+  }
+
+  // A file of the copy as the project's state holds it: a medium with its size and its facts as the
+  // room said them (D125), without its bytes, its verdict computed here as the desktop computes it; a
+  // medium without facts has its size, and waits to be probed.
+  #sourceOf(rel: string, file: FileContent | undefined): SourceFile | null {
+    if (!file) return null;
+    if (file.kind === 'text') return file;
+    const known = file.hash ? (this.#cloud?.media ?? this.#known).get(file.hash) : undefined;
+    const size = known?.size ?? file.size ?? 0;
+    const facts = known?.facts;
+    return binaryFile(size, { ...(file.hash ? { hash: file.hash as `sha256:${string}` } : {}), ...(facts ? { media: fileMedia({ ...withoutVersion(facts), size }, rel) } : {}) });
+  }
+
+  // Facts the room gave since a medium came (its media message, D126): the state takes them.
+  #takeFacts(): void {
+    const known = this.#cloud?.media;
+    if (!known) return;
+    const updates: [string, SourceFile][] = [];
+    for (const [rel, file] of this.#state.files) {
+      if (file.kind !== 'binary' || file.media || !file.hash || !known.get(file.hash)?.facts) continue;
+      updates.push([rel, this.#sourceOf(rel, file) as SourceFile]);
+    }
+    if (updates.length) this.#state.update(updates);
   }
 
   // ── events ─────────────────────────────────────────────────────────
@@ -433,10 +463,4 @@ export class BrowserSession {
   }
 }
 
-// A file of the copy as the project's state holds it: a binary file keeps the facts it came with.
-function sourceOf(file: FileContent | undefined): SourceFile | null {
-  if (!file) return null;
-  if (file.kind === 'text') return file;
-  return typeof (file as { size?: unknown }).size === 'number' ? file as SourceFile : binaryFile(file.size ?? 0, file.hash ? { hash: file.hash as `sha256:${string}` } : {});
-}
-
+const withoutVersion = ({ version: _version, ...facts }: MediaFacts): Omit<MediaFacts, 'version'> => facts;

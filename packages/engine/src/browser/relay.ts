@@ -5,9 +5,9 @@ import { mediaTypeOf } from '@elabora/core/util/media-types';
 import type { RelayAnswer, RelayHost, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 
 // What the browser engine answers its relay (D118, D105): the open module's files from the copy, a free
-// object's frame page and its code compiled in the browser (D117). Each source answers one host, and
-// gives it only what that host's pages ask for by themselves: the canvas page the module's files; an
-// object's frame its page, its code and the files an object loads (its own folder, the module's assets).
+// object's frame page and its code compiled in the browser (D117). What each host may ask is the
+// protocol's rule (hostMayAsk, which serveRelayPort applies before the source); the source keeps one
+// refusal of its own: an object is the frames host's, never the canvas's.
 
 // How the host compiles a free object: esbuild-wasm and the libraries objects may import.
 export interface ObjectCompiler {
@@ -24,7 +24,6 @@ export interface RelayFrom {
 }
 
 const ENCODER = new TextEncoder();
-const forFrames = (path: string): boolean => path.startsWith('objects/') || path.startsWith('assets/');
 
 export function relaySource(host: RelayHost, from: RelayFrom): RelaySource {
   // Compiled code by object and by the text of its files: compiled again only when they change.
@@ -32,7 +31,6 @@ export function relaySource(host: RelayHost, from: RelayFrom): RelaySource {
   return {
     async get(request: RelayRequest): Promise<RelayAnswer> {
       if (request.kind === 'file') {
-        if (host === 'frames' && !forFrames(request.path)) return { status: 'refused', message: 'The frames host serves an object\'s files and the module\'s assets only' };
         const file = from.files().get(request.path);
         if (!file) return { status: 'not-found' };
         const type = mediaTypeOf(request.path);
