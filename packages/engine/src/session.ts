@@ -24,7 +24,6 @@ import type { PlayReport } from '@elabora/core/dialogue/play';
 import { localDay } from '@elabora/core/util/local-day';
 import type { ExportedPlanDocument, PlanDocumentFormat } from '@elabora/node/plan-document';
 import type { ScreenParts } from '@elabora/core/project/parts';
-import { narrationView } from '@elabora/core/narration/view';
 import type { TimelineView, ScreenAt, TimelineMark } from '@elabora/core/narration/view';
 import type { EffectInfo } from '@elabora/core/narration/timeline';
 import type { NarrationView } from '@elabora/core/narration/view';
@@ -238,10 +237,11 @@ export class Session {
     const renderer = new Renderer();
     this.#canvas = new SessionCanvas({ root: this.root, project, renderer, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
-    this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
+    this.#sounds = new SessionSounds({ run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#reads = new SessionReads({
       root: this.root, state: this.#state, renderer, entries: () => this.#entries, journalSeq: () => this.#folder.lastSeq, openBatch: () => this.openBatch,
-      mediaJobs: () => this.#media?.jobs() ?? [], migrate: init.options.migrate, services: init.options.services ?? SERVICES, assertOpen: () => this.#assertOpen()
+      mediaJobs: () => this.#media?.jobs() ?? [], migrate: init.options.migrate, services: init.options.services ?? SERVICES,
+      takeDialogue: (take) => takeDialogue(this.root, take), assertOpen: () => this.#assertOpen()
     });
     this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
     // The rescan reads the agents' activity too: a line its watcher missed shows at the next one.
@@ -571,21 +571,7 @@ export class Session {
 
   screenParts(id: string): ScreenParts { return this.#reads.screenParts(id); }
 
-  // A narrated screen's lines in a language (default: the course's), their audio and their times,
-  // and the exchange each generated line's take was cut from (said as one dialogue, D29); with
-  // layer, that layer's narration (D62).
-  narration(id: string, language?: string, layer?: string): NarrationView | null {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(id)) throw new EngineError('not-found', `No screen "${id}"`);
-    const view = narrationView(this.#state.project, id, language || undefined, { layer: layer ?? null });
-    if (!view) return null;
-    for (const line of view.lines) {
-      if (line.take === null || !line.generated || line.status === 'missing') continue;
-      const dialogue = takeDialogue(this.root, { screen: id, line: line.id, language: view.language, take: line.take });
-      if (dialogue) line.dialogue = dialogue;
-    }
-    return view;
-  }
+  narration(id: string, language?: string, layer?: string): NarrationView | null { return this.#reads.narration(id, language, layer); }
 
   timeline(id: string, language?: string, layer?: string): TimelineView | null { return this.#reads.timeline(id, language, layer); }
 
@@ -954,7 +940,7 @@ export class Session {
 
   async soundSearch(params: SoundSearchParams): Promise<{ sounds: SoundFound[] }> { return this.#sounds.soundSearch(params); }
   async soundPreview(params: { from: string }): Promise<{ audio: Uint8Array; type: string }> { return this.#sounds.soundPreview(params); }
-  courseSounds(): CourseSound[] { return this.#sounds.courseSounds(); }
+  courseSounds(): CourseSound[] { return this.#reads.courseSounds(); }
   async soundEstimate(params: { duration?: number } = {}): Promise<SoundEstimate> { return this.#sounds.soundEstimate(params); }
   async generateSound(params: GenerateSoundParams, author: Author = this.author): Promise<GeneratedSound> { return this.#sounds.generateSound(params, author); }
 

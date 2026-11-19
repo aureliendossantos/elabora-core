@@ -20,7 +20,10 @@ import type { DialogueView } from '@elabora/core/dialogue/view';
 import { findDialogue } from '@elabora/core/dialogue/project';
 import { playDialogue } from '@elabora/core/dialogue/play';
 import type { PlayReport } from '@elabora/core/dialogue/play';
-import { timelineView, screenAt, timelineMarks } from '@elabora/core/narration/view';
+import { narrationView, timelineView, screenAt, timelineMarks } from '@elabora/core/narration/view';
+import type { NarrationView } from '@elabora/core/narration/view';
+import { courseSounds } from '@elabora/core/sounds/sounds';
+import type { CourseSound } from '@elabora/core/sounds/sounds';
 import type { TimelineView, ScreenAt, TimelineMark } from '@elabora/core/narration/view';
 import { effectsOf } from '@elabora/core/narration/timeline';
 import type { EffectInfo } from '@elabora/core/narration/timeline';
@@ -53,6 +56,8 @@ export interface ReadsHost {
   // The media jobs queued and running.
   mediaJobs(): readonly { status: string }[];
   readonly migrate: 'ask' | 'auto' | 'never' | undefined;
+  // The exchange a generated line's take was cut from (said as one dialogue, D29), when the host keeps takes.
+  takeDialogue?(take: { screen: string; line: string; language: string; take: number }): string | null;
   // The services the session has (D102).
   readonly services: readonly Service[];
   assertOpen(): void;
@@ -146,6 +151,28 @@ export class SessionReads {
   }
 
   // A timed screen's timeline: lines and their words, timed blocks, events (docs/decisions.md D28).
+  // A narrated screen's lines in a language (default: the course's), their audio and their times,
+  // and the exchange each generated line's take was cut from (said as one dialogue, D29); with
+  // layer, that layer's narration (D62).
+  narration(id: string, language?: string, layer?: string): NarrationView | null {
+    this.#host.assertOpen();
+    if (!this.#state.project.screens.has(id)) throw new EngineError('not-found', `No screen "${id}"`);
+    const view = narrationView(this.#state.project, id, language || undefined, { layer: layer ?? null });
+    if (!view) return null;
+    for (const line of view.lines) {
+      if (line.take === null || !line.generated || line.status === 'missing') continue;
+      const dialogue = this.#host.takeDialogue?.({ screen: id, line: line.id, language: view.language, take: line.take });
+      if (dialogue) line.dialogue = dialogue;
+    }
+    return view;
+  }
+
+  // The module's sounds (assets/sounds/), each with its sidecar's licence, credit and uses (D67).
+  courseSounds(): CourseSound[] {
+    this.#host.assertOpen();
+    return courseSounds(this.#state.project);
+  }
+
   timeline(id: string, language?: string, layer?: string): TimelineView | null {
     this.#host.assertOpen();
     if (!this.#state.project.screens.has(id)) throw new EngineError('not-found', `No screen "${id}"`);
