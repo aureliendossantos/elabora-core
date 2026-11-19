@@ -41,7 +41,7 @@ const result = <T>(request: IDBRequest<T>): Promise<T> => new Promise((resolve, 
 
 // Opens the copy kept under key; seed: the copy as the room gives it, kept when there is none yet.
 // Null: nothing kept, and no seed.
-export async function openIdbCopy(key: string, { seed, remote, onError }: { seed?: { link: CopyLink; confirmed: Files }; remote?: RemoteMedia; onError?: (error: unknown) => void } = {}): Promise<IdbCopy | null> {
+export async function openIdbCopy(key: string, { seed, remote, membership, onError }: { seed?: { link: CopyLink; confirmed: Files }; remote?: RemoteMedia; membership?: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'>; onError?: (error: unknown) => void } = {}): Promise<IdbCopy | null> {
   const open = indexedDB.open(DB_PREFIX + key, 1);
   open.onupgradeneeded = () => { for (const store of STORES) open.result.createObjectStore(store); };
   const db = await result(open);
@@ -104,7 +104,7 @@ export async function openIdbCopy(key: string, { seed, remote, onError }: { seed
       if (await sha256(bytes) !== hash) throw new Error(`The medium ${hash.slice(7, 19)}… does not match its hash.`);
       await media.put(bytes);
     },
-    membership: async () => 'unknown',
+    membership: membership ?? (async () => 'unknown'),
     close: () => db.close()
   };
   return copy;

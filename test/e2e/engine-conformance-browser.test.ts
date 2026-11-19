@@ -74,7 +74,7 @@ const chromium: ConformanceTarget = {
   name: 'browser (Chromium, IndexedDB)',
   services: [],
   async open(sample, { services } = {}) {
-    const engine = await worker({ kind: 'open', copy: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, ...(services ? { services: [...services] } : {}) });
+    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, ...(services ? { services: [...services] } : {}) });
     assert.equal(engine.first.kind, 'opened', JSON.stringify(engine.first));
     return {
       send: (message) => void engine.send(message),
@@ -99,10 +99,9 @@ async function ask<T>(engine: Awaited<ReturnType<typeof worker>>, type: string, 
 }
 
 test('browser storage: a change is kept across a closing; a second tab is told the module is open elsewhere; a copy never kept says so', { timeout: 120_000 }, async () => {
-  const copy = 'kept';
-  const first = await worker({ kind: 'open', copy, seed: seedOf('basic'), api: 'http://localhost:1', offline: true });
+  const first = await worker({ kind: 'open', team: 'tm_test', project: 'kept', seed: seedOf('basic'), api: 'http://localhost:1', offline: true });
   assert.equal(first.first.kind, 'opened');
-  const second = await worker({ kind: 'open', copy, api: 'http://localhost:1', offline: true });
+  const second = await worker({ kind: 'open', team: 'tm_test', project: 'kept', api: 'http://localhost:1', offline: true });
   assert.equal(second.first.kind, 'held');
   await second.end();
   const run = await ask<{ change: { seq: number } }>(first, 'run', { command: 'update_screen', args: { id: 'chemin', title: 'Gardé dans le navigateur' } });
@@ -110,7 +109,7 @@ test('browser storage: a change is kept across a closing; a second tab is told t
   await first.end();
 
   // Opened again without a seed: what the copy kept, its change and its journal.
-  const again = await worker({ kind: 'open', copy, api: 'http://localhost:1', offline: true });
+  const again = await worker({ kind: 'open', team: 'tm_test', project: 'kept', api: 'http://localhost:1', offline: true });
   assert.equal(again.first.kind, 'opened');
   assert.equal((await ask<{ data: { title: string } }>(again, 'readScreen', { screen: 'chemin' })).data.title, 'Gardé dans le navigateur');
   const history = await ask<{ changes: { seq: number; op: string }[] }>(again, 'history', {});
@@ -118,7 +117,7 @@ test('browser storage: a change is kept across a closing; a second tab is told t
   await ask(again, 'close', {});
   await again.end();
 
-  const never = await worker({ kind: 'open', copy: 'never-kept', api: 'http://localhost:1', offline: true });
+  const never = await worker({ kind: 'open', team: 'tm_test', project: 'never-kept', api: 'http://localhost:1', offline: true });
   assert.equal(never.first.kind, 'missing');
   await never.end();
 });
