@@ -118,6 +118,80 @@ test('canvas host: render data pushed to pages, styles sent once, the page and t
   }
 });
 
+test('canvas host: a question to the pages goes out by the event stream, a page answers it by a POST with its token, one that waits for a page goes to the page that connects', { timeout: 60000 }, async () => {
+  const project = loadProjectFromDir(GEARSET);
+  const host = await startCanvasHost({ root: project.root });
+  const token = new URL(host.url).searchParams.get('token')!;
+  const answerUrl = `${host.base}/canvas/elabora/answer`;
+  const post = (query: string, body: string, type = 'application/json') => fetch(`${answerUrl}${query}`, { method: 'POST', headers: { 'content-type': type }, body });
+  const first = events(`${host.base}/canvas/elabora/events`);
+  try {
+    const waiting = host.ask('measure', { id: 7 });
+    const message = await first.next();
+    assert.ok(message.type === 'elabora/ask' && message.ask === 'measure' && message.params.id === 7);
+    const request = message.request;
+    // Not from this host's pages, not JSON, not an answer to anything: the question still waits.
+    assert.equal((await post('?token=nope', '{}')).status, 403);
+    assert.equal((await post('', '{}')).status, 403);
+    assert.equal((await post(`?token=${token}`, '{}', 'text/plain')).status, 405);
+    assert.equal((await fetch(`${answerUrl}?token=${token}`)).status, 405);
+    assert.equal((await post(`?token=${token}`, '{not json')).status, 400);
+    assert.equal((await post(`?token=${token}`, JSON.stringify({ type: 'elabora/answer', request: request + 50, result: null }))).status, 204);
+    let settled = false;
+    void waiting.finally(() => { settled = true; });
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    assert.equal(settled, false);
+    assert.equal((await post(`?token=${token}`, JSON.stringify({ type: 'elabora/answer', request, result: { overflow: 12, fields: [] } }))).status, 204);
+    assert.deepEqual(await waiting, { overflow: 12, fields: [] });
+
+    // A page that errors rejects the question with its words.
+    const failing = host.ask('shown', { id: 1 });
+    failing.catch(() => {});
+    const failed = await first.next();
+    assert.ok(failed.type === 'elabora/ask');
+    await post(`?token=${token}`, JSON.stringify({ type: 'elabora/answer', request: failed.request, error: 'no such block' }));
+    await assert.rejects(failing, /no such block/);
+
+    // A page that goes away without answering ends the question; the page that comes after does not get it.
+    const gone = events(`${host.base}/canvas/elabora/events`);
+    const leaving = host.ask('block-preview-clear', { id: 3 });
+    leaving.catch(() => {});
+    assert.ok((await gone.next()).type === 'elabora/ask');
+    assert.ok((await first.next()).type === 'elabora/ask');
+    gone.close();
+    first.close();
+    await assert.rejects(leaving, /page went away before answering "block-preview-clear"/);
+
+    // A question that nobody answers ends, and the page that comes after does not get it.
+    await assert.rejects(host.ask('shown', { id: 2 }, { timeoutMs: 50 }), /did not answer "shown" in 50 ms/);
+    const late = events(`${host.base}/canvas/elabora/events`);
+    const quiet = await Promise.race([late.next(), new Promise((resolve) => setTimeout(() => resolve('nothing'), 100))]);
+    assert.equal(quiet, 'nothing');
+    late.close();
+  } finally {
+    first.close();
+    await host.close();
+  }
+  // With no page yet, the question waits for the first that connects (a page loading still).
+  const other = await startCanvasHost({ root: project.root });
+  try {
+    const waiting = other.ask('mark', { rgb: [1, 2, 3] });
+    const page = events(`${other.base}/canvas/elabora/events`);
+    const message = await page.next();
+    assert.ok(message.type === 'elabora/ask' && message.ask === 'mark');
+    await fetch(`${other.base}/canvas/elabora/answer?token=${other.token}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'elabora/answer', request: message.request, result: true }) });
+    assert.equal(await waiting, true);
+    page.close();
+    // A host that closes ends what is asked of it.
+    const pending = other.ask('measure', { id: 1 });
+    pending.catch(() => {});
+    await other.close();
+    await assert.rejects(pending, /canvas host closed/);
+  } finally {
+    await other.close();
+  }
+});
+
 test('canvas host: the audio of a narration line served for the editor to play, nothing else unlisted', { skip: !hasFfmpeg() && 'ffmpeg not found' }, async () => {
   const dir = copyExample();
   narrate(dir, 'accueil', [{ id: 'l1', text: 'Bonjour.', seconds: 1 }], { speakers: [{ id: 'guide', name: 'Guide' }] });

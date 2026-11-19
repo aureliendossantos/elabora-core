@@ -15,8 +15,8 @@
 // Page options, in its URL: chrome=player shows the player's bars around the screen (D58), inert,
 // so a slide has the room it has in a package (elabora look); chrome=live shows them working, the
 // player's preview of the app's « Lecteur » tab (canvas-live.ts, protocol elabora-player-preview/1);
-// frames=<port> loads the frames of free objects from that port of the same host (frames.ts), for
-// browser panes that refuse frames of an opaque origin. placing=editor (the app's editor canvas)
+// frames=<port or origin> loads the frames of free objects from that port of the same host, or from that
+// origin (frames.ts), for browser panes that refuse frames of an opaque origin and for pages of the web. placing=editor (the app's editor canvas)
 // shows blocks placed by hand (D72) at their place at any width but a phone's.
 
 import { forgetThemeKeyframes } from './timed-blocks.ts';
@@ -32,12 +32,13 @@ import type { LiveChrome, LiveOpen } from './canvas-live.ts';
 import { createTooltip } from './tooltip.ts';
 import type { Tooltip } from './tooltip.ts';
 import type { DisplayPrefs } from './display.ts';
-import { pageFramesPort } from './frames.ts';
+import { pageFrames } from './frames.ts';
 import { isRecord } from './json.ts';
 import { blockLayouts, coveredTexts, rectOf, round, scrollFrom, termLayouts, textLayouts } from './layout-report.ts';
 import { GLIDE } from './screen-objects.ts';
 import type { CourseData, ObjectDefinition, PlaceData, ScreenData } from './course-data.ts';
 import { PLAYER_PREVIEW_PROTOCOL } from './canvas-protocol.ts';
+import { answerAsk, askOf } from './canvas-asks.ts';
 import type { BlockLayout, CanvasMessage, HostMessage, LayoutMessage, LayoutRect, PreviewHostMessage, PreviewPanel, RenderFile, RenderOutline, RenderSheet, RenderView, ScreenRender } from './canvas-protocol.ts';
 import type { PlayerItemId } from './course-data.ts';
 
@@ -109,7 +110,7 @@ const placingOption = new URLSearchParams(location.search).get('placing') === 'e
 // The live bars' one tooltip, and the learner's display choices while the page lives.
 const tooltip: Tooltip | null = chromeMode === 'live' ? createTooltip(document.body) : null;
 const displayPrefs: DisplayPrefs = { text: 'normal', captions: false, interfaceSounds: true, music: true };
-const framesPort = pageFramesPort('url');
+const frames = pageFrames('url');
 const listeners = new Set<(message: CanvasMessage) => void>();
 let mounted: Mounted | null = null;
 let stylesHash = '';
@@ -135,6 +136,7 @@ function receive(message: HostMessage) {
   if (message.type === 'elabora/motion') { armMotion(); return; }
   if (message.type === 'elabora/lift') { liftBlock(message.block, message.at, message.release); return; }
   if (message.type === 'elabora/highlight' || message.type === 'elabora/open' || message.type === 'elabora/close') { preview(message); return; }
+  if (message.type === 'elabora/ask') { void answerAsk({ appliedId: () => lastId, ready: (timeout) => mounted?.view.ready(timeout) ?? Promise.resolve(null), layout }, message).then(post); return; }
   const started = performance.now();
   const id = message.id ?? null;
   try {
@@ -167,6 +169,10 @@ window.addEventListener('message', (event) => {
   else if (data.type === 'elabora/highlight' || data.type === 'elabora/open' || data.type === 'elabora/close') {
     const message = previewMessage(data);
     if (message) receive(message);
+  }
+  else if (data.type === 'elabora/ask') {
+    const ask = askOf(data);
+    if (ask) receive(ask);
   }
 });
 
@@ -472,7 +478,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
     // next and previous are the screens around the one the event is on, in the outline the canvas
     // has now (the view outlives renders of other screens, and the outline changes with the course).
     navigate: (target, from) => post({ type: 'elabora/navigate', screen: around(mounted?.outline ?? null, from.id, target) }),
-    exit: () => {}, framesPort,
+    exit: () => {}, frames,
     retake: () => { const target = state.current.retake(); if (target) post({ type: 'elabora/navigate', screen: target }); },
     // A narrated screen's timeline, still: the canvas shows a time (view.at), it never plays.
     timeline: {

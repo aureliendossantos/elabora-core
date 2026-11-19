@@ -15,6 +15,7 @@ import type { Labels } from './labels.ts';
 import type { Interaction } from './scorm12.ts';
 import { element, uniqueId } from './dom.ts';
 import { objectFrame } from './frames.ts';
+import type { FramesSource } from './frames.ts';
 import { fieldOf } from './json.ts';
 import type { CourseData, ObjectBlock, ObjectDefinition, ObjectEventDeclaration, TriggerType } from './course-data.ts';
 import type { ObjectTransition, ObjectView, SafeArea } from './object-protocol.ts';
@@ -26,7 +27,7 @@ export interface ObjectsContext {
   courseState: CourseState;
   labels: Labels;
   // The port free objects' frames load from (frames.ts; null: as in a package).
-  framesPort: number | null;
+  frames: FramesSource | null;
   recordInteraction(interaction: Interaction): void;
   // The course state changed (an object's state saved): the page syncs soon.
   syncSoon(): void;
@@ -93,7 +94,7 @@ interface Place {
 
 export type ScreenObjects = ReturnType<typeof createObjects>;
 
-export function createObjects({ main, course, courseState, labels, framesPort, recordInteraction, syncSoon, trigger, cleanup }: ObjectsContext) {
+export function createObjects({ main, course, courseState, labels, frames, recordInteraction, syncSoon, trigger, cleanup }: ObjectsContext) {
   const hosts = new Map<string, BlockObjectHost>();
   const running = new Map<string, Running>();
   // Objects of the departing screen that may carry on, by continuity key (park, then adopt or end).
@@ -268,7 +269,7 @@ export function createObjects({ main, course, courseState, labels, framesPort, r
   function newRunning(block: ObjectBlock, definition: ObjectDefinition, descriptionId: string, kept: boolean): Running {
     const props = block.props;
     const iframe = element('iframe', {
-      id: uniqueId('object'), title: props.title, ...objectFrame(definition.dir, definition.permissions || [], framesPort, document.baseURI),
+      id: uniqueId('object'), title: props.title, ...objectFrame(definition.dir, definition.permissions || [], frames, document.baseURI),
       // autoplay: an object's sound may follow a learner's gesture anywhere in the module (a dialogue's choice that drives it), not only in its own frame.
       allow: 'autoplay', referrerpolicy: 'no-referrer', 'aria-describedby': descriptionId, loading: 'eager'
     });
