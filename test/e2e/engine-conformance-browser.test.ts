@@ -148,3 +148,32 @@ test('a copy the browser does not hold is taken from the room\'s project, with t
     await page.unroute(`${API}/**`);
   }
 });
+
+test('browser relay: a port transferred to the Worker answers the canvas from the copy; a medium not kept, offline, is not here yet', { timeout: 120_000 }, async () => {
+  const engine = await worker({ kind: 'open', team: 'tm_test', project: 'relayed', seed: seedOf('network'), api: 'http://localhost:1', offline: true });
+  assert.equal(engine.first.kind, 'opened');
+  const answers = await page.evaluate(async (n) => {
+    const w = (window as unknown as Page$).workers.get(n)!;
+    const { port1, port2 } = new MessageChannel();
+    const opened = new Promise((resolve) => w.addEventListener('message', function listen({ data }) { if (data.kind === 'response' && data.id === 'relay') { w.removeEventListener('message', listen); resolve(data.ok); } }));
+    w.postMessage({ kind: 'request', id: 'relay', type: 'relayPort', params: { host: 'canvas' } }, [port1]);
+    const ok = await opened;
+    const ask = (id: number, request: unknown) => new Promise<{ status: string; type?: string; text?: string }>((resolve) => {
+      port2.addEventListener('message', async function listen({ data }) {
+        if (data.type !== 'relay/answer' || data.id !== id) return;
+        port2.removeEventListener('message', listen);
+        const answer = data.answer;
+        resolve({ status: answer.status, ...(answer.type ? { type: answer.type } : {}), ...(answer.body !== undefined ? { text: typeof answer.body === 'string' ? answer.body.slice(0, 40) : await (answer.body as Blob).text().then((t) => t.slice(0, 4)) } : {}) });
+      });
+      port2.start();
+      port2.postMessage({ type: 'relay/request', id, request });
+    });
+    return { ok, screen: await ask(1, { kind: 'file', path: 'screens/chemin.json' }), audio: await ask(2, { kind: 'file', path: 'assets/narration/fr/chemin/chemin-depart.m4a' }) };
+  }, engine.id);
+  assert.equal(answers.ok, true);
+  assert.deepEqual([answers.screen.status, answers.screen.type], ['ok', 'application/json']);
+  assert.match(answers.screen.text ?? "", /^\{\n  "\$schema"/);
+  assert.equal(answers.audio.status, 'unavailable');
+  await ask(engine, 'close', {});
+  await engine.end();
+});

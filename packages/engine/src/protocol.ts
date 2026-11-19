@@ -575,6 +575,10 @@ export interface Requests {
   // nothing encoded or written.
   packageWeights: { params: NoParams; result: PackageWeights };
   close: { params: NoParams; result: { version: string | null } };
+  // The relay's port of a route (D118, D105): the module's files served to a relay host, the canvas's
+  // or the free objects' frames', through the MessagePort transferred with this message. A session
+  // that serves them from elsewhere (the desktop's local server) answers not-available, E_NOT_HERE.
+  relayPort: { params: { host: 'canvas' | 'frames' }; result: Record<string, never> };
 }
 
 export type RequestType = keyof Requests;

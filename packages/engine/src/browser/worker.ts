@@ -33,15 +33,15 @@ const scope = self as unknown as { onmessage: ((event: MessageEvent) => void) | 
 const never = (): RoomSocket => ({ readyState: 0, send() {}, close() {}, addEventListener() {} });
 
 let session: BrowserSession | null = null;
-const waiting: RequestMessage[] = [];
+const waiting: { message: RequestMessage; ports: readonly MessagePort[] }[] = [];
 
-scope.onmessage = ({ data }: MessageEvent<WorkerOpen | RequestMessage>) => {
+scope.onmessage = ({ data, ports }: MessageEvent<WorkerOpen | RequestMessage>) => {
   if (data.kind === 'open') {
     open(data).catch((error: unknown) => scope.postMessage({ kind: 'failed', message: error instanceof Error ? error.message : String(error), ...(typeof (error as { code?: unknown }).code === 'string' ? { code: (error as { code: string }).code } : {}) }));
     return;
   }
-  if (session) void session.handle(data).then((response) => scope.postMessage(response));
-  else waiting.push(data);
+  if (session) void session.handle(data, ports).then((response) => scope.postMessage(response));
+  else waiting.push({ message: data, ports });
 };
 
 // The copy's key in the browser's storage: its team and project.
@@ -69,7 +69,7 @@ async function open(request: WorkerOpen): Promise<void> {
     session = opened;
     opened.subscribe((message) => scope.postMessage(message));
     scope.postMessage({ kind: 'opened', taken });
-    for (const message of waiting.splice(0)) void opened.handle(message).then((response) => scope.postMessage(response));
+    for (const { message, ports } of waiting.splice(0)) void opened.handle(message, ports).then((response) => scope.postMessage(response));
     // Held until the session closes.
     await new Promise<void>((resolve) => opened.subscribe(({ event }) => { if (event.type === 'closed') resolve(); }));
     store.close();

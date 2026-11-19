@@ -459,20 +459,21 @@ export class Session {
 
   // ── protocol ───────────────────────────────────────────────────────
 
-  async handle(message: unknown): Promise<ResponseMessage> {
+  // ports: what came transferred with the message (a relay's port: not served here).
+  async handle(message: unknown, ports: readonly unknown[] = []): Promise<ResponseMessage> {
     const request = (message ?? {}) as Partial<RequestMessage>;
     const id = typeof request.id === 'string' ? request.id : '';
     const type = typeof request.type === 'string' ? request.type : '';
     try {
       if (!id || request.kind !== 'request' || !isRequestType(type)) throw new EngineError('bad-request', `Not a request of the engine protocol: ${JSON.stringify(message)?.slice(0, 200)}`);
-      const result = await this.#dispatch(request as RequestMessage);
+      const result = await this.#dispatch(request as RequestMessage, ports);
       return { kind: 'response', id, type, ok: true, result } as ResponseMessage;
     } catch (error) {
       return { kind: 'response', id, type, ok: false, error: protocolError(error) };
     }
   }
 
-  async #dispatch(request: RequestMessage): Promise<RequestResult<RequestType>> {
+  async #dispatch(request: RequestMessage, ports: readonly unknown[]): Promise<RequestResult<RequestType>> {
     const service = serviceOf(request.type);
     if (service && !this.#services.has(service)) {
       this.#assertOpen();
@@ -558,6 +559,10 @@ export class Session {
       case 'alignNarration': return this.alignNarration(request.params);
       case 'build': return this.build(request.params);
       case 'close': return this.close();
+      // The desktop serves the module's files to its canvas from its local server.
+      case 'relayPort':
+        if (!ports[0]) throw new EngineError('bad-request', 'relayPort takes the port transferred with its message');
+        throw new EngineError('not-available', 'This session serves the module\'s files from its local server', { code: 'E_NOT_HERE' });
     }
   }
 
