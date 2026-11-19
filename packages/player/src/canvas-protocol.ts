@@ -147,6 +147,21 @@ export interface ScreenMeasurement {
 export type AskMessage = { [Name in AskName]: { type: 'elabora/ask'; request: number; token?: string; ask: Name; params: CanvasAsks[Name]['params'] } }[AskName];
 export type AnswerMessage = { type: 'elabora/answer'; request: number; result: CanvasAsks[AskName]['result'] } | { type: 'elabora/answer'; request: number; error: string };
 
+// What a host that has no local server to push to gives its page in place of `push` and `view`: events of the
+// engine that renders for it (the browser's), with the same payloads. `render` is the one a host sends its
+// pages (screenRenderOf); `view`, what `elabora/view` takes. The id is the one the page reports back in its
+// layout message once it shows it.
+export interface CanvasRenderEvent {
+  type: 'canvasRender';
+  id: string | number;
+  render: ScreenRender;
+}
+export interface CanvasViewEvent {
+  type: 'canvasView';
+  id: string | number;
+  view: Partial<RenderView>;
+}
+
 // token: the token of the canvas page URL, when it has one (messages posted by the parent window).
 export type HostMessage =
   | { type: 'elabora/render'; id?: string | number; token?: string; render: ScreenRender }

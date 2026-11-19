@@ -6,6 +6,7 @@ import type { AnswerMessage, AskMessage, AskName, CanvasAsks, HostMessage, Rende
 import { startServer } from '../emulator/server.ts';
 import type { RouteHandler } from '../emulator/server.ts';
 import { runtimeFiles, runtimeBundle, vendorThree, canvasPageHtml } from '../bundles.ts';
+import { screenRenderOf } from '@elabora/player/canvas-render';
 import { parseRange, relayPathOf, relayRequestOf, relayResponse } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayRange } from '@elabora/player/relay-protocol';
 import { errorMessage } from '../util/values.ts';
@@ -108,10 +109,9 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
 
   const send = (page: Page, message: HostMessage) => { page.response.write(`data: ${JSON.stringify(message)}\n\n`); };
   const sendRender = (page: Page, id: string | number | undefined, render: ScreenRender) => {
-    const styles = render.styles && render.styles.hash !== page.styles ? render.styles : undefined;
-    if (styles) page.styles = styles.hash;
-    const files = render.files?.map(({ path, kind, hash }) => ({ path, kind, hash }));
-    send(page, { type: 'elabora/render', ...(id !== undefined ? { id } : {}), render: { screen: render.screen, course: render.course, view: render.view, ...(styles ? { styles } : {}), ...(files ? { files } : {}), ...(render.outline ? { outline: render.outline } : {}) } });
+    const known = !!render.styles && render.styles.hash === page.styles;
+    if (render.styles) page.styles = render.styles.hash;
+    send(page, { type: 'elabora/render', ...(id !== undefined ? { id } : {}), render: screenRenderOf(render, { styles: !known }) });
   };
 
   function runtimeFile(name: string): Promise<string | Buffer> | null {
