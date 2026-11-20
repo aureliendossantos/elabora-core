@@ -14,12 +14,14 @@ import { engineConformance, type ConformanceTarget, type Sample } from '../confo
 import { EXAMPLE, BILINGUAL, NETWORK_SAMPLE } from '../helpers.ts';
 
 // The engine's protocol (test/conformance/engine.ts) played against the browser engine in a Worker of
-// Chromium (D103): its copy kept in IndexedDB, one Worker a module, offline, with the canvas alone of its services (D105). And
+// Chromium (D103): its copy kept in IndexedDB, one Worker a module, offline, with the canvas, media, word times and local voices (said by a
+// stand-in: no model is downloaded) of its services (D105, D106, D114). And
 // what the browser's storage adds: a change kept across a closing, a second tab told the module is
 // open elsewhere.
 
 // A secure context: Web Locks and the origin's private file system need one.
 const ORIGIN = 'https://engine.elabora.test';
+const VOICES = path.resolve(import.meta.dirname, '../../packages/node/voices/pocket-tts');
 const SAMPLES: Record<Sample, string> = { network: NETWORK_SAMPLE, basic: EXAMPLE, bilingual: BILINGUAL, empty: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-empty-')) };
 const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
 
@@ -63,6 +65,11 @@ provideMedia(async (hash) => { const response = await fetch('/sample-media/' + h
     const name = new URL(route.request().url()).pathname;
     const scripts: Record<string, string> = { '/worker.js': worker.code, '/worker-objects.js': withObjects.code, '/worker-media.js': withMedia.code, '/worker-conformance.js': conformance.code, '/media.js': media.code, '/aac.js': aac, '/models.js': models.code };
     if (scripts[name]) return route.fulfill({ contentType: 'text/javascript', body: scripts[name] });
+    // The local voices' catalogue, as the app serves it (said by a stand-in here: voiceStandIn).
+    if (name.startsWith('/voices/')) {
+      const file = path.join(VOICES, name.slice('/voices/'.length));
+      return fs.existsSync(file) ? route.fulfill({ contentType: 'application/octet-stream', body: fs.readFileSync(file) }) : route.fulfill({ status: 404, body: '' });
+    }
     if (name.startsWith('/sample-media/')) {
       const bytes = SAMPLE_MEDIA.get(name.slice('/sample-media/'.length));
       return bytes ? route.fulfill({ contentType: 'application/octet-stream', body: bytes }) : route.fulfill({ status: 404, body: '' });
@@ -128,7 +135,8 @@ function attachedTo(message: unknown): Record<string, string> {
 
 const chromium: ConformanceTarget = {
   name: 'browser (Chromium, IndexedDB)',
-  services: ['canvas', 'media', 'align'],
+  services: ['canvas', 'media', 'align', 'voices'],
+  elevenLabs: false,
   async open(sample, { services } = {}) {
     // A Worker a Worker starts does not go through the test's routes: the page gives both scripts by blob addresses.
     scripts ??= await page.evaluate(async () => {
@@ -137,7 +145,7 @@ const chromium: ConformanceTarget = {
     });
     // The models' runtime is loaded only when a line is timed, which no case here asks of an English
     // model it would download: its addresses are given, and never read.
-    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, services: [...(services ?? ['canvas', 'media', 'align'])], mediaWorker: scripts.media, aacEncoder: scripts.aac, modelsWorker: scripts.models, ort: '/ort/ort.wasm.min.mjs', ortWasm: '/ort/', models: 'https://models.elabora.test' }, '/worker-conformance.js');
+    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, services: [...(services ?? ['canvas', 'media', 'align', 'voices'])], mediaWorker: scripts.media, aacEncoder: scripts.aac, modelsWorker: scripts.models, ort: '/ort/ort.wasm.min.mjs', ortWasm: '/ort/', models: 'https://models.elabora.test', voices: '/voices/', voiceStandIn: true }, '/worker-conformance.js');
     assert.equal(engine.first.kind, 'opened', JSON.stringify(engine.first));
     return {
       send: (message) => void engine.send(message),

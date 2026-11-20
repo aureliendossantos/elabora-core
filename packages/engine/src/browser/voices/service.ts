@@ -126,7 +126,8 @@ export class BrowserVoices {
   }
 
   generateVoice(params: GenerateVoiceParams, author: Author): Promise<GenerateResult> {
-    return this.#answer(() => this.#job(params.screen, (signal) => generateNarration(this.#voiceHost(author), { ...params, signal, onProgress: (progress) => this.#host.emit({ type: 'voiceProgress', screen: params.screen, progress }) })));
+    // A job from the start: cancelVoice finds it while the catalogue is read.
+    return this.#job(params.screen, (signal) => this.#answer(() => generateNarration(this.#voiceHost(author), { ...params, signal, onProgress: (progress) => this.#host.emit({ type: 'voiceProgress', screen: params.screen, progress }) })));
   }
 
   voiceEstimate(params: GenerateVoiceParams, author: Author): Promise<VoiceEstimate> {
@@ -138,7 +139,7 @@ export class BrowserVoices {
   }
 
   voiceSample(params: { voice: string; provider?: string; language?: string; text: string; spend?: boolean; name?: string }): Promise<{ audio: Uint8Array; duration: number }> {
-    return this.#answer(() => this.#job(null, (signal) => voiceSample({ providers: this.#providers }, { ...params, signal })));
+    return this.#job(null, (signal) => this.#answer(() => voiceSample({ providers: this.#providers }, { ...params, signal })));
   }
 
   // Stops what the voices make (a screen's lines, a download, a screen's words timed: cancelVoice).

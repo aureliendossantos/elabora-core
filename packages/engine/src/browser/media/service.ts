@@ -73,10 +73,22 @@ export class BrowserMedia {
   }
 
   async #ask(ask: MediaAsk, signal?: AbortSignal): Promise<Exclude<MediaAnswer, { error: string }>> {
-    const { id, answer } = await this.#worker.ask(ask, signal);
+    const { answer } = await this.#worker.ask(ask, signal);
     if ('error' in answer) throw new EngineError(answer.code ? 'refused' : 'internal', answer.error, answer.code ? { code: answer.code } : {});
-    if ('master' in answer) queueMicrotask(() => setTimeout(() => this.#worker.forget(id), 0));
     return answer;
+  }
+
+  // A master made, used, then forgotten: the media Worker's file of it is removed once its bytes are
+  // kept and its words timed, never while they are read.
+  async #master<T>(ask: Extract<MediaAsk, { op: 'master' }>, use: (master: Extract<MediaAnswer, { master: unknown }>['master']) => Promise<T>, signal?: AbortSignal): Promise<T> {
+    const { id, answer } = await this.#worker.ask(ask, signal);
+    try {
+      if ('error' in answer) throw new EngineError(answer.code ? 'refused' : 'internal', answer.error, answer.code ? { code: answer.code } : {});
+      if (!('master' in answer)) throw new EngineError('internal', 'The media Worker gave no master.');
+      return await use(answer.master);
+    } finally {
+      this.#worker.forget(id);
+    }
   }
 
   // A master's bytes kept by hash with its facts (for the room, D126), as the project's state holds it.
@@ -111,11 +123,8 @@ export class BrowserMedia {
     job.status = 'running';
     this.#emitJob(job);
     try {
-      const made = await this.#ask({ op: 'master', kind: 'import', file, name }, signal);
-      if (signal.aborted) return;
-      if (!('master' in made)) throw new Error('The media Worker gave no master.');
-      const { source } = await this.#keep(made.master.file, made.master.info, job.output);
-      if (signal.aborted) return;
+      const source = await this.#master({ op: 'master', kind: 'import', file, name }, async (master) => (signal.aborted ? null : (await this.#keep(master.file, master.info, job.output)).source), signal);
+      if (signal.aborted || !source) return;
       await this.#host.journal({ updates: new Map([[job.output, source]]), author, command: { name: 'import_media', args: { file: job.output } }, source: 'media' });
       job.status = 'done';
       job.progress = 1;
@@ -215,27 +224,27 @@ export class BrowserMedia {
   async provide(need: HostNeed, args: Record<string, unknown>, attachments: Attachments): Promise<HostNeeds[HostNeed]> {
     if (need === 'lineAudio' || need === 'recording') {
       const { file, name } = attached(attachments, args.file, 'file');
-      const made = await this.#ask({ op: 'master', kind: 'line', file, name, trim: need === 'recording' ? args.trim !== false : !!args.trim });
-      if (!('master' in made)) throw new EngineError('internal', 'The media Worker gave no audio.');
-      const rel = `assets/narration/${name}`;
-      const { size, hash } = await this.#keep(made.master.file, made.master.info, rel);
-      const duration = made.master.info.duration;
-      if (!duration) throw new EngineError('refused', `${name}: its length could not be read.`, { code: 'E_MEDIA_UNREADABLE' });
-      // Its bytes are kept already (keep): the command brings none of its own.
-      const audio = { audio: { size, hash: hash as `sha256:${string}` }, duration, createdAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), bytes: new Map() };
-      const project = this.#host.project();
-      const language = (typeof args.language === 'string' && args.language) || project.course?.language || '';
-      if (need === 'lineAudio') {
-        if (Array.isArray(args.words)) return { ...audio, words: args.words as HostNeeds['lineAudio']['words'], ...(typeof args.aligner === 'string' ? { aligner: args.aligner } : {}) };
-        const text = typeof args.screen === 'string' ? narrationLines(project, args.screen, language)?.find((line) => line.id === args.line)?.text : null;
-        const timed = text ? await this.#host.wordsAtOnce?.(language, made.master.file, duration, text) : null;
-        return { ...audio, ...(timed ?? {}) };
-      }
-      const text = typeof args.text === 'string' ? args.text.replace(/\s+/g, ' ').trim() : '';
-      // Without its text, a recording must be heard: the transcribe service, not in this browser.
-      if (!text) throw new EngineError('not-available', 'A line made from a recording needs its text here: hearing it needs the transcribe service.', { code: 'E_NOT_HERE' });
-      const timed = await this.#host.wordsAtOnce?.(language, made.master.file, duration, text);
-      return { ...audio, ...(timed && 'words' in timed ? timed : {}), language, text, voice: name };
+      return this.#master({ op: 'master', kind: 'line', file, name, trim: need === 'recording' ? args.trim !== false : !!args.trim }, async (master) => {
+        const rel = `assets/narration/${name}`;
+        const { size, hash } = await this.#keep(master.file, master.info, rel);
+        const duration = master.info.duration;
+        if (!duration) throw new EngineError('refused', `${name}: its length could not be read.`, { code: 'E_MEDIA_UNREADABLE' });
+        // Its bytes are kept already (keep): the command brings none of its own.
+        const audio = { audio: { size, hash: hash as `sha256:${string}` }, duration, createdAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), bytes: new Map() };
+        const project = this.#host.project();
+        const language = (typeof args.language === 'string' && args.language) || project.course?.language || '';
+        if (need === 'lineAudio') {
+          if (Array.isArray(args.words)) return { ...audio, words: args.words as HostNeeds['lineAudio']['words'], ...(typeof args.aligner === 'string' ? { aligner: args.aligner } : {}) };
+          const text = typeof args.screen === 'string' ? narrationLines(project, args.screen, language)?.find((line) => line.id === args.line)?.text : null;
+          const timed = text ? await this.#host.wordsAtOnce?.(language, master.file, duration, text) : null;
+          return { ...audio, ...(timed ?? {}) };
+        }
+        const text = typeof args.text === 'string' ? args.text.replace(/\s+/g, ' ').trim() : '';
+        // Without its text, a recording must be heard: the transcribe service, not in this browser.
+        if (!text) throw new EngineError('not-available', 'A line made from a recording needs its text here: hearing it needs the transcribe service.', { code: 'E_NOT_HERE' });
+        const timed = await this.#host.wordsAtOnce?.(language, master.file, duration, text);
+        return { ...audio, ...(timed && 'words' in timed ? timed : {}), language, text, voice: name };
+      });
     }
     if (need === 'resourceFile') {
       const { file, name } = attached(attachments, args.path, 'path');
