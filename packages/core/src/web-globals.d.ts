@@ -21,3 +21,4 @@ interface AbortSignal {
   addEventListener(type: 'abort', listener: () => void, options?: { once?: boolean }): void;
   removeEventListener(type: 'abort', listener: () => void): void;
 }
+declare function setTimeout(handler: () => void, ms?: number): unknown;

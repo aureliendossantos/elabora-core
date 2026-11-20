@@ -33,6 +33,11 @@ export type WorkerOpen = RoomAccess & {
   ort?: string;
   ortWasm?: string | { mjs: string; wasm: string };
   models?: string;
+  // The folder where the app serves the local voices' catalogue (voices.json and the voices'
+  // embeddings, @elabora/node's voices/pocket-tts/): with the models Worker, the voices service may be
+  // had. voiceStandIn: tones in Pocket TTS's place, for routine checks, never a course's voice.
+  voices?: string;
+  voiceStandIn?: boolean;
   // No connection to the room: nothing is sent nor taken (a module tried offline, a test).
   offline?: boolean;
   // A project just made in the window (« Nouveau module »): its first files, written as its first
@@ -114,7 +119,7 @@ async function open(request: WorkerOpen): Promise<void> {
       taken = true;
     }
     if (!store) { scope.postMessage({ kind: 'missing' }); return; }
-    const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}), ...(objects ? { objects } : {}), ...(request.mediaWorker ? { media: mediaWorker(new URL(request.mediaWorker, self.location.href).href, request.aacEncoder ? { aacEncoder: new URL(request.aacEncoder, self.location.href).href } : {}) } : {}), ...(modelsOf(request) ? { models: modelsOf(request)! } : {}) });
+    const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}), ...(objects ? { objects } : {}), ...(request.mediaWorker ? { media: mediaWorker(new URL(request.mediaWorker, self.location.href).href, request.aacEncoder ? { aacEncoder: new URL(request.aacEncoder, self.location.href).href } : {}) } : {}), ...(modelsOf(request) ? { models: modelsOf(request)! } : {}), ...(request.voices ? { voices: { catalogue: new URL(request.voices, self.location.href).href, ...(request.voiceStandIn ? { standIn: true } : {}) } } : {}) });
     session = opened;
     opened.subscribe((message) => scope.postMessage(message));
     if (request.newCourse) await opened.run('create_course', request.newCourse);

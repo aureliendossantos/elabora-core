@@ -141,6 +141,15 @@ export async function useModel<T>(model: StoredModel, run: (file: (name: string)
   });
 }
 
+// Held in use until the function it gives is called (a generation, from its first line to its
+// last): never removed meanwhile, in any tab.
+export async function holdModel(model: StoredModel): Promise<() => void> {
+  let release!: () => void;
+  const released = new Promise<void>((resolve) => { release = resolve; });
+  await new Promise<void>((held) => { void navigator.locks.request(using(model), { mode: 'shared' }, () => { held(); return released; }); });
+  return release;
+}
+
 // Removed, unless it is in use (a session aligning or speaking with it) or being downloaded.
 export async function removeModel(model: StoredModel): Promise<boolean> {
   return navigator.locks.request(using(model), { ifAvailable: true }, async (held) => {

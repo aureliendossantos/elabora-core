@@ -20,6 +20,9 @@ import type { BrowserStore } from '../store.ts';
 import type { MediaWorker, WorkerClient } from '../worker-client.ts';
 import type { ModelsAnswer, ModelsAsk } from './worker.ts';
 import { installModel, modelInstalled, modelSize } from './store.ts';
+import { onAPhone, refusal } from './refusal.ts';
+
+const refused = (model: AlignerModel) => refusal(model.language, 'Timing words');
 
 export type ModelsWorker = WorkerClient<ModelsAsk, ModelsAnswer>;
 
@@ -35,24 +38,6 @@ export interface AlignHost {
 }
 
 type Words = NonNullable<NarrationAudio['words']>;
-
-// A phone: the models' memory and their time are a computer's (the study, section 10).
-function onAPhone(): boolean {
-  const data = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData;
-  return data?.mobile ?? /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-}
-
-// The memory a language's model takes at its peak, in GB (measured, the study's section 3.4): refused
-// under it where the browser says how much it has (navigator.deviceMemory, Chromium alone).
-const NEEDS_GB: Readonly<Record<string, number>> = { fr: 8 };
-
-function refusal(model: AlignerModel): EngineError | null {
-  if (onAPhone()) return new EngineError('not-available', 'Words are timed on a computer: a phone keeps the words placed in proportion to the text.', { code: 'E_LOCAL_AI_PLATFORM' });
-  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-  const needs = NEEDS_GB[model.language];
-  if (needs && memory !== undefined && memory < needs) return new EngineError('not-available', `Timing words in this language needs a computer with ${needs} GB of memory or more (this one says ${memory} GB).`, { code: 'E_LOCAL_AI_MEMORY' });
-  return null;
-}
 
 export class BrowserAlign {
   readonly #models: ModelsWorker;
@@ -71,14 +56,22 @@ export class BrowserAlign {
     return Promise.all(models.map(async (model) => ({ language: model.language, model: model.model, installed: await modelInstalled(model), size: modelSize(model) })));
   }
 
-  async alignNarration(params: AlignNarrationParams): Promise<AlignResult> {
+  // Whether a line of this language is timed at once when it is written: its aligner kept here.
+  async keeps(language: string): Promise<boolean> {
+    const model = alignerOf(language);
+    return !!model && !refused(model) && await modelInstalled(model);
+  }
+
+  // signal: stops it between two lines (cancelVoice), the lines timed so far kept.
+  async alignNarration(params: AlignNarrationParams, signal?: AbortSignal): Promise<AlignResult> {
     try {
       const { result, todo, model, language } = planAlignment(this.#host.project(), params, (lang) => alignerOf(lang));
       if (!model || !todo.length) return result;
-      const refused = refusal(model);
-      if (refused) throw refused;
+      const no = refused(model);
+      if (no) throw no;
       await this.#installed(model, params.screen);
       for (const [index, line] of todo.entries()) {
+        if (signal?.aborted) break;
         this.#host.progress({ phase: 'line', screen: line.screen, line: line.line, index, count: todo.length }, params.screen);
         try {
           const words = await this.#time(model, line.audio, line.text, language);
@@ -105,7 +98,7 @@ export class BrowserAlign {
   // aligner is kept here: the desktop times a line at once in the same case. null: not here, or not kept.
   async wordsAtOnce(language: string, audio: Blob, duration: number | null, text: string): Promise<{ words: Words; aligner: string } | { alignmentError: string } | null> {
     const model = alignerOf(language);
-    if (!model || refusal(model) || !(await modelInstalled(model))) return null;
+    if (!model || refused(model) || !(await modelInstalled(model))) return null;
     try {
       const words = await this.#wordsOf(model, audio, duration, text, language);
       return words.length ? { words, aligner: model.model } : null;
@@ -144,6 +137,7 @@ export class BrowserAlign {
     if (!('samples' in decoded)) throw new EngineError('refused', 'error' in decoded ? decoded.error : 'The line could not be read.', { code: 'E_ALIGN_AUDIO' });
     const { answer } = await this.#models.ask({ op: 'align', model, samples: decoded.samples, text, language });
     if ('error' in answer) throw Object.assign(new Error(answer.error), answer.code ? { code: answer.code } : {});
+    if (!('alignment' in answer)) throw new Error('The models Worker gave no alignment.');
     return answer.alignment.words.map(({ text: word, start, end, score }) => ({ text: word, start, end, ...(score === undefined ? {} : { score }) }));
   }
 }
