@@ -19,6 +19,11 @@ const CANVAS = oneOf(params.get('canvas'), ['https://canvas.elabora.page']);
 const FRAMES = oneOf(params.get('frames'), ['https://frames.elabora.page']);
 // A medium answered in pieces, as the engine does while it takes it from the server.
 const PARTS = params.get('parts') === '1';
+// The engine's own Worker answers the ports (the test starts it with a project's files: app.startEngine), not the stand-in below.
+const ENGINE = params.get('engine') === '1';
+let engineSeed!: (worker: Worker) => void;
+const engineStarted = new Promise<Worker>((resolve) => { engineSeed = resolve; });
+let engineRequests = 0;
 
 const log: unknown[] = [];
 const requests: RelayRequest[] = [];
@@ -59,7 +64,18 @@ const host = createPageCanvasHost({
   canvasOrigin: CANVAS,
   framesOrigin: FRAMES,
   mount: document.body,
-  relayPort: async (relayHost, port) => { ends.push(serveRelayPort(port, source, relayHost)); }
+  relayPort: async (relayHost, port) => {
+    if (!ENGINE) { ends.push(serveRelayPort(port, source, relayHost)); return; }
+    const worker = await engineStarted;
+    const id = `relay-${relayHost}-${++engineRequests}`;
+    const answered = new Promise<void>((resolve, reject) => worker.addEventListener('message', function listen({ data }: MessageEvent<{ kind?: string; id?: string; ok?: boolean; error?: string }>) {
+      if (data.kind !== 'response' || data.id !== id) return;
+      worker.removeEventListener('message', listen);
+      if (data.ok) resolve(); else reject(new Error(data.error ?? 'the engine refused the port'));
+    }));
+    worker.postMessage({ kind: 'request', id, type: 'relayPort', params: { host: relayHost } }, [port]);
+    await answered;
+  }
 });
 const canvas = document.createElement('iframe');
 canvas.id = 'canvas';
@@ -104,6 +120,13 @@ const api = {
     const channel = new MessageChannel();
     ends.push(serveRelayPort(channel.port1, source, 'canvas'));
     late.contentWindow!.postMessage({ type: 'relay/open', protocol: RELAY_PROTOCOL, route }, CANVAS, [channel.port2]);
+  },
+  // The engine's Worker, opened on a project's files (the seed), offline.
+  async startEngine(seed: unknown) {
+    const worker = new Worker('/engine-worker.js', { type: 'module' });
+    await new Promise((resolve) => { worker.onmessage = ({ data }) => resolve(data); worker.postMessage({ kind: 'open', team: 'tm_test', project: 'relay-engine', seed, api: 'http://localhost:1', offline: true }); });
+    worker.onmessage = null;
+    engineSeed(worker);
   },
   close() { host.close(); for (const end of ends.splice(0)) end(); }
 };

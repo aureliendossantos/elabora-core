@@ -12,6 +12,7 @@ import { compileObjectCode, canvasPageHtml, relayFiles, runtimeBundle, runtimeFi
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { Handler } from './relay-hosts.ts';
 import { EXAMPLE, ROOT } from './helpers.ts';
+import { bundleForBrowser } from './browser-bundle.ts';
 
 export const APP = 'https://app.elabora.studio';
 export const CANVAS = 'https://canvas.elabora.page';
@@ -66,6 +67,12 @@ let relayScript = relayBuilt['relay.js']!;
 // The relay's script as the canvas and frames hosts serve it now (a test replaces it).
 export const setRelayScript = (script: string): void => { relayScript = script; };
 export const reached: string[] = [];
+// The engine's Worker as a browser runs it (a test that has the engine answer the ports, not the stand-in): its code, made when first asked
+// for, and the media its copy takes from the app's site, by hash.
+export const engineMedia = new Map<string, Buffer>();
+let engineCode: Promise<string> | null = null;
+const engineWorker = (): Promise<string> => (engineCode ??= bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
+provideMedia(async (hash) => { const response = await fetch('/media/' + encodeURIComponent(hash)); return response.ok ? response.blob() : null; });` }).then((bundle) => bundle.code));
 // How long the hosts take to give the relay's script (a slow network on a first visit: the pages load before the relay controls them).
 let relayDelay = 0;
 export const setRelayDelay = (ms: number): void => { relayDelay = ms; };
@@ -99,6 +106,8 @@ export const handlers = (): Record<string, Handler> => {
     const isolation = { 'cross-origin-opener-policy': 'same-origin', 'cross-origin-embedder-policy': 'require-corp', 'cache-control': 'no-store' };
     const parts = url.pathname.split('/').filter(Boolean);
     if (url.pathname === '/') { response.writeHead(200, { ...isolation, 'content-type': 'text/html' }).end('<!doctype html><title>app</title><body><script src="/app.js"></script></body>'); return; }
+    if (url.pathname === '/engine-worker.js') { void engineWorker().then((code) => response.writeHead(200, { ...isolation, 'content-type': 'text/javascript' }).end(code)); return; }
+    if (parts[0] === 'media' && parts[1]) { const bytes = engineMedia.get(decodeURIComponent(parts[1])); response.writeHead(bytes ? 200 : 404, { ...isolation, 'content-type': 'application/octet-stream' }).end(bytes); return; }
     if (url.pathname === '/app.js') { response.writeHead(200, { ...isolation, 'content-type': 'text/javascript' }).end(appScript); return; }
     if (parts[0] === 'render' && parts[2]) { const body = renders.get(`${parts[1]}/${parts[2]!.replace(/\.json$/, '')}`); response.writeHead(body ? 200 : 404, { ...isolation, 'content-type': 'application/json' }).end(body ?? ''); return; }
     if (parts[0] === 'compiled' && parts[2]) { const body = compiled.get(`${parts[1]}/${parts[2]!.replace(/\.js$/, '')}`); response.writeHead(body ? 200 : 404, { ...isolation, 'content-type': 'text/javascript' }).end(body ?? ''); return; }
