@@ -39,10 +39,11 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D121](decisions/D121.md) | The host of the editor canvas for a page: what links a window that has no local server to the canvas page and the relay | 19 Nov 2026 |
 | [D122](decisions/D122.md) | What a canvas page or a relay page says is read as data, and what the host posts goes to one exact origin | 19 Nov 2026 |
 | [D123](decisions/D123.md) | The renders reach a canvas page without a server as events of the engine, never through the relay | 19 Nov 2026 |
-| [D130](decisions/D130.md) | A miniature in a browser is a live frame of the canvas page, at most sixteen, asked for through one call of the host | 21 Nov 2026 |
 | [D125](decisions/D125.md) | A medium's facts go by its hash, beside the reference, in elabora-sync/1 | 19 Nov 2026 |
 | [D126](decisions/D126.md) | A copy that holds a medium gives its facts: with the change that writes it, and in passing for those already there | 19 Nov 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |
+| [D130](decisions/D130.md) | A miniature in a browser is a live frame of the canvas page, at most sixteen, asked for through one call of the host | 21 Nov 2026 |
+| [D133](decisions/D133.md) | The miniatures' renders are four requests of the session's base, the canvas service's | 21 Nov 2026 |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
 | [D15](decisions/D15.md) | Files are the source of truth; every change is an operation | 6 Oct 2026 |
 | [D16](decisions/D16.md) | Media inside the package, one master per file at the high preset | 6 Oct 2026 |
