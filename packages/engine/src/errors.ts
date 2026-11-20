@@ -3,7 +3,7 @@ import { JournalError } from '@elabora/node/journal/journal';
 import { protocolError as baseError } from './base/errors.ts';
 import type { ProtocolError } from './protocol.ts';
 
-export { EngineError } from './base/errors.ts';
+export { EngineError, toolError } from './base/errors.ts';
 
 // Any error as the desktop's session reports it: the base's (base/errors.ts), and the refusals of the
 // project's lock and journal with their catalogue code.

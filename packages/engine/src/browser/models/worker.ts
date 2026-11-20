@@ -13,15 +13,16 @@ import type { OnnxRuntime, OnnxSession } from '@elabora/core/util/onnx';
 import { useModel } from './store.ts';
 import type { WorkerMessage } from '../worker-client.ts';
 
-// ort: onnxruntime-web's ESM build (ort.wasm.min.mjs); wasm: the folder its .wasm and .mjs files are in.
-export type ModelsInit = { ort: string; wasm: string };
+// ort: onnxruntime-web's ESM build (ort.wasm.min.mjs); wasm: the folder its .wasm and .mjs files are in,
+// or each one's address.
+export type ModelsInit = { ort: string; wasm: string | { mjs: string; wasm: string } };
 
 export type ModelsAsk = { op: 'align'; model: AlignerModel; samples: Float32Array; text: string; language: string };
 
 export type ModelsAnswer = { alignment: Alignment } | { error: string; code?: string };
 
 type OrtWeb = OnnxRuntime & {
-  env: { wasm: { wasmPaths?: string; numThreads?: number } };
+  env: { wasm: { wasmPaths?: string | { mjs: string; wasm: string }; numThreads?: number } };
   InferenceSession: { create(model: Uint8Array, options: object): Promise<OnnxSession> };
 };
 
@@ -39,7 +40,7 @@ function ort(): Promise<OrtWeb> {
   const { ort: url, wasm } = init;
   runtime ??= (import(/* @vite-ignore */ url) as Promise<OrtWeb & { default?: OrtWeb }>).then((module) => {
     const loadedRuntime = (module.InferenceSession ? module : module.default) as OrtWeb;
-    loadedRuntime.env.wasm.wasmPaths = wasm.endsWith('/') ? wasm : `${wasm}/`;
+    loadedRuntime.env.wasm.wasmPaths = typeof wasm !== 'string' ? wasm : wasm.endsWith('/') ? wasm : `${wasm}/`;
     loadedRuntime.env.wasm.numThreads = threadsHere();
     return loadedRuntime;
   });

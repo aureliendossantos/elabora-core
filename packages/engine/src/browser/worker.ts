@@ -6,7 +6,9 @@ import { openCopy, type BrowserSession } from './session.ts';
 import { openIdbCopy, type MediaSource } from './idb-store.ts';
 import { roomMedia, roomMembership, roomSeed, roomSocket, type RoomAccess } from './room.ts';
 import type { ObjectCompiler } from './relay.ts';
-import { mediaWorker } from './worker-client.ts';
+import { mediaWorker, workerClient } from './worker-client.ts';
+import type { ModelsWorker } from './models/align.ts';
+import type { ModelsAnswer, ModelsAsk, ModelsInit } from './models/worker.ts';
 import type { NewCourseOptions } from '@elabora/core/commands/new-course';
 
 // The browser engine in a Worker (D103): one module a Worker. The page opens it, then speaks the
@@ -24,6 +26,13 @@ export type WorkerOpen = RoomAccess & {
   // may be had; the AAC encoder's address, for a browser without its own (D107: tests only for now).
   mediaWorker?: string;
   aacEncoder?: string;
+  // The models Worker's script, onnxruntime-web's ESM build and the folder of its wasm, all served by
+  // the app, and the models' origin (C110: the page's meta elabora-models): with the media Worker, the
+  // align service may be had (D114).
+  modelsWorker?: string;
+  ort?: string;
+  ortWasm?: string | { mjs: string; wasm: string };
+  models?: string;
   // No connection to the room: nothing is sent nor taken (a module tried offline, a test).
   offline?: boolean;
   // A project just made in the window (« Nouveau module »): its first files, written as its first
@@ -75,6 +84,14 @@ scope.onmessage = ({ data, ports }: MessageEvent<WorkerOpen | Envelope>) => {
   else waiting.push({ message: message as RequestMessage, ports, attachments });
 };
 
+// The models Worker, when the page gives all it needs.
+function modelsOf({ modelsWorker, ort, ortWasm, models }: WorkerOpen): { worker: ModelsWorker; base: string } | null {
+  if (!modelsWorker || !ort || !ortWasm || !models) return null;
+  const at = (url: string) => new URL(url, self.location.href).href;
+  const wasm = typeof ortWasm === 'string' ? at(ortWasm) : { mjs: at(ortWasm.mjs), wasm: at(ortWasm.wasm) };
+  return { worker: workerClient<ModelsInit, ModelsAsk, ModelsAnswer>(at(modelsWorker), { ort: at(ort), wasm }, (error) => ({ error })), base: models };
+}
+
 // The copy's key in the browser's storage: its team and project.
 const keyOf = ({ team, project }: RoomAccess): string => `${team}.${project}`;
 
@@ -97,7 +114,7 @@ async function open(request: WorkerOpen): Promise<void> {
       taken = true;
     }
     if (!store) { scope.postMessage({ kind: 'missing' }); return; }
-    const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}), ...(objects ? { objects } : {}), ...(request.mediaWorker ? { media: mediaWorker(new URL(request.mediaWorker, self.location.href).href, request.aacEncoder ? { aacEncoder: new URL(request.aacEncoder, self.location.href).href } : {}) } : {}) });
+    const opened = await openCopy({ id: `cloud:${key}`, store, api: request.api, connect: online ? roomSocket : never, ...(request.services ? { services: request.services } : {}), ...(objects ? { objects } : {}), ...(request.mediaWorker ? { media: mediaWorker(new URL(request.mediaWorker, self.location.href).href, request.aacEncoder ? { aacEncoder: new URL(request.aacEncoder, self.location.href).href } : {}) } : {}), ...(modelsOf(request) ? { models: modelsOf(request)! } : {}) });
     session = opened;
     opened.subscribe((message) => scope.postMessage(message));
     if (request.newCourse) await opened.run('create_course', request.newCourse);

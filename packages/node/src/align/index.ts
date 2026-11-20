@@ -19,7 +19,7 @@ import type { AlignerView, AlignProgress, AlignResult } from '@elabora/core/alig
 import { localAiSupported, requireLocalAi } from '../models/platform.ts';
 import { run } from '../edit/index.ts';
 import type { CommandArgs } from '@elabora/core/commands/table';
-import { alignedLine, planAlignment } from '@elabora/core/align/plan';
+import { alignedLine, planAlignment, sidecarAudioHash } from '@elabora/core/align/plan';
 
 // When each word of a narration line is said (docs/decisions.md D27): forced alignment of the
 // line's text with its audio, by a wav2vec2 character model of its language (models.ts, downloaded
@@ -179,12 +179,3 @@ export async function alignNarration(dir: string, options: AlignOptions = {}, ed
   return result;
 }
 
-function sidecarAudioHash(project: Project, sidecar: string | undefined): `sha256:${string}` | null {
-  if (!sidecar) return null;
-  const entry = project.files.get(sidecar);
-  if (entry?.kind !== 'text') return null;
-  try {
-    const hash = (JSON.parse(entry.text) as { audioHash?: unknown }).audioHash;
-    return typeof hash === 'string' && hash.startsWith('sha256:') ? hash as `sha256:${string}` : null;
-  } catch { return null; }
-}
