@@ -179,13 +179,18 @@ export class PocketModel {
   private readonly ort: OnnxRuntime;
   private readonly bos: Float32Array;
   private readonly sessions: PocketSessions;
+  private readonly reuse: boolean;
 
-  constructor(ort: OnnxRuntime, files: PocketFiles, sessions: PocketSessions) {
+  // reuseOutputs: the flow model's state written into tensors allocated once (onnxruntime-node); false
+  // where the runtime does not write into tensors given in advance and gives wrong ones back
+  // (onnxruntime-web: every take comes out failed), each frame's state then new tensors.
+  constructor(ort: OnnxRuntime, files: PocketFiles, sessions: PocketSessions, { reuseOutputs = true }: { reuseOutputs?: boolean } = {}) {
     this.ort = ort;
     this.meta = files.meta;
     this.tokenizer = new UnigramTokenizer(files.tokenizer);
     this.bos = files.bos;
     this.sessions = sessions;
+    this.reuse = reuseOutputs;
   }
 
   async release(): Promise<void> {
@@ -220,16 +225,21 @@ export class PocketModel {
   }
 
   // The flow model's state is 200 MB with the 24-layer French model (an attention cache of 1000
-  // frames for each layer): its outputs are written into two sets of tensors allocated once, used in
-  // turn, rather than allocated anew at every frame (a peak of 2.4 GB measured that way). The state
-  // that follows is read from the run's result: onnxruntime-node gives back the tensors it wrote into,
-  // onnxruntime-web new ones (it does not write into tensors given in advance).
+  // frames for each layer): at the desktop its outputs are written into two sets of tensors allocated
+  // once, used in turn, rather than allocated anew at every frame (a peak of 2.4 GB measured that way).
+  // The state that follows is read from the run's result (the tensors written into, or new ones).
   private buffers: [State, State] | null = null;
 
-  private async runFlow(sequence: Tensor, textEmbeddings: Tensor, input: State, output: State): Promise<{ conditioning: Tensor; eos: number; state: State }> {
-    const fetches: Record<string, Tensor | null> = { conditioning: null, eos_logit: null };
-    for (const entry of this.meta.flow_lm_state_manifest) fetches[entry.output_name] = output[entry.input_name];
-    const result = await this.sessions.flowMain.run({ sequence, text_embeddings: textEmbeddings, ...input }, fetches);
+  private async runFlow(sequence: Tensor, textEmbeddings: Tensor, input: State, output: State | null): Promise<{ conditioning: Tensor; eos: number; state: State }> {
+    const feeds = { sequence, text_embeddings: textEmbeddings, ...input };
+    let result: Record<string, OnnxTensor>;
+    if (output) {
+      const fetches: Record<string, Tensor | null> = { conditioning: null, eos_logit: null };
+      for (const entry of this.meta.flow_lm_state_manifest) fetches[entry.output_name] = output[entry.input_name];
+      result = await this.sessions.flowMain.run(feeds, fetches);
+    } else {
+      result = await this.sessions.flowMain.run(feeds);
+    }
     return { conditioning: result.conditioning, eos: (result.eos_logit.data as Float32Array)[0], state: PocketModel.nextState(this.meta.flow_lm_state_manifest, result) };
   }
 
@@ -304,11 +314,11 @@ export class PocketModel {
     const ids = this.tensor('int64', BigInt64Array.from(tokens, (id) => BigInt(id)), [1, tokens.length]);
     const embeddings = (await this.sessions.textConditioner.run({ token_ids: ids })).embeddings;
     const textEmbeddings = embeddings.dims.length === 2 ? this.tensor('float32', embeddings.data as Float32Array, [1, ...embeddings.dims]) : embeddings;
-    this.buffers ??= [this.initialState(manifest), this.initialState(manifest)];
-    const [a, b] = this.buffers;
+    if (this.reuse) this.buffers ??= [this.initialState(manifest), this.initialState(manifest)];
+    const [a, b] = this.buffers ?? [null, null];
     // The voice's state is read, never written: the text goes on from it into a.
     let state = (await this.runFlow(this.tensor('float32', new Float32Array(0), [1, 0, latentDim]), textEmbeddings, voice, a)).state;
-    let next = b;
+    let next: State | null = b;
     const noText = this.tensor('float32', new Float32Array(0), [1, 0, dim]);
     const zero = this.tensor('float32', Float32Array.of(0), [1, 1]);
     const one = this.tensor('float32', Float32Array.of(1), [1, 1]);
@@ -320,7 +330,7 @@ export class PocketModel {
     for (let step = 0; step < maxFrames; step++) {
       signal?.throwIfAborted();
       const result = await this.runFlow(this.tensor('float32', previous, [1, 1, latentDim]), noText, state, next);
-      [state, next] = [result.state, state];
+      [state, next] = [result.state, this.reuse ? state : null];
       const eos = result.eos > EOS_THRESHOLD;
       if (eos && eosStep === null && step >= MIN_FRAMES_BEFORE_EOS) eosStep = step;
       if (eosStep !== null && step >= eosStep + framesAfterEos) break;

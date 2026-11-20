@@ -140,7 +140,7 @@ async function speak(runtimeHere: OrtWeb, ask: Extract<ModelsAsk, { op: 'speak' 
       const options = pocketSessionOptions(threadsHere());
       const open = async (one: File) => sessionOf(runtimeHere, new Uint8Array(await one.arrayBuffer()), options);
       const sessions = { textConditioner: await open(textConditioner), flowMain: await open(flowMain), flowHead: await open(flowHead), decoder: await open(decoder), encoder: null };
-      const model = new PocketModel(runtimeHere, { meta: metaJson, tokenizer: JSON.parse(await tokenizer.text()) as UnigramJson, bos: metaJson.insert_bos_before_voice ? npyFloat32(new Uint8Array(await bos.arrayBuffer()), BUNDLE_FILES.bos) : new Float32Array(0) }, sessions);
+      const model = new PocketModel(runtimeHere, { meta: metaJson, tokenizer: JSON.parse(await tokenizer.text()) as UnigramJson, bos: metaJson.insert_bos_before_voice ? npyFloat32(new Uint8Array(await bos.arrayBuffer()), BUNDLE_FILES.bos) : new Float32Array(0) }, sessions, { reuseOutputs: false });
       voice = { id: `${bundle.id}@${bundle.version}`, language: bundle.language, model, voice: null, state: null };
     }
     const current = voice;
