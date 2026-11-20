@@ -59,6 +59,12 @@ export class Room {
     this.facts.set(hash, given);
     return true;
   }
+  // An owner drops a medium's facts (elabora-cloud C111): every copy connected hears it without them.
+  forget(hash: string): void {
+    this.facts.delete(hash);
+    const media = this.known([hash]);
+    if (media) for (const socket of this.sockets) if (socket.presence) socket.deliver({ type: 'media', media });
+  }
   // Back to an earlier head, as the administrator restores a room to a time: its later changes leave,
   // its epoch changes, every connection closes with 4008.
   restore(head: number): void {
