@@ -3,8 +3,8 @@
 // core's rule), the samples the waveform and the word aligner read (mono, at the rate asked), and a
 // sound added to the course kept or written as the core's plan says (D67). Runs in the media Worker (D106).
 
-import { ALL_FORMATS, AudioSample, AudioSampleSink, BlobSource, Conversion, FlacOutputFormat, Input, Mp4OutputFormat, Output, StreamTarget, canEncodeAudio } from 'mediabunny';
-import type { StreamTargetChunk } from 'mediabunny';
+import { ALL_FORMATS, AudioSample, AudioSampleSink, AudioSampleSource, BlobSource, BufferTarget, EncodedAudioPacketSource, EncodedPacketSink, Conversion, FlacOutputFormat, Input, Mp4OutputFormat, Output, StreamTarget, canEncodeAudio } from 'mediabunny';
+import type { EncodedPacket, StreamTargetChunk } from 'mediabunny';
 import { PEAKS_RATE, peaksOf, silenceTrim, soundPlan, SOUND_AAC_BITRATE } from '@elabora/core/media/audio';
 import type { MediaInfo } from '@elabora/core/media/conformance';
 import { MediaEncoderMissing, MediaNotDecodable } from './image.ts';
@@ -71,11 +71,7 @@ const bytesOf = (source: AllowSharedBufferSource) => (ArrayBuffer.isView(source)
 // mixes them, then resampled through a windowed sinc low-passed under the new rate's half.
 export async function monoSamples(file: Blob, name: string, rate: number, duration?: number | null): Promise<Float32Array> {
   const { channels, rate: from } = await decodeSound(file, name, duration);
-  const mono = new Float32Array(channels[0]?.length ?? 0);
-  // ffmpeg's downmix: a stereo pair at -3 dB each, other layouts averaged.
-  const gain = channels.length === 2 ? Math.SQRT1_2 : 1 / channels.length;
-  for (const channel of channels) for (let i = 0; i < mono.length; i++) mono[i] += channel[i] * gain;
-  return resample(mono, from, rate);
+  return resample(mixDown(channels), from, rate);
 }
 
 export function resample(samples: Float32Array, from: number, to: number): Float32Array {
@@ -109,25 +105,110 @@ export async function linePeaks(file: Blob, name: string, perSecond: number, dur
 
 // A line's audio (D24). A file already an M4A in AAC, mono, its index first, is kept as it is unless its
 // silence is to be cut (a recording); anything else is converted.
-export async function lineAudio(file: Blob, name: string, info: MediaInfo, { trim, target, aac = () => canEncodeAudio('aac'), signal }: SoundOptions & { trim: boolean }): Promise<{ action: 'copy' | 'encode' }> {
+export async function lineAudio(file: Blob, name: string, info: MediaInfo, { trim, target, aac = () => canEncodeAudio('aac'), signal, encode = encodeAac }: SoundOptions & { trim: boolean; encode?: AacEncode }): Promise<{ action: 'copy' | 'encode' }> {
   if (info.audioCodec === null) throw new MediaNotDecodable(name, 'a sound');
   const conformant = info.container === 'mp4' && info.audioCodec === 'aac' && info.channels === 1 && info.kind === 'audio' && info.faststart !== false && !trim;
   if (conformant) return { action: 'copy' };
   if (!(await aac())) throw new MediaEncoderMissing(name, 'the AAC sound of a narration line');
-  let cut: { start: number; end: number } | undefined;
+  // Its samples as ffmpeg reads them (priming, padding and pre-skip left out, D24), its silence cut,
+  // mixed down and brought to 48 kHz here: the line's length is that of these samples, whatever
+  // the encoder (test/e2e/media-browser.test.ts, « a line »).
+  const { channels, rate } = await decodeSound(file, name, info.duration);
+  let start = 0, end = channels[0]?.length ?? 0;
   if (trim) {
-    const { channels, rate } = await decodeSound(file, name, info.duration);
-    const { start, end } = silenceTrim(channels, rate);
+    ({ start, end } = silenceTrim(channels, rate));
     if (end <= start) throw new MediaNotDecodable(name, 'a sound above silence');
-    cut = { start: start / rate, end: end / rate };
   }
-  // A stereo pair mixed down as ffmpeg does (each side at -3 dB), not averaged as Mediabunny would.
-  const stereo = info.channels === 2;
-  await convert(file, name, target, new Mp4OutputFormat({ fastStart: 'reserve' }), {
-    codec: 'aac', bitrate: LINE_BITRATE, sampleRate: LINE_RATE, forceTranscode: true,
-    ...(stereo ? { process: downmix, processedNumberOfChannels: 1 } : { numberOfChannels: 1 })
-  }, cut, signal);
+  const samples = resample(mixDown(channels.map((channel) => channel.subarray(start, end))), rate, LINE_RATE);
+  signal?.throwIfAborted();
+  const encoded = await encode(samples, LINE_RATE, LINE_BITRATE);
+  signal?.throwIfAborted();
+  await writeLine(encoded, await primingOf(encoded, samples), samples.length / LINE_RATE, target);
   return { action: 'encode' };
+}
+
+// An AAC encoder of mono samples into an M4A (in memory: a line lasts seconds). The browser's own or
+// the wasm one (provideAac), through Mediabunny; a test gives one that primes as another would.
+export type AacEncode = (samples: Float32Array, rate: number, bitrate: number) => Promise<Blob>;
+
+export const encodeAac: AacEncode = async (samples, rate, bitrate) => {
+  const target = new BufferTarget();
+  const output = new Output({ format: new Mp4OutputFormat({ fastStart: 'in-memory' }), target });
+  const source = new AudioSampleSource({ codec: 'aac', bitrate });
+  output.addAudioTrack(source);
+  await output.start();
+  const chunk = rate / 10;
+  for (let at = 0; at < samples.length; at += chunk) {
+    const sample = new AudioSample({ data: samples.slice(at, at + chunk), format: 'f32-planar', numberOfChannels: 1, sampleRate: rate, timestamp: at / rate });
+    await source.add(sample);
+    sample.close();
+  }
+  source.close();
+  await output.finalize();
+  return new Blob([target.buffer!]);
+};
+
+// A stereo pair mixed down as ffmpeg does (each side at -3 dB); other layouts averaged.
+function mixDown(channels: readonly Float32Array[]): Float32Array {
+  const mono = new Float32Array(channels[0]?.length ?? 0);
+  const gain = channels.length === 2 ? Math.SQRT1_2 : 1 / Math.max(1, channels.length);
+  for (const channel of channels) for (let i = 0; i < mono.length; i++) mono[i] += channel[i] * gain;
+  return mono;
+}
+
+// How many samples late an encoded line starts, against the samples it was made from: an encoder's
+// priming it did not declare (Apple's AudioToolbox primes 2112 samples; the wasm encoder declares its
+// own, read as 0 here). Found where the two agree best, around the line's first sound.
+export async function primingOf(encoded: Blob, samples: Float32Array): Promise<number> {
+  const { channels } = await decodeSound(encoded, 'line.m4a');
+  const heard = channels[0] ?? new Float32Array(0);
+  let onset = samples.findIndex((value) => Math.abs(value) > 0.01);
+  if (onset < 0) return 0;
+  onset = Math.max(0, onset - 256);
+  const length = Math.min(4096, samples.length - onset);
+  const scores = new Map<number, number>();
+  let best = 0;
+  for (let lag = -1024; lag <= 4096; lag++) {
+    if (onset + lag < 0 || onset + lag + length > heard.length) continue;
+    let dot = 0, energy = 0;
+    for (let i = 0; i < length; i++) { const h = heard[onset + lag + i]; dot += samples[onset + i] * h; energy += h * h; }
+    const score = energy ? dot / Math.sqrt(energy) : 0;
+    scores.set(lag, score);
+    best = Math.max(best, score);
+  }
+  // A steady sound agrees as well a period later: the nearest of the best is the line's start.
+  let at = 0;
+  for (const [lag, score] of scores) if (score >= best * 0.995 && Math.abs(lag) < Math.abs(at) || (score >= best * 0.995 && scores.get(at)! < best * 0.995)) at = lag;
+  return Math.abs(at) <= 2 ? 0 : at;
+}
+
+// The encoded line written to its target, its packets moved earlier by the priming found: the file
+// says it (an edit list), so that every player and ffmpeg start where the line starts; its last packet
+// lasts only what is left of the line, so that its length is the line's, not a whole AAC frame's.
+async function writeLine(encoded: Blob, priming: number, duration: number, target: WritableStream<StreamTargetChunk>): Promise<void> {
+  const input = inputOf(encoded);
+  try {
+    const track = await input.getPrimaryAudioTrack();
+    if (!track) throw new Error('The encoder gave no sound.');
+    const config = await track.getDecoderConfig();
+    const output = new Output({ format: new Mp4OutputFormat({ fastStart: 'reserve' }), target: new StreamTarget(withoutNames(target)) });
+    const source = new EncodedAudioPacketSource('aac');
+    const rate = track.sampleRate;
+    const packets: EncodedPacket[] = [];
+    for await (const packet of new EncodedPacketSink(track).packets()) packets.push(packet);
+    output.addAudioTrack(source, { maximumPacketCount: packets.length });
+    output.setMetadataTags({ creationTime: null });
+    await output.start();
+    for (const [i, packet] of packets.entries()) {
+      const timestamp = packet.timestamp - priming / rate;
+      const last = i === packets.length - 1 && duration > timestamp && duration < timestamp + packet.duration;
+      await source.add(packet.clone({ timestamp, ...(last ? { duration: duration - timestamp } : {}) }), i === 0 && config ? { decoderConfig: config } : undefined);
+    }
+    source.close();
+    await output.finalize();
+  } finally {
+    input.dispose();
+  }
 }
 
 // A sound of assets/sounds/ (D67): kept as it came when the core's plan says so; otherwise FLAC, or
@@ -144,16 +225,6 @@ export async function soundMaster(file: Blob, name: string, info: MediaInfo, { l
   return { action: 'encode', extension: flac ? '.flac' : '.m4a' };
 }
 
-function downmix(sample: AudioSample): AudioSample {
-  const planes = [0, 1].map((planeIndex) => {
-    const plane = new Float32Array(sample.numberOfFrames);
-    sample.copyTo(plane, { planeIndex, format: 'f32-planar' });
-    return plane;
-  });
-  const mono = new Float32Array(sample.numberOfFrames);
-  for (let i = 0; i < mono.length; i++) mono[i] = (planes[0][i] + planes[1][i]) * Math.SQRT1_2;
-  return new AudioSample({ data: mono, format: 'f32-planar', numberOfChannels: 1, sampleRate: sample.sampleRate, timestamp: sample.timestamp });
-}
 
 async function convert(file: Blob, name: string, target: WritableStream<StreamTargetChunk>, format: Mp4OutputFormat | FlacOutputFormat, audio: NonNullable<Parameters<typeof Conversion.init>[0]['audio']>, trim: { start: number; end: number } | undefined, signal?: AbortSignal): Promise<void> {
   const input = inputOf(file);

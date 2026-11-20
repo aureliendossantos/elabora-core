@@ -36,7 +36,9 @@ before(async () => {
 import { imageMaster } from './packages/engine/src/browser/media/image.ts';
 import { fileTarget, videoMaster } from './packages/engine/src/browser/media/video.ts';
 import { provideAac } from './packages/engine/src/browser/media/encoders.ts';
-import { lineAudio, linePeaks, monoSamples, soundMaster } from './packages/engine/src/browser/media/audio.ts';
+import { encodeAac, lineAudio, linePeaks, monoSamples, soundMaster } from './packages/engine/src/browser/media/audio.ts';
+// An encoder that primes as Apple's does (2112 samples of its own before the line) and does not say so.
+const primed = (count) => (samples, rate, bitrate) => { const all = new Float32Array(count + samples.length); all.set(samples, count); return encodeAac(all, rate, bitrate); };
 const aac = provideAac('/aac.js');
 self.onmessage = async ({ data }) => {
   try {
@@ -51,7 +53,7 @@ self.onmessage = async ({ data }) => {
     const memory = new WritableStream({ write(chunk) { if (chunk.type === 'write') parts.push(chunk); } });
     const started = performance.now();
     const target = handle ? await fileTarget(handle) : memory;
-    const made = data.op === 'line' ? { ...(await lineAudio(data.file, data.name, info, { trim: data.name.endsWith('.wav') || data.name.endsWith('.mp3'), target, aac })), extension: '.m4a' }
+    const made = data.op === 'line' || data.op === 'line-primed' ? { ...(await lineAudio(data.file, data.name, info, { trim: data.name.endsWith('.wav') || data.name.endsWith('.mp3'), target, aac, ...(data.op === 'line-primed' ? { encode: primed(2112) } : {}) })), extension: '.m4a' }
       : data.op === 'sound' ? await soundMaster(data.file, data.name, info, { target, aac })
       : await videoMaster(data.file, data.name, info, { target, aac });
     let blob = data.file;
@@ -86,7 +88,7 @@ after(async () => {
 const probeInBrowser = (name: string) => inWorker(name, 'probe') as Promise<{ info?: unknown; error?: string }>;
 
 // What the Worker answers for a file; a master's bytes come back in base64.
-const inWorker = (name: string, op: 'probe' | 'image' | 'video' | 'line' | 'sound' | 'samples' | 'peaks') => page.evaluate(async ([file, op]) => {
+const inWorker = (name: string, op: 'probe' | 'image' | 'video' | 'line' | 'line-primed' | 'sound' | 'samples' | 'peaks') => page.evaluate(async ([file, op]) => {
   const blob = await (await fetch(`/${encodeURIComponent(file)}`)).blob();
   const worker = new Worker('/probe.js', { type: 'module' });
   try {
@@ -291,6 +293,23 @@ test(`narration lines and sounds in ${BROWSER}: the desktop's M4A, its silence c
         const gap = Math.max(...gaps), mean = gaps.reduce((sum, g) => sum + g, 0) / gaps.length;
         assert.ok(mean <= 3 && gap <= 40, `${name}: waveform ${mean.toFixed(1)} of 255 from the desktop's on average, ${gap} at most`);
         st.diagnostic(`loudness ${(apart * 100).toFixed(2)} % apart from ffmpeg's 16 kHz, waveform ${mean.toFixed(1)} of 255 from the desktop's on average, ${gap} at most`);
+      });
+    }
+    // An encoder's priming, said or not (Apple's AudioToolbox primes 2112 samples and Chromium does
+    // not declare them; the wasm encoder declares its own): the same line, starting where it starts.
+    for (const name of ['recording.wav', 'screen.webm'].filter((file) => fixtures.files.includes(file))) {
+      await t.test(`${name}: a line, whatever the encoder's priming`, { skip: GSTREAMER && 'its sound is encoded to AAC by GStreamer in WebKitGTK, not by Safari\'s encoder' }, async (st) => {
+        const lines = [];
+        for (const op of ['line', 'line-primed'] as const) lines.push(await (async () => {
+          const answer = await inWorker(name, op) as { master?: { base64: string }; error?: string };
+          assert.ok(answer.master, answer.error);
+          const file = write(`${op}-${name}.m4a`, answer.master.base64);
+          const samples = await decoded(file, 48000);
+          return { duration: (await probeMedia(file, { tools })).duration ?? 0, onset: samples.findIndex((value) => Math.abs(value) > 0.01) };
+        })());
+        assert.ok(Math.abs(lines[0].duration - lines[1].duration) < 0.002, `${name}: ${lines[1].duration} s primed, ${lines[0].duration} s not`);
+        assert.ok(Math.abs(lines[0].onset - lines[1].onset) <= 2, `${name}: its first sound at sample ${lines[1].onset} primed, ${lines[0].onset} not`);
+        st.diagnostic(`${lines[0].duration} s either way, its first sound at sample ${lines[0].onset}`);
       });
     }
     for (const name of ['voice.wav', 'voice.mp3', 'voice.m4a'].filter((file) => fixtures.files.includes(file))) {
