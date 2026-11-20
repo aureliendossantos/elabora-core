@@ -60,41 +60,51 @@ const source: RelaySource = {
 // the frames host's relay page); the app gives it the engine's end of each port and the frame of the canvas page.
 const ends: Array<() => void> = [];
 const messages: CanvasMessage[] = [];
-const host = createPageCanvasHost({
-  canvasOrigin: CANVAS,
-  framesOrigin: FRAMES,
-  mount: document.body,
-  relayPort: async (relayHost, port) => {
-    if (!ENGINE) { ends.push(serveRelayPort(port, source, relayHost)); return; }
-    const worker = await engineStarted;
-    const id = `relay-${relayHost}-${++engineRequests}`;
-    const answered = new Promise<void>((resolve, reject) => worker.addEventListener('message', function listen({ data }: MessageEvent<{ kind?: string; id?: string; ok?: boolean; error?: string }>) {
-      if (data.kind !== 'response' || data.id !== id) return;
-      worker.removeEventListener('message', listen);
-      if (data.ok) resolve(); else reject(new Error(data.error ?? 'the engine refused the port'));
-    }));
-    worker.postMessage({ kind: 'request', id, type: 'relayPort', params: { host: relayHost } }, [port]);
-    await answered;
-  }
-});
-const canvas = document.createElement('iframe');
-canvas.id = 'canvas';
-canvas.allow = 'autoplay';
-canvas.referrerPolicy = 'no-referrer';
-canvas.setAttribute('sandbox', host.info.sandbox);
-canvas.style.cssText = 'width:1280px;height:720px;border:0';
-document.body.append(canvas);
-host.attach(canvas);
-const canvasAddress = new URL(host.info.url);
-canvasAddress.searchParams.set('scrollbars', 'none');
-canvasAddress.searchParams.set('placing', 'editor');
-host.onRelay((from, message) => log.push({ from, ...message }));
-host.onMessage((message) => messages.push(message));
+// A view of the module: a canvas host for a page and the frame of its canvas page. A window makes one for each view it shows
+// (a layer is another one), and closes the one before it.
+type Host = ReturnType<typeof createPageCanvasHost>;
+let host!: Host;
+let canvas!: HTMLIFrameElement;
+let canvasAddress!: URL;
+function startView(): void {
+  host = createPageCanvasHost({
+    canvasOrigin: CANVAS,
+    framesOrigin: FRAMES,
+    mount: document.body,
+    relayPort: async (relayHost, port) => {
+      if (!ENGINE) { ends.push(serveRelayPort(port, source, relayHost)); return; }
+      const worker = await engineStarted;
+      const id = `relay-${relayHost}-${++engineRequests}`;
+      const answered = new Promise<void>((resolve, reject) => worker.addEventListener('message', function listen({ data }: MessageEvent<{ kind?: string; id?: string; ok?: boolean; error?: string }>) {
+        if (data.kind !== 'response' || data.id !== id) return;
+        worker.removeEventListener('message', listen);
+        if (data.ok) resolve(); else reject(new Error(data.error ?? 'the engine refused the port'));
+      }));
+      worker.postMessage({ kind: 'request', id, type: 'relayPort', params: { host: relayHost } }, [port]);
+      await answered;
+    }
+  });
+  canvas = document.createElement('iframe');
+  canvas.id = 'canvas';
+  canvas.allow = 'autoplay';
+  canvas.referrerPolicy = 'no-referrer';
+  canvas.setAttribute('sandbox', host.info.sandbox);
+  canvas.style.cssText = 'width:1280px;height:720px;border:0';
+  document.body.append(canvas);
+  host.attach(canvas);
+  canvasAddress = new URL(host.info.url);
+  canvasAddress.searchParams.set('scrollbars', 'none');
+  canvasAddress.searchParams.set('placing', 'editor');
+  host.onRelay((from, message) => log.push({ from, ...message }));
+  host.onMessage((message) => messages.push(message));
+  canvas.src = canvasAddress.href;
+}
 
 let renderId = 0;
 const api = {
-  log, requests, messages, host,
-  info: host.info,
+  log, requests, messages,
+  get host() { return host; },
+  get info() { return host.info; },
   versions: () => ({ canvas: host.relays().canvas.version ?? undefined, frames: host.relays().frames.version ?? undefined }),
   update: () => host.update(),
   async show(screen: string) {
@@ -102,6 +112,8 @@ const api = {
     host.push(render, { id: ++renderId });
     return renderId;
   },
+  // The next view: the host and the frame of the one before are closed, a new host and a new frame come (a window does it for a layer).
+  newView() { host.close(); canvas.remove(); startView(); },
   // The frame of the canvas page loaded anew, as a window that shows the view again does.
   reload() { canvas.src = 'about:blank'; setTimeout(() => { canvas.src = canvasAddress.href; }, 100); },
   // A canvas page of its own, whose route is opened after it has asked for files: a page that asks for an image in its first task.
@@ -133,4 +145,4 @@ const api = {
 };
 (window as unknown as { app: typeof api }).app = api;
 
-canvas.src = canvasAddress.href;
+startView();

@@ -1,11 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { chromium, webkit } from 'playwright-core';
-import type { Browser, BrowserContext, Frame, Page } from 'playwright-core';
-import { launchChromium } from '@elabora/node/emulator/browser';
+import type { BrowserContext, Page } from 'playwright-core';
 import { startHosts } from '../relay-hosts.ts';
-import type { Hosts } from '../relay-hosts.ts';
+import { canvasFrame, launch, objectFrames } from '../relay-browsers.ts';
 import { APP, CANVAS, FRAMES, MODULES, POLICY, REVIEW, SPACE, authorFiles, handlers, objectCode, reached, relay, scratch, setRelayDelay, setRelayScript, setRenderPatch } from '../relay-site.ts';
 import * as esbuild from 'esbuild';
 import { OBJECT_GLOBAL } from '@elabora/core/objects/bundle';
@@ -17,25 +15,6 @@ import { OBJECT_GLOBAL } from '@elabora/core/objects/bundle';
 // Firefox does not follow frames of other origins that a worker answers for, so Firefox is tried by the
 // WebDriver BiDi script of the web canvas report, not here.
 const wanted = (process.env.ELABORA_RELAY_BROWSERS ?? 'chromium').split(',').map((name) => name.trim()).filter(Boolean);
-
-// ── Browsers ────────────────────────────────────────────────────────────────────────────────────
-async function launch(name: string, hosts: Hosts): Promise<Browser | null> {
-  const proxy = { server: `http://127.0.0.1:${hosts.proxyPort}` };
-  try {
-    if (name === 'chromium') {
-      // Playwright turns off Chrome's partitioning of a frame's storage by its top site; its own list again, without it.
-      const features = '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints';
-      return await launchChromium(chromium, ['playwright'], { headless: true, proxy, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required', `--ignore-certificate-errors-spki-list=${hosts.spki}`, features] });
-    }
-    if (name === 'webkit') return await webkit.launch({ headless: true, proxy });
-  } catch (error) {
-    console.log(`# ${name} did not start here: ${String(error).split('\n')[0]}`);
-  }
-  return null;
-}
-
-const canvasFrame = (page: Page): Frame => page.frames().find((frame) => frame.url().startsWith(`${CANVAS}/canvas/index.html`))!;
-const objectFrames = (page: Page): Frame[] => page.frames().filter((frame) => frame.url().startsWith(`${FRAMES}/canvas/objects/`));
 
 // The app's page on a module, the relay pages open, a screen shown and ready.
 async function openApp(context: BrowserContext, module: 'a' | 'b', { show = true, parts = false, early = false, screen = MODULES[module]!.screen } = {}): Promise<{ page: Page; route: string; framesRoute: string }> {

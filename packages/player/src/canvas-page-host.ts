@@ -161,15 +161,17 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
   // so that the service worker controls the page and answers the files its first render asks for. A render sent sooner
   // would ask the network, which has none of the module's files.
   const bothOpened = () => entries.canvas.state.opened && entries.frames.state.opened;
+  // A relay page that says it cannot serve (a browser that gives it no service worker) is not waited for: the render is given
+  // all the same, drawn without the module's files, and the app reads the page's error (relays(), onRelay).
+  const bothSettled = () => [entries.canvas, entries.frames].every((entry) => entry.state.opened || entry.state.error !== null);
   function checkOpened(): void {
-    if (!bothOpened()) return;
-    resolveOpened();
-    flush();
+    if (bothOpened()) resolveOpened();
+    if (bothSettled()) flush();
   }
   // Whether the page has been given the last render (once for each page loaded, and for each push).
   let renderSent = false;
   function flush(): void {
-    if (!pageReady || !bothOpened()) return;
+    if (!pageReady || !bothSettled()) return;
     if (!renderSent && last) { sendLast(); renderSent = true; }
     sendPending();
   }
@@ -201,6 +203,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
       const state = entry.state;
       if (relayMessage.type === 'relay/ready') {
         state.ready = true;
+        state.error = null;
         state.opened = false;
         state.version = relayMessage.version;
         // A script that took the page over, or a page loaded again, says ready again: the route is opened again.
@@ -208,7 +211,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
       } else if (relayMessage.type === 'relay/opened') { state.opened = true; checkOpened(); }
       else if (relayMessage.type === 'relay/closed') state.opened = false;
       else if (relayMessage.type === 'relay/updated') state.version = relayMessage.version;
-      else if (relayMessage.type === 'relay/error') state.error = relayMessage.message;
+      else if (relayMessage.type === 'relay/error') { state.error = relayMessage.message; checkOpened(); }
       for (const listener of [...relayListeners]) listener(entry.host, relayMessage);
       return;
     }
@@ -257,7 +260,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
     view(view, { id } = {}) {
       if (last) last = { ...last, render: { ...last.render, view: { ...last.render.view, ...view } } };
       // Before the render is sent, the render carries the view.
-      if (!pageReady || !bothOpened()) return;
+      if (!pageReady || !bothSettled()) return;
       toPage({ type: 'elabora/view', ...(id !== undefined ? { id } : {}), view });
     },
     post(message) {

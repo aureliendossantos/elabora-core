@@ -158,6 +158,18 @@ async function update(): Promise<void> {
   if (hello) tell({ type: 'relay/updated', protocol: RELAY_PROTOCOL, version: hello.version });
 }
 
+// How long a page that no service worker controls is waited for, in ms: the browser gives a page to its worker when the worker
+// activates (the first visit), or at once when it loads; a page that has none after this has none to wait for (a private window
+// where a browser has no service worker, a page the browser does not give to it).
+const CONTROL_WAIT_MS = 5000;
+
+// Says to the app that the relay cannot serve this page, and why. Without the worker's word this page does not know the app's
+// origin: the sentence is sent to whoever frames it, which the host's `frame-ancestors` has said is the app, and carries nothing else.
+function fail(message: string): void {
+  if (!parentWindow) return;
+  parentWindow.postMessage({ type: 'relay/error', protocol: RELAY_PROTOCOL, message } satisfies RelayToApp, hello?.appOrigin ?? '*');
+}
+
 async function start(): Promise<void> {
   try {
     const registration = await navigator.serviceWorker.register('/relay.js', { scope: '/' });
@@ -165,9 +177,19 @@ async function start(): Promise<void> {
     registration.addEventListener('updatefound', () => { const incoming = registration.installing; if (incoming) void takeOver(registration, incoming); });
     await navigator.serviceWorker.ready;
     // The first visit: the page is claimed once the worker is active.
-    if (!worker()) await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }));
+    if (!worker()) {
+      const controlled = await new Promise<boolean>((resolve) => {
+        const timer = setTimeout(() => resolve(false), CONTROL_WAIT_MS);
+        navigator.serviceWorker.addEventListener('controllerchange', () => { clearTimeout(timer); resolve(true); }, { once: true });
+      });
+      if (!controlled && !worker()) {
+        fail('The relay\'s service worker does not control this page: the module\'s files cannot be served to it.');
+        // If the browser gives it the page later, it goes on as if it had at once.
+        await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }));
+      }
+    }
     hello = await askWorker();
-    if (!hello?.appOrigin) return;
+    if (!hello?.appOrigin) { fail('The relay\'s service worker does not name the app that frames this page.'); return; }
     tell({ type: 'relay/ready', protocol: RELAY_PROTOCOL, version: hello.version, host: role });
     // A new script takes the page over: it is told what this page holds, and the app which version runs.
     navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -179,7 +201,7 @@ async function start(): Promise<void> {
       });
     });
   } catch (error) {
-    if (hello?.appOrigin) tell({ type: 'relay/error', protocol: RELAY_PROTOCOL, message: error instanceof Error ? error.message : String(error) });
+    fail(error instanceof Error ? error.message : String(error));
   }
 }
 

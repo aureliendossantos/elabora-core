@@ -327,7 +327,7 @@ test('canvas: elabora/focus moves a picture\'s crop at once, without a render; t
     await page.exposeFunction('tell', (message: unknown) => told.push(message));
     await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.onMessage((message) => (window as unknown as { tell: (m: unknown) => void }).tell(message)));
     await focus({ type: 'elabora/focus', block: 'absent', x: 0.5, y: 0.5 });
-    for (let i = 0; i < 50 && !told.length; i++) await new Promise((resolve) => setTimeout(resolve, 20));
+    for (let i = 0; i < 250 && !told.length; i++) await new Promise((resolve) => setTimeout(resolve, 20));
     assert.deepEqual(told, [{ type: 'elabora/error', id: null, message: 'elabora/focus: no block "absent" on the screen shown.' }]);
     assert.deepEqual(errors, []);
   });
