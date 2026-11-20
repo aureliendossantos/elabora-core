@@ -20,6 +20,7 @@ import { BrowserMedia } from './media/service.ts';
 import type { Attachments } from './media/service.ts';
 import type { MediaWorker } from './worker-client.ts';
 import { screenRenderOf } from '@elabora/core/render/screen';
+import type { RenderedFileKind } from '@elabora/core/render/screen';
 import { WriteQueue } from '../base/queue.ts';
 import { Batches } from '../base/batches.ts';
 import { changeView, diagnosticsEvent } from '../base/events.ts';
@@ -88,6 +89,8 @@ export class BrowserSession {
   readonly #entries: JournalEntry[];
   readonly #renderer = new Renderer();
   readonly #canvas: SessionCanvas;
+  // The files the canvas's renders named: what the relay serves the canvas host.
+  readonly #named = new Map<string, RenderedFileKind>();
   readonly #media: BrowserMedia | null;
   readonly #reads: SessionReads;
   readonly #batches: Batches;
@@ -152,7 +155,10 @@ export class BrowserSession {
       project: () => this.#state.project, renderer: this.#renderer, reportError: (error, context) => this.#emitError(error, context),
       sink: async () => ({
         url: '', base: '', token: '', pages: 1,
-        push: (render, { id }) => this.#emit({ type: 'canvasRender', id, render: screenRenderOf(render) }),
+        push: (render, { id }) => {
+          for (const file of render.files) this.#named.set(file.path, file.kind);
+          this.#emit({ type: 'canvasRender', id, render: screenRenderOf(render) });
+        },
         view: (view, { id }) => { this.#emit({ type: 'canvasView', id, view }); return 1; },
         close: () => {}
       })
@@ -349,7 +355,7 @@ export class BrowserSession {
     if (host !== 'canvas' && host !== 'frames') throw new EngineError('bad-request', 'relayPort takes host: canvas or frames');
     if (!port) throw new EngineError('bad-request', 'relayPort takes the port transferred with its message');
     const store = this.#store;
-    const end = serveRelayPort(port, relaySource(host, { files: () => this.#state.files, project: () => this.#state.project, medium: (hash) => store.medium(hash), ...(store.mediumPart ? { part: (hash: string, start: number, end: number) => store.mediumPart!(hash, start, end) } : {}), ...(this.#objects ? { objects: this.#objects } : {}) }), host);
+    const end = serveRelayPort(port, relaySource(host, { files: () => this.#state.files, project: () => this.#state.project, medium: (hash) => store.medium(hash), named: () => this.#named, ...(store.mediumPart ? { part: (hash: string, start: number, end: number) => store.mediumPart!(hash, start, end) } : {}), ...(this.#objects ? { objects: this.#objects } : {}) }), host);
     this.#relays.add(end);
     return {};
   }

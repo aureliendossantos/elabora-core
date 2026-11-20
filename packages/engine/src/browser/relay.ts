@@ -2,6 +2,8 @@ import type { Project } from '@elabora/core/project/model';
 import type { ProjectFiles } from '@elabora/core/project/files';
 import { compileObjectFromFiles, objectFrameHtml, type ObjectBundler, type ObjectLibraries } from '@elabora/core/objects/bundle';
 import { mediaTypeOf } from '@elabora/core/util/media-types';
+import { servedFileKind } from '@elabora/core/render/screen';
+import type { RenderedFileKind } from '@elabora/core/render/screen';
 import { resolveRange } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayHost, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 
@@ -24,6 +26,8 @@ export interface RelayFrom {
   // A part of a medium, without taking it whole (a long video the page plays by ranges).
   part?(hash: string, start: number, end: number): Promise<Blob | null>;
   objects?: () => Promise<ObjectCompiler>;
+  // The files the canvas's renders named so far, by path (the canvas host serves only those).
+  named?: () => ReadonlyMap<string, RenderedFileKind>;
 }
 
 const ENCODER = new TextEncoder();
@@ -34,6 +38,8 @@ export function relaySource(host: RelayHost, from: RelayFrom): RelaySource {
   return {
     async get(request: RelayRequest): Promise<RelayAnswer> {
       if (request.kind === 'file') {
+        // The canvas host gets only what a render named, as the desktop's local server (servedFileKind).
+        if (host === 'canvas' && !servedFileKind(from.named?.() ?? new Map(), request.path)) return { status: 'not-found' };
         const file = from.files().get(request.path);
         if (!file) return { status: 'not-found' };
         const type = mediaTypeOf(request.path);

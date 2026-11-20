@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { ObjectManifest } from '@elabora/format';
+import { servedFileKind } from '@elabora/core/render/screen';
 import type { RenderedFileKind } from '@elabora/core/render/screen';
 import { projectPath } from '@elabora/core/project/files';
 import { objectFrameHtml } from '@elabora/core/objects/bundle';
@@ -13,11 +14,6 @@ import type { RelayAnswer, RelaySource } from '@elabora/player/relay-protocol';
 import { compileObjectCode, bundleErrorMessage } from '../bundles.ts';
 import { mimeType } from '../http/files.ts';
 
-// A narration line's audio (docs/decisions.md D24), which no render lists: the editor plays it.
-const NARRATION_AUDIO = /^assets\/narration\/[^/]+\/[^/]+\/[^/]+\.m4a$/;
-// A sound of the course (D67): the editor's sound browser and inspector play it on any screen, and a
-// sound just added or made is in no render yet.
-const COURSE_SOUND = /^assets\/sounds\/[^/]+\.(?:flac|m4a|mp3|ogg|oga|opus|wav)$/;
 
 export interface FolderSourceOptions {
   // The project folder.
@@ -47,9 +43,8 @@ export function folderRelaySource({ root, debug, allowed, language }: FolderSour
     async get(request): Promise<RelayAnswer> {
       if (request.kind === 'file') {
         const rel = projectPath(request.path);
-        const kind = rel === null ? undefined : allowed().get(rel) ?? (NARRATION_AUDIO.test(rel) || COURSE_SOUND.test(rel) ? 'asset' : undefined);
-        // A frame's page and its code are made, never read as files.
-        if (rel === null || !kind || kind === 'object-frame' || kind === 'object-code') return { status: 'not-found' };
+        // Only what the renders named (the core's rule, servedFileKind).
+        if (rel === null || !servedFileKind(allowed(), rel)) return { status: 'not-found' };
         const file = path.join(folder, ...rel.split('/'));
         let stat: fs.Stats;
         try { stat = fs.statSync(file); } catch { return { status: 'not-found' }; }

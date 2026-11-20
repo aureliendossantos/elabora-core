@@ -41,7 +41,7 @@ test('relay sources: the folder and the browser engine answer a file, an object\
       return found ? new Blob([fs.readFileSync(path.join(root, found[0]))]) : null;
     };
     const frames = relaySource('frames', { files: () => files, project: () => project, medium, objects: async () => ({ bundler: wasm, libraries: { d3: { contents: sources.d3 }, charts: { contents: sources.charts } } }) });
-    const canvas = relaySource('canvas', { files: () => files, project: () => project, medium });
+    const canvas = relaySource('canvas', { files: () => files, project: () => project, medium, named: () => listed });
 
     // Every file a render listed that is a file.
     const asked: string[] = [];
@@ -69,10 +69,9 @@ test('relay sources: the folder and the browser engine answer a file, an object\
       assert.equal(a.type, b.type, file);
       assert.ok((await bytesOf(a)).equals(await bytesOf(b)), `${file}: the same bytes`);
     }
-    // Not the same: a file no render listed is the folder's to refuse (it holds more than the module), and what
-    // neither has is nobody's.
+    // A file no render listed is refused by both: the canvas host gets only what the renders named.
     assert.equal((await folder.get({ kind: 'file', path: 'course.json' })).status, 'not-found');
-    assert.equal((await canvas.get({ kind: 'file', path: 'course.json' })).status, 'ok');
+    assert.equal((await canvas.get({ kind: 'file', path: 'course.json' })).status, 'not-found');
     for (const source of [folder, canvas]) assert.equal((await source.get({ kind: 'file', path: 'assets/none.png' })).status, 'not-found');
     assert.equal((await folder.get({ kind: 'object-code', object: 'unlisted' })).status, 'not-found');
     // A file is read as it is asked: a range of a folder's file is the bytes of the range.

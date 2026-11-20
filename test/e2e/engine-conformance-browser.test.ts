@@ -213,15 +213,21 @@ test('a copy the browser does not hold is taken from the room\'s project, with t
   }
 });
 
-test('browser relay: a port transferred to the Worker answers the canvas from the copy; a medium not kept, offline, is not here yet', { timeout: 120_000 }, async () => {
-  const engine = await worker({ kind: 'open', team: 'tm_test', project: 'relayed', seed: seedOf('network'), api: 'http://localhost:1', offline: true });
+test('browser relay: a port transferred to the Worker answers the canvas host the files its renders named, nothing else of the copy; a medium not kept, offline, is not here yet', { timeout: 120_000 }, async () => {
+  const seed = seedOf('network');
+  // What an author may put anywhere in a module: never served to the canvas host.
+  seed.confirmed.push(['assets/page.html', { kind: 'text', text: '<!doctype html><p>a page' }], ['assets/run.js', { kind: 'text', text: 'export {}' }]);
+  const engine = await worker({ kind: 'open', team: 'tm_test', project: 'relayed', seed, api: 'http://localhost:1', offline: true, services: ['canvas'] });
   assert.equal(engine.first.kind, 'opened');
-  const answers = await relayAsks(engine.id, 'canvas', [{ kind: 'file', path: 'screens/chemin.json' }, { kind: 'file', path: 'assets/narration/fr/chemin/chemin-depart.m4a' }]);
+  await ask(engine, 'openCanvas', {});
+  await ask(engine, 'canvasView', { screen: 'chemin' });
+  const asked = ['assets/images/logo-helios.svg', 'assets/narration/fr/chemin/chemin-depart.m4a', 'course.json', 'screens/chemin.json', 'assets/page.html', 'assets/run.js'];
+  const answers = await relayAsks(engine.id, 'canvas', asked.map((path) => ({ kind: 'file', path })));
   assert.equal(answers.ok, true);
-  const [screen, audio] = answers.answers;
-  assert.deepEqual([screen.status, screen.type], ['ok', 'application/json']);
-  assert.match(screen.text ?? "", /^\{\n  "\$schema"/);
+  const [logo, audio, ...unnamed] = answers.answers;
+  assert.deepEqual([logo.status, logo.type], ['ok', 'image/svg+xml']);
   assert.equal(audio.status, 'unavailable');
+  assert.deepEqual(unnamed.map((answer) => answer.status), ['not-found', 'not-found', 'not-found', 'not-found'], 'named by no render');
   await ask(engine, 'close', {});
   await engine.end();
 });

@@ -28,7 +28,8 @@ test('WebKit: the media an app ships are kept and served by the engine\'s Worker
     const { files } = readProjectFiles(NETWORK_SAMPLE);
     const shipped = new Map<string, Buffer>();
     for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) shipped.set(file.hash, fs.readFileSync(path.join(NETWORK_SAMPLE, rel)));
-    const media = [...files].filter(([, file]) => file.kind === 'binary').map(([rel]) => rel).slice(0, 4);
+    // A narration's lines: what the canvas host serves without a render (servedFileKind).
+    const media = [...files].filter(([rel, file]) => file.kind === 'binary' && rel.startsWith('assets/narration/')).map(([rel]) => rel).slice(0, 4);
     const worker = await bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
 provideMedia(async (hash) => { const response = await fetch('/media/' + hash); return response.ok ? response.blob() : null; });` });
     const page = context.pages()[0] ?? await context.newPage();
