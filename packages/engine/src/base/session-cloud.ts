@@ -419,7 +419,11 @@ export class SessionCloud {
       return;
     }
     if (message.type === 'ack' || message.type === 'change' || message.type === 'catchup' || message.type === 'media') {
-      for (const [hash, known] of readKnownMedia(message.media)) this.#media.set(hash, known);
+      for (const [hash, known] of readKnownMedia(message.media)) {
+        this.#media.set(hash, known);
+        // Facts an owner dropped (elabora-cloud C111): this copy, if it holds the bytes, gives its own again.
+        if (!known.facts) this.#offered.delete(hash);
+      }
     }
   }
 

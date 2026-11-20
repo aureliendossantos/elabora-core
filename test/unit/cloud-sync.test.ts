@@ -695,4 +695,9 @@ test('a folder gives the facts of its media in passing to a room that keeps them
   const answered = Date.now();
   while (!readLink(A)?.media?.[hash]?.facts && Date.now() - answered < 20_000) await new Promise((resolve) => setTimeout(resolve, 25));
   assert.deepEqual(readLink(A)?.media?.[hash], { size: point.length, facts: room.facts.get(hash) });
+  // An owner drops them (elabora-cloud C111): the folder, which holds the bytes, gives its own again.
+  room.forget(hash);
+  const forgotten = Date.now();
+  while (!room.facts.has(hash) && Date.now() - forgotten < 20_000) await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.deepEqual([room.facts.get(hash)?.kind, room.mediaMessages], ['image', 2]);
 });
