@@ -47,13 +47,27 @@ function ort(): Promise<OrtWeb> {
   return runtime;
 }
 
+// What onnxruntime-web says when its memory cannot grow: the computer has too little of it for this
+// model (Safari and Firefox do not say how much they have, D113). The runtime is loaded again after it.
+const OUT_OF_MEMORY = /out of memory|Memory\.grow|maximum memory|bad_alloc|failed to allocate|\bOOM\b/i;
+
+function failure(error: unknown): ModelsAnswer {
+  const message = error instanceof Error ? error.message : String(error);
+  if (OUT_OF_MEMORY.test(message)) {
+    runtime = null;
+    loaded = null;
+    return { error: 'This computer has too little memory free for this model: close other tabs or programs, then try again.', code: 'E_LOCAL_AI_MEMORY' };
+  }
+  const code = (error as { code?: unknown } | null)?.code;
+  return { error: message, ...(typeof code === 'string' ? { code } : {}) };
+}
+
 scope.onmessage = ({ data }) => {
   if (data.kind === 'init') { init = data.init; return; }
   if (data.kind !== 'ask') return;
   const { id, ask } = data;
   // One job at a time: each waits for the one before.
-  queue = queue.then(() => answer(ask)).catch((error: unknown) => ({ error: error instanceof Error ? error.message : String(error), ...(typeof (error as { code?: unknown })?.code === 'string' ? { code: (error as { code: string }).code } : {}) }))
-    .then((result) => scope.postMessage({ id, answer: result as ModelsAnswer }));
+  queue = queue.then(() => answer(ask)).catch(failure).then((result) => scope.postMessage({ id, answer: result }));
 };
 
 async function answer(ask: ModelsAsk): Promise<ModelsAnswer> {

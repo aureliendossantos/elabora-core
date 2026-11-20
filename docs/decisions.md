@@ -27,6 +27,8 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D110](decisions/D110.md) | Every command in the table, each saying what it expects from its host | 19 Nov 2026 |
 | [D111](decisions/D111.md) | A new module's files made by the core, from a template it carries | 19 Nov 2026 |
 | [D112](decisions/D112.md) | A new module's files, the first change of an empty project | 19 Nov 2026 |
+| [D113](decisions/D113.md) | Models in a browser: from the origin the host names, checked as they come, kept in the origin's private file system, refused where they cannot run | 20 Nov 2026 |
+| [D114](decisions/D114.md) | A browser's models run in a Worker of their own, onnxruntime-web loaded by address, the code that reads numbers in the core | 20 Nov 2026 |
 | [D115](decisions/D115.md) | What the canvas shows is asked of it by messages, not by scripts injected into its page | 18 Nov 2026 |
 | [D116](decisions/D116.md) | Free objects' frames from an origin of their own, for a page served on the web | 18 Nov 2026 |
 | [D117](decisions/D117.md) | A free object's code is bundled by a part that needs no Node, given esbuild and its libraries | 18 Nov 2026 |

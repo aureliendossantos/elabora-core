@@ -90,6 +90,8 @@ export class BrowserAlign {
           if (seq !== null) result.changes.push(seq);
           result.lines.push(alignedLine(this.#host.project(), line, language, words));
         } catch (error) {
+          // Too little memory for the model fails every line the same way: the run stops, said why.
+          if ((error as { code?: string }).code === 'E_LOCAL_AI_MEMORY') throw new EngineError('not-available', (error as Error).message, { code: 'E_LOCAL_AI_MEMORY' });
           result.lines.push({ screen: line.screen, line: line.line, status: 'failed', reason: error instanceof Error ? error.message : String(error) });
         }
       }
