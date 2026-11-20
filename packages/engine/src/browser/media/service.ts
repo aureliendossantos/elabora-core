@@ -32,6 +32,9 @@ export interface MediaHost {
   // A change of the media, journaled in the session's queue (source media); its number.
   journal(contents: NewContents): Promise<number | null>;
   emit(event: EngineEvent): void;
+  // A line's words timed at once when it is written, where the align service keeps the aligner of its
+  // language (D27): what the desktop's lineAudio gives too.
+  wordsAtOnce?(language: string, audio: Blob, duration: number | null, text: string): Promise<{ words: NonNullable<HostNeeds['lineAudio']['words']>; aligner: string } | { alignmentError: string } | null>;
 }
 
 export interface ImportedRecording {
@@ -220,12 +223,19 @@ export class BrowserMedia {
       if (!duration) throw new EngineError('refused', `${name}: its length could not be read.`, { code: 'E_MEDIA_UNREADABLE' });
       // Its bytes are kept already (keep): the command brings none of its own.
       const audio = { audio: { size, hash: hash as `sha256:${string}` }, duration, createdAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), bytes: new Map() };
-      if (need === 'lineAudio') return { ...audio, ...(Array.isArray(args.words) ? { words: args.words as HostNeeds['lineAudio']['words'], ...(typeof args.aligner === 'string' ? { aligner: args.aligner } : {}) } : {}) };
       const project = this.#host.project();
+      const language = (typeof args.language === 'string' && args.language) || project.course?.language || '';
+      if (need === 'lineAudio') {
+        if (Array.isArray(args.words)) return { ...audio, words: args.words as HostNeeds['lineAudio']['words'], ...(typeof args.aligner === 'string' ? { aligner: args.aligner } : {}) };
+        const text = typeof args.screen === 'string' ? narrationLines(project, args.screen, language)?.find((line) => line.id === args.line)?.text : null;
+        const timed = text ? await this.#host.wordsAtOnce?.(language, made.master.file, duration, text) : null;
+        return { ...audio, ...(timed ?? {}) };
+      }
       const text = typeof args.text === 'string' ? args.text.replace(/\s+/g, ' ').trim() : '';
       // Without its text, a recording must be heard: the transcribe service, not in this browser.
       if (!text) throw new EngineError('not-available', 'A line made from a recording needs its text here: hearing it needs the transcribe service.', { code: 'E_NOT_HERE' });
-      return { ...audio, language: (typeof args.language === 'string' && args.language) || project.course?.language || '', text, voice: name };
+      const timed = await this.#host.wordsAtOnce?.(language, made.master.file, duration, text);
+      return { ...audio, ...(timed && 'words' in timed ? timed : {}), language, text, voice: name };
     }
     if (need === 'resourceFile') {
       const { file, name } = attached(attachments, args.path, 'path');

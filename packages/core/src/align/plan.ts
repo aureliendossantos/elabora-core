@@ -56,3 +56,15 @@ export function alignedLine(project: Project, line: LineToAlign, language: strin
   const doubtful = doubtfulWords(words).filter((word) => !take || !ignored.has(swallowedKey(line.screen, line.line, language, word, take))).map(({ word, score }) => ({ word, score }));
   return { screen: line.screen, line: line.line, status: 'aligned', words: words.length, ...(doubtful.length ? { doubtful } : {}) };
 }
+
+// The audio a line's sidecar says its words are timed on: set_narration_words refuses them when the
+// line's audio changed since.
+export function sidecarAudioHash(project: Project, sidecar: string | undefined): `sha256:${string}` | null {
+  if (!sidecar) return null;
+  const entry = project.files.get(sidecar);
+  if (entry?.kind !== 'text') return null;
+  try {
+    const hash = (JSON.parse(entry.text) as { audioHash?: unknown }).audioHash;
+    return typeof hash === 'string' && hash.startsWith('sha256:') ? hash as `sha256:${string}` : null;
+  } catch { return null; }
+}

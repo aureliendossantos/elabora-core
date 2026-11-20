@@ -13,15 +13,16 @@ import type { OnnxRuntime, OnnxSession } from '@elabora/core/util/onnx';
 import { useModel } from './store.ts';
 import type { WorkerMessage } from '../worker-client.ts';
 
-// ort: onnxruntime-web's ESM build (ort.wasm.min.mjs); wasm: the folder its .wasm and .mjs files are in.
-export type ModelsInit = { ort: string; wasm: string };
+// ort: onnxruntime-web's ESM build (ort.wasm.min.mjs); wasm: the folder its .wasm and .mjs files are in,
+// or each one's address.
+export type ModelsInit = { ort: string; wasm: string | { mjs: string; wasm: string } };
 
 export type ModelsAsk = { op: 'align'; model: AlignerModel; samples: Float32Array; text: string; language: string };
 
 export type ModelsAnswer = { alignment: Alignment } | { error: string; code?: string };
 
 type OrtWeb = OnnxRuntime & {
-  env: { wasm: { wasmPaths?: string; numThreads?: number } };
+  env: { wasm: { wasmPaths?: string | { mjs: string; wasm: string }; numThreads?: number } };
   InferenceSession: { create(model: Uint8Array, options: object): Promise<OnnxSession> };
 };
 
@@ -39,11 +40,26 @@ function ort(): Promise<OrtWeb> {
   const { ort: url, wasm } = init;
   runtime ??= (import(/* @vite-ignore */ url) as Promise<OrtWeb & { default?: OrtWeb }>).then((module) => {
     const loadedRuntime = (module.InferenceSession ? module : module.default) as OrtWeb;
-    loadedRuntime.env.wasm.wasmPaths = wasm.endsWith('/') ? wasm : `${wasm}/`;
+    loadedRuntime.env.wasm.wasmPaths = typeof wasm !== 'string' ? wasm : wasm.endsWith('/') ? wasm : `${wasm}/`;
     loadedRuntime.env.wasm.numThreads = threadsHere();
     return loadedRuntime;
   });
   return runtime;
+}
+
+// What onnxruntime-web says when its memory cannot grow: the computer has too little of it for this
+// model (Safari and Firefox do not say how much they have, D113). The runtime is loaded again after it.
+const OUT_OF_MEMORY = /out of memory|Memory\.grow|maximum memory|bad_alloc|failed to allocate|\bOOM\b/i;
+
+function failure(error: unknown): ModelsAnswer {
+  const message = error instanceof Error ? error.message : String(error);
+  if (OUT_OF_MEMORY.test(message)) {
+    runtime = null;
+    loaded = null;
+    return { error: 'This computer has too little memory free for this model: close other tabs or programs, then try again.', code: 'E_LOCAL_AI_MEMORY' };
+  }
+  const code = (error as { code?: unknown } | null)?.code;
+  return { error: message, ...(typeof code === 'string' ? { code } : {}) };
 }
 
 scope.onmessage = ({ data }) => {
@@ -51,8 +67,7 @@ scope.onmessage = ({ data }) => {
   if (data.kind !== 'ask') return;
   const { id, ask } = data;
   // One job at a time: each waits for the one before.
-  queue = queue.then(() => answer(ask)).catch((error: unknown) => ({ error: error instanceof Error ? error.message : String(error), ...(typeof (error as { code?: unknown })?.code === 'string' ? { code: (error as { code: string }).code } : {}) }))
-    .then((result) => scope.postMessage({ id, answer: result as ModelsAnswer }));
+  queue = queue.then(() => answer(ask)).catch(failure).then((result) => scope.postMessage({ id, answer: result }));
 };
 
 async function answer(ask: ModelsAsk): Promise<ModelsAnswer> {

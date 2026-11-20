@@ -9,7 +9,7 @@ import { probeFile, MediaUnreadable } from './probe.ts';
 import { canWriteWebp, imageMaster, MediaEncoderMissing, MediaNotDecodable } from './image.ts';
 import { masterPlan } from '@elabora/core/media/conformance';
 import { fileTarget, videoMaster } from './video.ts';
-import { lineAudio, linePeaks, soundMaster } from './audio.ts';
+import { lineAudio, linePeaks, monoSamples, soundMaster } from './audio.ts';
 import { provideAac } from './encoders.ts';
 import type { WorkerMessage } from '../worker-client.ts';
 
@@ -17,7 +17,9 @@ export type MediaAsk =
   | { op: 'probe'; file: Blob; name: string }
   // import: a medium's master by the desktop's plan; line: a narration line's audio; sound: a sound of the course.
   | { op: 'master'; kind: 'import' | 'line' | 'sound'; file: Blob; name: string; trim?: boolean; loops?: boolean }
-  | { op: 'peaks'; file: Blob; name: string; perSecond: number; duration: number | null };
+  | { op: 'peaks'; file: Blob; name: string; perSecond: number; duration: number | null }
+  // A line's samples for the word aligner: mono, at rate (16 kHz), as ffmpeg reads them.
+  | { op: 'samples'; file: Blob; name: string; rate: number; duration: number | null };
 
 export type MediaAnswer =
   // extension: the master's an import will write (null: the input's).
@@ -25,6 +27,7 @@ export type MediaAnswer =
   // file: the master (the input itself when kept as it is), info: its facts; extension: null when the input's.
   | { master: { file: Blob; extension: string | null; action: string; info: MediaInfo } }
   | { peaks: Uint8Array }
+  | { samples: Float32Array }
   | { error: string; code?: string };
 
 // The engine's Worker's messages: init (once), a question by id, or a cancel of one.
@@ -52,6 +55,7 @@ const codeOf = (error: unknown): string | undefined =>
 
 async function answer(id: number, ask: MediaAsk, signal: AbortSignal): Promise<MediaAnswer> {
   if (ask.op === 'peaks') return { peaks: await linePeaks(ask.file, ask.name, ask.perSecond, ask.duration) };
+  if (ask.op === 'samples') return { samples: await monoSamples(ask.file, ask.name, ask.rate, ask.duration) };
   const info = await probeFile(ask.file, ask.name);
   if (ask.op === 'probe') return { info, extension: info.kind === 'vector' ? null : masterPlan(info, { importing: true, webp: info.kind !== 'image' || await canWriteWebp() }).extension };
   if (info.kind === 'image' && ask.kind === 'import') {
