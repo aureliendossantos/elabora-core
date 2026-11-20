@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import { withoutDirections } from '@elabora/core/narration/directions';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import type { Rules } from './worker.ts';
+import { DEFAULT_TEMPERATURE, RULES } from '@elabora/core/voice/pocket/models';
+import type { CatalogueVoice } from '@elabora/core/voice/pocket/models';
 import { PocketThread } from './thread.ts';
 import { acquireBundle, bundleVersionState, bundleDir, bundleDownloading, bundleFor, bundleInUse, bundleOnDisk, bundles, bundleSize, holdBundle, installBundle, isInstalled, uninstallBundle } from './models.ts';
 import { VoiceError } from '../provider.ts';
@@ -15,12 +16,7 @@ import { localAiSupported, requireLocalAi } from '../../models/platform.ts';
 // language is downloaded on first use (models.ts). The model speaks in a worker thread (thread.ts),
 // one at a time in memory, freed after two idle minutes.
 
-export interface CatalogueVoice extends Omit<VoiceInfo, 'provider'> {
-  bundle: string;
-  file: string;      // embeddings, float16, frames × 1024, relative to the catalogue
-  frames: number;
-  sha256: string;
-}
+export type { CatalogueVoice } from '@elabora/core/voice/pocket/models';
 
 export const CATALOGUE_DIR = fileURLToPath(new URL('../../../voices/pocket-tts/', import.meta.url));
 
@@ -34,17 +30,7 @@ export function pocketCatalogue(): CatalogueVoice[] {
   return catalogue;
 }
 
-// Kyutai's pocket_tts/config/<bundle>.yaml: characters absent from the training data.
-const RULES: Readonly<Record<string, Rules>> = {
-  french_24l: {
-    replaceCharacters: { '"': '', '“': '', '”': '', '„': '', '«': '', '»': '', '’': "'", '‘': "'", ':': ',', '(': '', ')': '', '[': '', ']': '' }
-  },
-  'english_2026-04': { replaceCharacters: {} }
-};
-
-// Temperature 0.5: measured on French voices made from recordings, fewer failed takes than
-// Kyutai's 0.3 (some voices fall silent) and fewer slips than 0.7.
-export const DEFAULT_TEMPERATURE = 0.5;
+export { DEFAULT_TEMPERATURE } from '@elabora/core/voice/pocket/models';
 
 const primary = (language: string) => language.toLowerCase().split('-')[0];
 
