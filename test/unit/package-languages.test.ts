@@ -39,7 +39,7 @@ test('a translation named goes in as it is, said; all keeps the ready and approv
   assert.match(named.diagnostics.find((d) => d.code === 'W_PACKAGE_LANGUAGE_NOT_APPROVED')!.message, /tell the author/);
 
   // A text changed since: French goes in with it in English, said.
-  edit.updateCourseSettings(dir, { title: 'Orbital rendezvous, again' });
+  edit.run(dir, 'update_course', { title: 'Orbital rendezvous, again' });
   const stale = await build(dir, { out: path.join(out, 'stale'), emit: 'dir', target: 'web', writeLock: false, languages: ['fr'] });
   assert.ok(stale.ok);
   assert.deepEqual(codes(stale.diagnostics), ['W_PACKAGE_LANGUAGE_INCOMPLETE fr', 'W_PACKAGE_LANGUAGE_NOT_APPROVED fr']);
@@ -50,7 +50,7 @@ test('a translation named goes in as it is, said; all keeps the ready and approv
 test('course.json delivery.languages and defaultLanguage: what every build holds, and where learners start', async () => {
   const dir = copyCourse(BILINGUAL);
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-languages-'));
-  edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'], defaultLanguage: 'fr' } });
+  edit.run(dir, 'update_course', { delivery: { languages: ['en', 'fr'], defaultLanguage: 'fr' } });
   const kept = await build(dir, { out: path.join(out, 'kept'), emit: 'dir', target: 'web', writeLock: false });
   assert.ok(kept.ok);
   const data = courseData(kept.files);
@@ -59,7 +59,7 @@ test('course.json delivery.languages and defaultLanguage: what every build holds
   // The French course data does not carry it again: the player reads the course's own.
   assert.equal(courseData(kept.files, 'elabora/course.fr.js').defaultLanguage, undefined);
   // all follows the approvals; a default the package does not hold is said, and learners start in English.
-  edit.updateCourseSettings(dir, { delivery: { languages: 'all', defaultLanguage: 'de' } });
+  edit.run(dir, 'update_course', { delivery: { languages: 'all', defaultLanguage: 'de' } });
   const all = await build(dir, { out: path.join(out, 'all'), emit: 'dir', target: 'web', writeLock: false });
   assert.ok(all.ok);
   assert.deepEqual([courseData(all.files).languages, courseData(all.files).defaultLanguage], [['en', 'fr'], undefined]);
@@ -74,7 +74,7 @@ test('course.json delivery.languages and defaultLanguage: what every build holds
 test('the Aperçu tries every translation, approved or not, with « Langue » shown whatever the player says', async () => {
   const dir = copyCourse(BILINGUAL);
   fs.rmSync(path.join(dir, 'translations/fr.approval.json'));
-  edit.updatePlayer(dir, { disable: ['language'] });
+  edit.run(dir, 'update_player', { disable: ['language'] });
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-languages-'));
   const tried = await build(dir, { out, emit: 'dir', writeLock: false, preview: true, tryLanguages: true, media: 'link' });
   assert.ok(tried.ok);
@@ -89,7 +89,7 @@ test('one package per language: the course\'s own, then each language asked, as 
   const dir = copyCourse(BILINGUAL);
   fs.rmSync(path.join(dir, 'translations/fr.approval.json'));
   assert.equal(languagePackagesOf(dir), 'one');
-  edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'], languagePackages: 'each' } });
+  edit.run(dir, 'update_course', { delivery: { languages: ['en', 'fr'], languagePackages: 'each' } });
   assert.equal(languagePackagesOf(dir), 'each');
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-languages-'));
   const made = await buildLanguagePackages(dir, { out, writeLock: false });

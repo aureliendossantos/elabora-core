@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../helpers.ts';
 import { builtinTemplatesModule, OUTPUT } from '../../scripts/gen-builtin-templates.ts';
+import { courseTemplateModule, OUTPUT as COURSE_TEMPLATE_OUTPUT } from '../../scripts/gen-course-template.ts';
 import { PROFILE_FILES, listProfiles } from '@elabora/core/lms/profiles';
 
 // format, player, fonts and core run in browsers and workers too: no Node module, no process, no
@@ -43,6 +44,10 @@ test('format, player, fonts and core use no Node API and no Node package', () =>
 
 test('the built-in templates module is generated from the current templates', () => {
   assert.equal(fs.readFileSync(OUTPUT, 'utf8'), builtinTemplatesModule(), 'run pnpm run gen');
+});
+
+test('the template of a new course and its rules for agents are the core\'s as generated', () => {
+  assert.equal(fs.readFileSync(COURSE_TEMPLATE_OUTPUT, 'utf8'), courseTemplateModule(), 'run pnpm run gen');
 });
 
 test('every LMS profile file is imported, in file name order', () => {

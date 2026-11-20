@@ -512,13 +512,13 @@ describe('the app\'s import: the brief, the report settled, the choices made aga
     await importCourse({ file: asZip('published.zip', storylinePublishedFiles()), dir });
     const decisions = readJson(dir, IMPORT_REPORT_FILE).decisions as { accepted?: boolean }[];
     assert.ok(decisions.length > 1);
-    edit.settleImportReport(dir, { accept: [1] });
+    edit.run(dir, 'settle_import_report', { accept: [1] });
     assert.equal(readJson(dir, IMPORT_REPORT_FILE).decisions[1].accepted, true);
     assert.equal(readJson(dir, IMPORT_REPORT_FILE).decisions[0].accepted, undefined);
-    assert.throws(() => edit.settleImportReport(dir, { accept: [decisions.length] }), /has no decision/);
-    edit.settleImportReport(dir, { close: true });
+    assert.throws(() => edit.run(dir, 'settle_import_report', { accept: [decisions.length] }), /has no decision/);
+    edit.run(dir, 'settle_import_report', { close: true });
     assert.ok(!fs.existsSync(path.join(dir, IMPORT_REPORT_FILE)));
-    assert.throws(() => edit.settleImportReport(dir, { close: true }), (error: unknown) => (error as { code?: string }).code === 'E_NO_IMPORT_REPORT');
+    assert.throws(() => edit.run(dir, 'settle_import_report', { close: true }), (error: unknown) => (error as { code?: string }).code === 'E_NO_IMPORT_REPORT');
     edit.undo(dir);
     assert.equal(readJson(dir, IMPORT_REPORT_FILE).decisions[1].accepted, true);
     assert.equal(validateDir(dir).summary.errors, 0);
@@ -531,13 +531,13 @@ describe('the app\'s import: the brief, the report settled, the choices made aga
       const dir = first.dir;
       const id = path.basename(dir);
       // The author's work since: a renamed module, a note of theirs, a source, the audience retold.
-      edit.updateCourseSettings(dir, { title: 'Accueil en gare, version 2' });
+      edit.run(dir, 'update_course', { title: 'Accueil en gare, version 2' });
       fs.appendFileSync(path.join(dir, 'AGENTS.md'), 'Une note de l\'auteur.\n');
       fs.mkdirSync(path.join(dir, 'sources'));
       fs.writeFileSync(path.join(dir, 'sources', 'brief.docx'), 'le brief');
       const course = readJson(dir, 'course.json');
       const fonts = first.report.decisions.findIndex((decision) => decision.id === 'fonts');
-      edit.settleImportReport(dir, { accept: [fonts, first.report.decisions.findIndex((decision) => decision.id === 'timing')] });
+      edit.run(dir, 'settle_import_report', { accept: [fonts, first.report.decisions.findIndex((decision) => decision.id === 'timing')] });
       // Imported again from its own sources/, as the app does: the source closed before the folder moves.
       fs.copyFileSync(file, path.join(dir, 'sources', 'fixture.story'));
       const again = await importCourse({ file: path.join(dir, 'sources', 'fixture.story'), replace: id, choices: { ...first.report.choices, timing: 'steps' } });

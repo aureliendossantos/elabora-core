@@ -33,8 +33,8 @@ export const playerTool = defineTool({
   }),
   handler: ({ target, addResources, ...changes }, { root, author }) => {
     const asked = Object.entries(changes).some(([, value]) => value !== undefined);
-    const added = (addResources ?? []).map((file) => edit.addResource(root, file, { author })).map((result) => ({ ...editPayload(result), resource: result.resource, path: result.path, reused: result.reused, titleFrom: result.titleFrom }));
+    const added = (addResources ?? []).map((file) => edit.run(root, 'add_resource', file, { author })).map((result) => ({ ...editPayload(result), resource: result.resource, path: result.path, reused: result.reused, titleFrom: result.titleFrom }));
     if (!asked && !added.length) return textResult(playerReport(root, target));
-    return textResult({ ...(added.length ? { added } : {}), ...(asked ? editPayload(edit.updatePlayer(root, changes, { author })) : {}), player: playerReport(root, target) });
+    return textResult({ ...(added.length ? { added } : {}), ...(asked ? editPayload(edit.run(root, 'update_player', changes, { author })) : {}), player: playerReport(root, target) });
   }
 });

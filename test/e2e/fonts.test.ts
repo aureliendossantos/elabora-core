@@ -17,8 +17,8 @@ import type { PlayerWindow } from '../helpers.ts';
 
 test('elabora font add: the package draws its text with the fonts it carries, licence next to them', { timeout: 120000 }, async () => {
   const dir = copyExample();
-  edit.addFont(dir, { family: 'EB Garamond' });
-  edit.addFont(dir, { family: 'JetBrains Mono' });
+  edit.run(dir, 'add_font', { family: 'EB Garamond' });
+  edit.run(dir, 'add_font', { family: 'JetBrains Mono' });
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks.push({ id: 'accueil-commande', type: 'text', props: { markdown: 'La commande `elabora font list` montre les polices.' } });
   writeJSON(dir, 'screens/accueil.json', screen);
@@ -71,8 +71,8 @@ test('a course in Polish: its letters are drawn by the latin-ext files it embeds
   writeJSON(dir, 'course.json', { ...readJSON(dir, 'course.json'), language: 'pl' });
   // The body face in latin and latin-ext (what the course language needs), the heading face in
   // latin alone: the screen title shows what the next fonts of the stack draw without latin-ext.
-  edit.addFont(dir, { family: 'Lora', for: ['body'] });
-  edit.addFont(dir, { family: 'Inter', for: ['heading'], subsets: ['latin'] });
+  edit.run(dir, 'add_font', { family: 'Lora', for: ['body'] });
+  edit.run(dir, 'add_font', { family: 'Inter', for: ['heading'], subsets: ['latin'] });
   const words = 'Zażółć gęślą jaźń';
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.title = words;

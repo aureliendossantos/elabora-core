@@ -24,13 +24,13 @@ import { registerVoiceProvider, generateNarration, setSpeakerVoice } from '@elab
 import { toneProvider } from '@elabora/node/voice/tone';
 import { build } from '@elabora/node/build';
 import { importNarrationFiles } from '@elabora/node/narration/audio';
-import { setNarrationTextFromAudioChange } from '@elabora/node/edit';
 import { readZip } from '@elabora/node/zip';
 import { resolveComments } from '@elabora/node/cloud/resolve';
 import type { CloudReview, CommentsAnswer } from '@elabora/node/cloud/types';
 import { courseWithDialogue, MARC_DIALOGUE } from '../dialogue-fixture.ts';
 import { ROOT, readJSON, writeJSON, codes } from '../helpers.ts';
 import { hasFfmpeg } from '../narration.ts';
+import * as edit from '@elabora/node/edit';
 
 // The lines of dialogues are voice lines like the others (D61, D62): their sources, units, checks,
 // voices and audio in the package; the mouth's envelope; characters read, checked and sanitized.
@@ -355,11 +355,11 @@ test('recordings of a dialogue\'s lines go to their lines by name, and a recordi
   assert.deepEqual([sidecar.provider, sidecar.generated], ['recording', false]);
   assert.match(sidecar.mouth, /^[csow]+$/, 'a recording gets its mouth too');
   // « Texte d'après l'audio » (D46): the recording's words become the line's text, in the block.
-  await setNarrationTextFromAudioChange(dir, { screen: 'appel', line: 'm4', text: "Je l'ai débranché, puis rebranché." });
+  await edit.run(dir, 'set_narration_text_from_audio', { screen: 'appel', line: 'm4', text: "Je l'ai débranché, puis rebranché." });
   const screen = readJSON(dir, 'screens/appel.json');
   assert.equal(screen.blocks[0].props.nodes[2].lines[0].text, "Je l'ai débranché, puis rebranché.");
   assert.equal(narrationLines(loadProjectFromDir(dir), 'appel')!.find((line) => line.id === 'm4')!.status, 'ok', 'the audio says the new text');
-  await setNarrationTextFromAudioChange(dir, { screen: 'appel', line: 'premiere-question.a', text: 'Depuis quand ça ne marche plus ?' });
+  await edit.run(dir, 'set_narration_text_from_audio', { screen: 'appel', line: 'premiere-question.a', text: 'Depuis quand ça ne marche plus ?' });
   assert.equal(readJSON(dir, 'screens/appel.json').blocks[0].props.nodes[1].options[0].text, 'Depuis quand ça ne marche plus ?', 'the learner\'s answer');
 });
 

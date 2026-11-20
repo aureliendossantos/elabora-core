@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Author } from '@elabora/core/ops/types';
-import type { LocalChange } from '@elabora/core/sync/client';
+import type { CopyLink, Person } from '@elabora/core/sync/copy';
 import { projectDataDir } from '../data-dir.ts';
 import { readJSONFile, writeJSONFile } from '../util/fs.ts';
 import { CloudError } from './client.ts';
@@ -9,24 +8,16 @@ import { CloudError } from './client.ts';
 // A folder linked to a project in the cloud (D83): which project, who works here, what the room
 // confirmed and the changes made here that wait for it. In the project's data folder, never sent.
 
-export interface Person { id: string; name: string | null }
+export type { Person } from '@elabora/core/sync/copy';
 
 // ── the link of a folder to its project ──────────────────────────────
 
-export interface ProjectLink {
+// The copy's link (CopyLink), with the server it is on and what the room confirmed, by hash in the
+// folder's blob store.
+export interface ProjectLink extends CopyLink {
   format: 'elabora-cloud-project/1';
   api: string;
-  team: string;
-  project: string;
-  client: string;          // this copy, unique: prefixes the ids of the changes it sends
-  person: Person;          // who works in this folder: the journal names them (D78)
-  head: number;            // the room's number of the last change confirmed here
-  // The room's history that number belongs to (elabora-cloud C84): null in a new link (clone, push), the
-  // first welcome's then; absent in a link made before it, which counts as "0".
-  epoch?: string | null;
   confirmed: Record<string, string>; // path → text:<hash> or blob:<hash> in the blob store, at head
-  waiting: LocalChange[];  // changes made here the room has not placed yet, oldest first
-  journal: number;         // the last journal entry the copy took in
 }
 
 export const linkFile = (root: string): string => path.join(projectDataDir(root), 'cloud-project.json');
@@ -51,12 +42,4 @@ export function unlinkFolder(root: string): void {
   fs.rmSync(linkFile(root), { force: true });
 }
 
-
-// The author a linked folder's journal writes (D78): the folder's person, and as the one who
-// launched them, for agents and files edited by their own tools.
-export function stampAuthor(author: Author, person: Person | null | undefined): Author {
-  if (!person) return author;
-  if (author.kind === 'human' || author.kind === 'system') return author.id ? author : { ...author, id: person.id, ...(author.kind === 'human' && !author.name && person.name ? { name: person.name } : {}) };
-  return author.by ? author : { ...author, by: person.id };
-}
-
+export { stampAuthor } from '@elabora/core/sync/copy';

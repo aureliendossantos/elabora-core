@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { SOURCES_DIR } from '@elabora/core/project/files';
 import { translationStatus as statusOf, translatedCourse } from '@elabora/core/i18n/translate';
-import * as commands from '@elabora/core/commands/translation';
+import type { ApproveTranslationArgs } from '@elabora/core/commands/translation';
 import { stringifyJSON } from '@elabora/core/util/json';
 import { listGenerators } from '@elabora/core/project/generators';
 import { readXliff } from '@elabora/core/i18n/xliff';
@@ -12,7 +12,7 @@ import { runGenerators } from './generators.ts';
 import { writeFileAtomic } from './util/fs.ts';
 import { fieldOf } from './util/values.ts';
 import { projectDataDir } from './data-dir.ts';
-import { runCommand } from './edit/executor.ts';
+import { run } from './edit/index.ts';
 import type { EditOptions } from './edit/executor.ts';
 
 // `elabora translate` on a course folder: the core computes the files, this module reads and writes
@@ -22,7 +22,7 @@ export const translationFile = (dir: string, language: string): string => path.j
 
 // Create or update translations/<lang>.xlf.
 export function exportTranslation(dir: string, { to }: { to: string }, options?: EditOptions) {
-  const result = runCommand(dir, { name: 'export_translation', args: { to }, run: (context) => commands.exportTranslation(context, { to }) }, options);
+  const result = run(dir, 'export_translation', { to }, options);
   return { file: translationFile(dir, to), units: result.units, translated: result.translated, toTranslate: result.toTranslate, stale: result.stale, removed: result.removed, editor: result.editor, details: result.details, change: result.change, undo: result.undo };
 }
 
@@ -98,8 +98,8 @@ export async function withCourseLanguage<T>(dir: string, options: { language?: s
 
 // Approve the translated plan: stored with the source course. A person approves it; an agent, with the
 // author's yes (authorApproved, D70).
-export function approveTranslation(dir: string, args: commands.ApproveTranslationArgs, options?: EditOptions) {
-  return runCommand(dir, { name: 'approve_translation', args, run: (context) => commands.approveTranslation(context, args) }, options).approval;
+export function approveTranslation(dir: string, args: ApproveTranslationArgs, options?: EditOptions) {
+  return run(dir, 'approve_translation', args, options).approval;
 }
 
 // ── Reusing a translation ─────────────────────────────────────────────
@@ -138,6 +138,6 @@ export function reuseTranslation(dir: string, { to, from }: { to: string; from: 
   }
   if (!texts.length) return { language: to, from: source, reused: [], left };
   const args = { language: to, texts };
-  const result = runCommand(dir, { name: 'translate_text', args, run: (context) => commands.translateText(context, args) }, options);
+  const result = run(dir, 'translate_text', args, options);
   return { language: to, from: source, reused: texts.map((text) => text.unit), left, ...(result.change ? { change: result.change.seq } : {}) };
 }

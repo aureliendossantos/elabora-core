@@ -37,7 +37,7 @@ test('keys are permanent: inserting a screen keeps every existing key', () => {
   const dir = copyExample();
   const lock = readLock(loadProjectFromDir(dir));
   const before: Record<string, string> = assignKeys(loadProjectFromDir(dir), lock).keys;
-  edit.createScreen(dir, { id: 'nouvel-ecran', title: 'Nouvel écran', covers: ['ITEM-2'], after: 'accueil' });
+  edit.run(dir, 'create_screen', { id: 'nouvel-ecran', title: 'Nouvel écran', covers: ['ITEM-2'], after: 'accueil' });
   const after: Record<string, string> = assignKeys(loadProjectFromDir(dir), lock).keys;
   for (const [ent, key] of Object.entries(before)) assert.equal(after[ent], key, ent);
   assert.ok(after['screen:nouvel-ecran']);

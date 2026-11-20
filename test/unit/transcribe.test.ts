@@ -12,7 +12,7 @@ import { narrationLines } from '@elabora/core/narration/narration';
 import { translationTable } from '@elabora/core/i18n/translate';
 import * as edit from '@elabora/node/edit';
 import { importNarration } from '@elabora/node/narration/audio';
-import { addNarrationLineFromAudio, setNarrationTextFromAudio, transcribeNarrationLine } from '@elabora/node/narration/from-audio';
+import { transcribeNarrationLine } from '@elabora/node/narration/from-audio';
 import { disposeTranscriber, transcribeAudio, transcribers, TRANSCRIBER_MODELS, transcriberInstalled } from '@elabora/node/transcribe/index';
 import { textOfPieces, withApostrophesOf, wordsOfPieces } from '@elabora/node/transcribe/text';
 import { windows } from '@elabora/node/transcribe/parakeet';
@@ -20,6 +20,7 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { forgetQuota } from '@elabora/node/voice/elevenlabs/costs';
 import { copyExample, readJSON, ROOT, NETWORK_SAMPLE } from '../helpers.ts';
 import { narrate, toneM4a, hasFfmpeg } from '../narration.ts';
+import { run } from '@elabora/node/edit';
 
 // Transcription (docs/decisions.md D46): what a recording says, a line made from a recording, a
 // line's text written again from its recording. The tests' transcriber answers from a file
@@ -121,7 +122,7 @@ test('a new line from an audio file: its text what the recording says, its audio
   toneM4a(file.replace(/wav$/, 'm4a'), 1.5, 660);
   fs.renameSync(file.replace(/wav$/, 'm4a'), file);
   await withEnv(fakeEnv({ 'appel-marc.m4a': 'Vous pouvez m\'aider ?' }), async () => {
-    const added = await addNarrationLineFromAudio(dir, { screen: 'accueil', file });
+    const added = await run(dir, 'add_narration_line_with_audio', { screen: 'accueil', file });
     assert.match(added.line, /^l3-[a-z0-9]{4}$/);
     assert.equal(added.text, 'Vous pouvez m\'aider ?');
     assert.equal(added.transcript?.transcriber, 'fake');
@@ -135,26 +136,26 @@ test('a new line from an audio file: its text what the recording says, its audio
     assert.equal(readJSON(dir, 'screens/accueil.json').narration.lines.length, 2);
     assert.ok(!fs.existsSync(path.join(dir, 'assets/narration/fr/accueil/l3.m4a')));
     // First, with another speaker and its text given (no transcription), or nothing heard: refused.
-    const first = await addNarrationLineFromAudio(dir, { screen: 'accueil', file, after: null, speaker: 'leila', step: 1, text: 'Allô ?' });
+    const first = await run(dir, 'add_narration_line_with_audio', { screen: 'accueil', file, after: null, speaker: 'leila', step: 1, text: 'Allô ?' });
     assert.deepEqual(readJSON(dir, 'screens/accueil.json').narration.lines[0], { id: first.line, text: 'Allô ?', speaker: 'leila', step: 1 });
     fs.writeFileSync(heard, JSON.stringify({ '*': '' }));
-    await assert.rejects(addNarrationLineFromAudio(dir, { screen: 'accueil', file }), (error: Error & { code?: string }) => error.code === 'E_TRANSCRIBE_EMPTY' && /heard no words/.test(error.message));
-    await assert.rejects(addNarrationLineFromAudio(dir, { screen: 'nulle-part', file }), (error: Error & { code?: string }) => error.code === 'E_NARRATION_SCREEN');
+    await assert.rejects(run(dir, 'add_narration_line_with_audio', { screen: 'accueil', file }), (error: Error & { code?: string }) => error.code === 'E_TRANSCRIBE_EMPTY' && /heard no words/.test(error.message));
+    await assert.rejects(run(dir, 'add_narration_line_with_audio', { screen: 'nulle-part', file }), (error: Error & { code?: string }) => error.code === 'E_NARRATION_SCREEN');
   });
 });
 
 test('« Régénérer le texte d\'après l\'audio »: the line says what its recording says, the recording kept up to date, anchors followed, translations changed since; one change', { skip: NO_FFMPEG }, async () => {
   const { dir } = await recorded();
   const before = narrationLines(loadProjectFromDir(dir), 'accueil', 'fr')!.find((line) => line.id === 'l2')!;
-  await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' } } });
-  edit.exportTranslationChange(dir, { to: 'en' });
-  edit.translateText(dir, { language: 'en', unit: 'screen.accueil.narration.l2.text', target: 'Neither the printer nor sharing work.' });
+  await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' } } });
+  edit.run(dir, 'export_translation', { to: 'en' });
+  edit.run(dir, 'translate_text', { language: 'en', unit: 'screen.accueil.narration.l2.text', target: 'Neither the printer nor sharing work.' });
   await withEnv(fakeEnv({ 'l2.m4a': 'Ni l\'imprimante, ni le partage de fichiers ne marchent.' }), async () => {
     // What it says, beside the text now: nothing written.
     const preview = await transcribeNarrationLine(dir, { screen: 'accueil', line: 'l2' });
     assert.deepEqual([preview.before, preview.transcript.text, preview.audioHash], [before.text, 'Ni l\'imprimante, ni le partage de fichiers ne marchent.', readJSON(dir, 'assets/narration/fr/accueil/l2.json').audioHash]);
     assert.equal(readJSON(dir, 'screens/accueil.json').narration.lines[1].text, before.text);
-    const written = await setNarrationTextFromAudio(dir, { screen: 'accueil', line: 'l2', text: preview.transcript.text, audioHash: preview.audioHash! });
+    const written = await run(dir, 'set_narration_text_from_audio', { screen: 'accueil', line: 'l2', text: preview.transcript.text, audioHash: preview.audioHash! });
     assert.equal(written.before, before.text);
     assert.ok(written.change);
     const after = narrationLines(loadProjectFromDir(dir), 'accueil', 'fr')!.find((line) => line.id === 'l2')!;
@@ -169,13 +170,13 @@ test('« Régénérer le texte d\'après l\'audio »: the line says what its rec
     assert.equal(narrationLines(loadProjectFromDir(dir), 'accueil', 'fr')!.find((line) => line.id === 'l2')!.status, 'ok');
     assert.equal(readJSON(dir, 'screens/accueil.json').narration.lines[1].text, before.text);
     // Transcribed now when no text is given; the same text again changes nothing.
-    const again = await setNarrationTextFromAudio(dir, { screen: 'accueil', line: 'l2' });
+    const again = await run(dir, 'set_narration_text_from_audio', { screen: 'accueil', line: 'l2' });
     assert.equal(again.text, 'Ni l\'imprimante, ni le partage de fichiers ne marchent.');
-    assert.equal((await setNarrationTextFromAudio(dir, { screen: 'accueil', line: 'l2' })).change, null);
+    assert.equal((await run(dir, 'set_narration_text_from_audio', { screen: 'accueil', line: 'l2' })).change, null);
     // Refused: a generated voice, a line without audio, an audio that changed meanwhile, a translation.
-    await assert.rejects(setNarrationTextFromAudio(dir, { screen: 'accueil', line: 'l1' }), (error: Error & { code?: string }) => error.code === 'E_NARRATION_GENERATED');
-    await assert.rejects(setNarrationTextFromAudio(dir, { screen: 'accueil', line: 'l2', text: 'Autre chose.', audioHash: 'sha256:0000' }), /changed while it was transcribed/);
-    await assert.rejects(setNarrationTextFromAudio(dir, { screen: 'accueil', line: 'l2', language: 'en', text: 'Hello.' }), /Only the course's language/);
+    await assert.rejects(run(dir, 'set_narration_text_from_audio', { screen: 'accueil', line: 'l1' }), (error: Error & { code?: string }) => error.code === 'E_NARRATION_GENERATED');
+    await assert.rejects(run(dir, 'set_narration_text_from_audio', { screen: 'accueil', line: 'l2', text: 'Autre chose.', audioHash: 'sha256:0000' }), /changed while it was transcribed/);
+    await assert.rejects(run(dir, 'set_narration_text_from_audio', { screen: 'accueil', line: 'l2', language: 'en', text: 'Hello.' }), /Only the course's language/);
   });
 });
 

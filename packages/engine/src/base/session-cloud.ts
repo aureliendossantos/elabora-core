@@ -4,11 +4,10 @@ import { sameContent } from '@elabora/core/ops/json';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { SyncClient, type LocalChange, type Outcome } from '@elabora/core/sync/client';
 import { SYNC_PROTOCOL, type ClientMessage, type Committed, type Presence, type RoomRole, type ServerMessage } from '@elabora/core/sync/protocol';
-import type { CloudClient } from '@elabora/node/cloud/client';
-import {
-  blobsOf, commitMedia, confirmedFiles, fetchMedium, keepConfirmed, projectMembership, roomUrl, sendMedia, unlinkFolder, writeLink, type ProjectLink
-} from '@elabora/node/cloud/projects';
-import type { EngineEvent, ExternalNotes } from './protocol.ts';
+import { blobsOf, roomUrl, type CopyLink, type CopyStore, type MediumRef } from '@elabora/core/sync/copy';
+import { MEDIA_FACTS_VERSION, readKnownMedia, readMediaFacts, type KnownMedium, type MediaFacts, type MediaMap } from '@elabora/core/sync/media';
+import type { Op } from '@elabora/core/ops/types';
+import type { EngineEvent, ExternalNotes } from '../protocol.ts';
 
 // A session's copy of a project in the cloud (D73, D83): the changes of the folder (the session's,
 // other processes', files edited by programs that are not Elabora tools) go to the project's room
@@ -16,9 +15,10 @@ import type { EngineEvent, ExternalNotes } from './protocol.ts';
 // folder and its journal. One invariant, kept in one place: the folder holds the client's view
 // (confirmed, then the waiting changes rebased on top). Every step that moves the view runs in the
 // session's write queue, under the project lock, after the journal's new entries are taken in.
+// Without Node (D100): what the copy keeps and the team's media are its host's (CopyStore), the
+// room's connection a WebSocket or what connect gives.
 
 export interface CloudHost {
-  readonly root: string;
   files(): Files;
   // Runs work in the session's queue, under the lock, after the folder's changes are taken in.
   step<T>(work: () => Promise<T>): Promise<T>;
@@ -44,9 +44,10 @@ export type CloudHeld = 'outdated' | 'storage-newer' | 'full';
 
 export interface CloudOptions {
   api: string;
-  client: CloudClient;  // the API with the person's session
   token: string;
-  link: ProjectLink;
+  link: CopyLink;
+  // What the copy keeps, and the team's media (a folder's: @elabora/node cloud/projects folderCopy).
+  store: CopyStore;
   // Waits between reconnections, in milliseconds (the last repeats).
   backoff?: number[];
   // The wait before trying again a room that kept the copy out for its storage or its connections.
@@ -56,9 +57,6 @@ export interface CloudOptions {
   // Opens the room's connection (tests give a room in memory); by default a WebSocket with the
   // session in Authorization, never in the address.
   connect?: (url: string, token: string) => RoomSocket;
-  // Whether the person still reaches the project, asked when the room would not take the connection;
-  // by default the team's list of projects (tests answer it).
-  membership?: () => Promise<'member' | CloudEnd | 'unknown'>;
 }
 
 // What the copy needs of a WebSocket.
@@ -83,31 +81,40 @@ const MEMBERSHIP_EVERY = 30_000;
 // Where the person is, sent at most so often (the last place always goes).
 const WHERE_EVERY = 150;
 
+// A timer that does not keep a Node process alive (a browser's has nothing to unref).
+type Timer = ReturnType<typeof setTimeout>;
+const unref = (timer: Timer): Timer => { (timer as { unref?: () => void }).unref?.(); return timer; };
+
 const webSocket = (url: string, token: string): RoomSocket =>
   new (WebSocket as unknown as new (url: string, init: { headers: Record<string, string> }) => RoomSocket)(url, { headers: { Authorization: `Bearer ${token}` } });
 
 const SYNC_COMMAND = 'sync';
+// Media whose facts one message gives (elabora-cloud C106: a room takes 1,000).
+const MEDIA_PER_MESSAGE = 500;
+// The media a change's operations write, with the path each is written at.
+const mediaRefs = (ops: readonly Op[]): MediumRef[] => ops.flatMap((op) => (op.op === 'write' && 'blob' in op ? [{ hash: op.blob, path: op.file }] : []));
 // A journal entry the copy wrote from the room: never sent back.
 export const isFromRoom = (entry: ChangeLike): boolean => entry.command?.name === SYNC_COMMAND;
 
 export class SessionCloud {
   readonly #host: CloudHost;
   readonly #options: CloudOptions;
-  readonly #link: ProjectLink;
+  readonly #link: CopyLink;
+  readonly #store: CopyStore;
   readonly #client: SyncClient;
   #saved: Files;
   #ws: RoomSocket | null = null;
   #online = false;
   #stopped = false;
   #attempt = 0;
-  #timer: NodeJS.Timeout | null = null;
+  #timer: Timer | null = null;
   readonly #uploads = new Map<string, string | null>(); // submission id → its media upload
   // Who is in the room: each copy connected, this one included (by the room's word).
   #peers: Presence[] = [];
   #idle: (() => void)[] = [];
   #where: Where = {};
   #whereSent: string | null = null;
-  #whereTimer: NodeJS.Timeout | null = null;
+  #whereTimer: Timer | null = null;
   #ended: CloudEnd | null = null;
   // Kept out for now by the room (its protocol, for an app older than it).
   #held: { reason: CloudHeld; protocol: string | null } | null = null;
@@ -117,23 +124,37 @@ export class SessionCloud {
   #askedAt = -Infinity;
   // The person's role as the room last said it (D93): null until it says one.
   #role: RoomRole | null = null;
+  // What the room said of the media of the copy's files (D125): their size and facts, by hash, kept in
+  // the link. Whether the room keeps facts (its welcome), the media whose facts this connection offered,
+  // and the facts each waiting submission carries (D126).
+  readonly #media: Map<string, KnownMedium>;
+  #roomMedia = false;
+  readonly #offered = new Set<string>();
+  readonly #facts = new Map<string, MediaMap<MediaFacts>>();
 
   constructor(host: CloudHost, options: CloudOptions) {
     this.#host = host;
     this.#options = options;
     this.#link = options.link;
-    const confirmed = confirmedFiles(host.root, options.link.confirmed);
+    this.#store = options.store;
+    const confirmed = options.store.confirmed();
     this.#saved = confirmed;
     this.#client = new SyncClient(confirmed, options.link.head);
     for (const change of options.link.waiting) this.#client.record(change);
+    // The link is a file people may edit: read as what a room relays.
+    this.#media = readKnownMedia(options.link.media);
   }
+
+  // What the room said of each medium of the copy's files (D125): its size, and its facts once a copy gave
+  // them. A browser's copy knows its media by it without taking them.
+  get media(): ReadonlyMap<string, KnownMedium> { return this.#media; }
 
   get online(): boolean { return this.#online; }
   get head(): number { return this.#client.head; }
   get pending(): number { return this.#client.pending; }
   get view(): Files { return this.#client.view; }
   get peers(): readonly Presence[] { return this.#peers; }
-  get link(): Readonly<ProjectLink> { return this.#link; }
+  get link(): Readonly<CopyLink> { return this.#link; }
   get role(): RoomRole | null { return this.#role; }
   get held(): CloudHeld | null { return this.#held?.reason ?? null; }
 
@@ -197,8 +218,7 @@ export class SessionCloud {
     this.#where = where;
     if (this.#whereTimer) return;
     this.#tellWhere();
-    this.#whereTimer = setTimeout(() => { this.#whereTimer = null; this.#tellWhere(); }, WHERE_EVERY);
-    this.#whereTimer.unref?.();
+    this.#whereTimer = unref(setTimeout(() => { this.#whereTimer = null; this.#tellWhere(); }, WHERE_EVERY));
   }
 
   #tellWhere(): void {
@@ -230,6 +250,9 @@ export class SessionCloud {
         welcomed = true;
         this.#online = true;
         this.#held = null;
+        // The room keeps media's facts (D125): this connection may give those the copy has (D126).
+        this.#roomMedia = message.media === true;
+        this.#offered.clear();
         this.#peers = message.peers;
         // The person's role as the room says it at the connection (D94), before anything waiting goes:
         // opened as a viewer, or demoted while away, the copy keeps; an editor again, it sends.
@@ -273,8 +296,7 @@ export class SessionCloud {
       // An app older than the room is not tried again: Elabora is to be updated first.
       if (this.#stopped || this.#held?.reason === 'outdated') return;
       const waits = this.#options.backoff ?? [500, 1000, 2000, 5000, 10000];
-      this.#timer = setTimeout(() => this.#connect(), this.#held ? this.#options.later ?? LATER : waits[Math.min(this.#attempt++, waits.length - 1)]);
-      this.#timer.unref?.();
+      this.#timer = unref(setTimeout(() => this.#connect(), this.#held ? this.#options.later ?? LATER : waits[Math.min(this.#attempt++, waits.length - 1)]));
       // Kept out before a welcome: the person may have left the team while the module was closed.
       if (!welcomed) void this.#askMembership();
     };
@@ -297,7 +319,7 @@ export class SessionCloud {
   async #askMembership(): Promise<void> {
     if (performance.now() - this.#askedAt < MEMBERSHIP_EVERY) return;
     this.#askedAt = performance.now();
-    const said = await (this.#options.membership ?? (() => projectMembership(this.#options.client, this.#link.team, this.#link.project)))().catch(() => 'unknown' as const);
+    const said = await this.#store.membership().catch(() => 'unknown' as const);
     if (said === 'removed' || said === 'deleted') await this.#later(async () => this.#end(said));
   }
 
@@ -308,7 +330,7 @@ export class SessionCloud {
     this.#ended = reason;
     this.stop();
     this.#peers = [];
-    unlinkFolder(this.#host.root);
+    this.#store.unlink();
     this.#host.ended();
     this.#host.emit({ type: 'cloudEnded', reason, team: this.#link.team, project: this.#link.project });
   }
@@ -342,20 +364,67 @@ export class SessionCloud {
     if (!submission) {
       this.#save();
       if (!this.#client.pending) this.#wake();
+      await this.#complete();
       return;
     }
     if (!this.#uploads.has(submission.id)) {
       try {
-        this.#uploads.set(submission.id, await sendMedia(this.#options.client, this.#host.root, this.#link.team, blobsOf(submission.ops)));
+        // The facts of the media it writes go beside it (D126): those the host knows.
+        const refs = mediaRefs(submission.ops).map((ref) => {
+          const file = this.#client.view.get(ref.path);
+          return file?.kind === 'binary' && file.hash === ref.hash && file.size !== undefined ? { ...ref, size: file.size } : ref;
+        });
+        const facts = refs.length ? await this.#store.mediaFacts?.(refs).catch(() => ({})) : undefined;
+        if (facts && Object.keys(facts).length) this.#facts.set(submission.id, facts);
+        this.#uploads.set(submission.id, await this.#store.sendMedia(blobsOf(submission.ops)));
       } catch (error) {
         // Not sent: tried again shortly, as after a lost connection.
         this.#client.disconnected();
-        const timer = setTimeout(() => void this.#later(() => this.#pump()), 2000);
-        timer.unref?.();
+        unref(setTimeout(() => void this.#later(() => this.#pump()), 2000));
         throw error;
       }
     }
-    this.#send({ type: 'submit', change: submission });
+    const facts = this.#facts.get(submission.id);
+    this.#send({ type: 'submit', change: facts ? { ...submission, media: facts } : submission });
+  }
+
+  // The facts of media the copy's files hold that the room lacks, or holds at a lower version (D126): given
+  // in passing, those the host knows, once a connection. Never by a viewer, never to a room before them.
+  async #complete(): Promise<void> {
+    if (!this.#online || !this.#roomMedia || this.#role === 'viewer' || !this.#store.mediaFacts) return;
+    const wanted: MediumRef[] = [];
+    for (const [path, file] of this.#client.confirmed) {
+      if (file.kind !== 'binary' || !file.hash || this.#offered.has(file.hash)) continue;
+      const known = this.#media.get(file.hash);
+      // A medium the room said nothing of yet (a link from before) is offered too: the room keeps the first word.
+      if (known?.facts && known.facts.version >= MEDIA_FACTS_VERSION) continue;
+      this.#offered.add(file.hash);
+      wanted.push({ hash: file.hash, path, ...(file.size !== undefined ? { size: file.size } : {}) });
+    }
+    if (!wanted.length) return;
+    const facts = Object.entries(await this.#store.mediaFacts(wanted).catch(() => ({})));
+    for (let start = 0; start < facts.length; start += MEDIA_PER_MESSAGE) {
+      this.#send({ type: 'media', media: Object.fromEntries(facts.slice(start, start + MEDIA_PER_MESSAGE)) });
+    }
+  }
+
+  // What a message of the room says of media (D125): read as the room relays it, kept by hash.
+  #learn(message: ServerMessage): void {
+    if (message.type === 'snapshot') {
+      for (const file of message.files) {
+        if (!('blob' in file) || !Number.isSafeInteger(file.size)) continue;
+        const facts = file.facts === undefined ? null : readMediaFacts(file.facts, 'tolerant');
+        this.#media.set(file.blob, { size: file.size!, ...(facts ? { facts } : {}) });
+      }
+      return;
+    }
+    if (message.type === 'ack' || message.type === 'change' || message.type === 'catchup' || message.type === 'media') {
+      for (const [hash, known] of readKnownMedia(message.media)) {
+        this.#media.set(hash, known);
+        // Facts an owner dropped (elabora-cloud C111): this copy, if it holds the bytes, gives its own again.
+        if (!known.facts) this.#offered.delete(hash);
+      }
+    }
   }
 
   async #receive(message: ServerMessage): Promise<void> {
@@ -365,15 +434,16 @@ export class SessionCloud {
       return;
     }
     const before = this.#client.view;
-    if (message.type === 'snapshot') for (const file of message.files) if ('blob' in file) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, file.blob);
+    this.#learn(message);
+    if (message.type === 'snapshot') for (const file of message.files) if ('blob' in file) await this.#store.fetchMedium(file.blob);
     // A restored room's project replaces this copy's: what the copy had is kept first, in Elabora's
     // versions of the module; what it had not sent goes again on top, as after any snapshot.
     const restored = message.type === 'snapshot' ? this.#restored : null;
     const version = restored !== null ? await this.#host.version(this.#options.restoredVersion ?? 'Before the project was restored') : null;
     if ((message.type === 'change' || message.type === 'ack') && blobsOf(message.change.ops).length) {
-      for (const hash of blobsOf(message.change.ops)) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, hash);
+      for (const hash of blobsOf(message.change.ops)) await this.#store.fetchMedium(hash);
     }
-    if (message.type === 'catchup') for (const change of message.changes) for (const hash of blobsOf(change.ops)) await fetchMedium(this.#options.client, this.#host.root, this.#link.team, hash);
+    if (message.type === 'catchup') for (const change of message.changes) for (const hash of blobsOf(change.ops)) await this.#store.fetchMedium(hash);
     const said = this.#client.receive(message);
     if (said === 'gap') this.#send({ type: 'catchup', since: this.#client.head });
     // The room could not find a medium of the change: its media are sent again before it (D85).
@@ -382,9 +452,10 @@ export class SessionCloud {
     await this.#settle(before, placed);
     if (placed && message.type !== 'ack' && !placed.id.startsWith(`${this.#link.client}.`)) this.#replaced(placed);
     if (message.type === 'ack' && this.#uploads.has(message.change.id)) {
-      await commitMedia(this.#options.client, this.#link.team, this.#uploads.get(message.change.id) ?? null);
+      await this.#store.commitMedia(this.#uploads.get(message.change.id) ?? null);
       this.#uploads.delete(message.change.id);
     }
+    if (message.type === 'ack') this.#facts.delete(message.change.id);
     if (restored !== null) {
       this.#link.epoch = restored;
       this.#restored = null;
@@ -451,13 +522,14 @@ export class SessionCloud {
     if (this.#ended) return;
     const confirmed = this.#client.confirmed;
     const changed = new Map([...confirmed].filter(([rel, file]) => this.#saved.get(rel) !== file));
-    const kept = { ...this.#link.confirmed, ...keepConfirmed(this.#host.root, changed) };
-    for (const rel of Object.keys(kept)) if (!confirmed.has(rel)) delete kept[rel];
-    this.#link.confirmed = kept;
     this.#link.head = this.#client.head;
     this.#link.waiting = this.#client.waitingChanges();
+    // What the room said of the media of the confirmed files, those alone (D125).
+    const held = new Set([...confirmed.values()].flatMap((file) => (file.kind === 'binary' && file.hash ? [file.hash] : [])));
+    for (const hash of this.#media.keys()) if (!held.has(hash)) this.#media.delete(hash);
+    this.#link.media = Object.fromEntries(this.#media);
     this.#saved = confirmed;
-    writeLink(this.#host.root, this.#link);
+    this.#store.save(this.#link, confirmed, changed);
     this.#status();
   }
 

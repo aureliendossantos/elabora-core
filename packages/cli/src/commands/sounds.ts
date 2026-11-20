@@ -6,11 +6,12 @@ import { searchLibrary, SOUND_CATEGORIES } from '@elabora/node/sounds/library';
 import type { LibrarySound } from '@elabora/node/sounds/library';
 import { searchOpenverse } from '@elabora/node/sounds/openverse';
 import type { OpenverseSound } from '@elabora/node/sounds/openverse';
-import { addSound, courseLanguage } from '@elabora/node/sounds/add';
+import { courseLanguage } from '@elabora/node/sounds/add';
 import { estimateSound, generateSound } from '@elabora/node/sounds/generate';
 import { ArgumentError } from '../arguments.ts';
 import { defineCommand, printDiagnostics, printFormatMigration, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
+import { run } from '@elabora/node/edit';
 
 const HELP = `  sound search [dir] <words…> [--source library|openverse] [--category <c>] [--kind effect|ambience] [--max-duration <s>] [--json]
                                                       Sounds to add: Elabora's library « Sons courants » (CC0, offline,
@@ -85,7 +86,7 @@ const add = defineCommand({
     const trim = flags.trim ? /^(\d+(?:[.,]\d+)?):(\d+(?:[.,]\d+)?)$/.exec(flags.trim) : null;
     if (flags.trim && (!trim || Number(trim[2].replace(',', '.')) <= Number(trim[1].replace(',', '.')))) throw new ArgumentError('--trim takes start:end in seconds (0.4:3.2)');
     if (flags.url && !/^https:\/\//.test(flags.url)) throw new ArgumentError('--url is an https:// address');
-    const result = await addSound(dir, {
+    const result = await run(dir, 'add_sound', {
       from, ...(flags.id ? { id: flags.id } : {}), ...(trim ? { trim: { start: Number(trim[1].replace(',', '.')), end: Number(trim[2].replace(',', '.')) } } : {}),
       ...(flags.fade ? { fade: seconds(flags.fade, 'fade') } : {}), ...(flags.loop ? { loop: true } : {}),
       ...(flags.caption ? { caption: { [courseLanguage(dir)]: flags.caption } } : {}),

@@ -1,7 +1,7 @@
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import * as edit from '@elabora/node/edit';
 import { fitSizes } from '../commands/build-and-test.ts';
-import { defineTool, editResult, errorResult, imageResult, objectSchema, textResult, SLUG } from './tool.ts';
+import { fromCommand, defineTool, editResult, errorResult, imageResult, objectSchema, textResult, SLUG } from './tool.ts';
 import { startLookServer } from '../look-server.ts';
 import { styleConflictDiagnostics } from '@elabora/node/style-cascade';
 import { withCourseLanguage } from '@elabora/node/translate';
@@ -76,9 +76,8 @@ export const previewScreenshot = defineTool({
 
 export const writeDesignFile = defineTool({
   name: 'elabora_write_design_file',
-  description: 'Write a design file: theme/<name>.css (course stylesheet) or generators/<name>.mjs (asset generator). Design is free; content stays in blocks. Read the design layer first (elabora_docs design; skill elabora-visual-design).',
-  inputSchema: objectSchema({ file: { type: 'string' }, content: { type: 'string' } }, ['file', 'content']),
-  handler: (args, { root, author }) => editResult(edit.writeDesignFile(root, args, { author }))
+  ...fromCommand('write_design_file'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'write_design_file', args, { author }))
 });
 
 export const buildAssets = defineTool({
@@ -101,7 +100,6 @@ export const buildAssets = defineTool({
 
 export const upgradeTheme = defineTool({
   name: 'elabora_upgrade_theme',
-  description: 'Put the theme\'s rules under the components (course.json theme.cascade components-over-theme, docs D32) without changing how the course looks: a course without theme.cascade (I_THEME_CASCADE_OLD) still has its theme after the component stylesheets, so a general theme rule (.t-figure img { width: 100% }) silently overrides a component\'s own rule. The theme\'s declarations of properties the components also set go into a top-level @layer overrides { … } block of the theme stylesheet (which stays over the components); the rest become the course\'s defaults, under them. Then move out of that block the rules that are course-wide defaults, and look again (elabora_look, elabora_check_fit name what the theme still overrides: W_STYLE_COMPONENT_OVERRIDDEN). One change; elabora_undo reverts it.',
-  inputSchema: objectSchema({}),
-  handler: (_args, { root, author }) => editResult(edit.upgradeThemeCascade(root, { author }))
+  ...fromCommand('upgrade_theme'),
+  handler: (_args, { root, author }) => editResult(edit.run(root, 'upgrade_theme', {}, { author }))
 });

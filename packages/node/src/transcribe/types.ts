@@ -1,22 +1,9 @@
-// The transcriber's types that leave the process (the engine's protocol names them), with no import,
-// as align/types.ts: the app window's typecheck never brings Node modules.
+// The transcriber's types that leave the process (the engine's protocol names them), with no import
+// of Node's, as align/types.ts: the app window's typecheck never brings Node modules.
 
-export interface Transcript {
-  // What the recording says, as the transcriber writes it: punctuation and capitals (Parakeet,
-  // ElevenLabs), numbers mostly in words.
-  text: string;
-  // Its words and when they are said (seconds from the start of the file): the transcriber's own,
-  // coarse (80 ms steps); the word aligner times the text again when the line is written.
-  words: { text: string; start: number; end: number; score?: number }[];
-  transcriber: string;     // the model (parakeet-tdt-0.6b-v3@8f23f0c int8, scribe_v2…)
-  duration: number;
-  // Who heard it: this computer (free, nothing leaves it) or ElevenLabs (the author's quota).
-  service?: TranscriptionService;
-  // ElevenLabs: the share of the monthly quota it took (D30).
-  percent?: number;
-}
+import type { Transcript, TranscriptionService } from '@elabora/core/narration/transcript';
 
-export type TranscriptionService = 'local' | 'elevenlabs';
+export type { Transcript, TranscriptionService };
 
 // What can transcribe a language here: the local model (installed or its download's size) and
 // whether ElevenLabs can (the author gave a key).

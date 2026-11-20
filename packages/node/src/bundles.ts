@@ -1,11 +1,11 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
-import { ALLOWED_THREE_ADDONS } from '@elabora/core/validate/objects';
+import { objectBuildOptions, objectPlugins } from '@elabora/core/objects/bundle';
+import type { ObjectLibraries } from '@elabora/core/objects/bundle';
 import { BASE_LAYER } from '@elabora/core/render/styles';
-import { escapeHtml } from '@elabora/core/util/html';
-import type { ObjectManifest } from '@elabora/format';
 import nodePackage from '../package.json' with { type: 'json' };
 import { fieldOf, errorMessage } from './util/values.ts';
 
@@ -82,47 +82,29 @@ export function vendorThree(): Record<string, Buffer> {
   return { 'elabora/vendor/three-r186.js': fs.readFileSync(file), 'elabora/vendor/three-LICENSE.txt': fs.readFileSync(path.join(PACKAGE_ROOT, 'vendor/three-LICENSE.txt')) };
 }
 
-// Free objects are authored as ES modules (import * as THREE from 'three'). The build turns them
-// into a classic script: classic scripts load inside an opaque-origin sandbox without CORS, while
-// module scripts would need CORS headers that LMS servers do not send.
-const threeGlobals: esbuild.Plugin = {
-  name: 'elabora-three-globals',
-  setup(build) {
-    build.onResolve({ filter: /^three$/ }, () => ({ path: 'three', namespace: 'elabora-global' }));
-    build.onResolve({ filter: /^three\/addons\// }, (args) => ({ path: args.path, namespace: 'elabora-global' }));
-    build.onLoad({ filter: /.*/, namespace: 'elabora-global' }, (args) => {
-      if (args.path === 'three') return { contents: 'module.exports = self.ELABORA_THREE.THREE;', loader: 'js' };
-      const addon = args.path.slice('three/addons/'.length);
-      if (!ALLOWED_THREE_ADDONS.includes(addon)) return { errors: [{ text: `three addon "${addon}" is not vendored (allowed: ${ALLOWED_THREE_ADDONS.join(', ')})` }] };
-      return { contents: `module.exports = self.ELABORA_THREE.addons[${JSON.stringify(addon)}];`, loader: 'js' };
-    });
-  }
-};
-
-// Charts in free objects (D60): `import * as d3 from 'd3'` bundles D3 (ISC; its notice goes with the
-// code) and `import { … } from '@elabora/charts'` the kit Elabora's own charts move with.
+// The native bundler's libraries: D3 (ISC; its notice goes with the code) from its package, and the chart
+// kit from the player's sources, both found on this disk.
 const D3_ENTRY = fileURLToPath(import.meta.resolve('d3'));
 const D3_VERSION = (JSON.parse(fs.readFileSync(path.join(path.dirname(D3_ENTRY), '..', 'package.json'), 'utf8')) as { version: string }).version;
-const chartLibraries: esbuild.Plugin = {
-  name: 'elabora-chart-libraries',
-  setup(build) {
-    build.onResolve({ filter: /^d3$/ }, () => ({ path: 'd3', namespace: 'elabora-d3' }));
-    build.onLoad({ filter: /.*/, namespace: 'elabora-d3' }, () => ({
-      contents: `/*! D3 ${D3_VERSION} (https://d3js.org) | ISC License | Copyright 2010-2023 Mike Bostock */\nexport * from ${JSON.stringify(D3_ENTRY)};\n`,
-      loader: 'js', resolveDir: path.dirname(D3_ENTRY)
-    }));
-    build.onResolve({ filter: /^@elabora\/charts$/ }, () => ({ path: path.join(RUNTIME, 'charts', 'kit.ts') }));
-  }
+const D3_NOTICE = `/*! D3 ${D3_VERSION} (https://d3js.org) | ISC License | Copyright 2010-2023 Mike Bostock */`;
+const CHART_KIT = path.join(RUNTIME, 'charts', 'kit.ts');
+const diskLibraries: ObjectLibraries = {
+  d3: { contents: `${D3_NOTICE}\nexport * from ${JSON.stringify(D3_ENTRY)};\n`, resolveDir: path.dirname(D3_ENTRY) },
+  charts: { path: CHART_KIT }
 };
 
-// Legal comments (/*! … */, @license, @preserve) go to the end of the script: an object that
-// includes code from elsewhere ships its notice in every package (docs/free-object-contract.md).
+// object.js of an object's folder, bundled by the native esbuild.
 export async function compileObjectCode(objectDir: string, { minify = true }: { minify?: boolean } = {}): Promise<string> {
-  const result = await esbuild.build({
-    entryPoints: [path.join(objectDir, 'object.js')], bundle: true, format: 'iife', globalName: '__elaboraObject',
-    target: 'es2020', minify, write: false, legalComments: 'eof', logLevel: 'silent', plugins: [threeGlobals, chartLibraries], charset: 'utf8'
-  });
+  const result = await esbuild.build({ ...objectBuildOptions({ minify }), entryPoints: [path.join(objectDir, 'object.js')], plugins: objectPlugins(diskLibraries) as esbuild.Plugin[] });
   return result.outputFiles[0].text;
+}
+
+// D3 and the chart kit as the source of two ES modules, for a host without this disk (a browser's
+// worker bundling objects with esbuild-wasm, given them as ObjectLibraries): each bundled whole,
+// unminified, so that an object's own bundle shakes and minifies them as it does from the disk.
+export async function objectLibrarySources(): Promise<{ d3: string; charts: string }> {
+  const one = async (entry: string, banner: string) => (await esbuild.build({ entryPoints: [entry], bundle: true, format: 'esm', target: 'es2020', write: false, legalComments: 'inline', logLevel: 'silent', charset: 'utf8', banner: { js: banner } })).outputFiles[0].text;
+  return { d3: await one(D3_ENTRY, D3_NOTICE), charts: await one(CHART_KIT, '') };
 }
 
 // What esbuild reports when a bundle fails (its messages), or the error's message.
@@ -132,26 +114,41 @@ export function bundleErrorMessage(error: unknown): string {
   return texts.join('; ') || errorMessage(error);
 }
 
-export function objectFrameHtml(manifest: Pick<ObjectManifest, 'title' | 'requires'>, { language = 'en' }: { language?: string } = {}): string {
-  const scripts: string[] = [];
-  if (manifest.requires?.three) scripts.push('../../elabora/vendor/three-r186.js');
-  scripts.push('object.js', '../../elabora/object-frame.js');
-  // Content-Security-Policy of the frame: no network at all, scripts from the package only.
-  const csp = "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'none'; worker-src blob:";
+// The canvas page. It sits where the root of a package sits, so that the paths of the course data resolve as in a
+// package. Its connector is the Node host's event stream (a script this host serves), or the relay page's script
+// (the web app's canvas host: its files and the relay are static there).
+export function canvasPageHtml(connector: 'events' | 'relay' = 'events'): string {
+  const script = connector === 'events' ? '<script src="elabora/canvas-connect.js"></script>' : '<script src="/relay-page.js" data-relay-role="canvas"></script>';
   return `<!doctype html>
-<html lang="${escapeHtml(language)}">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="icon" href="data:,">
-<meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(manifest.title)}</title>
-<style>html,body{margin:0;height:100%;overflow:hidden}#root{position:absolute;inset:0}</style>
+<link rel="icon" href="data:,">
+<title>Elabora canvas</title>
+<link rel="stylesheet" href="elabora/player.css">
 </head>
 <body>
-<div id="root"></div>
-${scripts.map((script) => `<script src="${script}"></script>`).join('\n')}
+<div id="elabora-app"></div>
+<script src="elabora/canvas.js"></script>
+${script}
 </body>
 </html>
 `;
+}
+
+// The web app's relay (D118, D119): its service worker (/relay.js, one script for the canvas host and the
+// frames host, whose Worker writes its policy before it), the script of the relay pages (/relay-page.js),
+// the frames host's page (/relay.html) and the canvas page for the relay. The script's version changes
+// with it.
+export async function relayFiles({ debug = false }: { debug?: boolean } = {}): Promise<Record<string, string>> {
+  const build = async (entry: string, define: Record<string, string> = {}) => (await esbuild.build({ entryPoints: [path.join(RUNTIME, entry)], bundle: true, format: 'iife', target: 'es2020', minify: !debug, write: false, legalComments: 'none', logLevel: 'error', charset: 'utf8', define })).outputFiles[0].text;
+  const unversioned = await build('worker/relay.ts');
+  const version = `${ELABORA_VERSION}-${crypto.createHash('sha256').update(unversioned).digest('hex').slice(0, 12)}`;
+  return {
+    'relay.js': await build('worker/relay.ts', { __RELAY_VERSION__: JSON.stringify(version) }),
+    'relay-page.js': await build('relay-page.ts'),
+    'relay.html': '<!doctype html>\n<meta charset="utf-8">\n<title>Elabora relay</title>\n<script src="/relay-page.js" data-relay-role="frames"></script>\n',
+    'canvas/index.html': canvasPageHtml('relay')
+  };
 }

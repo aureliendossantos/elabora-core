@@ -2,49 +2,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pipeline } from 'node:stream';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { mediaTypeOf } from '@elabora/core/util/media-types';
+import { parseRange, resolveRange } from '@elabora/player/relay-protocol';
 
 // Files served by the local servers (preview, LMS emulator, editor canvas): streamed from disk
 // (never read whole, never copied), with HTTP range requests, which <video> and <audio> need to
 // seek (and Safari to play at all), so a 300 MB course seeks in its videos at once.
 
-export const MIME_TYPES: Readonly<Record<string, string>> = {
-  '.html': 'text/html; charset=utf-8', '.htm': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.avif': 'image/avif', '.ico': 'image/x-icon',
-  '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.mov': 'video/quicktime', '.webm': 'video/webm', '.ogv': 'video/ogg',
-  '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.flac': 'audio/flac', '.ogg': 'audio/ogg', '.oga': 'audio/ogg', '.opus': 'audio/ogg', '.wav': 'audio/wav', '.aac': 'audio/aac', '.vtt': 'text/vtt; charset=utf-8',
-  '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf',
-  '.wasm': 'application/wasm', '.glb': 'model/gltf-binary', '.gltf': 'model/gltf+json', '.ktx2': 'image/ktx2', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8', '.csv': 'text/csv; charset=utf-8',
-  // The player's resources (D58, RESOURCE_TYPES): a PDF served as anything else is downloaded, and
-  // its preview stays empty.
-  '.pdf': 'application/pdf', '.zip': 'application/zip', '.rtf': 'application/rtf',
-  '.doc': 'application/msword', '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  '.xls': 'application/vnd.ms-excel', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  '.ppt': 'application/vnd.ms-powerpoint', '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  '.odt': 'application/vnd.oasis.opendocument.text', '.ods': 'application/vnd.oasis.opendocument.spreadsheet', '.odp': 'application/vnd.oasis.opendocument.presentation'
-};
+export { MIME_TYPES } from '@elabora/core/util/media-types';
 
-export const mimeType = (file: string): string => MIME_TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream';
-
-// A byte range of a file of size bytes (inclusive), or null when the header asks for none we serve
-// (several ranges: the whole file is sent, as RFC 9110 allows), or 'unsatisfiable'.
-export function byteRange(header: string | undefined, size: number): { start: number; end: number } | null | 'unsatisfiable' {
-  const match = header ? /^bytes=(\d*)-(\d*)$/.exec(header.trim()) : null;
-  if (!match || (!match[1] && !match[2])) return null;
-  let start: number;
-  let end: number;
-  if (!match[1]) {
-    // The last n bytes.
-    const length = Number(match[2]);
-    if (!length) return 'unsatisfiable';
-    start = Math.max(0, size - length);
-    end = size - 1;
-  } else {
-    start = Number(match[1]);
-    end = match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
-  }
-  if (start >= size || start > end) return 'unsatisfiable';
-  return { start, end };
-}
+export const mimeType = (file: string): string => mediaTypeOf(file);
 
 // Answers a GET or HEAD for a file: 200, 206 for a range, 304 when the page has it, 404, 416.
 // Files change while the app runs (an agent writes them): the page revalidates them every time.
@@ -58,7 +25,8 @@ export function serveFile(request: IncomingMessage, response: ServerResponse, fi
   };
   if (request.headers['if-none-match'] === etag) { response.writeHead(304, headers).end(); return; }
   const ifRange = request.headers['if-range'];
-  const range = ifRange && ifRange !== etag ? null : byteRange(request.headers.range, stat.size);
+  const asked = ifRange && ifRange !== etag ? null : parseRange(request.headers.range);
+  const range = asked === null ? null : resolveRange(asked, stat.size);
   if (range === 'unsatisfiable') { response.writeHead(416, { ...headers, 'content-range': `bytes */${stat.size}` }).end(); return; }
   const { start, end } = range || { start: 0, end: stat.size - 1 };
   const length = stat.size ? end - start + 1 : 0;

@@ -50,7 +50,7 @@ test('the spacer: the start of each bar on the left, the rest on the right, the 
   const dir = copyExample();
   // A logo with a viewBox and no width or height: it has no size of its own.
   fs.writeFileSync(path.join(dir, 'assets/images/logo-sombre.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40"><circle cx="18" cy="20" r="12" fill="#0B1F3A"/><rect x="38" y="10" width="100" height="20" fill="#0B1F3A"/></svg>\n');
-  edit.updatePlayer(dir, { enable: ['display'], options: { logo: { asset: 'images/logo-sombre.svg', plate: true } } });
+  edit.run(dir, 'update_player', { enable: ['display'], options: { logo: { asset: 'images/logo-sombre.svg', plate: true } } });
   await player(dir, async (page) => {
     const logo = await box(page, '.t-item--plate .t-logo');
     assert.ok(Math.abs(logo.height - 24) < 1 && Math.abs(logo.width - 90) < 1, `the logo at its plate's height, its own proportions (${logo.width}×${logo.height})`);
@@ -72,7 +72,7 @@ test('the spacer: the start of each bar on the left, the rest on the right, the 
 
 test('resources: an image opens in the viewer, a link in a new tab', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyExample();
-  edit.updatePlayer(dir, { resources: [
+  edit.run(dir, 'update_player', { resources: [
     { id: 'schema', title: 'Schéma du réseau', asset: 'images/logo-helios.svg' },
     { id: 'charte', title: 'Charte informatique', description: 'Sur l\'intranet.', url: 'https://intranet.example.com/charte' }
   ] });
@@ -95,7 +95,7 @@ test('resources: an image opens in the viewer, a link in a new tab', { skip: NO_
 
 test('the bars\' popups open toward the room: « Affichage » at the start of a bar, the outline at the end', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyExample();
-  edit.updatePlayer(dir, { enable: ['display'], move: [{ item: 'display', bar: 'top', index: 0 }, { item: 'outline', bar: 'bottom', index: 4 }] });
+  edit.run(dir, 'update_player', { enable: ['display'], move: [{ item: 'display', bar: 'top', index: 0 }, { item: 'outline', bar: 'bottom', index: 4 }] });
   await player(dir, async (page) => {
     const inside = (selector: string) => page.evaluate((selector) => { const box = document.querySelector(selector)!.getBoundingClientRect(); return { left: Math.round(box.left), right: Math.round(box.right), width: window.innerWidth }; }, selector);
     assert.ok((await box(page, '.t-item--display')).x < 200, 'display starts the top bar');
@@ -157,7 +157,7 @@ test('a PDF\'s preview: the browser\'s viewer when the server sends a PDF, the f
 
 test('« Affichage »: the screen\'s text larger in three steps without moving the bars, larger captions, kept for the course', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyExample();
-  edit.updatePlayer(dir, { enable: ['display'] });
+  edit.run(dir, 'update_player', { enable: ['display'] });
   await player(dir, async (page, reload) => {
     const bars = () => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.t-bar')].map((bar) => bar.getBoundingClientRect().toJSON()));
     const before = await bars();
@@ -184,7 +184,7 @@ test('« Affichage »: the screen\'s text larger in three steps without moving t
 
 test('« Langue » (D59): the learner switches in place, on the same screen with the same progress, and comes back in that language', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyCourse(BILINGUAL);
-  edit.updatePlayer(dir, { enable: ['language', 'display'] });
+  edit.run(dir, 'update_player', { enable: ['language', 'display'] });
   await player(dir, async (page, reload) => {
     const hooks = () => page.evaluate(() => { const t = (window as PlayerWindow).__elabora; return { screen: t.screen, visited: [...t.engine.st.visited].length, lang: document.documentElement.lang, next: document.querySelector('.t-nav-btn--next')?.textContent?.trim() }; });
     // Two screens in: the first done, the second shown.
@@ -245,10 +245,10 @@ test('?lang= opens the course in the language a page asks for, when the course h
 
 test('in an LMS (SCORM 1.2, SCORM 2004, cmi5): the learner\'s language preference, else the author\'s default, else the course\'s own; the learner\'s choice wins after (D71)', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
   const dir = copyCourse(BILINGUAL);
-  edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'] } });
+  edit.run(dir, 'update_course', { delivery: { languages: ['en', 'fr'] } });
   const b = await build(dir, { emit: 'dir', out: tmp('elabora-lms-language-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath);
-  edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'], defaultLanguage: 'fr' } });
+  edit.run(dir, 'update_course', { delivery: { languages: ['en', 'fr'], defaultLanguage: 'fr' } });
   const french = await build(dir, { emit: 'dir', out: tmp('elabora-lms-language-'), writeLock: false, debug: true });
   assert.ok(french.ok && french.dirPath);
   const scorm2004 = await build(dir, { emit: 'dir', out: tmp('elabora-lms-language-'), writeLock: false, debug: true, target: 'scorm2004' });
@@ -302,7 +302,7 @@ test('« Très grande » in slides: the room reserved for a quiz\'s feedback is 
   const course = JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'));
   course.presentation = { mode: 'slides' };
   fs.writeFileSync(path.join(dir, 'course.json'), `${JSON.stringify(course, null, 2)}\n`);
-  edit.updatePlayer(dir, { enable: ['display'] });
+  edit.run(dir, 'update_player', { enable: ['display'] });
   await player(dir, async (page) => {
     await page.evaluate(async () => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) { t.engine.st.visited.add(s.key); t.engine.st.completed.add(s.key); } t.go('evaluation'); await t.ready(); });
     const reserved = () => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.t-block[data-type="quiz"]')].map((node) => ({ id: node.dataset.block!, zoom: (node as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom ?? 1, room: parseFloat(node.style.minHeight) })));
@@ -453,7 +453,7 @@ test('a theme that draws the classic bar\'s track draws it there only: the parts
     assert.equal(await page.locator('.t-item--progress .t-progress').count(), 0);
     assert.deepEqual((await drawn(page)).filter((entry) => entry.includes('rgb(255, 0, 0)')), [], 'no track of the theme under the parts');
   });
-  edit.updatePlayer(dir, { options: { progress: { parts: false } } });
+  edit.run(dir, 'update_player', { options: { progress: { parts: false } } });
   await player(dir, async (page) => {
     assert.equal(await page.locator('.t-part').count(), 0);
     assert.deepEqual((await drawn(page)).filter((entry) => entry.startsWith('t-progress ')), ['t-progress rgb(255, 0, 0) 3px'], 'the classic bar, as the theme draws it');
@@ -471,7 +471,7 @@ test('the progress in one piece for a course without parts, or with options.prog
   });
   // The progress in one piece and without its percentage in a course of three parts (options.progress).
   const dir = copyExample();
-  edit.updatePlayer(dir, { options: { outline: { label: 'section' }, progress: { parts: false, percent: false } } });
+  edit.run(dir, 'update_player', { options: { outline: { label: 'section' }, progress: { parts: false, percent: false } } });
   await player(dir, async (page) => {
     assert.equal(await page.locator('.t-part').count(), 0);
     assert.equal(await page.locator('.t-progress-value').count(), 0);
@@ -526,7 +526,7 @@ test('the progress in parts on a phone: a tap opens the outline (a part is too n
     assert.equal(await shown(page), sections[1].screens[0], 'the tap opened the outline, the screen stays');
   });
   const without = copyExample('orbital-rendezvous');
-  edit.updatePlayer(without, { disable: ['outline'] });
+  edit.run(without, 'update_player', { disable: ['outline'] });
   await run(without, { width: 375, height: 812 }, true, async (page) => {
     const sections = await into(page);
     await page.locator('.t-part').first().tap();

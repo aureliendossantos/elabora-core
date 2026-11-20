@@ -90,7 +90,7 @@ test('a plan without parts: a moved item\'s screen goes after the screens of the
 test('write_plan with a move patch moves the screens in the same change, a validated version or not (D50, D52)', () => {
   const dir = copyExample();
   // ITEM-5 (Évaluation, screen evaluation of « Valider ») moves before ITEM-3 (Premier réflexe, « Pratiquer »).
-  const result = edit.writePlan(dir, { patch: [{ op: 'move', from: '/items/4', path: '/items/2' }] }, { author: { kind: 'human' } });
+  const result = edit.run(dir, 'write_plan', { patch: [{ op: 'move', from: '/items/4', path: '/items/2' }] }, { author: { kind: 'human' } });
   assert.deepEqual(result.moved, { screens: ['evaluation'], sections: [], renamed: [] });
   assert.deepEqual(readJSON(dir, 'plan.json').items.map((item: { id: string }) => item.id), ['ITEM-1', 'ITEM-2', 'ITEM-5', 'ITEM-3', 'ITEM-4', 'ITEM-6']);
   assert.deepEqual(readJSON(dir, 'course.json').sections.map((section: { screens: string[] }) => section.screens), [['accueil', 'chemin', 'evaluation'], ['premier-reflexe', 'simulation'], ['bilan']]);
@@ -98,8 +98,8 @@ test('write_plan with a move patch moves the screens in the same change, a valid
   edit.undo(dir, undefined, { author: { kind: 'human' } });
   assert.deepEqual(readJSON(dir, 'course.json').sections.map((section: { screens: string[] }) => section.screens), [['accueil', 'chemin'], ['premier-reflexe', 'simulation'], ['evaluation', 'bilan']]);
   // « Revenir à la V1 » on a move takes the screens back too.
-  edit.writePlan(dir, { patch: [{ op: 'move', from: '/items/4', path: '/items/2' }] }, { author: { kind: 'human' } });
-  const back = edit.revertPlanChange(dir, { key: 'item:ITEM-5' }, { author: { kind: 'human' } });
+  edit.run(dir, 'write_plan', { patch: [{ op: 'move', from: '/items/4', path: '/items/2' }] }, { author: { kind: 'human' } });
+  const back = edit.run(dir, 'revert_plan_change', { key: 'item:ITEM-5' }, { author: { kind: 'human' } });
   assert.deepEqual(back.moved?.screens, ['evaluation']);
   // After the screens of the item before it (D50): the learner's order is the plan's again.
   assert.deepEqual(readJSON(dir, 'course.json').sections.flatMap((section: { screens: string[] }) => section.screens), ['accueil', 'chemin', 'premier-reflexe', 'simulation', 'evaluation', 'bilan']);

@@ -9,7 +9,7 @@ import type { AlignWriter, AlignResult, AlignerView } from '@elabora/node/align/
 import { estimateTranscription, transcribeAudio, transcribers } from '@elabora/node/transcribe/index';
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/index';
 import { transcribeNarrationLine } from '@elabora/node/narration/from-audio';
-import { EngineError } from './errors.ts';
+import { EngineError, toolError } from './errors.ts';
 import type { CommandArgs, EngineEvent, VoiceView, GenerateVoiceParams, AlignNarrationParams } from './protocol.ts';
 import type { Session } from './session.ts';
 
@@ -46,7 +46,7 @@ export class SessionVoice {
     const lang = language || this.#project().course?.language || '';
     try {
       return await this.#voiceJob(null, (signal) => transcribeAudio(file, lang, { signal, ...this.#transcribing({ install, service, approvedPercent }) }));
-    } catch (error) { throw voiceError(error); }
+    } catch (error) { throw toolError(error); }
   }
 
   // What transcribing a file, or a line's recording, with ElevenLabs takes of the author's quota.
@@ -62,7 +62,7 @@ export class SessionVoice {
     if (!path.isAbsolute(audio)) throw new EngineError('bad-request', 'transcriptionEstimate takes file: the absolute path of a recording');
     try {
       return await estimateTranscription(audio);
-    } catch (error) { throw voiceError(error); }
+    } catch (error) { throw toolError(error); }
   }
 
   // What a line's recording says beside its text now (« Régénérer le texte d'après l'audio » shows
@@ -71,8 +71,8 @@ export class SessionVoice {
     this.#assertOpen();
     if (!this.#project().screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
     try {
-      return await this.#voiceJob(screen, (signal) => transcribeNarrationLine(this.#root, { screen, line, ...(language ? { language } : {}), signal, ...this.#transcribing({ install, service, approvedPercent }) }));
-    } catch (error) { throw voiceError(error); }
+      return await this.#voiceJob(screen, (signal) => transcribeNarrationLine(this.#root, { screen, line, ...(language ? { language } : {}), ...this.#transcribing({ install, service, approvedPercent }) }, { signal, onTranscribe: (progress) => this.#emit({ type: 'transcribeProgress', progress }) }));
+    } catch (error) { throw toolError(error); }
   }
 
   #transcribing({ install, service, approvedPercent }: { install?: boolean; service?: TranscriptionService; approvedPercent?: number }) {
@@ -113,7 +113,7 @@ export class SessionVoice {
         }
       } catch (error) {
         if (signal.aborted) return { language, installed: false };
-        throw voiceError(error);
+        throw toolError(error);
       }
       return { language, installed: true };
     });
@@ -139,15 +139,15 @@ export class SessionVoice {
     this.#assertOpen();
     try {
       return await voiceSample(params);
-    } catch (error) { throw voiceError(error); }
+    } catch (error) { throw toolError(error); }
   }
 
   // The session writes what the voices make: through its queue, on its snapshot.
   #voiceWriter(author: Author): VoiceWriter {
     return {
       project: () => this.#project(),
-      setNarrationAudio: async (args) => {
-        const written = await this.#run('set_narration_audio', args, author);
+      setNarrationAudio: async ({ tools, align, onAlign, ...args }) => {
+        const written = await this.#run('set_narration_audio', args, author, undefined, { ...(tools ? { tools } : {}), ...(align !== undefined ? { align } : {}), ...(onAlign ? { onAlign } : {}) });
         return { audio: typeof written.result.audio === 'string' ? written.result.audio : undefined, seq: written.change?.seq ?? null,
           ...(typeof written.result.alignmentError === 'string' ? { alignmentError: written.result.alignmentError } : {}) };
       },
@@ -158,21 +158,24 @@ export class SessionVoice {
 
   // The ElevenLabs key, in this process's memory only (when the app keeps it in the system's secure storage, D40).
   setVoiceKey(key: string | null): { key: string | null } {
-    try { setSessionKey(key); } catch (error) { throw voiceError(error); }
+    this.#assertOpen();
+    try { setSessionKey(key); } catch (error) { throw toolError(error); }
     return { key: key ? maskKey(key.trim()) : null };
   }
 
   async voiceAccount({ check }: { check?: boolean }): Promise<VoiceAccount> {
-    try { return await voiceProvider('elevenlabs').account!({ check }); } catch (error) { throw voiceError(error); }
+    this.#assertOpen();
+    try { return await voiceProvider('elevenlabs').account!({ check }); } catch (error) { throw toolError(error); }
   }
 
   async voiceSearch(query: VoiceQuery): Promise<VoiceSearchResult> {
-    try { return await voiceProvider('elevenlabs').search!({ ...query, provider: 'elevenlabs' }); } catch (error) { throw voiceError(error); }
+    this.#assertOpen();
+    try { return await voiceProvider('elevenlabs').search!({ ...query, provider: 'elevenlabs' }); } catch (error) { throw toolError(error); }
   }
 
   async voiceEstimate(params: GenerateVoiceParams): Promise<VoiceEstimate> {
     this.#assertOpen();
-    try { return await estimateNarration(this.#root, params, this.#voiceWriter(this.#author)); } catch (error) { throw voiceError(error); }
+    try { return await estimateNarration(this.#root, params, this.#voiceWriter(this.#author)); } catch (error) { throw toolError(error); }
   }
 
   aligners(language?: string): AlignerView[] {
@@ -191,34 +194,28 @@ export class SessionVoice {
       return await this.#voiceJob(params.screen ?? null, (signal) => alignNarration(this.#root, {
         ...params, signal, onProgress: (progress) => this.#emit({ type: 'alignProgress', ...(params.screen ? { screen: params.screen } : {}), progress })
       }, undefined, writer));
-    } catch (error) { throw voiceError(error); }
+    } catch (error) { throw toolError(error); }
   }
 
   async setSpeakerVoice({ speaker, voice, language, provider, name, settings }: { speaker: string; voice: string; language?: string; provider?: string; name?: string; settings?: Record<string, unknown> }, author: Author = this.#author): Promise<{ change: number | null }> {
     this.#assertOpen();
     try {
       return { change: await setSpeakerVoice(this.#root, { speaker, voice, ...(language ? { language } : {}), ...(provider ? { provider } : {}), ...(name ? { name } : {}), ...(settings ? { settings } : {}) }, undefined, this.#voiceWriter(author)) };
-    } catch (error) { throw voiceError(error); }
+    } catch (error) { throw toolError(error); }
   }
 
   async generateVoice(params: GenerateVoiceParams, author: Author = this.#author): Promise<GenerateResult> {
     this.#assertOpen();
     try {
       return await this.#voiceJob(params.screen, (signal) => generateNarration(this.#root, { ...params, signal, onProgress: (progress) => this.#emit({ type: 'voiceProgress', screen: params.screen, progress }) }, undefined, this.#voiceWriter(author)));
-    } catch (error) { throw voiceError(error); }
+    } catch (error) { throw toolError(error); }
   }
 
   voiceTakes({ screen, line, language }: { screen: string; line: string; language?: string }): { language: string; takes: TakeInfo[] } {
     this.#assertOpen();
     try {
       return voiceTakes(this.#root, { screen, line, ...(language ? { language } : {}) }, this.#project());
-    } catch (error) { throw voiceError(error); }
+    } catch (error) { throw toolError(error); }
   }
 }
 
-// A voice tool's error, for the app: what was not found or not set is refused with its code.
-function voiceError(error: unknown): unknown {
-  if (error instanceof EngineError || !(error instanceof Error) || !('code' in error) || typeof error.code !== 'string' || !/^E_(VOICE|ALIGN|TRANSCRIBE|NARRATION)_/.test(error.code)) return error;
-  const kind = /^E_(VOICE|ALIGN|TRANSCRIBE)_(DOWNLOAD|RUNTIME|NOT_INSTALLED|LANGUAGE)$/.test(error.code) ? 'not-available' : /^E_(VOICE|ALIGN|NARRATION)_(SCREEN|LINE)$/.test(error.code) || error.code === 'E_VOICE_UNKNOWN' ? 'not-found' : 'refused';
-  return new EngineError(kind, error.message, { code: error.code });
-}

@@ -79,11 +79,12 @@ export async function request<T>(method: 'GET' | 'POST', route: string, options:
 // The answer and what the service charged for it: ElevenLabs says each request's credits in its
 // character-cost header (the account's count follows about a minute later).
 async function answered<T>(method: 'GET' | 'POST', route: string, { body, signal, what, key }: { body?: unknown; signal?: AbortSignal; what: string; key?: string }): Promise<{ body: T; cost: number | null }> {
+  // No key is said as such (E_VOICE_KEY_MISSING), before anything is sent: not as the service unreachable.
+  const headers = { 'xi-api-key': key ?? requireKey(), ...(body === undefined ? {} : { 'content-type': 'application/json' }), accept: 'application/json' };
   let response: Response;
   try {
     response = await fetch(`${baseUrl()}${route}`, {
-      method, signal,
-      headers: { 'xi-api-key': key ?? requireKey(), ...(body === undefined ? {} : { 'content-type': 'application/json' }), accept: 'application/json' },
+      method, signal, headers,
       ...(body === undefined ? {} : { body: JSON.stringify(body) })
     });
   } catch (error) {

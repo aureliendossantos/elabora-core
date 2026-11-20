@@ -113,7 +113,7 @@ test('duplicate and detach: copies get new ids; detach keeps the id and the cont
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(card('chemin-card', {}, [{ id: 'chemin-card-note', type: 'text', slot: 'more', props: { markdown: 'Then the switch.' } }]));
   writeJSON(dir, 'screens/chemin.json', s);
-  const d = edit.duplicateBlock(dir, { block: 'chemin-card' });
+  const d = edit.run(dir, 'duplicate_block', { block: 'chemin-card' });
   // One random suffix for the copy and the blocks of its slots (D77).
   const tag = /^chemin-card-copy-([a-z0-9]{4})$/.exec(d.block)?.[1];
   assert.ok(tag, d.block);
@@ -122,9 +122,9 @@ test('duplicate and detach: copies get new ids; detach keeps the id and the cont
   assert.equal(after.blocks[after.blocks.length - 1].blocks[0].id, `chemin-card-note-copy-${tag}`);
   assert.deepEqual(errors(dir), []);
   // Edit the copy only.
-  edit.updateBlock(dir, { block: d.block, props: { title: 'Ping the printer' } });
+  edit.run(dir, 'update_block', { block: d.block, props: { title: 'Ping the printer' } });
   // Detach the original: two native text blocks in its place.
-  const r = edit.detachBlock(dir, { block: 'chemin-card' });
+  const r = edit.run(dir, 'detach_block', { block: 'chemin-card' });
   assert.deepEqual(r.blocks, ['text:chemin-card', 'text:chemin-card-note']);
   after = readJSON(dir, 'screens/chemin.json');
   assert.equal(after.blocks.find((b: Block) => b.id === 'chemin-card').type, 'text');
@@ -133,14 +133,14 @@ test('duplicate and detach: copies get new ids; detach keeps the id and the cont
   edit.undo(dir);
   assert.equal(readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === 'chemin-card').type, 'key-card');
   // Blocks move into and out of slots.
-  edit.moveBlock(dir, { block: `chemin-card-note-copy-${tag}`, parent: 'chemin-card', slot: 'more' });
+  edit.run(dir, 'move_block', { block: `chemin-card-note-copy-${tag}`, parent: 'chemin-card', slot: 'more' });
   assert.equal(readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === 'chemin-card').blocks.length, 2);
   assert.ok(!readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === d.block).blocks);
 });
 
 test('fork of quiz: headless template, extra props, plan question, same state key and scoring', async () => {
   const dir = copyExample();
-  const r = edit.forkComponent(dir, { component: 'quiz', id: 'card-quiz', title: 'Card quiz' });
+  const r = edit.run(dir, 'fork_component', { component: 'quiz', id: 'card-quiz', title: 'Card quiz' });
   assert.equal(r.component, 'card-quiz');
   const m = readJSON(dir, 'components/card-quiz/component.json');
   assert.deepEqual(m.extends, { component: 'quiz', version: getRegistry(loadProjectFromDir(dir)).get('quiz')!.version });
@@ -178,7 +178,7 @@ test('fork of quiz: headless template, extra props, plan question, same state ke
   assert.ok(c.includes('E_COMPONENT_HOOK'));
   // The fork falls back to a native quiz (detach keeps the id, hence the learner state).
   write(dir, 'components/card-quiz/template.html', fs.readFileSync(path.join(ROOT, 'packages/core/src/components/builtin/quiz.html'), 'utf8'));
-  const d = edit.detachBlock(dir, { block: q.id });
+  const d = edit.run(dir, 'detach_block', { block: q.id });
   assert.deepEqual(d.blocks, [`quiz:${q.id}`]);
   const detached = readJSON(dir, `screens/${sid}.json`).blocks.find((x: Block) => x.id === q.id);
   assert.deepEqual(detached, { id: q.id, type: 'quiz', props: { questionRef: q.props.questionRef } });
@@ -220,7 +220,7 @@ test('migrations: steps run on every instance, are checked, and are undoable', a
   let c = codes(validateDir(dir).diagnostics);
   assert.ok(c.includes('E_COMPONENT_MIGRATION_PENDING'));
   assert.ok(c.includes('E_COMPONENT_PROPS'));
-  const r = await edit.migrateComponents(dir);
+  const r = await edit.run(dir, 'migrate_components', {});
   assert.deepEqual(r.migrated, ['chemin-card', 'chemin-card-2']);
   assert.equal(readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === 'chemin-card-2').props.heading, 'Swap the cable');
   assert.equal(readJSON(dir, 'elabora.lock.json').components['key-card'], '2.0.0');
@@ -228,7 +228,7 @@ test('migrations: steps run on every instance, are checked, and are undoable', a
   // A step whose result does not match the schema writes nothing.
   edit.undo(dir);
   write(dir, 'components/key-card/migrations.mjs', "export default { '2.0.0': (p) => p };\n");
-  await assert.rejects(() => edit.migrateComponents(dir), /Migration refused/);
+  await assert.rejects(() => edit.run(dir, 'migrate_components', {}), /Migration refused/);
   assert.equal(readJSON(dir, 'elabora.lock.json').components['key-card'], '1.0.0');
 });
 
@@ -240,7 +240,7 @@ test('libraries: add pins a copy, local edits are reported, upgrade and publish'
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(card('chemin-card'));
   writeJSON(dir, 'screens/chemin.json', s);
-  const p = edit.publishComponent(dir, { library: lib, component: 'key-card' });
+  const p = edit.run(dir, 'publish_component', { library: lib, component: 'key-card' });
   assert.equal(p.library, 'acme');
   assert.ok(fs.existsSync(path.join(lib, 'components/key-card/template.html')));
   assert.equal(readJSON(dir, 'components/key-card/component.json').origin.library, 'acme');
@@ -248,7 +248,7 @@ test('libraries: add pins a copy, local edits are reported, upgrade and publish'
 
   // Another course adds it.
   const other = copyExample();
-  const a = edit.addLibraryComponent(other, { library: lib, component: 'key-card' });
+  const a = edit.run(other, 'add_component', { library: lib, component: 'key-card' });
   assert.equal(a.to, '1.0.0');
   assert.ok(!codes(validateDir(other).diagnostics).includes('W_COMPONENT_DIVERGED'));
   // Local edit → diverged; upgrade refuses without force.
@@ -257,8 +257,8 @@ test('libraries: add pins a copy, local edits are reported, upgrade and publish'
   const lm = readJSON(lib, 'components/key-card/component.json');
   lm.version = '1.1.0';
   writeJSON(lib, 'components/key-card/component.json', lm);
-  assert.throws(() => edit.addLibraryComponent(other, { library: lib, component: 'key-card', upgrade: true }), /edited since/);
-  const u = edit.addLibraryComponent(other, { library: lib, component: 'key-card', upgrade: true, force: true });
+  assert.throws(() => edit.run(other, 'add_component', { library: lib, component: 'key-card', upgrade: true }), /edited since/);
+  const u = edit.run(other, 'add_component', { library: lib, component: 'key-card', upgrade: true, force: true });
   assert.deepEqual([u.from, u.to], ['1.0.0', '1.1.0']);
   assert.ok(!codes(validateDir(other).diagnostics).includes('W_COMPONENT_DIVERGED'));
 });

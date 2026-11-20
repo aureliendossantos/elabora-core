@@ -21,7 +21,7 @@ for (const example of examples) {
       .filter((screen: string) => /"(events|layers|do)":/.test(fs.readFileSync(path.join(dir, 'screens', `${screen}.json`), 'utf8')));
     const left: string[] = [];
     for (const screen of screens) {
-      const { screen: copy, renamed } = edit.duplicateScreen(dir, { id: screen });
+      const { screen: copy, renamed } = edit.run(dir, 'duplicate_screen', { id: screen });
       const strings = (value: unknown, at: string): void => {
         if (typeof value === 'string' && Object.hasOwn(renamed, value)) left.push(`${copy} ${at}: "${value}"`);
         else if (Array.isArray(value)) value.forEach((each, index) => strings(each, `${at}/${index}`));

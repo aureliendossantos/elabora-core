@@ -32,7 +32,7 @@ async function renameAndCheck(dir: string, from: string, to: string, kind: strin
   const keys = await stateKeys(dir); // also writes the lock entries a build adds
   const files = texts(dir);
   const findings = codes(validateDir(dir).diagnostics);
-  const result = edit.rename(dir, { from, to });
+  const result = edit.run(dir, 'rename', { from, to });
   assert.equal(result.renamed.kind, kind);
   assert.deepEqual(codes(validateDir(dir).diagnostics), findings, `${from} → ${to}: the same findings`);
   const renamedEntity = (entity: string) => entity.replace(new RegExp(`^([a-z]+):${from}(#.*)?$`), `$1:${to}$2`);
@@ -66,8 +66,8 @@ test('rename: translation units and stylesheet selectors follow (orbital-rendezv
   await renameAndCheck(dir, 'orbits', 'orbit-speeds', 'screen');
   await renameAndCheck(dir, 'orbits-hot-1', 'orbits-marker-1', 'block'); // a click trigger target with named controls (visit keys)
 
-  edit.rename(dir, { from: 'practise', to: 'practice' });
-  edit.rename(dir, { from: 'orbits', to: 'orbit-speeds' });
+  edit.run(dir, 'rename', { from: 'practise', to: 'practice' });
+  edit.run(dir, 'rename', { from: 'orbits', to: 'orbit-speeds' });
   const theme = fs.readFileSync(path.join(dir, 'theme/theme.css'), 'utf8');
   assert.ok(theme.includes('.t-backdrop[data-section="practice"]') && !theme.includes('"practise"'));
   const xliff = fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8');
@@ -83,8 +83,8 @@ test('rename: layers, a fork of quiz and a screen of a course with components an
   await renameAndCheck(dir, 'hoist-bench-a', 'hoist-light-load', 'layer');
   await renameAndCheck(dir, 'assessment-q3', 'assessment-config', 'block');
   const first = await build(dir, { emit: 'dir', out: tempDir() });
-  edit.rename(dir, { from: 'lab', to: 'test-bench' });
-  edit.rename(dir, { from: 'assessment-q1', to: 'assessment-first' });
+  edit.run(dir, 'rename', { from: 'lab', to: 'test-bench' });
+  edit.run(dir, 'rename', { from: 'assessment-q1', to: 'assessment-first' });
   const second = await build(dir, { emit: 'dir', out: tempDir() });
   assert.ok(first.ok && second.ok);
   const impact = diffReports(first.report, second.report);
@@ -96,7 +96,7 @@ test('rename: layers, a fork of quiz and a screen of a course with components an
 test('rename refuses an id in use, an invalid id and an unknown one, and writes nothing', () => {
   const dir = example('diagnostic-reseau');
   const before = texts(dir);
-  const refused = (from: string, to: string, message: RegExp) => assert.throws(() => edit.rename(dir, { from, to }), (error) => error instanceof edit.EditError && message.test(error.message));
+  const refused = (from: string, to: string, message: RegExp) => assert.throws(() => edit.run(dir, 'rename', { from, to }), (error) => error instanceof edit.EditError && message.test(error.message));
   refused('evaluation-q1', 'evaluation-q2', /already used/);
   refused('evaluation-q1', 'bilan', /already used/);
   refused('evaluation-q1', 'decouvrir', /already used/);
@@ -111,7 +111,7 @@ test('rename: waivers of the plan that name the id follow it, and the plan\'s di
   const plan = readJSON(dir, 'plan.json');
   plan.waivers = [{ code: 'W_TEXT_DENSITY', target: 'chemin', reason: 'Dense on purpose', approvedBy: 'Client' }];
   writeJSON(dir, 'plan.json', plan);
-  const result = edit.rename(dir, { from: 'chemin', to: 'chemin-impression' });
+  const result = edit.run(dir, 'rename', { from: 'chemin', to: 'chemin-impression' });
   assert.equal(result.waivers, 1);
   assert.ok(result.files.includes('plan.json'));
   assert.equal(readJSON(dir, 'plan.json').waivers[0].target, 'chemin-impression');
@@ -122,7 +122,7 @@ test('rename: a layer that an event waits on (a cue of its timeline) and a dialo
   const practice = readJSON(dir, 'screens/practice.json');
   practice.events = [{ id: 'email-read', on: { type: 'timeline.ended', layer: 'the-email' }, do: [{ type: 'hide-layer', layer: 'the-email' }] }];
   writeJSON(dir, 'screens/practice.json', practice);
-  edit.rename(dir, { from: 'the-email', to: 'the-letter' });
+  edit.run(dir, 'rename', { from: 'the-email', to: 'the-letter' });
   const screen = readJSON(dir, 'screens/practice.json');
   assert.deepEqual([screen.events[0].on.layer, screen.events[0].do[0].layer], ['the-letter', 'the-letter']);
   assert.deepEqual([...new Set(JSON.stringify(screen.blocks).match(/"layer":"[^"]*"/g))], ['"layer":"the-letter"']);

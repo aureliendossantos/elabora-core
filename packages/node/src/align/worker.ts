@@ -2,8 +2,8 @@ import { createRequire } from 'node:module';
 import type * as Ort from 'onnxruntime-node';
 import { loadWav2Vec2, wav2vec2Emissions } from './wav2vec2.ts';
 import type { ModelEmissions, Wav2Vec2Model } from './wav2vec2.ts';
-import { alignEmissions } from './align.ts';
-import type { Alignment } from './align.ts';
+import { alignEmissions } from '@elabora/core/align/align';
+import type { Alignment } from '@elabora/core/align/align';
 import { ortLoadFailure } from '../voice/pocket/runtime.ts';
 import { serveModel } from '../models/process.ts';
 import type { ModelPort } from '../models/process.ts';
@@ -43,7 +43,7 @@ export function serve(port: Port): void {
     const model = loaded?.model;
     loaded = null;
     last = null;
-    await model?.session.release();
+    await model?.session.release?.();
   };
   serveModel(port, {
     release,

@@ -11,6 +11,7 @@ import { isMouth } from '../narration/mouth.ts';
 import { isRecord, objectsIn } from '../util/values.ts';
 import { screenAnchors } from '../i18n/anchors.ts';
 import { voiceLinesOf, soundLinesOf } from '../narration/voice-lines.ts';
+import type { TranscriptionService } from '../narration/transcript.ts';
 
 // A screen's narration (docs/decisions.md D24): its settings, its lines (the script), and the audio
 // of a line in a language with its sidecar; and a layer's narration (D62), its lines said on the
@@ -307,6 +308,36 @@ export interface NarrationAudioFileArgs {
   model?: string;
   // Trim the silence at both ends (to 0.1 s): recordings.
   trim?: boolean;
+}
+
+// « Nouvelle réplique depuis un fichier audio… » (docs/decisions.md D46): a new line, its text what
+// the recording says (transcribed unless given), its audio the recording.
+export interface LineFromAudioFileArgs {
+  screen: string;
+  file: string;                    // any audio its host reads (a computer: an absolute path, any format ffmpeg reads)
+  text?: string;                   // what it says (default: transcribed)
+  after?: string | null;           // after this line (null: first; default: last)
+  step?: number;                   // default: the step of the line before it
+  speaker?: string;                // default: the speaker of the line before it
+  layer?: string;                  // a line of that layer's narration (D62); default: the screen's
+  language?: string;               // the course's
+  trim?: boolean;                  // silence at both ends trimmed (default true)
+  service?: TranscriptionService;  // who transcribes (default: the author's computer)
+  approvedPercent?: number;        // ElevenLabs: the share of the quota the author approved (D30)
+  install?: boolean;               // download the local transcriber first when it is not here
+}
+
+// « Régénérer le texte d'après l'audio »: the line's text becomes what its recording says (given,
+// as the author checked it, or transcribed now); the recording stays.
+export interface TextFromAudioFileArgs {
+  screen: string;
+  line: string;
+  language?: string;
+  text?: string;
+  audioHash?: `sha256:${string}`;  // the audio it was heard in (refused when the line's audio changed since)
+  service?: TranscriptionService;
+  approvedPercent?: number;
+  install?: boolean;
 }
 
 export interface SetNarrationAudioArgs {

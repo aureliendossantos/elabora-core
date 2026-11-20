@@ -2,9 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile, spawnSync } from 'node:child_process';
 import { projectDataDir } from '../data-dir.ts';
-import { extensionOf, mediaKindOfPath } from '@elabora/core/media/conformance';
+import { emptyMediaInfo, extensionOf, mediaKindOfPath } from '@elabora/core/media/conformance';
 import type { MediaInfo } from '@elabora/core/media/conformance';
-import { readImageMetadata } from './metadata.ts';
+import { readSync } from '@elabora/core/media/bytes';
+import { AVIF_BRANDS, HEIF_BRANDS, mp4LayoutSteps, ORIENTATION_DEGREES } from '@elabora/core/media/metadata';
+import type { Mp4Layout } from '@elabora/core/media/metadata';
+import { readImageMetadata, reader, withFile } from './metadata.ts';
 import { findMediaTools, findProberSync, MediaToolsError } from './tools.ts';
 import type { MediaTools, Prober } from './tools.ts';
 import { writeFileAtomic } from './files.ts';
@@ -27,9 +30,6 @@ export class MediaProbeError extends Error {
 export interface ProbeOptions { tools?: MediaTools }
 
 const IMAGE_CODECS: Readonly<Record<string, string>> = { mjpeg: 'jpeg', png: 'png', apng: 'png', webp: 'webp', gif: 'gif', tiff: 'tiff', bmp: 'bmp', hevc: 'heif', av1: 'avif' };
-const HEIF_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1']);
-const AVIF_BRANDS = new Set(['avif', 'avis']);
-const ORIENTATION_DEGREES: Readonly<Record<number, number>> = { 3: 180, 5: 90, 6: 90, 7: 270, 8: 270 };
 
 // The probe of a file as steps: each yield asks for an ffprobe run with these arguments and
 // receives its output. major: the ffmpeg major version (stream groups need 7 or later).
@@ -37,7 +37,7 @@ function* probeSteps(file: string, major: number | null): Generator<string[], Me
   let stat: fs.Stats | null = null;
   try { stat = fs.statSync(file); } catch { /* reported below */ }
   if (!stat?.isFile()) throw new MediaProbeError(file, 'file not found');
-  if (extensionOf(file) === '.svg') return emptyInfo('vector', 'svg', stat.size);
+  if (extensionOf(file) === '.svg') return emptyMediaInfo('vector', 'svg', stat.size);
   const output = yield ['-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', ...(major !== null && major >= 7 ? ['-show_stream_groups'] : []), file];
   let raw: FfprobeOutput;
   try { raw = JSON.parse(output) as FfprobeOutput; } catch { throw new MediaProbeError(file, 'ffprobe gave no readable answer'); }
@@ -58,7 +58,7 @@ function* probeSteps(file: string, major: number | null): Generator<string[], Me
   const kind = video && imageFormat ? 'image' : video ? 'video' : audio ? 'audio' : null;
   if (!kind) throw new MediaProbeError(file, 'no audio or video stream');
 
-  const info = emptyInfo(kind, containerName(formatName, brand, kind === 'image' ? video?.codec_name : undefined, file), stat.size);
+  const info = emptyMediaInfo(kind, containerName(formatName, brand, kind === 'image' ? video?.codec_name : undefined, file), stat.size);
   if (kind !== 'image') {
     info.duration = number(format.duration) ?? number(video?.duration) ?? number(audio?.duration);
     info.bitrate = number(format.bit_rate) ?? (info.duration ? Math.round((stat.size * 8) / info.duration) : null);
@@ -143,16 +143,6 @@ export function probeMediaSync(file: string, prober: Prober | null = findProberS
   return step.value;
 }
 
-function emptyInfo(kind: MediaInfo['kind'], container: string, size: number): MediaInfo {
-  return {
-    kind, container, size, duration: null, bitrate: null,
-    videoCodec: null, profile: null, pixelFormat: null, width: null, height: null, rotation: 0, pixelAspect: 1, fps: null, videoBitrate: null,
-    hdr: null, alpha: false, animated: false,
-    audioCodec: null, audioBitrate: null, channels: null, sampleRate: null, coverArt: false,
-    faststart: null, location: false
-  };
-}
-
 function containerName(formatName: string, brand: string, imageCodec: string | undefined, file: string): string {
   if (imageCodec) {
     if (HEIF_BRANDS.has(brand)) return 'heif';
@@ -178,46 +168,11 @@ function ratio(value: string | undefined): number {
   return Math.round((Number(m[1]) / Number(m[2])) * 1000) / 1000;
 }
 
-// --- MP4 top-level boxes
+// --- MP4 top-level boxes, read by the rule of @elabora/core/media/metadata
 
-export interface Mp4Layout {
-  brand: string | null;      // major brand of ftyp
-  faststart: boolean | null; // moov before the first mdat; null without moov
-  boxes: string[];           // top-level box types in file order
-}
+export type { Mp4Layout };
 
-export function readMp4LayoutSync(file: string): Mp4Layout {
-  const fd = fs.openSync(file, 'r');
-  try {
-    const size = fs.fstatSync(fd).size;
-    const header = Buffer.alloc(16);
-    const boxes: string[] = [];
-    let brand: string | null = null;
-    let position = 0;
-    while (position + 8 <= size && boxes.length < 10_000) {
-      const bytesRead = fs.readSync(fd, header, 0, 16, position);
-      if (bytesRead < 8) break;
-      const type = header.toString('latin1', 4, 8);
-      let boxSize = header.readUInt32BE(0);
-      if (boxSize === 1) {
-        if (bytesRead < 16) break;
-        boxSize = Number(header.readBigUInt64BE(8));
-      } else if (boxSize === 0) {
-        boxSize = size - position; // extends to the end of the file
-      }
-      if (boxSize < 8) break;
-      if (type === 'ftyp' && bytesRead >= 12) brand = header.toString('latin1', 8, 12);
-      boxes.push(type);
-      if (boxes.includes('moov') && boxes.includes('mdat')) break;
-      position += boxSize;
-    }
-    const moov = boxes.indexOf('moov');
-    const mdat = boxes.indexOf('mdat');
-    return { brand, faststart: moov < 0 ? null : mdat < 0 || moov < mdat, boxes };
-  } finally {
-    fs.closeSync(fd);
-  }
-}
+export const readMp4LayoutSync = (file: string): Mp4Layout => withFile(file, (handle) => readSync(mp4LayoutSteps(fs.fstatSync(handle).size), reader(handle)));
 
 export const readMp4Layout = async (file: string): Promise<Mp4Layout> => readMp4LayoutSync(file);
 

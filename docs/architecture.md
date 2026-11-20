@@ -23,7 +23,7 @@ pnpm workspaces in `packages/`, TypeScript run directly by Node 24 (type strippi
 | `@elabora/fonts` | The vetted free fonts courses embed (WOFF2 files of the latin and latin-ext subsets, with their unicode ranges, next to their licence) and their catalogue as data, refreshed from npm by `pnpm run fonts` | nothing from Elabora |
 | `@elabora/core` | Logic without I/O: project model, validation, components and templates, compilation plan, operations and diffs, screen rendering, i18n, interop, diagnostics | format, player |
 | `@elabora/node` | Node services: file store, project lock, journal, build and packaging, bundling (esbuild), generators, component migrations, media (ffmpeg), fonts, backups, LMS emulator, free-object gates, preview and captures, scaffolding, the hosting's client (`cloud/`, D43) | format, player, fonts, core |
-| `@elabora/engine` | Editing session for the app: project in memory, operations, incremental validation, file watching, batches and undo, media jobs, backups schedule | format, core, node |
+| `@elabora/engine` | Editing session for the app: project in memory, operations, incremental validation, file watching, batches and undo, media jobs, backups schedule; under `src/base/`, what a session needs without Node ([D100](decisions/D100.md)) | format, core, node (`src/base/`: format, core) |
 | `@elabora/cli` | The `elabora` command line and the MCP server | format, core, node, engine |
 
 Rules:

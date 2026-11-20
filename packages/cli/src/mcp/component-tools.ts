@@ -5,8 +5,7 @@ import { screenBlocks } from '@elabora/core/project/load';
 import type { Project } from '@elabora/core/project/model';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import * as edit from '@elabora/node/edit';
-import type { ComponentManifest, ComponentSlot } from '@elabora/format';
-import { defineTool, editResult, errorResult, formatValue, imageResult, objectSchema, textResult, SLUG } from './tool.ts';
+import { fromCommand, defineTool, editResult, errorResult, imageResult, objectSchema, textResult, SLUG } from './tool.ts';
 
 // Block types: listing and reading them, designing course components, libraries and migrations.
 
@@ -68,47 +67,41 @@ export const getComponent = defineTool({
 
 export const createComponent = defineTool({
   name: 'elabora_create_component',
-  description: 'Create a course component (components/<id>/): a block type (level block) or a screen layout (level screen), with its props schema, slots, template and stylesheet. Read the components page first (elabora_docs components; skill elabora-components); then write the files with elabora_write_component_file and check with elabora_preview_component.',
-  inputSchema: objectSchema({ id: SLUG, title: { type: 'string' }, level: { enum: ['block', 'screen'] }, description: { type: 'string' }, props: formatValue<ComponentManifest['props']>()({ type: 'object' }), slots: { type: 'array', items: formatValue<ComponentSlot>()({ type: 'object' }) }, template: { type: 'string' }, css: { type: 'string' } }, ['id', 'title']),
-  handler: (args, { root, author }) => editResult(edit.createComponent(root, args, { author }))
+  ...fromCommand('create_component'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'create_component', args, { author }))
 });
 
 export const forkComponent = defineTool({
   name: 'elabora_fork_component',
-  description: 'Fork a component (built-in or course) under a new id: the fork remembers its parent, copies its template to change, inherits props (add more with propsExtend), slots, styles, fallback and stylesheet. Forks of quiz, numeric, decision and results keep their behaviour: scoring, saved state, SCORM records.',
-  inputSchema: objectSchema({ component: SLUG, id: SLUG, title: { type: 'string' }, copyCss: { type: 'boolean' } }, ['component', 'id']),
-  handler: (args, { root, author }) => editResult(edit.forkComponent(root, args, { author }))
+  ...fromCommand('fork_component'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'fork_component', args, { author }))
 });
 
 export const writeComponentFile = defineTool({
   name: 'elabora_write_component_file',
-  description: 'Write a file of a course component, to change its look, markup or props: component.json (manifest: props, slots, fallback, styles, examples, version), template.html, component.css or migrations.mjs (steps that migrate instance props when the props shape changes).',
-  inputSchema: objectSchema({ component: SLUG, file: { enum: ['component.json', 'template.html', 'component.css', 'migrations.mjs'] }, content: { type: 'string' } }, ['component', 'file', 'content']),
-  handler: (args, { root, author }) => editResult(edit.writeComponentFile(root, args, { author }))
+  ...fromCommand('write_component_file'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'write_component_file', args, { author }))
 });
 
 export const migrateComponents = defineTool({
   name: 'elabora_migrate_components',
-  description: 'Run pending migration steps (components/<id>/migrations.mjs) on every instance, check them against the new schema, and write them in one undoable edit (nothing is written if one fails).',
-  inputSchema: objectSchema({ component: SLUG, from: { type: 'string', description: 'Version the instances are at, when elabora.lock.json does not know it.' } }),
+  ...fromCommand('migrate_components'),
   async handler(args, { root, author }) {
-    const result = await edit.migrateComponents(root, args, { author });
-    return 'message' in result ? textResult(result) : editResult(result);
+    const result = await edit.run(root, 'migrate_components', args, { author });
+    return 'message' in result ? textResult({ ok: true, migrated: [], message: result.message }) : editResult(result);
   }
 });
 
 export const addLibraryComponent = defineTool({
   name: 'elabora_add_library_component',
-  description: 'Copy a component from a library folder (a client design system shared by several courses) into the course, pinned with its origin; upgrade: true replaces the course copy with the library version (then run elabora_migrate_components if needed).',
-  inputSchema: objectSchema({ library: { type: 'string', description: 'Path of the library folder.' }, component: SLUG, as: SLUG, upgrade: { type: 'boolean' }, force: { type: 'boolean' } }, ['library', 'component']),
-  handler: (args, { root, author }) => editResult(edit.addLibraryComponent(root, args, { author }))
+  ...fromCommand('add_component'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'add_component', args, { author }))
 });
 
 export const publishComponent = defineTool({
   name: 'elabora_publish_component',
-  description: 'Copy a course component into a library folder so other courses can add it; the course copy records the library as its origin.',
-  inputSchema: objectSchema({ library: { type: 'string' }, component: SLUG }, ['library', 'component']),
-  handler: (args, { root, author }) => editResult(edit.publishComponent(root, args, { author }))
+  ...fromCommand('publish_component'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'publish_component', args, { author }))
 });
 
 export const previewComponent = defineTool({

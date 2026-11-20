@@ -14,8 +14,8 @@ import { openSource, within } from './source.ts';
 import type { ImportSource } from './source.ts';
 import { findFont } from '../fonts/index.ts';
 import { agentsFile, courseNotes, CLAUDE_FILE, CLAUDE_TEXT } from '../agent-rules.ts';
-import { TEMPLATES_DIR, checkBrief } from '../scaffold.ts';
-import type { CourseBrief } from '../scaffold.ts';
+import { checkBrief, type CourseBrief } from '@elabora/core/commands/new-course';
+import { TEMPLATES_DIR } from '../scaffold.ts';
 import { validateDir } from '../project-reader.ts';
 import { dataLocation } from '../data-dir.ts';
 import * as edit from '../edit/index.ts';
@@ -218,7 +218,7 @@ export async function importCourse(options: ImportCourseOptions): Promise<Import
       // Fonts the module embeds: vetted families, copied with their licence, as `elabora font add`.
       const fonts: string[] = [];
       for (const font of converted.fonts) {
-        edit.addFont(target, { family: font.family, for: font.for }, { author: options.author ?? { kind: 'system', name: 'import' }, validate: false, autoVersion: false });
+        edit.run(target, 'add_font', { family: font.family, for: font.for }, { author: options.author ?? { kind: 'system', name: 'import' }, validate: false, autoVersion: false });
         fonts.push(font.family);
       }
       return { files: files.sort(), fonts };

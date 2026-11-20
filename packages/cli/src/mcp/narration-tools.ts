@@ -4,10 +4,10 @@ import { importNarration } from '@elabora/node/narration/audio';
 import { alignNarration } from '@elabora/node/align/index';
 import { transcribeAudio } from '@elabora/node/transcribe/index';
 import type { TranscriptionEstimate } from '@elabora/node/transcribe/index';
-import { addNarrationLineFromAudio, setNarrationTextFromAudio, transcribeNarrationLine } from '@elabora/node/narration/from-audio';
+import { transcribeNarrationLine } from '@elabora/node/narration/from-audio';
 import { timelineReport, formatTimeline, narratedScreens, formatNarratedScreens } from '@elabora/core/narration/report';
-import { setBlockTiming } from '@elabora/node/edit';
 import { defineTool, fromCommand, editResult, errorResult, LINE_ID, objectSchema, SLUG, textResult } from './tool.ts';
+import { run } from '@elabora/node/edit';
 
 // Narration (docs/decisions.md D24): the timeline of a narrated screen as text, a recorded voice for
 // a line, and lines made from recordings (D46). The script itself is the screen's narration.lines,
@@ -71,7 +71,7 @@ export const setTiming = defineTool({
   name: 'elabora_set_timing',
   ...fromCommand('set_block_timing'),
   handler(args, { root, author }) {
-    return editResult(setBlockTiming(root, { block: args.block, ...(args.in !== undefined ? { in: args.in } : {}), ...(args.out !== undefined ? { out: args.out } : {}) }, { author }));
+    return editResult(run(root, 'set_block_timing', { block: args.block, ...(args.in !== undefined ? { in: args.in } : {}), ...(args.out !== undefined ? { out: args.out } : {}) }, { author }));
   }
 });
 
@@ -122,7 +122,7 @@ export const lineFromAudioTool = defineTool({
   }, ['screen', 'file']),
   async handler(args, { root, author }) {
     try {
-      const result = await addNarrationLineFromAudio(root, {
+      const result = await run(root, 'add_narration_line_with_audio', {
         screen: args.screen, file: path.resolve(root, args.file), install: true, trim: !args.keepSilence,
         ...(args.text ? { text: args.text } : {}), ...(args.after !== undefined ? { after: args.after } : {}), ...(typeof args.step === 'number' ? { step: args.step } : {}),
         ...(args.speaker ? { speaker: args.speaker } : {}), ...(args.layer ? { layer: args.layer } : {}), ...(args.language ? { language: args.language } : {}),
@@ -153,7 +153,7 @@ export const textFromAudioTool = defineTool({
         const heard = await transcribeNarrationLine(root, { screen: args.screen, line: args.line, ...how });
         return textResult({ ok: true, before: heard.before, text: heard.transcript.text, same: heard.before === heard.transcript.text, transcriber: heard.transcript.transcriber, ...(heard.transcript.percent !== undefined ? { percent: heard.transcript.percent } : {}) });
       }
-      return editResult(await setNarrationTextFromAudio(root, { screen: args.screen, line: args.line, ...how, ...(args.text ? { text: args.text } : {}) }, { author }));
+      return editResult(await run(root, 'set_narration_text_from_audio', { screen: args.screen, line: args.line, ...how, ...(args.text ? { text: args.text } : {}) }, { author }));
     } catch (error) { return failed(error); }
   }
 });
