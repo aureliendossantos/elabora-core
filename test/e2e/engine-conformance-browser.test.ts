@@ -55,12 +55,13 @@ provideMedia(async (hash) => { const response = await fetch('/media/' + hash); r
   const conformance = await bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
 provideMedia(async (hash) => { const response = await fetch('/sample-media/' + hash); return response.ok ? response.blob() : null; });` });
   const media = await bundleForBrowser({ file: 'packages/engine/src/browser/media/worker.ts' });
+  const models = await bundleForBrowser({ file: 'packages/engine/src/browser/models/worker.ts' });
   const aac = await aacEncoderModule();
   browser = await launchBrowser('chromium');
   page = await browser.newPage();
   await page.route(`${ORIGIN}/**`, (route) => {
     const name = new URL(route.request().url()).pathname;
-    const scripts: Record<string, string> = { '/worker.js': worker.code, '/worker-objects.js': withObjects.code, '/worker-media.js': withMedia.code, '/worker-conformance.js': conformance.code, '/media.js': media.code, '/aac.js': aac };
+    const scripts: Record<string, string> = { '/worker.js': worker.code, '/worker-objects.js': withObjects.code, '/worker-media.js': withMedia.code, '/worker-conformance.js': conformance.code, '/media.js': media.code, '/aac.js': aac, '/models.js': models.code };
     if (scripts[name]) return route.fulfill({ contentType: 'text/javascript', body: scripts[name] });
     if (name.startsWith('/sample-media/')) {
       const bytes = SAMPLE_MEDIA.get(name.slice('/sample-media/'.length));
@@ -118,7 +119,7 @@ let copies = 0;
 
 // A file the person picks: a token the request carries, its bytes kept to go beside the request.
 const picked = new Map<string, string>();
-let scripts: { media: string; aac: string } | undefined;
+let scripts: { media: string; aac: string; models?: string } | undefined;
 let picks = 0;
 function attachedTo(message: unknown): Record<string, string> {
   const tokens = JSON.stringify(message).match(/elabora-file:[0-9a-f]{24}\/[^"\\/]+/g) ?? [];
@@ -127,14 +128,16 @@ function attachedTo(message: unknown): Record<string, string> {
 
 const chromium: ConformanceTarget = {
   name: 'browser (Chromium, IndexedDB)',
-  services: ['canvas', 'media'],
+  services: ['canvas', 'media', 'align'],
   async open(sample, { services } = {}) {
     // A Worker a Worker starts does not go through the test's routes: the page gives both scripts by blob addresses.
     scripts ??= await page.evaluate(async () => {
       const blob = async (url: string) => URL.createObjectURL(new Blob([await (await fetch(url)).text()], { type: 'text/javascript' }));
-      return { media: await blob('/media.js'), aac: await blob('/aac.js') };
+      return { media: await blob('/media.js'), aac: await blob('/aac.js'), models: await blob('/models.js') };
     });
-    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, services: [...(services ?? ['canvas', 'media'])], mediaWorker: scripts.media, aacEncoder: scripts.aac }, '/worker-conformance.js');
+    // The models' runtime is loaded only when a line is timed, which no case here asks of an English
+    // model it would download: its addresses are given, and never read.
+    const engine = await worker({ kind: 'open', team: 'tm_test', project: `conformance-${++copies}`, seed: seedOf(sample), api: 'http://localhost:1', offline: true, services: [...(services ?? ['canvas', 'media', 'align'])], mediaWorker: scripts.media, aacEncoder: scripts.aac, modelsWorker: scripts.models, ort: '/ort/ort.wasm.min.mjs', ortWasm: '/ort/', models: 'https://models.elabora.test' }, '/worker-conformance.js');
     assert.equal(engine.first.kind, 'opened', JSON.stringify(engine.first));
     return {
       send: (message) => void engine.send(message),

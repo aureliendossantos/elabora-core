@@ -17,6 +17,8 @@ import { SessionReads } from '../base/reads.ts';
 import { Renderer } from '../base/render.ts';
 import { SessionCanvas } from '../base/canvas.ts';
 import { BrowserMedia } from './media/service.ts';
+import { BrowserAlign } from './models/align.ts';
+import type { ModelsWorker } from './models/align.ts';
 import type { Attachments } from './media/service.ts';
 import type { MediaWorker } from './worker-client.ts';
 import { screenRenderOf } from '@elabora/core/render/screen';
@@ -62,11 +64,13 @@ export interface CopyOptions {
   // The media Worker (D106): with it, the media service (imports, a narration's waveform, recordings,
   // what the commands that need media are given); without it, none.
   media?: MediaWorker;
+  // The models Worker and the models' origin (D114, C110): with the media Worker, the align service.
+  models?: { worker: ModelsWorker; base: string };
 }
 
 // The services this engine has a provider for: the canvas, whose renders go out as events (D105), and
 // media when its host gives it a media Worker (D106).
-const PROVIDED: ReadonlySet<Service> = new Set(['canvas', 'media']);
+const PROVIDED: ReadonlySet<Service> = new Set(['canvas', 'media', 'align']);
 
 // How far back a chat's turn is looked for: no turn lasts a day.
 const TURN_LOOKBACK_MS = 24 * 60 * 60 * 1000;
@@ -92,6 +96,7 @@ export class BrowserSession {
   // The files the canvas's renders named: what the relay serves the canvas host.
   readonly #named = new Map<string, RenderedFileKind>();
   readonly #media: BrowserMedia | null;
+  readonly #align: BrowserAlign | null;
   readonly #reads: SessionReads;
   readonly #batches: Batches;
   readonly #changes: CopyChanges;
@@ -110,7 +115,12 @@ export class BrowserSession {
     this.#store = options.store;
     this.#known = readKnownMedia(options.store.link.media);
     this.author = options.author ?? { kind: 'human' };
-    this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service) && (service !== 'media' || options.media)));
+    this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service) && (service !== 'media' || options.media) && (service !== 'align' || (options.media && options.models))));
+    this.#align = options.media && options.models && this.#services.has('align') ? new BrowserAlign(options.models.worker, options.media, {
+      files: () => this.#state.files, project: () => this.#state.project, store: options.store, base: options.models.base,
+      setNarrationWords: async (args) => (await this.run('set_narration_words', args)).change?.seq ?? null,
+      progress: (progress, screen) => this.#emit({ type: 'alignProgress', ...(screen ? { screen } : {}), progress })
+    }) : null;
     this.#media = options.media && this.#services.has('media') ? new BrowserMedia(options.media, {
       files: () => this.#state.files, project: () => this.#state.project, store: options.store,
       journal: (contents) => this.#queue.run(async () => {
@@ -120,7 +130,8 @@ export class BrowserSession {
           await this.#afterChange();
         }
       }),
-      emit: (event) => this.#emit(event)
+      emit: (event) => this.#emit(event),
+      ...(options.media && options.models && this.#services.has('align') ? { wordsAtOnce: (language: string, audio: Blob, duration: number | null, text: string) => this.#align!.wordsAtOnce(language, audio, duration, text) } : {})
     }) : null;
     this.#objects = options.objects;
     const entries = [...options.store.journal()];
@@ -258,6 +269,8 @@ export class BrowserSession {
       case 'cancelMediaJob': this.#assertOpen(); return this.#media!.cancel(request.params.id);
       case 'narrationPeaks': this.#assertOpen(); return this.#media!.narrationPeaks(request.params.screen, request.params.language, request.params.perSecond);
       case 'importNarrationFiles': this.#assertOpen(); return this.#media!.importNarrationFiles(request.params, attachments, async (args) => (await this.run('set_narration_audio', args, this.author, undefined, attachments)).change?.seq ?? null);
+      case 'aligners': this.#assertOpen(); return this.#align!.aligners(request.params?.language);
+      case 'alignNarration': this.#assertOpen(); return this.#align!.alignNarration(request.params ?? {});
       case 'openCanvas': this.#assertOpen(); return this.#canvas.open();
       case 'canvasView': this.#assertOpen(); return this.#canvas.view(request.params ?? {});
       case 'closeCanvas': return this.#canvas.close();

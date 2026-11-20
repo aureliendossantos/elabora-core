@@ -32,9 +32,11 @@ test('a bundle for a browser fails at an import of Node, naming it and what impo
 // The two Workers of a browser's engine (D106, D107): the engine's carries no media library, the
 // media Worker carries Mediabunny but never the AAC encoder in wasm, which it only loads by an
 // address its host gives.
-test('the engine\'s Worker carries no media library; the media Worker carries Mediabunny, never the AAC encoder in wasm', async () => {
+test('the engine\'s Worker carries no media library nor model runtime; the media Worker carries Mediabunny, never the AAC encoder in wasm; the models Worker no runtime', async () => {
   const engine = await bundleForBrowser({ file: 'packages/engine/src/browser/worker.ts' });
-  assert.deepEqual(engine.inputs.filter((input) => input.includes('mediabunny')), [], 'nothing of Mediabunny in the engine\'s Worker');
+  assert.deepEqual(engine.inputs.filter((input) => input.includes('mediabunny') || input.includes('onnxruntime')), [], 'nothing of Mediabunny nor of onnxruntime in the engine\'s Worker');
+  const models = await bundleForBrowser({ file: 'packages/engine/src/browser/models/worker.ts' });
+  assert.deepEqual(models.inputs.filter((input) => input.includes('onnxruntime') || input.includes('mediabunny')), [], 'onnxruntime-web is loaded by the models Worker by address, never bundled');
   const media = await bundleForBrowser({ file: 'packages/engine/src/browser/media/worker.ts' });
   assert.ok(media.inputs.some((input) => input.includes('node_modules/mediabunny/')), 'Mediabunny in the media Worker');
   assert.deepEqual(media.inputs.filter((input) => input.includes('aac-encoder')), [], 'no AAC encoder in the media Worker');
