@@ -2,9 +2,6 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { narrationLines } from '@elabora/core/narration/narration';
-import { doubtfulWords, swallowedKey } from '@elabora/core/narration/words';
-import { fileHash } from '@elabora/core/project/files';
-import { ignoredOf } from '@elabora/core/validate/index';
 import type { NarrationAudio } from '@elabora/core/narration/narration';
 import type { Project } from '@elabora/core/project/model';
 import { loadProjectFromDir } from '../project-reader.ts';
@@ -22,6 +19,7 @@ import type { AlignerView, AlignProgress, AlignResult } from '@elabora/core/alig
 import { localAiSupported, requireLocalAi } from '../models/platform.ts';
 import { run } from '../edit/index.ts';
 import type { CommandArgs } from '@elabora/core/commands/table';
+import { alignedLine, planAlignment } from '@elabora/core/align/plan';
 
 // When each word of a narration line is said (docs/decisions.md D27): forced alignment of the
 // line's text with its audio, by a wav2vec2 character model of its language (models.ts, downloaded
@@ -145,30 +143,8 @@ export function folderAlignWriter(dir: string, editOptions?: EditOptions): Align
 
 export async function alignNarration(dir: string, options: AlignOptions = {}, editOptions?: EditOptions, writer: AlignWriter = folderAlignWriter(dir, editOptions)): Promise<AlignResult> {
   requireLocalAi();
-  const project = writer.project();
-  const language = options.language || project.course?.language || '';
-  if (options.screen && !project.screens.has(options.screen)) throw new AlignmentError('E_ALIGN_SCREEN', `Unknown screen "${options.screen}".`);
-  if (options.lines?.length && !options.screen) throw new AlignmentError('E_ALIGN_SCREEN', 'Lines are lines of a screen: give the screen too.');
-  const model = alignerFor(language);
-  const result: AlignResult = { language, aligner: model?.model ?? null, lines: [], changes: [] };
-  const screens = options.screen ? [options.screen] : [...project.screens.keys()];
-  const todo: { screen: string; line: string; text: string; audio: string; audioHash: string | null }[] = [];
-  for (const screen of screens) {
-    const infos = narrationLines(project, screen, language);
-    if (!infos) { if (options.screen) throw new AlignmentError('E_ALIGN_SCREEN', `Screen "${screen}" has no narration.`); continue; }
-    for (const id of options.lines ?? []) if (!infos.some((info) => info.id === id)) throw new AlignmentError('E_ALIGN_LINE', `Screen "${screen}" has no narration line "${id}" (its lines: ${infos.map((info) => info.id).join(', ')}).`);
-    for (const info of infos) {
-      if (options.lines && !options.lines.includes(info.id)) continue;
-      if (info.status !== 'ok' || !info.text) { result.lines.push({ screen, line: info.id, status: 'skipped', reason: info.status === 'untranslated' ? `not translated into ${language} yet` : info.status === 'missing' ? 'no audio' : 'its audio says an older text: make or import it again first' }); continue; }
-      if (!options.force && info.words?.length && info.aligner === model?.model) { result.lines.push({ screen, line: info.id, status: 'skipped', reason: 'already timed', words: info.words.length }); continue; }
-      todo.push({ screen, line: info.id, text: info.text, audio: path.join(project.root ?? dir, info.audio), audioHash: null });
-    }
-  }
-  if (!todo.length) return result;
-  if (!model) {
-    for (const line of todo) result.lines.push({ screen: line.screen, line: line.line, status: 'skipped', reason: `no word aligner in ${language} yet: its words are placed in proportion to the text` });
-    return result;
-  }
+  const { result, todo, model, language } = planAlignment(writer.project(), options, (lang) => alignerFor(lang));
+  if (!model || !todo.length) return result;
   const tools = await findMediaTools();
   // Held from the first line to the last (D38), then each line's alignment holds it too.
   let release: (() => void) | null = null;
@@ -181,19 +157,14 @@ export async function alignNarration(dir: string, options: AlignOptions = {}, ed
       const sidecar = narrationLines(writer.project(), line.screen, language)?.find((info) => info.id === line.line);
       const audioHash = sidecarAudioHash(writer.project(), sidecar?.sidecar);
       try {
-        const aligned = await alignAudio(line.audio, line.text, language, { tools, signal: options.signal });
+        const aligned = await alignAudio(path.join(writer.project().root ?? dir, line.audio), line.text, language, { tools, signal: options.signal });
         if (!aligned) continue;
         result.aligner = aligned.aligner;
         // The mouth's envelope follows the words newly timed (D61).
-        const mouth = await lineMouth(tools, line.audio, mouthWords(line.text, sidecar?.duration ?? 0, aligned.words, language)).catch(() => null);
+        const mouth = await lineMouth(tools, path.join(writer.project().root ?? dir, line.audio), mouthWords(line.text, sidecar?.duration ?? 0, aligned.words, language)).catch(() => null);
         const seq = await writer.setNarrationWords({ screen: line.screen, line: line.line, language, words: aligned.words, aligner: aligned.aligner, ...(audioHash ? { audioHash } : {}), ...(mouth !== null ? { mouth } : {}) });
         if (seq !== null) result.changes.push(seq);
-        // The words the author heard and ignored for this take (D31) are not reported again.
-        const project = writer.project();
-        const take = sidecar ? fileHash(project.files, sidecar.audio) : null;
-        const ignored = new Set(ignoredOf(project.course).filter((entry) => entry.code === 'W_NARRATION_WORD_SWALLOWED').map((entry) => entry.key));
-        const doubtful = doubtfulWords(aligned.words).filter((word) => !take || !ignored.has(swallowedKey(line.screen, line.line, language, word, take))).map(({ word, score }) => ({ word, score }));
-        result.lines.push({ screen: line.screen, line: line.line, status: 'aligned', words: aligned.words.length, ...(doubtful.length ? { doubtful } : {}) });
+        result.lines.push(alignedLine(writer.project(), line, language, aligned.words));
       } catch (error) {
         if (options.signal?.aborted) throw error;
         result.lines.push({ screen: line.screen, line: line.line, status: 'failed', reason: error instanceof Error ? error.message : String(error) });
