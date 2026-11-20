@@ -19,11 +19,16 @@ export type FramesSource = { port: number } | { origin: string; route?: string }
 
 import { isRoute } from './relay-protocol.ts';
 
+// The sandbox words an object's manifest may ask for, whatever validation said of it (a manifest from a team's project, or a
+// package, is not always validated): `pointer-lock` and nothing else. Any other word, one with a space in it too, is dropped:
+// `top-navigation`, `popups`, `downloads`, `modals`... are the author's code moving the tab or opening windows.
+export const SANDBOX_PERMISSIONS: readonly string[] = ['pointer-lock'];
+
 const LOOPBACK = new Set(['127.0.0.1', 'localhost', '[::1]']);
 
 // dir: the object's folder in the package (objects/<id>); base: the URL the page resolves it against.
 export function objectFrame(dir: string, permissions: readonly string[], frames: FramesSource | null, base: string): { src: string; sandbox: string } {
-  const sandbox = ['allow-scripts', ...permissions.map((permission) => `allow-${permission}`)];
+  const sandbox = ['allow-scripts', ...permissions.filter((permission) => SANDBOX_PERMISSIONS.includes(permission)).map((permission) => `allow-${permission}`)];
   const src = `${dir}/frame.html`;
   const packaged = { src, sandbox: sandbox.join(' ') };
   if (!frames) return packaged;
@@ -60,6 +65,7 @@ export function pageFrames(source: 'meta' | 'url'): FramesSource | null {
   if (/^\d{1,5}$/.test(value)) return { port: Number(value) };
   const origin = framesOrigin(value);
   if (!origin) return null;
-  const route = source === 'url' ? new URLSearchParams(location.search).get('route') : null;
+  // The frames' own route, not the canvas page's (`route`): the canvas's is not given to code of the author.
+  const route = source === 'url' ? new URLSearchParams(location.search).get('framesRoute') : null;
   return isRoute(route) ? { origin, route } : { origin };
 }

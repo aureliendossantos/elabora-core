@@ -7,7 +7,8 @@
 //
 //   window ── createPageCanvasHost ──┬── the canvas frame (the window's): renders, views, gestures, questions
 //                                     └── a hidden frame of the frames host: its relay page
-//   both relay pages hold the route's port, one each; the engine answers each (serveRelayPort, the host named)
+//   each relay page holds the port of its own route, one route for each host (the canvas's is never given to the frames
+//   host, nor written in the address of an object's frame); the engine answers each (serveRelayPort, the host named)
 //
 // What a message from a frame is worth is read here and never by the window: it must come from that frame's window,
 // at its exact origin, and is read as data (parseCanvasMessage, parseRelayToApp). Every message the host posts is
@@ -91,12 +92,15 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
   const canvasBase = originOf(canvasOrigin);
   const framesBase = originOf(framesOrigin);
   if (!canvasBase || !framesBase || canvasBase === framesBase) throw new Error('The canvas and the frames are two origins, each https (or http on this computer)');
-  const route = random();
+  // One route for each host: the canvas page's own, and the one the objects' frames carry (they are code of the author, on the
+  // frames host, which holds nothing of the canvas's).
+  const routes: Record<RelayHost, string> = { canvas: random(), frames: random() };
   const token = random();
   const info = (() => {
     const url = new URL('/canvas/index.html', canvasBase);
     url.searchParams.set('token', token);
-    url.searchParams.set('route', route);
+    url.searchParams.set('route', routes.canvas);
+    url.searchParams.set('framesRoute', routes.frames);
     url.searchParams.set('frames', framesBase);
     return { url: url.href, base: canvasBase, token };
   })();
@@ -140,7 +144,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
     const channel = new MessageChannel();
     await relayPort(entry.host, channel.port1);
     if (closed) return;
-    toRelay(entry, { type: 'relay/open', protocol: RELAY_PROTOCOL, route }, [channel.port2]);
+    toRelay(entry, { type: 'relay/open', protocol: RELAY_PROTOCOL, route: routes[entry.host] }, [channel.port2]);
   }
   // The page is given its renders (and its questions) once its files can be had: both relay pages hold their route's port,
   // so that the service worker controls the page and answers the files its first render asks for. A render sent sooner
@@ -267,7 +271,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
     opened,
     close() {
       if (closed) return;
-      for (const entry of [entries.canvas, entries.frames]) toRelay(entry, { type: 'relay/close', protocol: RELAY_PROTOCOL, route });
+      for (const entry of [entries.canvas, entries.frames]) toRelay(entry, { type: 'relay/close', protocol: RELAY_PROTOCOL, route: routes[entry.host] });
       closed = true;
       window.removeEventListener('message', onWindowMessage);
       for (const [request, waiting] of asked) { clearTimeout(waiting.timer); waiting.reject(new Error('The canvas host is closed')); asked.delete(request); }

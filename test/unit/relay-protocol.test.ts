@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RELAY_PROTOCOL, hostMayAsk, isRoute, parseRelayToApp, relayResponse, isStaticPath, parseAppToRelay, parseRange, parseRelayAnswer, parseRelayRequest, relayPathOf, relayRequestOf, resolveRange, serveRelayPort } from '@elabora/player/relay-protocol';
+import { RELAY_PROTOCOL, hostMayAsk, relayMayServe, isRoute, parseRelayToApp, relayResponse, isStaticPath, parseAppToRelay, parseRange, parseRelayAnswer, parseRelayRequest, relayPathOf, relayRequestOf, resolveRange, serveRelayPort } from '@elabora/player/relay-protocol';
 import type { EnginePortMessage, RelayAnswer, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 
 test('relay: a URL of a relay host asks for a path of the module, nothing that leaves it', () => {
@@ -175,4 +175,19 @@ test('relay: the frames host\'s port answers what an object\'s frame asks, not t
   for (const bad of [null, 'relay/ready', { type: 'relay/ready', protocol: 'other', version: 'v', host: 'canvas' }, { type: 'relay/ready', protocol: RELAY_PROTOCOL, version: 'v'.repeat(101), host: 'canvas' }, { type: 'relay/ready', protocol: RELAY_PROTOCOL, version: 'v', host: 'elsewhere' }, { type: 'relay/opened', protocol: RELAY_PROTOCOL, route: 'x' }, { type: 'relay/refused', protocol: RELAY_PROTOCOL, reason: 'because' }, { type: 'elabora/render' }]) {
     assert.equal(parseRelayToApp(bad), null, JSON.stringify(bad));
   }
+});
+
+test('relay: an author\'s file is given to what shows it, never as a page or a script; only an object\'s frame is a page and its code a script', () => {
+  const file = { kind: 'file', path: 'assets/a.html' } as const;
+  for (const destination of ['', 'image', 'font', 'style', 'audio', 'video', 'track']) assert.equal(relayMayServe(file, destination, false), true, destination);
+  for (const destination of ['document', 'iframe', 'frame', 'embed', 'object', 'script', 'worker', 'sharedworker', 'serviceworker', 'audioworklet', 'paintworklet', 'manifest', 'report', 'xslt', 'fencedframe', 'something-new']) assert.equal(relayMayServe(file, destination, false), false, destination);
+  // A navigation to a file is never allowed, whatever it is for.
+  for (const destination of ['', 'iframe', 'frame', 'document', 'object', 'embed']) assert.equal(relayMayServe(file, destination, true), false, `navigate ${destination}`);
+  const frame = { kind: 'object-frame', object: 'lab' } as const;
+  assert.equal(relayMayServe(frame, 'iframe', true), true);
+  assert.equal(relayMayServe(frame, 'frame', true), true);
+  for (const [destination, navigate] of [['document', true], ['', true], ['', false], ['iframe', false], ['script', false]] as const) assert.equal(relayMayServe(frame, destination, navigate), false, `${destination} ${navigate}`);
+  const code = { kind: 'object-code', object: 'lab' } as const;
+  assert.equal(relayMayServe(code, 'script', false), true);
+  for (const [destination, navigate] of [['', false], ['worker', false], ['iframe', true], ['image', false]] as const) assert.equal(relayMayServe(code, destination, navigate), false, `${destination} ${navigate}`);
 });
