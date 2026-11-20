@@ -169,6 +169,9 @@ test('relay: the frames host\'s port answers what an object\'s frame asks, not t
   const route = 'k3J0aXq9Zr1T5mYb8WcD7g';
   assert.deepEqual(parseRelayToApp({ type: 'relay/ready', protocol: RELAY_PROTOCOL, version: '1-abc', host: 'frames', extra: 1 }), { type: 'relay/ready', protocol: RELAY_PROTOCOL, version: '1-abc', host: 'frames' });
   assert.deepEqual(parseRelayToApp({ type: 'relay/opened', protocol: RELAY_PROTOCOL, route }), { type: 'relay/opened', protocol: RELAY_PROTOCOL, route });
+  assert.deepEqual(parseRelayToApp({ type: 'relay/fault', protocol: RELAY_PROTOCOL, path: 'assets/a.png', stage: 'ask', message: 'TypeError: nope', extra: 1 }), { type: 'relay/fault', protocol: RELAY_PROTOCOL, path: 'assets/a.png', stage: 'ask', message: 'TypeError: nope' });
+  assert.equal(parseRelayToApp({ type: 'relay/fault', protocol: RELAY_PROTOCOL, path: 'a', stage: 'elsewhere', message: 'm' }), null);
+  assert.equal(parseRelayToApp({ type: 'relay/fault', protocol: RELAY_PROTOCOL, path: 'a', stage: 'ask', message: 4 }), null);
   for (const bad of [null, 'relay/ready', { type: 'relay/ready', protocol: 'other', version: 'v', host: 'canvas' }, { type: 'relay/ready', protocol: RELAY_PROTOCOL, version: 'v'.repeat(101), host: 'canvas' }, { type: 'relay/ready', protocol: RELAY_PROTOCOL, version: 'v', host: 'elsewhere' }, { type: 'relay/opened', protocol: RELAY_PROTOCOL, route: 'x' }, { type: 'relay/refused', protocol: RELAY_PROTOCOL, reason: 'because' }, { type: 'elabora/render' }]) {
     assert.equal(parseRelayToApp(bad), null, JSON.stringify(bad));
   }
