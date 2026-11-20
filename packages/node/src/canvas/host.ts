@@ -7,7 +7,7 @@ import { startServer } from '../emulator/server.ts';
 import type { RouteHandler } from '../emulator/server.ts';
 import { runtimeFiles, runtimeBundle, vendorThree, canvasPageHtml } from '../bundles.ts';
 import { screenRenderOf } from '@elabora/core/render/screen';
-import { parseRange, relayPathOf, relayRequestOf, relayResponse } from '@elabora/player/relay-protocol';
+import { parseRange, relayMayServe, relayPathOf, relayRequestOf, relayResponse } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayRange } from '@elabora/player/relay-protocol';
 import { errorMessage } from '../util/values.ts';
 import { mimeType } from './files.ts';
@@ -164,13 +164,20 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
     const path = relayPathOf(url.pathname);
     if (path === null) return text(404, 'not found');
     const range = parseRange(request.headers.range);
-    const answered = await source.get(relayRequestOf(path, range));
-    sendAnswer(request, response, answered, range);
+    const wanted = relayRequestOf(path, range);
+    // What the browser says the request is for (Sec-Fetch-Dest, `empty` for a fetch): an author's file is not given as a page or a
+    // script (relayMayServe, as the web's relay decides). A client that says nothing (a test's fetch) is not judged.
+    const destination = request.headers['sec-fetch-dest'];
+    if (typeof destination === 'string' && !relayMayServe(wanted, destination === 'empty' ? '' : destination, request.headers['sec-fetch-mode'] === 'navigate')) return text(403, 'forbidden');
+    const answered = await source.get(wanted);
+    sendAnswer(request, response, answered, range, wanted.kind !== 'object-frame');
   }
 
   // The answer to a question as HTTP (relayResponse, which the relay's service worker uses too): 200, 206 for a range,
   // 304 when the page has the file, and what a refusal says.
-  function sendAnswer(request: IncomingMessage, response: ServerResponse, answered: RelayAnswer, range: RelayRange | null): void {
+  // `inert`: what is built from a module's file (not the frame page of an object) is not read as another type, and is a page without script
+  // and with an origin of its own if a browser ever loads it as one.
+  function sendAnswer(request: IncomingMessage, response: ServerResponse, answered: RelayAnswer, range: RelayRange | null, inert = false): void {
     const head = request.method === 'HEAD';
     let http = relayResponse(answered, range, head);
     const etag = http.headers.etag;
@@ -183,7 +190,7 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
       response.writeHead(http.status, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' }).end(words);
       return;
     }
-    response.writeHead(http.status, { ...http.headers, 'cache-control': cache });
+    response.writeHead(http.status, { ...http.headers, 'cache-control': cache, ...(inert ? { 'x-content-type-options': 'nosniff', 'content-security-policy': 'sandbox' } : {}) });
     if (http.body === null || http.body.size === 0) { response.end(); return; }
     // A page that seeks closes the stream it no longer needs: nothing to report then.
     pipeline(Readable.fromWeb(http.body.stream() as import('node:stream/web').ReadableStream), response, () => {});

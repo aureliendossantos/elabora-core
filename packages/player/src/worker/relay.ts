@@ -8,7 +8,7 @@
 // The host's Worker writes `self.ELABORA_HOST = Object.freeze({ policy, frameAncestors, appOrigin? })`
 // before this script. Without it the relay answers nothing.
 
-import { RELAY_ANSWER_MS, isRoute, isStaticPath, parseRange, parseRelayAnswer, relayPathOf, relayRequestOf, relayResponse } from '../relay-protocol.ts';
+import { RELAY_ANSWER_MS, isRoute, isStaticPath, parseRange, parseRelayAnswer, relayMayServe, relayPathOf, relayRequestOf, relayResponse } from '../relay-protocol.ts';
 import type { RelayAnswer, RelayFaultStage, RelayRange } from '../relay-protocol.ts';
 import { RELAY_PAGES } from '../relay-link.ts';
 import type { RelayHostPolicy, WorkerHello, WorkerToPage } from '../relay-link.ts';
@@ -83,9 +83,12 @@ self.addEventListener('fetch', (event) => {
 // The headers of every answer the relay makes: the host's policy (frame-ancestors with it, so that a
 // page that has not the app above it never shows what the relay serves), the isolation the app's page
 // needs to frame it, and no referrer, which would carry a route.
-function headers(host: RelayHostPolicy, extra: Record<string, string> = {}): Headers {
+//
+// `inert`: an answer built from a module's file (everything but the frame page of an object) also carries `sandbox`, without
+// a word after it: if a browser ever loads it as a page all the same, the page has no script and an origin of its own.
+function headers(host: RelayHostPolicy, extra: Record<string, string> = {}, inert = false): Headers {
   return new Headers({
-    'content-security-policy': host.policy,
+    'content-security-policy': inert ? `${host.policy}; sandbox` : host.policy,
     'cross-origin-embedder-policy': 'require-corp',
     'cross-origin-resource-policy': 'cross-origin',
     'referrer-policy': 'no-referrer',
@@ -95,13 +98,17 @@ function headers(host: RelayHostPolicy, extra: Record<string, string> = {}): Hea
   });
 }
 
-const refusal = (host: RelayHostPolicy, status: number): Response => new Response(status === 404 ? 'not found' : status === 405 ? 'method not allowed' : status === 416 ? 'range not satisfiable' : 'unavailable', { status, headers: headers(host, { 'content-type': 'text/plain; charset=utf-8' }) });
+const refusal = (host: RelayHostPolicy, status: number): Response => new Response(status === 404 ? 'not found' : status === 403 ? 'forbidden' : status === 405 ? 'method not allowed' : status === 416 ? 'range not satisfiable' : 'unavailable', { status, headers: headers(host, { 'content-type': 'text/plain; charset=utf-8' }) });
 
 async function serve(event: FetchEvent, path: string, host: RelayHostPolicy): Promise<Response> {
   const request = event.request;
   if (request.method !== 'GET' && request.method !== 'HEAD') return refusal(host, 405);
-  // A page of the relay's host framed by the app, or a file it asks for: never a page at the top.
-  if (request.mode === 'navigate' && request.destination !== 'iframe' && request.destination !== 'frame') return refusal(host, 404);
+  // A page of the relay's host framed by the app (the frame of an object), or a file it asks for: never a page at the top, and
+  // never an author's file as a page or a script (relayMayServe).
+  const navigate = request.mode === 'navigate';
+  if (navigate && request.destination !== 'iframe' && request.destination !== 'frame') return refusal(host, 404);
+  const wanted = relayRequestOf(path);
+  if (!relayMayServe(wanted, request.destination, navigate)) return refusal(host, 403);
   let route: string | null = null;
   let holder: Client | null = null;
   let stage: RelayFaultStage = 'holder';
@@ -114,7 +121,7 @@ async function serve(event: FetchEvent, path: string, host: RelayHostPolicy): Pr
     stage = 'ask';
     const answer = await ask(holder, route, relayRequestOf(path, range));
     stage = 'answer';
-    const response = respond(answer, range, request.method === 'HEAD', host);
+    const response = respond(answer, range, request.method === 'HEAD', host, wanted.kind !== 'object-frame');
     if (response.status >= 500) await fault(event, holder, path, stage, answer.status === 'ok' ? `a ${answer.part ? 'part' : 'whole file'} for a request ${range ? 'with' : 'without'} a range, ${answer.size} bytes` : `${answer.status}${answer.message ? `: ${answer.message}` : ''}`);
     return response;
   } catch (error) {
@@ -173,8 +180,8 @@ async function ask(holder: Client, route: string, request: ReturnType<typeof rel
 }
 
 // The answer a request gets (relayResponse: 200, or 206 with a Range, never 206 or 416 without one), with the host's policy.
-function respond(answer: RelayAnswer, range: RelayRange | null, head: boolean, host: RelayHostPolicy): Response {
+function respond(answer: RelayAnswer, range: RelayRange | null, head: boolean, host: RelayHostPolicy, inert: boolean): Response {
   const http = relayResponse(answer, range, head);
   if (http.status >= 400 && http.status !== 416) return refusal(host, http.status);
-  return new Response(http.body, { status: http.status, headers: headers(host, http.status === 416 ? { ...http.headers, 'content-type': 'text/plain; charset=utf-8' } : http.headers) });
+  return new Response(http.body, { status: http.status, headers: headers(host, http.status === 416 ? { ...http.headers, 'content-type': 'text/plain; charset=utf-8' } : http.headers, inert) });
 }

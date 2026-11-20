@@ -187,6 +187,22 @@ export function relayRequestOf(path: string, range: RelayRange | null = null): R
   return { kind: 'file', path, ...(range ? { range } : {}) };
 }
 
+// What a request of a relay host may be, by what the browser says it is for (the request's destination, and whether it is a
+// navigation): an author's file is never given as a page or as a script of the canvas host. A module's file is given to what
+// shows it or reads it: an image, a font, a style, a sound, a video, a track, a plain fetch (the empty destination); never a
+// document, a frame, an embed, an object, a script, a worker or its kin, which would run it on the host's origin. Only the
+// frame page of an object is a navigation (the frame of an object, on the frames host), and only the code of an object is a
+// script. The relay and the desktop's server decide the same way (the desktop's, from the header `Sec-Fetch-Dest`).
+// If the canvas ever needs an author's page or script (a PDF shown in a frame, a component's code), it is a decision of its
+// own, with its own destination and its own bound: it is not opened here.
+export const FILE_DESTINATIONS: ReadonlySet<string> = new Set(['', 'image', 'font', 'style', 'audio', 'video', 'track']);
+export function relayMayServe(request: RelayRequest, destination: string, navigate: boolean): boolean {
+  if (request.kind === 'object-frame') return navigate && (destination === 'iframe' || destination === 'frame');
+  if (navigate) return false;
+  if (request.kind === 'object-code') return destination === 'script';
+  return FILE_DESTINATIONS.has(destination);
+}
+
 // The HTTP status of a refusal.
 export const REFUSAL_STATUS: Readonly<Record<RelayRefusal['status'], number>> = { 'not-found': 404, refused: 403, unavailable: 503, failed: 500 };
 

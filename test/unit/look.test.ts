@@ -46,6 +46,20 @@ test('object frames from an origin: a page of the web loads them from a host of 
   delete (globalThis as { location?: unknown }).location;
 });
 
+test('object frames: the sandbox words are the player\'s list, whatever a manifest asks for', () => {
+  const page = 'https://canvas.elabora.page/canvas/index.html';
+  const asked = ['top-navigation', 'popups', 'popups-to-escape-sandbox', 'downloads', 'modals', 'forms', 'same-origin', 'pointer-lock', 'pointer-lock allow-top-navigation', 'Pointer-Lock', '', 'allow-top-navigation'];
+  assert.deepEqual(objectFrame('objects/lab', asked, null, page), { src: 'objects/lab/frame.html', sandbox: 'allow-scripts allow-pointer-lock' });
+  assert.deepEqual(objectFrame('objects/lab', asked, { origin: 'https://frames.elabora.page' }, page).sandbox, 'allow-scripts allow-pointer-lock allow-same-origin');
+  assert.deepEqual(objectFrame('objects/lab', asked, { port: 4808 }, 'http://127.0.0.1:4807/index.html').sandbox, 'allow-scripts allow-pointer-lock allow-same-origin');
+  // The frames' route, not the canvas page's, goes in an object's address.
+  (globalThis as { location?: unknown }).location = { search: `?frames=${encodeURIComponent('https://frames.elabora.page')}&route=${'a'.repeat(22)}&framesRoute=${'b'.repeat(22)}` };
+  assert.deepEqual(pageFrames('url'), { origin: 'https://frames.elabora.page', route: 'b'.repeat(22) });
+  (globalThis as { location?: unknown }).location = { search: `?frames=${encodeURIComponent('https://frames.elabora.page')}&route=${'a'.repeat(22)}` };
+  assert.deepEqual(pageFrames('url'), { origin: 'https://frames.elabora.page' });
+  delete (globalThis as { location?: unknown }).location;
+});
+
 function get(url: string): Promise<{ status: number; body: string }> {
   return new Promise((resolve, reject) => {
     http.get(url, (response) => {
