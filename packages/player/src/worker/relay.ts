@@ -9,7 +9,7 @@
 // before this script. Without it the relay answers nothing.
 
 import { RELAY_ANSWER_MS, isRoute, isStaticPath, parseRange, parseRelayAnswer, relayPathOf, relayRequestOf, relayResponse } from '../relay-protocol.ts';
-import type { RelayAnswer, RelayRange } from '../relay-protocol.ts';
+import type { RelayAnswer, RelayFaultStage, RelayRange } from '../relay-protocol.ts';
 import { RELAY_PAGES } from '../relay-link.ts';
 import type { RelayHostPolicy, WorkerHello, WorkerToPage } from '../relay-link.ts';
 import { isRecord } from '../json.ts';
@@ -102,17 +102,35 @@ async function serve(event: FetchEvent, path: string, host: RelayHostPolicy): Pr
   if (request.method !== 'GET' && request.method !== 'HEAD') return refusal(host, 405);
   // A page of the relay's host framed by the app, or a file it asks for: never a page at the top.
   if (request.mode === 'navigate' && request.destination !== 'iframe' && request.destination !== 'frame') return refusal(host, 404);
+  let route: string | null = null;
+  let holder: Client | null = null;
+  let stage: RelayFaultStage = 'holder';
   try {
-    const route = await routeOf(event);
+    route = await routeOf(event);
     if (route === null) return refusal(host, 404);
-    const holder = await holderOf(route);
-    if (!holder) return refusal(host, 503);
+    holder = await holderOf(route);
+    if (!holder) { await fault(event, null, path, stage, 'no page holds the route'); return refusal(host, 503); }
     const range = parseRange(request.headers.get('range'));
+    stage = 'ask';
     const answer = await ask(holder, route, relayRequestOf(path, range));
-    return respond(answer, range, request.method === 'HEAD', host);
-  } catch {
+    stage = 'answer';
+    const response = respond(answer, range, request.method === 'HEAD', host);
+    if (response.status >= 500) await fault(event, holder, path, stage, answer.status === 'ok' ? `a ${answer.part ? 'part' : 'whole file'} for a request ${range ? 'with' : 'without'} a range, ${answer.size} bytes` : `${answer.status}${answer.message ? `: ${answer.message}` : ''}`);
+    return response;
+  } catch (error) {
+    await fault(event, holder, path, stage, error instanceof Error ? `${error.name}: ${error.message}` : String(error));
     return refusal(host, 503);
   }
+}
+
+// Says to the relay page that holds the route (else the canvas page that asked), as data, what a request that is answered
+// 503 or 500 caught: its path, where it failed, the error. The page tells the app. Never to a module's frame.
+async function fault(event: FetchEvent, holder: Client | null, path: string, stage: RelayFaultStage, message: string): Promise<void> {
+  try {
+    let page: Client | null | undefined = holder;
+    if (!page && event.clientId) { const asker = await self.clients.get(event.clientId); if (asker && isRelayPage(asker.url)) page = asker; }
+    page?.postMessage({ type: 'relay/fault', path, stage, message: message.slice(0, 400) } satisfies WorkerToPage);
+  } catch { /* nobody to tell */ }
 }
 
 // The route a request belongs to: the one in the address of a frame's page (a navigation), else the one
@@ -148,8 +166,8 @@ async function ask(holder: Client, route: string, request: ReturnType<typeof rel
   const { port1, port2 } = new MessageChannel();
   return new Promise<RelayAnswer>((resolve) => {
     const done = (answer: RelayAnswer) => { clearTimeout(timer); port1.close(); resolve(answer); };
-    const timer = setTimeout(() => { port1.postMessage('cancel'); done({ status: 'unavailable' }); }, RELAY_ANSWER_MS + 2000);
-    port1.onmessage = (event: MessageEvent<unknown>) => done(parseRelayAnswer(event.data) ?? { status: 'failed' });
+    const timer = setTimeout(() => { port1.postMessage('cancel'); done({ status: 'unavailable', message: 'the relay page gave no answer in time' }); }, RELAY_ANSWER_MS + 2000);
+    port1.onmessage = (event: MessageEvent<unknown>) => done(parseRelayAnswer(event.data) ?? { status: 'failed', message: 'the page\'s answer is not one' });
     holder.postMessage({ type: 'relay/fetch', route, request } satisfies WorkerToPage, [port2]);
   });
 }

@@ -109,7 +109,15 @@ export type RelayToApp =
   // The update asked for was looked for: the version now running (the same when there is none).
   | { type: 'relay/updated'; protocol: string; version: string }
   // The service worker could not be registered, or does not control the page.
-  | { type: 'relay/error'; protocol: string; message: string };
+  | { type: 'relay/error'; protocol: string; message: string }
+  // A request of the module's files the service worker answered 503 (or another refusal it made itself), and why: the
+  // file's path, where it failed, and what was caught. For the app to show or log, never for a module's frame.
+  | { type: 'relay/fault'; protocol: string; path: string; stage: RelayFaultStage; message: string };
+
+// Where a request failed: no page held its route, the page could not be asked, the answer was refused or could not be
+// made into a response.
+export type RelayFaultStage = 'holder' | 'ask' | 'answer';
+export const RELAY_FAULT_STAGES: readonly RelayFaultStage[] = ['holder', 'ask', 'answer'];
 
 // ── A route's port: the relay page and the engine ──────────────────────────────────────────────────
 export type RelayPortMessage =
@@ -267,6 +275,7 @@ export function parseRelayToApp(value: unknown): RelayToApp | null {
   if (type === 'relay/refused' && (value.reason === 'protocol' || value.reason === 'route' || value.reason === 'port')) return { type, protocol: RELAY_PROTOCOL, reason: value.reason, ...(isRoute(value.route) ? { route: value.route } : {}) };
   if (type === 'relay/updated' && typeof value.version === 'string' && value.version.length <= 100) return { type, protocol: RELAY_PROTOCOL, version: value.version };
   if (type === 'relay/error' && typeof value.message === 'string') return { type, protocol: RELAY_PROTOCOL, message: value.message.slice(0, 500) };
+  if (type === 'relay/fault' && typeof value.path === 'string' && typeof value.message === 'string' && RELAY_FAULT_STAGES.some((stage) => stage === value.stage)) return { type, protocol: RELAY_PROTOCOL, path: value.path.slice(0, 300), stage: value.stage as RelayFaultStage, message: value.message.slice(0, 500) };
   return null;
 }
 

@@ -6,8 +6,8 @@
 //
 // The role is on the script's tag: <script src="/relay-page.js" data-relay-role="canvas|frames">.
 
-import { RELAY_ANSWER_MS, RELAY_PROTOCOL, parseAppToRelay, parseRelayAnswer, parseRelayRequest } from './relay-protocol.ts';
-import type { EnginePortMessage, RelayAnswer, RelayHost, RelayPortMessage, RelayToApp } from './relay-protocol.ts';
+import { RELAY_ANSWER_MS, RELAY_FAULT_STAGES, RELAY_PROTOCOL, parseAppToRelay, parseRelayAnswer, parseRelayRequest } from './relay-protocol.ts';
+import type { EnginePortMessage, RelayAnswer, RelayFaultStage, RelayHost, RelayPortMessage, RelayToApp } from './relay-protocol.ts';
 import type { PageToWorker, WorkerHello, WorkerToPage } from './relay-link.ts';
 import { isRecord } from './json.ts';
 
@@ -57,7 +57,7 @@ function close(route: string): void {
   routes.delete(route);
   held.port.onmessage = null;
   held.port.close();
-  for (const resolve of held.waiting.values()) resolve({ status: 'unavailable' });
+  for (const resolve of held.waiting.values()) resolve({ status: 'unavailable', message: 'the route was closed' });
 }
 
 function open(route: string, port: MessagePort): void {
@@ -70,7 +70,7 @@ function open(route: string, port: MessagePort): void {
     if (message.type === 'relay/bye') { if (routes.get(route) === held) close(route); return; }
     if (message.type !== 'relay/answer' || typeof message.id !== 'number') return;
     const answer = parseRelayAnswer(message.answer);
-    held.waiting.get(message.id)?.(answer ?? { status: 'failed' });
+    held.waiting.get(message.id)?.(answer ?? { status: 'failed', message: 'the engine\'s answer is not one' });
   };
   declare();
 }
@@ -78,7 +78,7 @@ function open(route: string, port: MessagePort): void {
 // The engine's answer to the relay's request, on the route's port.
 function forward(route: string, request: Extract<WorkerToPage, { type: 'relay/fetch' }>['request'], reply: MessagePort): void {
   const held = routes.get(route);
-  if (!held) { reply.postMessage({ status: 'unavailable' } satisfies RelayAnswer); reply.close(); return; }
+  if (!held) { reply.postMessage({ status: 'unavailable', message: 'the route is not open on this page' } satisfies RelayAnswer); reply.close(); return; }
   const id = ++counter;
   const finish = (answer: RelayAnswer) => {
     if (!held.waiting.delete(id)) return;
@@ -86,7 +86,7 @@ function forward(route: string, request: Extract<WorkerToPage, { type: 'relay/fe
     reply.postMessage(answer);
     reply.close();
   };
-  const timer = setTimeout(() => finish({ status: 'unavailable' }), RELAY_ANSWER_MS);
+  const timer = setTimeout(() => finish({ status: 'unavailable', message: 'the engine gave no answer in time' }), RELAY_ANSWER_MS);
   held.waiting.set(id, finish);
   // The relay gave the request up (a medium seeked away from): the engine may stop.
   reply.onmessage = () => { if (held.waiting.delete(id)) { clearTimeout(timer); held.port.postMessage({ type: 'relay/cancel', id } satisfies RelayPortMessage); reply.close(); } };
@@ -99,6 +99,10 @@ navigator.serviceWorker.addEventListener('message', (event) => {
   const data: unknown = event.data;
   if (!isRecord(data)) return;
   if (data.type === 'relay/awake') { declare(); return; }
+  if (data.type === 'relay/fault' && typeof data.path === 'string' && typeof data.message === 'string' && RELAY_FAULT_STAGES.some((stage) => stage === data.stage)) {
+    tell({ type: 'relay/fault', protocol: RELAY_PROTOCOL, path: data.path.slice(0, 300), stage: data.stage as RelayFaultStage, message: data.message.slice(0, 500) });
+    return;
+  }
   if (data.type === 'relay/fetch' && typeof data.route === 'string' && event.ports[0]) {
     const request = parseRelayRequest(data.request);
     if (request) forward(data.route, request, event.ports[0]);

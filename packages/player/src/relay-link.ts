@@ -27,7 +27,10 @@ export type WorkerToPage =
   | { type: 'relay/awake' }
   // A request for the route's file, on the port that goes with it: the page answers a RelayAnswer there, and
   // may be told `cancel` there when the browser no longer waits.
-  | { type: 'relay/fetch'; route: string; request: import('./relay-protocol.ts').RelayRequest };
+  | { type: 'relay/fetch'; route: string; request: import('./relay-protocol.ts').RelayRequest }
+  // A request the worker answered 503: sent to the relay page that holds the route (or, with none, the canvas page that asked),
+  // which tells its app; never to a module's frame.
+  | { type: 'relay/fault'; path: string; stage: import('./relay-protocol.ts').RelayFaultStage; message: string };
 
 // What the worker's host (its Worker) writes before the script: the policy it puts on every answer.
 export interface RelayHostPolicy {
