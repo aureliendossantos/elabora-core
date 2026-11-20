@@ -233,7 +233,11 @@ for (const name of wanted) {
       const { page } = await openApp(context, 'a', { screen: 'accueil', early: true });
       const canvas = canvasFrame(page);
       await canvas.waitForFunction(() => [...document.images].some((image) => image.currentSrc.includes('/canvas/assets/')), null, { timeout: 30000 });
-      await canvas.waitForFunction(() => [...document.images].filter((image) => image.currentSrc.includes('/canvas/assets/')).every((image) => image.complete && image.naturalWidth > 0), null, { timeout: 30000 });
+      await canvas.waitForFunction(() => [...document.images].filter((image) => image.currentSrc.includes('/canvas/assets/')).every((image) => image.complete && image.naturalWidth > 0), null, { timeout: 30000 }).catch(async (error) => {
+        // What the relay says of its refusals (relay/fault), and what reached the hosts' network.
+        const faults = await page.evaluate(() => (window as unknown as { app: { log: Array<{ type: string }> } }).app.log.filter((message) => message.type === 'relay/fault'));
+        throw new Error(`${String(error).split('\n')[0]} faults: ${JSON.stringify(faults)} network: ${JSON.stringify(reached.slice(missesBefore))}`);
+      });
       const files = await page.evaluate(() => (window as unknown as { app: { requests: Array<{ kind: string; path?: string }> } }).app.requests.filter((request) => request.kind === 'file').map((request) => request.path));
       assert.ok(files.some((file) => file?.startsWith('assets/images/')), `the picture came from the engine: ${JSON.stringify(files)}`);
       assert.deepEqual(reached.slice(missesBefore).filter((file) => file.startsWith('canvas/canvas/')), [], 'no file of the module was asked of the canvas host\'s network');
