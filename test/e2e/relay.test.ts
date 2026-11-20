@@ -364,4 +364,65 @@ for (const name of wanted) {
   });
 }
 
+const DRIVE = `export function mount() {
+  const W = globalThis;
+  const T = W['to' + 'p'];
+  let relay = null;
+  for (let i = 0; i < T.length; i++) { try { if (T[i].location.pathname === '/relay.html') relay = T[i]; } catch (e) {} }
+  console.log('OBJECT holds the relay page: ' + !!relay);
+  if (relay) W['set' + 'Timeout'](() => {
+    // What the object's own frame cannot do, asked of the hidden page of the app that it holds: a notice in the author's words, a file saved, windows opened.
+    try { relay['al' + 'ert']('Votre session Elabora a expir\u00e9'); } catch (e) {}
+    try {
+      const a = relay.document.createElement('a');
+      a.href = relay.URL.createObjectURL(new relay.Blob(['x']));
+      a.download = 'session.txt';
+      relay.document.body.append(a);
+      a.click();
+    } catch (e) {}
+    try { relay.open('${REVIEW}/?one'); relay.open('${REVIEW}/?two'); } catch (e) {}
+    console.log('OBJECT asked the relay page for a notice, a download and two windows');
+  }, 500);
+  return { getState() { return {}; }, dispose() {} };
+}`;
+
+for (const name of wanted) {
+  test(`relay (${name}): an object that holds the frames host's relay page gets no notice, no download and no window out of it`, { timeout: 300000 }, async (t) => {
+    const hosts = await startHosts(handlers());
+    const browser = await launch(name, hosts);
+    if (!browser) { t.skip(`${name} is not here`); hosts.close(); return; }
+    const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1280, height: 800 }, serviceWorkers: 'allow', acceptDownloads: true });
+    try {
+      objectCode.set('a/diagnostic-reseau', await attacker(DRIVE));
+      const heard: string[] = [];
+      const dialogs: string[] = [];
+      const downloads: string[] = [];
+      const pages: Page[] = [];
+      context.on('page', (page) => {
+        pages.push(page);
+        page.on('console', (message) => heard.push(message.text()));
+        page.on('dialog', (dialog) => { dialogs.push(dialog.message()); void dialog.dismiss(); });
+        page.on('download', (download) => downloads.push(download.suggestedFilename()));
+      });
+      const { page } = await openApp(context, 'a');
+      await page.waitForFunction(() => true);
+      for (let i = 0; i < 100 && !heard.some((text) => text.includes('OBJECT asked the relay page')); i++) await page.waitForTimeout(100);
+      assert.ok(heard.some((text) => text.includes('OBJECT holds the relay page: true')), `the object holds the relay page: ${JSON.stringify(heard.slice(-6))}`);
+      assert.ok(heard.some((text) => text.includes('OBJECT asked the relay page')), 'the object did what it could');
+      await page.waitForTimeout(2000);
+      assert.deepEqual(dialogs, [], 'no notice');
+      assert.deepEqual(downloads, [], 'no download');
+      assert.equal(pages.length, 1, `no window out of it: ${JSON.stringify(pages.map((each) => each.url()))}`);
+      assert.ok(page.url().startsWith(APP));
+      // What the relay page still does with its sandbox: it holds the routes (the frame's page and its code came by it).
+      assert.ok(await page.evaluate(() => (window as unknown as { app: { requests: Array<{ kind: string }> } }).app.requests.some((request) => request.kind === 'object-code')));
+    } finally {
+      objectCode.clear();
+      await context.close();
+      await browser.close();
+      hosts.close();
+    }
+  });
+}
+
 test('relay: the files made for the tests are removed', () => { fs.rmSync(scratch, { recursive: true, force: true }); });

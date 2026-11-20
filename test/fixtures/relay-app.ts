@@ -81,6 +81,7 @@ const canvas = document.createElement('iframe');
 canvas.id = 'canvas';
 canvas.allow = 'autoplay';
 canvas.referrerPolicy = 'no-referrer';
+canvas.setAttribute('sandbox', host.info.sandbox);
 canvas.style.cssText = 'width:1280px;height:720px;border:0';
 document.body.append(canvas);
 host.attach(canvas);

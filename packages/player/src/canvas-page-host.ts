@@ -47,7 +47,8 @@ export interface RelayState {
 export interface PageCanvasHost {
   // The canvas page's address, its origin and its token, as the desktop's host gives (CanvasInfo): the window frames
   // `url` (and adds its own options: scrollbars=none, placing=editor) and gives the frame to `attach`.
-  readonly info: { url: string; base: string; token: string };
+  // `sandbox`: the attribute the window puts on that frame, before its `src` (a frame already loaded keeps the one it had until it loads again).
+  readonly info: { url: string; base: string; token: string; sandbox: string };
   // The window's frame of the canvas page (null: it is gone). A page loaded again is given the last render again.
   attach(frame: HTMLIFrameElement | null): void;
   // Shows a render, or updates the one shown (the id comes back in the page's layout message).
@@ -72,6 +73,15 @@ export interface PageCanvasHost {
 }
 
 const ASK_TIMEOUT_MS = 30000;
+
+// What the frames the host puts in the window may do. The hidden page of the relay holds the frames host's origin, where an object's code
+// runs and reaches it (D119): without a sandbox it would do what the object's own frame cannot (an alert, a download, windows opened). It
+// needs its script and its origin (the service worker is the origin's), nothing else. The canvas's frame, which only the player's code
+// fills (D119, D121), needs the same, and the pointer lock that the frames of objects inside it may ask for (a sandboxed frame's children
+// can have no flag it has not): no popup, download, modal, form or navigation of the window. The Lecteur's preview (chrome=live), when it
+// is shown here, will need `allow-popups allow-popups-to-escape-sandbox` for a link of the course and `allow-downloads` for a file.
+export const RELAY_FRAME_SANDBOX = 'allow-scripts allow-same-origin';
+export const CANVAS_FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-pointer-lock';
 
 type WithoutToken<T> = T extends unknown ? Omit<T, 'token'> : never;
 
@@ -102,7 +112,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
     url.searchParams.set('route', routes.canvas);
     url.searchParams.set('framesRoute', routes.frames);
     url.searchParams.set('frames', framesBase);
-    return { url: url.href, base: canvasBase, token };
+    return { url: url.href, base: canvasBase, token, sandbox: CANVAS_FRAME_SANDBOX };
   })();
 
   const fresh = (): RelayState => ({ ready: false, opened: false, version: null, error: null });
@@ -128,6 +138,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
   hidden.tabIndex = -1;
   hidden.title = 'relay';
   hidden.referrerPolicy = 'no-referrer';
+  hidden.setAttribute('sandbox', RELAY_FRAME_SANDBOX);
   hidden.style.cssText = 'display:none;width:0;height:0;border:0';
   hidden.src = new URL('/relay.html', framesBase).href;
   entries.frames.frame = hidden;
