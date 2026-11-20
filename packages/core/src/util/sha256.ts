@@ -29,6 +29,14 @@ export class Sha256 {
   #filled = 0;
   #length = 0; // bytes, below 2^53
 
+  // Back to nothing hashed.
+  reset(): this {
+    this.#state.set([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
+    this.#filled = 0;
+    this.#length = 0;
+    return this;
+  }
+
   update(bytes: Uint8Array): this {
     let at = 0;
     this.#length += bytes.length;

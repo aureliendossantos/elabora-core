@@ -18,7 +18,7 @@ import { Renderer } from '../base/render.ts';
 import { SessionCanvas } from '../base/canvas.ts';
 import { BrowserMedia } from './media/service.ts';
 import type { Attachments } from './media/service.ts';
-import type { MediaWorker } from './media/client.ts';
+import type { MediaWorker } from './worker-client.ts';
 import { screenRenderOf } from '@elabora/core/render/screen';
 import { WriteQueue } from '../base/queue.ts';
 import { Batches } from '../base/batches.ts';
