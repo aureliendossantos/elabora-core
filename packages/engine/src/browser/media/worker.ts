@@ -11,6 +11,7 @@ import { masterPlan } from '@elabora/core/media/conformance';
 import { fileTarget, videoMaster } from './video.ts';
 import { lineAudio, linePeaks, soundMaster } from './audio.ts';
 import { provideAac } from './encoders.ts';
+import type { WorkerMessage } from '../worker-client.ts';
 
 export type MediaAsk =
   | { op: 'probe'; file: Blob; name: string }
@@ -28,14 +29,15 @@ export type MediaAnswer =
 
 // The engine's Worker's messages: init (once), a question by id, or a cancel of one.
 // forget: the engine kept a master's bytes, its file here goes.
-export type MediaMessage = { kind: 'init'; aacEncoder?: string } | { kind: 'ask'; id: number; ask: MediaAsk } | { kind: 'cancel'; id: number } | { kind: 'forget'; id: number };
+export type MediaInit = { aacEncoder?: string };
+export type MediaMessage = WorkerMessage<MediaInit, MediaAsk>;
 
 const scope = self as unknown as { onmessage: ((event: MessageEvent<MediaMessage>) => void) | null; postMessage(message: { id: number; answer: MediaAnswer }): void };
 let aac = provideAac(undefined);
 const running = new Map<number, AbortController>();
 
 scope.onmessage = ({ data }) => {
-  if (data.kind === 'init') { aac = provideAac(data.aacEncoder); return; }
+  if (data.kind === 'init') { aac = provideAac(data.init.aacEncoder); return; }
   if (data.kind === 'cancel') { running.get(data.id)?.abort(); return; }
   if (data.kind === 'forget') { void navigator.storage.getDirectory().then((root) => root.getDirectoryHandle('media-work')).then((folder) => folder.removeEntry(`job-${data.id}`)).catch(() => {}); return; }
   const controller = new AbortController();

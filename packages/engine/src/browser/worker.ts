@@ -6,7 +6,7 @@ import { openCopy, type BrowserSession } from './session.ts';
 import { openIdbCopy, type MediaSource } from './idb-store.ts';
 import { roomMedia, roomMembership, roomSeed, roomSocket, type RoomAccess } from './room.ts';
 import type { ObjectCompiler } from './relay.ts';
-import { mediaWorker } from './media/client.ts';
+import { mediaWorker } from './worker-client.ts';
 import type { NewCourseOptions } from '@elabora/core/commands/new-course';
 
 // The browser engine in a Worker (D103): one module a Worker. The page opens it, then speaks the

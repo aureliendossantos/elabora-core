@@ -13,3 +13,4 @@ overrides:
 allowBuilds:
   esbuild@0.28.2: true
   onnxruntime-node: false
+  protobufjs: false

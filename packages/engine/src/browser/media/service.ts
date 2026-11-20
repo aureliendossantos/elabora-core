@@ -19,7 +19,7 @@ import { EngineError } from '../../base/errors.ts';
 import type { NewContents } from '../../base/changes.ts';
 import type { EngineEvent, MediaImportResult, MediaJobInfo } from '../../protocol.ts';
 import type { BrowserStore } from '../store.ts';
-import type { MediaWorker } from './client.ts';
+import type { MediaWorker } from '../worker-client.ts';
 import type { MediaAnswer, MediaAsk } from './worker.ts';
 
 // The files a request brings, by the token that names them.

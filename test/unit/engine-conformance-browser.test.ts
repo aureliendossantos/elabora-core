@@ -57,8 +57,9 @@ const ask = async <T>(session: Awaited<ReturnType<typeof openCopy>>, type: strin
   if (!answer.ok) throw Object.assign(new Error(answer.error.message), answer.error);
   return answer.result as T;
 };
-const copyOf = async (sample: Sample, options: Partial<Parameters<typeof openCopy>[0]> = {}) => {
-  const { files } = readProjectFiles(SAMPLES[sample]);
+// extra: files an author put in the module besides the sample's.
+const copyOf = async (sample: Sample, options: Partial<Parameters<typeof openCopy>[0]> = {}, extra: [string, FileContent][] = []) => {
+  const files = new Map([...readProjectFiles(SAMPLES[sample]).files, ...extra]);
   const media = new Map<string, Uint8Array>();
   for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) media.set(file.hash, fs.readFileSync(path.join(SAMPLES[sample], rel)));
   const store = memoryCopy({ link: { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 }, confirmed: files, media });
@@ -109,13 +110,22 @@ async function relay(session: Awaited<ReturnType<typeof openCopy>>, host: 'canva
 }
 const bytesOf = async (answer: RelayAnswer) => (answer.status === 'ok' ? (typeof answer.body === 'string' ? new TextEncoder().encode(answer.body) : new Uint8Array(await answer.body.arrayBuffer())) : null);
 
-test('browser relay: the canvas gets the module\'s files, texts and media by hash; the frames host an object\'s page, its code and its files, nothing else', { timeout: 120_000 }, async () => {
-  const session = await copyOf('network', { objects: async () => { await started; const sources = await objectLibrarySources(); return { bundler: wasm, libraries: { d3: { contents: sources.d3 }, charts: { contents: sources.charts } } }; } });
+test('browser relay: the canvas gets the files its renders named and the narration\'s media, nothing else of the copy; the frames host an object\'s page, its code and its files', { timeout: 120_000 }, async () => {
+  const authored: [string, FileContent][] = [['assets/page.html', { kind: 'text', text: '<!doctype html><p>a page' }], ['assets/run.js', { kind: 'text', text: 'export {}' }]];
+  const session = await copyOf('network', { services: ['canvas'], objects: async () => { await started; const sources = await objectLibrarySources(); return { bundler: wasm, libraries: { d3: { contents: sources.d3 }, charts: { contents: sources.charts } } }; } }, authored);
   const canvas = await relay(session, 'canvas');
   const frames = await relay(session, 'frames');
   try {
-    const screen = await canvas.get({ kind: 'file', path: 'screens/chemin.json' });
-    assert.ok(screen.status === 'ok' && screen.type === 'application/json' && typeof screen.body === 'string' && JSON.parse(screen.body).id === 'chemin');
+    // Before a render, the canvas host gets nothing of the module but the narration's media.
+    assert.equal((await canvas.get({ kind: 'file', path: 'assets/images/logo-helios.svg' })).status, 'not-found');
+    let named: string[] = [];
+    session.subscribe(({ event }) => { if (event.type === 'canvasRender') named = (event.render.files ?? []).map((file) => file.path); });
+    await ask(session, 'openCanvas', {});
+    await ask(session, 'canvasView', { screen: 'chemin' });
+    assert.ok(named.includes('assets/images/logo-helios.svg'), named.join(', '));
+    const logo = await canvas.get({ kind: 'file', path: 'assets/images/logo-helios.svg' });
+    assert.ok(logo.status === 'ok' && logo.type.startsWith('image/svg+xml'), 'a file a render named');
+    for (const path of ['course.json', 'screens/chemin.json', 'assets/page.html', 'assets/run.js']) assert.equal((await canvas.get({ kind: 'file', path })).status, 'not-found', `${path}: named by no render`);
     const audio = await canvas.get({ kind: 'file', path: 'assets/narration/fr/chemin/chemin-depart.m4a' });
     assert.ok(audio.status === 'ok' && audio.type === 'audio/mp4' && /^sha256:/.test(audio.hash ?? ''));
     assert.deepEqual(await bytesOf(audio), new Uint8Array(fs.readFileSync(path.join(NETWORK_SAMPLE, 'assets/narration/fr/chemin/chemin-depart.m4a'))));
