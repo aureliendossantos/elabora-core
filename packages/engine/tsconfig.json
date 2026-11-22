@@ -3,6 +3,10 @@
   "compilerOptions": {
     "types": [
       "node"
+    ],
+    "lib": [
+      "es2023",
+      "dom"
     ]
   },
   "include": [

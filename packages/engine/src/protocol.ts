@@ -27,6 +27,7 @@ import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, So
 import type { CourseSound } from '@elabora/core/sounds/sounds';
 import type { Expectation, ConvertTarget, CommandDiagnostic } from '@elabora/core/commands/index';
 import type { ScreenParts } from '@elabora/core/project/parts';
+import type { ThumbRequests } from '@elabora/player/thumbs-protocol';
 import type { NarrationView, TimelineView, ScreenAt, TimelineMark } from '@elabora/core/narration/view';
 import type { EffectInfo } from '@elabora/core/narration/timeline';
 import type { TextMatch } from '@elabora/core/commands/text';
@@ -520,6 +521,12 @@ export interface Requests {
   // or layer of the screen shown (null: none). id: the render or view id the page reports back.
   canvasView: { params: Partial<CanvasView>; result: { id: string; pages: number; view: CanvasView } };
   closeCanvas: { params: NoParams; result: { closed: boolean } };
+  // The editor's miniatures (D130, D133): a screen's render given back frozen at its view, the files it
+  // names declared to the canvas host first; the canvas service's (an unknown screen: not-found).
+  thumbRender: ThumbRequests['thumbRender'];
+  momentRender: ThumbRequests['momentRender'];
+  blockPreviewRender: ThumbRequests['blockPreviewRender'];
+  measureRender: ThumbRequests['measureRender'];
   migrate: { params: NoParams; result: FormatMigrationView | null };
   // Generated narration (docs/decisions.md D25). The voices of a language and whether their model is
   // on this computer (else its size); its download (voiceProgress events, phase install); a

@@ -101,6 +101,7 @@ function startView(): void {
 }
 
 let renderId = 0;
+const engineEvents: string[] = [];
 const api = {
   log, requests, messages,
   get host() { return host; },
@@ -134,12 +135,36 @@ const api = {
     ends.push(serveRelayPort(channel.port1, source, 'canvas'));
     late.contentWindow!.postMessage({ type: 'relay/open', protocol: RELAY_PROTOCOL, route }, CANVAS, [channel.port2]);
   },
-  // The engine's Worker, opened on a project's files (the seed), offline.
-  async startEngine(seed: unknown) {
+  // The engine's Worker, opened on a project's files (the seed), offline; services: those it is given (the canvas: its renders
+  // go to the view's host as the window gives them).
+  async startEngine(seed: unknown, services?: string[], mediaWorker?: string) {
     const worker = new Worker('/engine-worker.js', { type: 'module' });
-    await new Promise((resolve) => { worker.onmessage = ({ data }) => resolve(data); worker.postMessage({ kind: 'open', team: 'tm_test', project: 'relay-engine', seed, api: 'http://localhost:1', offline: true }); });
+    await new Promise((resolve) => { worker.onmessage = ({ data }) => resolve(data); worker.postMessage({ kind: 'open', team: 'tm_test', project: 'relay-engine', seed, api: 'http://localhost:1', offline: true, ...(services ? { services } : {}), ...(mediaWorker ? { mediaWorker } : {}) }); });
     worker.onmessage = null;
+    worker.addEventListener('message', ({ data }: MessageEvent<{ kind?: string; event?: { type: string; id: string | number; render?: unknown; view?: unknown } }>) => {
+      if (data.kind !== 'event' || !data.event) return;
+      engineEvents.push(data.event.type);
+      if (data.event.type === 'canvasRender') host.push(data.event.render as Parameters<Host['push']>[0], { id: data.event.id });
+      if (data.event.type === 'canvasView') host.view(data.event.view as Parameters<Host['view']>[0], { id: data.event.id });
+    });
     engineSeed(worker);
+  },
+  engineEvents,
+  // A request of the protocol to the engine's Worker: its answer, or null when none came within ms.
+  async engine(type: string, params: unknown, ms = 15000): Promise<{ ok: boolean; result?: unknown; error?: unknown } | null> {
+    const worker = await engineStarted;
+    const id = `test-${type}-${++engineRequests}`;
+    return await new Promise((resolve) => {
+      const timer = setTimeout(() => { worker.removeEventListener('message', listen); resolve(null); }, ms);
+      function listen({ data }: MessageEvent<{ kind?: string; id?: string; ok?: boolean; result?: unknown; error?: unknown }>) {
+        if (data.kind !== 'response' || data.id !== id) return;
+        clearTimeout(timer);
+        worker.removeEventListener('message', listen);
+        resolve({ ok: !!data.ok, result: data.result, error: data.error });
+      }
+      worker.addEventListener('message', listen);
+      worker.postMessage({ kind: 'request', id, type, params });
+    });
   },
   close() { host.close(); for (const end of ends.splice(0)) end(); }
 };

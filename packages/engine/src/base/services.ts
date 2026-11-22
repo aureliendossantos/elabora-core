@@ -14,7 +14,7 @@ export const SERVICE_REQUESTS: Record<Service, readonly RequestType[]> = {
   transcribe: ['transcribers', 'transcribeRecording', 'transcriptionEstimate', 'transcribeLine'],
   sounds: ['soundSearch', 'soundPreview', 'soundEstimate', 'generateSound'],
   build: ['build', 'buildTranslation', 'packageWeights'],
-  canvas: ['openCanvas', 'canvasView', 'closeCanvas'],
+  canvas: ['openCanvas', 'canvasView', 'closeCanvas', 'thumbRender', 'momentRender', 'blockPreviewRender', 'measureRender'],
   backups: ['backups', 'createBackup', 'restoreBackup'],
   documents: ['planDocumentPage', 'exportPlanDocument', 'dialoguePage', 'exportDialogue'],
   activity: ['activity'],
@@ -48,7 +48,7 @@ const REQUEST_TYPES: Record<RequestType, true> = {
   summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
   translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, redo: true, undoBatch: true, history: true, mark: true, endTurn: true,
   diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
-  renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, packageWeights: true, close: true, relayPort: true, narration: true, voices: true,
+  renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, thumbRender: true, momentRender: true, blockPreviewRender: true, measureRender: true, migrate: true, build: true, packageWeights: true, close: true, relayPort: true, narration: true, voices: true,
   installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
   setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true, courseSounds: true, soundEstimate: true, generateSound: true,
   alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true

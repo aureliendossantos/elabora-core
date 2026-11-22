@@ -57,6 +57,7 @@ import type { FileMedia } from '@elabora/core/media/conformance';
 import { isMediaAsset, mediaStatus, probeAssets } from '@elabora/node/store/media';
 import { toSourceFile, withUpdates } from './disk.ts';
 import type { SessionStore } from './disk.ts';
+import { SessionThumbs } from './base/thumbs.ts';
 import { SessionCanvas } from './base/canvas.ts';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import { SessionVoice } from './session-voice.ts';
@@ -204,6 +205,7 @@ export class Session {
   #closing: Promise<{ version: string | null }> | null = null;
   #closed = false;
   readonly #canvas: SessionCanvas;
+  readonly #thumbs: SessionThumbs;
   readonly #voice: SessionVoice;
   readonly #sounds: SessionSounds;
   readonly #reads: SessionReads;
@@ -237,6 +239,8 @@ export class Session {
     });
     const renderer = new Renderer();
     this.#canvas = new SessionCanvas({ sink: ({ port, debug }) => startCanvasHost({ root: this.root, port, debug }), project, renderer, reportError });
+    // The miniatures' renders (D133): this computer's canvas host serves the module's files whatever renders named.
+    this.#thumbs = new SessionThumbs({ project, files: () => this.#state.files, root: this.root, renderer, named: () => {}, assertOpen: () => this.#assertOpen() });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#sounds = new SessionSounds({ run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#reads = new SessionReads({
@@ -539,6 +543,10 @@ export class Session {
       case 'openCanvas': return this.openCanvas(request.params);
       case 'canvasView': return this.canvasView(request.params);
       case 'closeCanvas': return this.closeCanvas();
+      case 'thumbRender': return this.#thumbs.thumbRender(request.params);
+      case 'momentRender': return this.#thumbs.momentRender(request.params);
+      case 'blockPreviewRender': return this.#thumbs.blockPreviewRender(request.params);
+      case 'measureRender': return this.#thumbs.measureRender(request.params);
       case 'migrate': return this.migrate();
       case 'voices': return this.voices(request.params.language);
       case 'installVoices': return this.installVoices(request.params.language);

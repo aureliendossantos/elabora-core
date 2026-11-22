@@ -57,7 +57,7 @@ const REQUESTS: Record<RequestType, true> = {
   planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, narrationPeaks: true,
   importNarrationFiles: true, findText: true, conversions: true, translationStatus: true, translationTable: true, screenTranslation: true, buildTranslation: true, run: true,
   undo: true, redo: true, undoBatch: true, history: true, mark: true, endTurn: true, diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true,
-  backups: true, createBackup: true, restoreBackup: true, renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, voices: true,
+  backups: true, createBackup: true, restoreBackup: true, renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, thumbRender: true, momentRender: true, blockPreviewRender: true, measureRender: true, migrate: true, voices: true,
   installVoices: true, setSpeakerVoice: true, setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true,
   courseSounds: true, soundEstimate: true, generateSound: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
   alignNarration: true, build: true, packageWeights: true, close: true, relayPort: true
@@ -530,6 +530,53 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.ok(view.id);
     assert.deepEqual(await client.request('closeCanvas', {}), { closed: true });
     await assert.rejects(client.request('canvasView', { screen: 'accueil' }), refused('not-available'));
+  }, ['canvas']);
+
+  // The editor's miniatures (D130, D133): a render given back, frozen at its view, at the course's size, with a version.
+  const scene = (shown: { id: string; render: { screen: string }; width: number; height: number; version: string }, screen: string) => {
+    assert.equal(shown.render.screen, screen);
+    assert.ok(shown.id && shown.width > 0 && shown.height > 0 && /^[0-9a-f]{32}/.test(shown.version), JSON.stringify({ ...shown, render: undefined }));
+  };
+
+  it('a miniature of a screen: its render at the course\'s size, the same version while nothing changes, another after an edit; an unknown screen not found', async () => {
+    const { client } = await engine('network');
+    const first = await client.request('thumbRender', { screen: 'chemin' });
+    scene(first, 'chemin');
+    assert.deepEqual([first.width, first.height], [1280, 720]);
+    assert.equal((await client.request('thumbRender', { screen: 'chemin' })).version, first.version);
+    await client.request('run', { command: 'update_screen', args: { id: 'chemin', title: 'Le chemin' } });
+    assert.notEqual((await client.request('thumbRender', { screen: 'chemin' })).version, first.version);
+    await assert.rejects(client.request('thumbRender', { screen: 'absent' }), refused('not-found'));
+  }, ['canvas']);
+
+  it('a miniature of a screen at a moment: the step and the line\'s end in its view', async () => {
+    const { client } = await engine('network');
+    const shown = await client.request('momentRender', { screen: 'chemin', at: { step: 1, line: 'chemin-depart', edge: 'end' } });
+    scene(shown, 'chemin');
+    assert.deepEqual([shown.render.view.step, shown.render.view.at], [1, { line: 'chemin-depart', edge: 'end' }]);
+    await assert.rejects(client.request('momentRender', { screen: 'absent', at: { step: 1 } }), refused('not-found'));
+  }, ['canvas']);
+
+  it('a miniature of a block not added yet: the screen with it, nothing written; a backdrop the page from its top', async () => {
+    const { client } = await engine('network');
+    const before = (await client.request('summary', {})).journal.seq;
+    const added = await client.request('blockPreviewRender', { args: { screen: 'chemin', block: { type: 'text', props: { markdown: 'Un paragraphe essayé' } } } });
+    scene(added, 'chemin');
+    assert.ok(added.block && JSON.stringify(added.render.course).includes('Un paragraphe essayé'), added.block);
+    assert.equal(added.slides, false);
+    const backdrop = await client.request('blockPreviewRender', { args: { screen: 'chemin', backdrop: null } });
+    assert.deepEqual([backdrop.block, backdrop.version.endsWith(':layout')], ['', true]);
+    assert.equal((await client.request('summary', {})).journal.seq, before, 'nothing written');
+    assert.ok(!JSON.stringify((await client.request('readScreen', { screen: 'chemin' })).data).includes('Un paragraphe essayé'));
+    await assert.rejects(client.request('blockPreviewRender', { args: { screen: 'absent', block: { type: 'text', props: { markdown: 'x' } } } }), refused('not-found'));
+  }, ['canvas']);
+
+  it('a screen to measure: its render with its texts marked, in the course\'s language', async () => {
+    const { client } = await engine('network');
+    const shown = await client.request('measureRender', { screen: 'chemin', language: null });
+    scene(shown, 'chemin');
+    assert.ok(JSON.stringify(shown.render).includes('data-t-field'), 'its fields marked');
+    await assert.rejects(client.request('measureRender', { screen: 'absent', language: null }), refused('not-found'));
   }, ['canvas']);
 
   // ── voices ───────────────────────────────────────────────────────────

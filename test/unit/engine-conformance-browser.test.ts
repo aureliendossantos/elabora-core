@@ -181,3 +181,18 @@ test('browser: a medium never taken has its size and the facts the room gave (D1
   const listed = await ask<{ path: string; size: number }[]>(session, 'listFiles', { dir: 'assets/narration/fr/chemin' });
   assert.equal(listed.find((file) => file.path === unknown)?.size, files.get(unknown)?.kind === 'binary' ? (files.get(unknown) as { size: number }).size : -1);
 });
+
+test('browser relay: a file a miniature\'s render names alone is the canvas host\'s once the render is asked for, and not before (D133)', async () => {
+  const session = await copyOf('network', { services: ['canvas'] });
+  const canvas = await relay(session, 'canvas');
+  try {
+    // An image no screen shows: only the preview of a block that would show it names it.
+    const file = { kind: 'file' as const, path: 'assets/images/ticket-marc.svg' };
+    assert.equal((await canvas.get(file)).status, 'not-found');
+    await ask(session, 'blockPreviewRender', { args: { screen: 'chemin', block: { type: 'image', props: { asset: 'images/ticket-marc.svg', alt: 'Le ticket de Marc' } } } });
+    const served = await canvas.get(file);
+    assert.ok(served.status === 'ok' && served.type.startsWith('image/svg+xml'), served.status);
+  } finally {
+    canvas.close();
+  }
+});

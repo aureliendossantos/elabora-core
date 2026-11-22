@@ -16,6 +16,7 @@ import { ProjectState } from '../base/project-state.ts';
 import { SessionReads } from '../base/reads.ts';
 import { Renderer } from '../base/render.ts';
 import { SessionCanvas } from '../base/canvas.ts';
+import { SessionThumbs } from '../base/thumbs.ts';
 import { BrowserMedia } from './media/service.ts';
 import { BrowserAlign } from './models/align.ts';
 import type { ModelsWorker } from './models/align.ts';
@@ -93,6 +94,7 @@ export class BrowserSession {
   readonly #entries: JournalEntry[];
   readonly #renderer = new Renderer();
   readonly #canvas: SessionCanvas;
+  readonly #thumbs: SessionThumbs;
   // The files the canvas's renders named: what the relay serves the canvas host.
   readonly #named = new Map<string, RenderedFileKind>();
   readonly #media: BrowserMedia | null;
@@ -173,6 +175,11 @@ export class BrowserSession {
         view: (view, { id }) => { this.#emit({ type: 'canvasView', id, view }); return 1; },
         close: () => {}
       })
+    });
+    // The miniatures' renders (D133): the files each names are the canvas host's from then on.
+    this.#thumbs = new SessionThumbs({
+      project: () => this.#state.project, files: () => this.#state.files, renderer: this.#renderer, assertOpen: () => this.#assertOpen(),
+      named: (render) => { for (const file of render.files) this.#named.set(file.path, file.kind); }
     });
     this.#reads = new SessionReads({
       root: this.id, state: this.#state, renderer: this.#renderer, entries: () => this.#entries, journalSeq: () => this.#changes.lastSeq, openBatch: () => this.#batches.open,
@@ -274,6 +281,10 @@ export class BrowserSession {
       case 'openCanvas': this.#assertOpen(); return this.#canvas.open();
       case 'canvasView': this.#assertOpen(); return this.#canvas.view(request.params ?? {});
       case 'closeCanvas': return this.#canvas.close();
+      case 'thumbRender': return this.#thumbs.thumbRender(request.params);
+      case 'momentRender': return this.#thumbs.momentRender(request.params);
+      case 'blockPreviewRender': return this.#thumbs.blockPreviewRender(request.params);
+      case 'measureRender': return this.#thumbs.measureRender(request.params);
       default: throw new EngineError('bad-request', `${request.type} is not a request of this session`);
     }
   }
