@@ -49,6 +49,7 @@ for (const [name, module] of Object.entries(MODULES)) {
 const video = path.join(scratch, 'essai.webm');
 execFileSync('ffmpeg', ['-y', '-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x180:rate=15', '-f', 'lavfi', '-i', 'sine=frequency=330', '-t', '20', '-c:v', 'libvpx', '-b:v', '300k', '-g', '15', '-c:a', 'libopus', video]);
 const appScript = (await esbuild.build({ entryPoints: [path.join(ROOT, 'test/fixtures/relay-app.ts')], bundle: true, format: 'iife', platform: 'browser', target: 'es2020', write: false, logLevel: 'error' })).outputFiles[0].text;
+const thumbsScript = (await esbuild.build({ entryPoints: [path.join(ROOT, 'test/fixtures/thumbs-app.ts')], bundle: true, format: 'iife', platform: 'browser', target: 'es2020', write: false, logLevel: 'error' })).outputFiles[0].text;
 const runtime = await runtimeFiles();
 const relayBuilt = await relayFiles();
 const three = vendorThree();
@@ -114,6 +115,8 @@ export const handlers = (): Record<string, Handler> => {
     if (url.pathname === '/') { response.writeHead(200, { ...isolation, 'content-type': 'text/html' }).end('<!doctype html><title>app</title><body><script src="/app.js"></script></body>'); return; }
     if (url.pathname === '/engine-worker.js') { void engineWorker().then((code) => response.writeHead(200, { ...isolation, 'content-type': 'text/javascript' }).end(code)); return; }
     if (parts[0] === 'media' && parts[1]) { const bytes = engineMedia.get(decodeURIComponent(parts[1])); response.writeHead(bytes ? 200 : 404, { ...isolation, 'content-type': 'application/octet-stream' }).end(bytes); return; }
+    if (url.pathname === '/thumbs') { response.writeHead(200, { ...isolation, 'content-type': 'text/html' }).end('<!doctype html><title>thumbs</title><body><script src="/thumbs.js"></script></body>'); return; }
+    if (url.pathname === '/thumbs.js') { response.writeHead(200, { ...isolation, 'content-type': 'text/javascript' }).end(thumbsScript); return; }
     if (url.pathname === '/app.js') { response.writeHead(200, { ...isolation, 'content-type': 'text/javascript' }).end(appScript); return; }
     if (parts[0] === 'render' && parts[2]) { let body = renders.get(`${parts[1]}/${parts[2]!.replace(/\.json$/, '')}`); if (body && renderPatch) { const render = JSON.parse(body); renderPatch(render); body = JSON.stringify(render); } response.writeHead(body ? 200 : 404, { ...isolation, 'content-type': 'application/json' }).end(body ?? ''); return; }
     if (parts[0] === 'compiled' && parts[2]) { const key = `${parts[1]}/${parts[2]!.replace(/\.js$/, '')}`; const body = objectCode.get(key) ?? compiled.get(key); response.writeHead(body ? 200 : 404, { ...isolation, 'content-type': 'text/javascript' }).end(body ?? ''); return; }
