@@ -5,7 +5,8 @@
 import type { MediaAnswer, MediaAsk, MediaInit } from './media/worker.ts';
 
 export interface WorkerClient<Ask, Answer> {
-  ask(ask: Ask, signal?: AbortSignal): Promise<{ id: number; answer: Answer }>;
+  // onProgress: what the Worker says of the work as it goes (a fraction), before its answer.
+  ask(ask: Ask, signal?: AbortSignal, onProgress?: (fraction: number) => void): Promise<{ id: number; answer: Answer }>;
   forget(id: number): void;
   close(): void;
 }
@@ -17,18 +18,25 @@ export function workerClient<Init, Ask, Answer extends object>(url: string, init
   let worker: Worker | null = null;
   let next = 0;
   const waiting = new Map<number, (answer: Answer) => void>();
+  const progress = new Map<number, (fraction: number) => void>();
   const post = (message: WorkerMessage<Init, Ask>) => worker?.postMessage(message);
   const start = () => {
     if (worker) return;
     worker = new Worker(url, { type: 'module' });
-    worker.onmessage = ({ data }: MessageEvent<{ id: number; answer: Answer }>) => { waiting.get(data.id)?.(data.answer); waiting.delete(data.id); };
+    worker.onmessage = ({ data }: MessageEvent<{ id: number; answer: Answer } | { id: number; progress: number }>) => {
+      if ('progress' in data) { progress.get(data.id)?.(data.progress); return; }
+      waiting.get(data.id)?.(data.answer);
+      waiting.delete(data.id);
+      progress.delete(data.id);
+    };
     worker.onerror = (event) => { for (const [id, resolve] of waiting) { resolve(failed(event.message || 'The Worker did not load.')); waiting.delete(id); } };
     post({ kind: 'init', init });
   };
   return {
-    ask(ask, signal) {
+    ask(ask, signal, onProgress) {
       const id = ++next;
       start();
+      if (onProgress) progress.set(id, onProgress);
       return new Promise((resolve) => {
         waiting.set(id, (answer) => resolve({ id, answer }));
         signal?.addEventListener('abort', () => post({ kind: 'cancel', id }), { once: true });

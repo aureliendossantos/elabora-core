@@ -41,6 +41,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D123](decisions/D123.md) | The renders reach a canvas page without a server as events of the engine, never through the relay | 19 Nov 2026 |
 | [D125](decisions/D125.md) | A medium's facts go by its hash, beside the reference, in elabora-sync/1 | 19 Nov 2026 |
 | [D126](decisions/D126.md) | A copy that holds a medium gives its facts: with the change that writes it, and in passing for those already there | 19 Nov 2026 |
+| [D127](decisions/D127.md) | A browser's local voices: the desktop's generation in the core, the catalogue served by the app, the takes in the origin's private file system | 20 Nov 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |
 | [D130](decisions/D130.md) | A miniature in a browser is a live frame of the canvas page, at most sixteen, asked for through one call of the host | 21 Nov 2026 |
 | [D133](decisions/D133.md) | The miniatures' renders are four requests of the session's base, the canvas service's | 21 Nov 2026 |

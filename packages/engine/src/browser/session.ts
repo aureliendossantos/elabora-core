@@ -20,6 +20,7 @@ import { SessionThumbs } from '../base/thumbs.ts';
 import { BrowserMedia } from './media/service.ts';
 import { BrowserAlign } from './models/align.ts';
 import type { ModelsWorker } from './models/align.ts';
+import { BrowserVoices } from './voices/service.ts';
 import type { Attachments } from './media/service.ts';
 import type { MediaWorker } from './worker-client.ts';
 import { screenRenderOf } from '@elabora/core/render/screen';
@@ -67,11 +68,16 @@ export interface CopyOptions {
   media?: MediaWorker;
   // The models Worker and the models' origin (D114, C110): with the media Worker, the align service.
   models?: { worker: ModelsWorker; base: string };
+  // Where the host serves the local voices' catalogue (voices.json and the voices' embeddings): with the
+  // media and models Workers, the voices service. standIn: tones in Pocket TTS's place, for routine
+  // checks (never a course's voice).
+  voices?: { catalogue: string; standIn?: boolean };
 }
 
-// The services this engine has a provider for: the canvas, whose renders go out as events (D105), and
-// media when its host gives it a media Worker (D106).
-const PROVIDED: ReadonlySet<Service> = new Set(['canvas', 'media', 'align']);
+// The services this engine has a provider for: the canvas, whose renders go out as events (D105),
+// media when its host gives it a media Worker (D106), word times and local voices with the models
+// Worker too (D114).
+const PROVIDED: ReadonlySet<Service> = new Set(['canvas', 'media', 'align', 'voices']);
 
 // How far back a chat's turn is looked for: no turn lasts a day.
 const TURN_LOOKBACK_MS = 24 * 60 * 60 * 1000;
@@ -99,6 +105,7 @@ export class BrowserSession {
   readonly #named = new Map<string, RenderedFileKind>();
   readonly #media: BrowserMedia | null;
   readonly #align: BrowserAlign | null;
+  readonly #voices: BrowserVoices | null;
   readonly #reads: SessionReads;
   readonly #batches: Batches;
   readonly #changes: CopyChanges;
@@ -117,11 +124,16 @@ export class BrowserSession {
     this.#store = options.store;
     this.#known = readKnownMedia(options.store.link.media);
     this.author = options.author ?? { kind: 'human' };
-    this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service) && (service !== 'media' || options.media) && (service !== 'align' || (options.media && options.models))));
+    this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service) && (service !== 'media' || options.media) && (service !== 'align' || (options.media && options.models)) && (service !== 'voices' || (options.media && options.models && options.voices))));
     this.#align = options.media && options.models && this.#services.has('align') ? new BrowserAlign(options.models.worker, options.media, {
       files: () => this.#state.files, project: () => this.#state.project, store: options.store, base: options.models.base,
       setNarrationWords: async (args) => (await this.run('set_narration_words', args)).change?.seq ?? null,
       progress: (progress, screen) => this.#emit({ type: 'alignProgress', ...(screen ? { screen } : {}), progress })
+    }) : null;
+    this.#voices = options.models && options.voices && this.#services.has('voices') ? new BrowserVoices(options.models.worker, {
+      copy: this.id, project: () => this.#state.project, run: (name, args, author, attachments) => this.run(name, args, author, undefined, attachments),
+      emit: (event) => this.#emit(event), alignsAtOnce: async (language) => !!this.#align && await this.#align.keeps(language),
+      catalogue: options.voices.catalogue, models: options.models.base, ...(options.voices.standIn ? { standIn: true } : {})
     }) : null;
     this.#media = options.media && this.#services.has('media') ? new BrowserMedia(options.media, {
       files: () => this.#state.files, project: () => this.#state.project, store: options.store,
@@ -277,7 +289,22 @@ export class BrowserSession {
       case 'narrationPeaks': this.#assertOpen(); return this.#media!.narrationPeaks(request.params.screen, request.params.language, request.params.perSecond);
       case 'importNarrationFiles': this.#assertOpen(); return this.#media!.importNarrationFiles(request.params, attachments, async (args) => (await this.run('set_narration_audio', args, this.author, undefined, attachments)).change?.seq ?? null);
       case 'aligners': this.#assertOpen(); return this.#align!.aligners(request.params?.language);
-      case 'alignNarration': this.#assertOpen(); return this.#align!.alignNarration(request.params ?? {});
+      case 'alignNarration': {
+        this.#assertOpen();
+        const params = request.params ?? {};
+        return this.#voices ? this.#voices.timing(params.screen ?? null, (signal) => this.#align!.alignNarration(params, signal)) : this.#align!.alignNarration(params);
+      }
+      case 'voices': this.#assertOpen(); return this.#voices!.voices(request.params?.language);
+      case 'installVoices': this.#assertOpen(); return this.#voices!.installVoices(request.params.language);
+      case 'setSpeakerVoice': this.#assertOpen(); return this.#voices!.setSpeakerVoice(request.params, this.author);
+      case 'generateVoice': this.#assertOpen(); return this.#voices!.generateVoice(request.params, this.author);
+      case 'voiceEstimate': this.#assertOpen(); return this.#voices!.voiceEstimate(request.params, this.author);
+      case 'voiceTakes': this.#assertOpen(); return this.#voices!.voiceTakes(request.params, this.author);
+      case 'voiceSample': this.#assertOpen(); return this.#voices!.voiceSample(request.params);
+      case 'cancelVoice': this.#assertOpen(); return this.#voices!.cancelVoice(request.params?.screen);
+      case 'setVoiceKey': this.#assertOpen(); return this.#voices!.setVoiceKey();
+      case 'voiceAccount': this.#assertOpen(); return this.#voices!.voiceAccount();
+      case 'voiceSearch': this.#assertOpen(); return this.#voices!.voiceSearch();
       case 'openCanvas': this.#assertOpen(); return this.#canvas.open();
       case 'canvasView': this.#assertOpen(); return this.#canvas.view(request.params ?? {});
       case 'closeCanvas': return this.#canvas.close();
@@ -387,6 +414,7 @@ export class BrowserSession {
   close(): Promise<{ version: string | null }> {
     this.#closing ??= (async () => {
       await this.#canvas.close();
+      this.#voices?.close();
       this.#media?.close();
       for (const end of this.#relays) end();
       this.#relays.clear();

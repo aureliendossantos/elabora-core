@@ -12,7 +12,9 @@ export interface OnnxTensor {
 export interface OnnxSession {
   readonly inputNames: readonly string[];
   readonly outputNames: readonly string[];
-  run(feeds: Record<string, OnnxTensor>): Promise<Record<string, OnnxTensor>>;
+  // fetches: the outputs to give back, each into a tensor given in advance or null (onnxruntime-web
+  // gives back new tensors all the same).
+  run(feeds: Record<string, OnnxTensor>, fetches?: Record<string, OnnxTensor | null>): Promise<Record<string, OnnxTensor>>;
   release?(): Promise<void>;
 }
 

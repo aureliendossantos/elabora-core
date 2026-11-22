@@ -31,6 +31,9 @@ export interface ConformanceTarget {
   name: string;
   // The services its sessions have (D102): every one by default. A case of another is skipped.
   services?: readonly Service[];
+  // false: its voices service has no ElevenLabs (a browser's, until the key's own frame comes): what
+  // needs it says it is not offered here.
+  elevenLabs?: false;
   // services: those the session opened has, fewer than the target's (none for the case of a service
   // that is not here).
   open(sample: Sample, options?: { services?: readonly Service[] }): Promise<Connection>;
@@ -618,7 +621,14 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal(new TextDecoder().decode(sample.audio.slice(0, 4)), 'RIFF');
   }, ['voices']);
 
-  it('ElevenLabs without a key: refused with its code; a key given is kept masked, ElevenLabs out of reach said not available, the key forgotten', async () => {
+  if (target.elevenLabs === false) it('ElevenLabs not offered here: the key, the account and the search say so, by their code', async () => {
+    const { client } = await engine('network');
+    for (const asked of [client.request('voiceAccount', { provider: 'elevenlabs' }), client.request('voiceSearch', { query: 'warm' } as never), client.request('setVoiceKey', { provider: 'elevenlabs', key: null })]) {
+      await assert.rejects(asked, refused('not-available', 'E_VOICE_SERVICE_NOT_HERE'));
+    }
+  }, ['voices']);
+
+  if (target.elevenLabs !== false) it('ElevenLabs without a key: refused with its code; a key given is kept masked, ElevenLabs out of reach said not available, the key forgotten', async () => {
     const { client } = await engine('network');
     await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));
