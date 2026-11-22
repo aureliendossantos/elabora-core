@@ -107,10 +107,28 @@ const chromeMode: 'none' | 'player' | 'live' = chromeOption === 'live' ? 'live' 
 if (new URLSearchParams(location.search).get('scrollbars') === 'none') document.documentElement.style.scrollbarWidth = 'none';
 // Blocks placed by hand at their place at any width but a phone's (D72): the editor's canvas.
 const placingOption = new URLSearchParams(location.search).get('placing') === 'editor' ? 'editor' as const : undefined;
+// mode=thumb (a miniature of the editor, D130): the screen drawn still and quiet, at the size it is given, for a frame the window
+// scales. Nothing moves (no transition, no animation), no free object is mounted (its block is its box with its name: a browser's
+// miniature does not run objects), a video shows its poster and loads nothing, a sound is not loaded, no scrollbar.
+const thumb = new URLSearchParams(location.search).get('mode') === 'thumb';
+if (thumb) {
+  document.documentElement.dataset.thumb = '';
+  document.documentElement.style.scrollbarWidth = 'none';
+  document.head.append(element('style', { text: '[data-thumb] *, [data-thumb] *::before, [data-thumb] *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } [data-thumb] body { overflow: hidden; }' }));
+  // A video's or a sound's source is never set: a miniature asks for no medium (the poster is an image, and is loaded).
+  const never = (kind: typeof HTMLMediaElement | typeof HTMLSourceElement) => Object.defineProperty(kind.prototype, 'src', { configurable: true, get: () => '', set: () => {} });
+  never(HTMLMediaElement);
+  never(HTMLSourceElement);
+  const setAttribute = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function (this: Element, name: string, value: string) {
+    if (name.toLowerCase() === 'src' && (this instanceof HTMLMediaElement || this instanceof HTMLSourceElement)) return;
+    setAttribute.call(this, name, value);
+  };
+}
 // The live bars' one tooltip, and the learner's display choices while the page lives.
 const tooltip: Tooltip | null = chromeMode === 'live' ? createTooltip(document.body) : null;
 const displayPrefs: DisplayPrefs = { text: 'normal', captions: false, interfaceSounds: true, music: true };
-const frames = pageFrames('url');
+const frames = thumb ? null : pageFrames('url');
 const listeners = new Set<(message: CanvasMessage) => void>();
 let mounted: Mounted | null = null;
 let stylesHash = '';
@@ -478,7 +496,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
     // next and previous are the screens around the one the event is on, in the outline the canvas
     // has now (the view outlives renders of other screens, and the outline changes with the course).
     navigate: (target, from) => post({ type: 'elabora/navigate', screen: around(mounted?.outline ?? null, from.id, target) }),
-    exit: () => {}, frames,
+    exit: () => {}, frames, miniature: thumb,
     retake: () => { const target = state.current.retake(); if (target) post({ type: 'elabora/navigate', screen: target }); },
     // A narrated screen's timeline, still: the canvas shows a time (view.at), it never plays.
     timeline: {

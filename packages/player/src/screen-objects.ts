@@ -28,6 +28,8 @@ export interface ObjectsContext {
   labels: Labels;
   // The port free objects' frames load from (frames.ts; null: as in a package).
   frames: FramesSource | null;
+  // A miniature (D130): no object runs, a block shows its box with the object's name.
+  miniature?: boolean;
   recordInteraction(interaction: Interaction): void;
   // The course state changed (an object's state saved): the page syncs soon.
   syncSoon(): void;
@@ -94,7 +96,7 @@ interface Place {
 
 export type ScreenObjects = ReturnType<typeof createObjects>;
 
-export function createObjects({ main, course, courseState, labels, frames, recordInteraction, syncSoon, trigger, cleanup }: ObjectsContext) {
+export function createObjects({ main, course, courseState, labels, frames, miniature = false, recordInteraction, syncSoon, trigger, cleanup }: ObjectsContext) {
   const hosts = new Map<string, BlockObjectHost>();
   const running = new Map<string, Running>();
   // Objects of the departing screen that may carry on, by continuity key (park, then adopt or end).
@@ -164,6 +166,12 @@ export function createObjects({ main, course, courseState, labels, frames, recor
   function render(block: ObjectBlock) {
     const props = block.props;
     const definition = course.objects[props.object];
+    if (miniature) {
+      const ratio = props.aspectRatio && /^\d+:\d+$/.test(props.aspectRatio) ? props.aspectRatio.replace(':', ' / ') : '16 / 9';
+      const box = element('div', { class: 't-object-frame t-object-miniature', 'data-object': definition.id }, element('span', { class: 't-object-name', text: props.title || definition.id }));
+      box.style.aspectRatio = ratio;
+      return element('figure', { class: 't-object' }, box);
+    }
     const key = block.continuity?.key ?? null;
     // The departing screen's object with the same key carries on in this block (another block: the
     // same block shown again starts over).

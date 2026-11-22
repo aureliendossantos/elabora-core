@@ -23,7 +23,11 @@ import type { AskName, CanvasAsks, CanvasMessage, HostMessage, RenderView, Scree
 export interface PageCanvasOptions {
   // The canvas host's origin and the frames host's, exact: https, or http on this computer.
   canvasOrigin: string;
-  framesOrigin: string;
+  // The frames host's origin: free objects' frames, and the hidden relay page that holds their route. Left out with `frames: false`.
+  framesOrigin?: string;
+  // false: a page that mounts no free object (a thumbnail, D130): no frames host, no route of the frames, no hidden page, and the first render
+  // waits for the canvas's relay page alone. Default true.
+  frames?: boolean;
   // Gives the engine its end of a route's port: the window's engine client calls `relayPort { host }` with it.
   relayPort(host: RelayHost, port: MessagePort): Promise<void>;
   // Where the frames host's relay page goes: an element of the window's page (the page is hidden).
@@ -98,10 +102,10 @@ interface Entry {
   state: RelayState;
 }
 
-export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mount, askTimeoutMs = ASK_TIMEOUT_MS }: PageCanvasOptions): PageCanvasHost {
+export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withFrames = true, relayPort, mount, askTimeoutMs = ASK_TIMEOUT_MS }: PageCanvasOptions): PageCanvasHost {
   const canvasBase = originOf(canvasOrigin);
-  const framesBase = originOf(framesOrigin);
-  if (!canvasBase || !framesBase || canvasBase === framesBase) throw new Error('The canvas and the frames are two origins, each https (or http on this computer)');
+  const framesBase = withFrames ? originOf(framesOrigin ?? '') : canvasBase;
+  if (!canvasBase || !framesBase || (withFrames && canvasBase === framesBase)) throw new Error('The canvas and the frames are two origins, each https (or http on this computer)');
   // One route for each host: the canvas page's own, and the one the objects' frames carry (they are code of the author, on the
   // frames host, which holds nothing of the canvas's).
   const routes: Record<RelayHost, string> = { canvas: random(), frames: random() };
@@ -110,8 +114,10 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
     const url = new URL('/canvas/index.html', canvasBase);
     url.searchParams.set('token', token);
     url.searchParams.set('route', routes.canvas);
-    url.searchParams.set('framesRoute', routes.frames);
-    url.searchParams.set('frames', framesBase);
+    if (withFrames) {
+      url.searchParams.set('framesRoute', routes.frames);
+      url.searchParams.set('frames', framesBase);
+    }
     return { url: url.href, base: canvasBase, token, sandbox: CANVAS_FRAME_SANDBOX };
   })();
 
@@ -132,6 +138,8 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
   let resolveOpened!: () => void;
   const opened = new Promise<void>((resolve) => { resolveOpened = resolve; });
 
+  // The relay pages the first render waits for.
+  const hosts: readonly RelayHost[] = withFrames ? ['canvas', 'frames'] : ['canvas'];
   // The hidden page of the frames host: its relay holds the frames' route.
   const hidden = document.createElement('iframe');
   hidden.setAttribute('aria-hidden', 'true');
@@ -141,8 +149,10 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
   hidden.setAttribute('sandbox', RELAY_FRAME_SANDBOX);
   hidden.style.cssText = 'display:none;width:0;height:0;border:0';
   hidden.src = new URL('/relay.html', framesBase).href;
-  entries.frames.frame = hidden;
-  mount.append(hidden);
+  if (withFrames) {
+    entries.frames.frame = hidden;
+    mount.append(hidden);
+  }
 
   const toPage = (message: object) => {
     const frame = entries.canvas.frame?.contentWindow;
@@ -160,10 +170,10 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
   // The page is given its renders (and its questions) once its files can be had: both relay pages hold their route's port,
   // so that the service worker controls the page and answers the files its first render asks for. A render sent sooner
   // would ask the network, which has none of the module's files.
-  const bothOpened = () => entries.canvas.state.opened && entries.frames.state.opened;
+  const bothOpened = () => hosts.every((host) => entries[host].state.opened);
   // A relay page that says it cannot serve (a browser that gives it no service worker) is not waited for: the render is given
   // all the same, drawn without the module's files, and the app reads the page's error (relays(), onRelay).
-  const bothSettled = () => [entries.canvas, entries.frames].every((entry) => entry.state.opened || entry.state.error !== null);
+  const bothSettled = () => hosts.every((host) => entries[host].state.opened || entries[host].state.error !== null);
   function checkOpened(): void {
     if (bothOpened()) resolveOpened();
     if (bothSettled()) flush();
@@ -285,7 +295,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, relayPort, mo
     opened,
     close() {
       if (closed) return;
-      for (const entry of [entries.canvas, entries.frames]) toRelay(entry, { type: 'relay/close', protocol: RELAY_PROTOCOL, route: routes[entry.host] });
+      for (const entry of hosts.map((host) => entries[host])) toRelay(entry, { type: 'relay/close', protocol: RELAY_PROTOCOL, route: routes[entry.host] });
       closed = true;
       window.removeEventListener('message', onWindowMessage);
       for (const [request, waiting] of asked) { clearTimeout(waiting.timer); waiting.reject(new Error('The canvas host is closed')); asked.delete(request); }
