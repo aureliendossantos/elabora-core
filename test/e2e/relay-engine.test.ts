@@ -35,8 +35,9 @@ for (const name of wanted) {
     try {
       const { files } = readProjectFiles(NETWORK_SAMPLE);
       for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) engineMedia.set(file.hash, fs.readFileSync(path.join(NETWORK_SAMPLE, rel)));
-      const media = [...files].filter(([, file]) => file.kind === 'binary').map(([rel]) => rel).slice(0, 6);
-      assert.ok(media.length >= 3, 'the sample has media');
+      // What the editor's renders name of the sample (the relay serves the canvas those and no others): the files it has on disk, a medium among them.
+      const media: string[] = [];
+
       const page = context.pages()[0] ?? await context.newPage();
       page.on('pageerror', (error) => { if (process.env.RELAY_DEBUG) console.log('[pageerror]', String(error).slice(0, 300)); });
       page.on('console', (message) => { if (process.env.RELAY_DEBUG) console.log('[console]', message.type(), message.text().slice(0, 300)); });
@@ -48,6 +49,17 @@ for (const name of wanted) {
         await page.goto(`${APP}/?module=a&canvas=${encodeURIComponent(CANVAS)}&frames=${encodeURIComponent(FRAMES)}&engine=1`);
         await page.waitForFunction(() => !!(window as unknown as { app?: unknown }).app, null, { timeout: 30000 });
         await page.evaluate((seed) => (window as unknown as { app: { startEngine(seed: unknown): Promise<void> } }).app.startEngine(seed), { link, confirmed: [...files] });
+        // The relay serves the canvas the files that renders named (the review's third lock): the screens are rendered, as the editor does.
+        const named = new Set<string>();
+        for (const rel of files.keys()) {
+          const screen = /^screens\/([^/]+)\.json$/.exec(rel)?.[1];
+          if (!screen) continue;
+          const answer = await page.evaluate((id) => (window as unknown as { app: { engineCall(type: string, params: unknown): Promise<{ result?: { render?: { files?: Array<{ path: string }> } } }> } }).app.engineCall('thumbRender', { screen: id }), screen);
+          if (process.env.RELAY_DEBUG) console.log('THUMBRENDER', screen, JSON.stringify(answer).slice(0, 300));
+          for (const file of answer.result?.render?.files ?? []) named.add(file.path);
+        }
+        media.splice(0, media.length, ...[...named].filter((rel) => !rel.startsWith('objects/') && files.has(rel) && fs.existsSync(path.join(NETWORK_SAMPLE, rel))));
+        assert.ok(media.length >= 2 && media.some((rel) => files.get(rel)?.kind === 'binary'), `the renders name files of the sample, a medium among them: ${JSON.stringify([...named])}`);
         await page.waitForFunction(() => (window as unknown as { app: { log: Array<{ type: string }> } }).app.log.filter((message) => message.type === 'relay/opened').length === 2, null, { timeout: 60000 });
         const canvas = canvasFrame(page);
         const answers = await canvas.evaluate(async (paths) => {

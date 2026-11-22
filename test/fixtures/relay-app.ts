@@ -139,7 +139,7 @@ const api = {
   // go to the view's host as the window gives them).
   async startEngine(seed: unknown, services?: string[], mediaWorker?: string) {
     const worker = new Worker('/engine-worker.js', { type: 'module' });
-    await new Promise((resolve) => { worker.onmessage = ({ data }) => resolve(data); worker.postMessage({ kind: 'open', team: 'tm_test', project: 'relay-engine', seed, api: 'http://localhost:1', offline: true, ...(services ? { services } : {}), ...(mediaWorker ? { mediaWorker } : {}) }); });
+    await new Promise((resolve) => { worker.onmessage = ({ data }) => resolve(data); worker.postMessage({ kind: 'open', team: 'tm_test', project: 'relay-engine', seed, api: 'http://localhost:1', offline: true, services: ['canvas'], ...(services ? { services } : {}), ...(mediaWorker ? { mediaWorker } : {}) }); });
     worker.onmessage = null;
     worker.addEventListener('message', ({ data }: MessageEvent<{ kind?: string; event?: { type: string; id: string | number; render?: unknown; view?: unknown } }>) => {
       if (data.kind !== 'event' || !data.event) return;
@@ -163,6 +163,19 @@ const api = {
         resolve({ ok: !!data.ok, result: data.result, error: data.error });
       }
       worker.addEventListener('message', listen);
+      worker.postMessage({ kind: 'request', id, type, params });
+    });
+  },
+  // A request to the engine's Worker (after startEngine): what the renders of a screen name is declared to the relay's source by it.
+  async engineCall(type: string, params: unknown): Promise<{ ok: boolean; result?: unknown }> {
+    const worker = await engineStarted;
+    const id = `call-${++engineRequests}`;
+    return new Promise((resolve) => {
+      worker.addEventListener('message', function listen({ data }: MessageEvent<{ kind?: string; id?: string; ok?: boolean; result?: unknown }>) {
+        if (data.kind !== 'response' || data.id !== id) return;
+        worker.removeEventListener('message', listen);
+        resolve({ ok: !!data.ok, result: data.result, error: (data as { error?: unknown }).error } as { ok: boolean; result?: unknown });
+      });
       worker.postMessage({ kind: 'request', id, type, params });
     });
   },

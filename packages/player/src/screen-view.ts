@@ -89,6 +89,8 @@ export interface ScreenViewOptions {
   retake(): void;
   // The port free objects' frames load from (frames.ts; default null: as in a package).
   frames?: FramesSource | null;
+  // A miniature (D130): free objects are not mounted, a block's box with the object's name takes their place, and a backdrop's object is left out.
+  miniature?: boolean;
   // The player's tooltip (D58): a Continue that cannot open yet says why there, moving nothing.
   tooltip?: Tooltip | null;
   // Narrated screens (docs/decisions.md D24): where their bar goes (null: no bar), whether playback
@@ -118,7 +120,7 @@ export interface ScreenViewOptions {
 export type ScreenView = ReturnType<typeof createScreenView>;
 
 export function createScreenView(options: ScreenViewOptions) {
-  const { app, main, course, courseState, labels, announce, recordInteraction, frames = null } = options;
+  const { app, main, course, courseState, labels, announce, recordInteraction, frames = null, miniature = false } = options;
   // The screen shown, its steps and the step reached.
   let screen: ScreenData | undefined;
   let steps = [1];
@@ -942,7 +944,7 @@ export function createScreenView(options: ScreenViewOptions) {
 
   // ── Free objects ──────────────────────────────────────────────────────
   // Their frames, hosts and events (screen-objects.ts).
-  const objects = createObjects({ main, course, courseState, labels, frames, recordInteraction, syncSoon: options.syncSoon, trigger, cleanup });
+  const objects = createObjects({ main, course, courseState, labels, frames, miniature, recordInteraction, syncSoon: options.syncSoon, trigger, cleanup });
   const hosts = objects.hosts;
   // Frames follow the size class of the page (1rem): sent at initialize and when the window crosses one.
   let lastRootSize = rootSize();
@@ -1071,7 +1073,7 @@ export function createScreenView(options: ScreenViewOptions) {
   if (backdrop && backdropElement) {
     app.prepend(backdropElement);
     const decoration = backdrop.object;
-    if (decoration && course.objects[decoration.object]) {
+    if (decoration && course.objects[decoration.object] && !miniature) {
       const definition = course.objects[decoration.object];
       const iframe = element('iframe', { title: definition.id, ...objectFrame(definition.dir, [], frames, document.baseURI), allow: '', referrerpolicy: 'no-referrer', tabindex: '-1', loading: 'eager' });
       // data-state (starting, ready, failed) tells the tools how the object is (look reports it).
