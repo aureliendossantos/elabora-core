@@ -19,6 +19,8 @@ const HEIGHT = number('height', 360, 90, 8000);
 const WIDTH = number('width', 420, 100, 4000);
 const ROW = number('row', 160, 40, 1000);
 const SCREENS = ['simulation', 'accueil'];
+// A trial: a row's miniature kept when it leaves the view (not released), to see what a frame kept alive costs and gives back.
+const KEEP = params.get('keep') === '1';
 
 const files: RelaySource = {
   async get(request: RelayRequest): Promise<RelayAnswer> {
@@ -90,7 +92,7 @@ const observer = new IntersectionObserver((changes) => {
       shown.set(index, one);
       seen.set(index, performance.now());
       void one.drawn.then((ok) => { if (shown.get(index) !== one) return; drawn.set(index, ok); if (ok) drawnAt.set(index, performance.now()); });
-    } else if (!change.isIntersecting && shown.has(index)) { shown.get(index)!.release(); shown.delete(index); drawn.delete(index); }
+    } else if (!change.isIntersecting && shown.has(index) && !KEEP) { shown.get(index)!.release(); shown.delete(index); drawn.delete(index); }
   }
 });
 function build(screens: string[]): void {
@@ -119,6 +121,10 @@ const api = {
   release(index: number) { shown.get(index)?.release(); shown.delete(index); drawn.delete(index); },
   scrollTo(top: number) { list.scrollTop = top; },
   measure: (screen: string, language: string | null) => thumbs.measure(screen, language),
+  // More rows, one for each screen given.
+  build,
+  // A render as createThumbs asks for it.
+  render: (name: ThumbRequestName, request: unknown) => source.render(name, request as never),
   // The engine's Worker opened on a project's files (the seed), offline, with the canvas service; then a row for each screen given.
   async startEngine(seed: unknown, screens: string[]): Promise<number> {
     const started = performance.now();
