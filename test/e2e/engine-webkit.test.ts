@@ -6,6 +6,7 @@ import path from 'node:path';
 import type { Page } from 'playwright-core';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { wavBytes } from '@elabora/core/voice/wav';
+import { aacEncoderModule } from '@elabora/engine/aac-encoder';
 import { bundleForBrowser } from '../browser-bundle.ts';
 import { emptyStorage } from '../browser-page.ts';
 import { NETWORK_SAMPLE } from '../helpers.ts';
@@ -13,7 +14,8 @@ import { NETWORK_SAMPLE } from '../helpers.ts';
 // The browser engine in WebKit: a medium the app ships is taken, checked, kept, then served from what is
 // kept, one at a time and all at once. In a profile on disk, it is kept in the origin's private file
 // system, which WebKit moves a file of only by move(folder, name). In a private window, which has no
-// such file system (getDirectory() throws), it is kept in IndexedDB, and a master is made in memory.
+// such file system (getDirectory() throws), it is kept in IndexedDB, and a master is made in memory;
+// Firefox's private browsing has none either (a SecurityError), and is kept the same way.
 
 const ORIGIN = 'https://engine.elabora.test';
 const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
@@ -29,10 +31,13 @@ async function serve(page: Page): Promise<void> {
   const engine = await bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
 provideMedia(async (hash) => { const response = await fetch('/media/' + hash); return response.ok ? response.blob() : null; });` });
   const mediaWorker = await bundleForBrowser({ file: 'packages/engine/src/browser/media/worker.ts' });
+  // Firefox has no AAC encoder under macOS: Mediabunny's (D107, D135).
+  const aac = await aacEncoderModule();
   await page.route(`${ORIGIN}/**`, (route) => {
     const name = new URL(route.request().url()).pathname;
     if (name === '/worker.js') return route.fulfill({ contentType: 'text/javascript', body: engine.code });
     if (name === '/media-worker.js') return route.fulfill({ contentType: 'text/javascript', body: mediaWorker.code });
+    if (name === '/aac.js') return route.fulfill({ contentType: 'text/javascript', body: aac });
     if (name === '/recording.wav') return route.fulfill({ contentType: 'audio/wav', body: recording });
     const bytes = name.startsWith('/media/') ? shipped.get(name.slice('/media/'.length)) : undefined;
     if (bytes) return route.fulfill({ contentType: 'application/octet-stream', body: bytes });
@@ -88,35 +93,41 @@ test('WebKit: the media an app ships are kept and served by the engine\'s Worker
   }
 });
 
-test('WebKit, a private window: without the origin\'s file system, the media are kept in IndexedDB and a master is made in memory', { timeout: 180_000 }, async (t) => {
+// A private window: no private file system, the media kept in IndexedDB, a line's master made in memory.
+async function privateWindow(t: { skip(message: string): void; diagnostic(message: string): void }, name: 'webkit' | 'firefox', refused: string): Promise<void> {
   const playwright = await import('playwright-core');
   let browser: Awaited<ReturnType<typeof playwright.webkit.launch>>;
   try {
-    browser = await playwright.webkit.launch();
+    // WebKit's context without a profile on disk is a private window's state; Firefox's private browsing is a mode.
+    browser = name === 'webkit' ? await playwright.webkit.launch() : await playwright.firefox.launch({ firefoxUserPrefs: { 'browser.privatebrowsing.autostart': true } });
   } catch (error) {
-    return t.skip(`WebKit is not installed: ${(error as Error).message.split('\n')[0]}`);
+    return t.skip(`${name} is not installed: ${(error as Error).message.split('\n')[0]}`);
   }
   try {
     const page = await (await browser.newContext()).newPage();
     await serve(page);
-    assert.equal(await page.evaluate(() => navigator.storage.getDirectory().then(() => 'a file system', (error: Error) => error.name)), 'UnknownError', 'no private file system here');
+    assert.equal(await page.evaluate(() => navigator.storage.getDirectory().then(() => 'a file system', (error: Error) => error.name)), refused, 'no private file system here');
     await keptAndServed(page);
     // A narration line from a recording: the media Worker writes its master in memory.
-    const line = await page.evaluate(async () => {
+    const line = await page.evaluate(async (aacEncoder) => {
       const file = await (await fetch('/recording.wav')).blob();
       const w = new Worker('/media-worker.js', { type: 'module' });
-      w.postMessage({ kind: 'init', init: {} });
+      w.postMessage({ kind: 'init', init: aacEncoder ? { aacEncoder } : {} });
       const { answer } = await new Promise<{ answer: { master?: { file: Blob; action: string }; error?: string } }>((resolve) => {
         w.onmessage = ({ data }) => resolve(data);
         w.postMessage({ kind: 'ask', id: 1, ask: { op: 'master', kind: 'line', file, name: 'recording.wav', trim: true } });
       });
       w.terminate();
       return answer.master ? { action: answer.master.action, size: answer.master.file.size, head: Array.from(new Uint8Array(await answer.master.file.slice(4, 8).arrayBuffer())) } : { error: answer.error };
-    });
+    }, name === 'firefox' ? `${ORIGIN}/aac.js` : null);
     assert.equal(line.action, 'encode', JSON.stringify(line));
     assert.equal(String.fromCharCode(...line.head!), 'ftyp', 'an MP4');
     t.diagnostic(`a line made from a two-second recording: ${line.size} bytes, in memory`);
   } finally {
     await browser.close();
   }
-});
+}
+
+test('WebKit, a private window: without the origin\'s file system, the media are kept in IndexedDB and a master is made in memory', { timeout: 180_000 }, (t) => privateWindow(t, 'webkit', 'UnknownError'));
+
+test('Firefox, private browsing: without the origin\'s file system, the media are kept in IndexedDB and a master is made in memory', { timeout: 180_000 }, (t) => privateWindow(t, 'firefox', 'SecurityError'));
