@@ -246,6 +246,14 @@ test('in a browser, a module from a template (create_course from) has the bytes 
   // A path out of the project, or a medium given as a text, is refused before anything is written.
   assert.throws(() => createCourse({ ...fromTemplate, from: { ...fromTemplate.from, files: { ...fromTemplate.from.files, '../x.txt': { kind: 'text', text: '' } } } }), /"\.\.\/x\.txt" is not a path of the project/);
   assert.throws(() => createCourse({ ...fromTemplate, from: { ...fromTemplate.from, files: { ...fromTemplate.from.files, 'assets/x.png': { kind: 'text', text: '' } } } }), /"assets\/x\.png" is a medium/);
+  // What a room's editor could send that is not a start: refused, nothing written.
+  assert.throws(() => createCourse({ ...fromCharter, from: { ...fromCharter.from, course: undefined } }), /a charter has the title and course id/);
+  assert.throws(() => createCourse({ ...fromTemplate, from: { ...fromTemplate.from, template: undefined } }), /from\.template/);
+  assert.throws(() => createCourse({ ...fromTemplate, from: { ...fromTemplate.from, files: { 'assets/x.png': { kind: 'binary', hash: 'sha256:00', size: 1 } } } }), /"assets\/x\.png" is neither a text/);
+  assert.throws(() => createCourse({ ...fromTemplate, from: { ...fromTemplate.from, files: { 'notes.md': null } } }), /"notes\.md" is neither a text/);
+  // A template's copy without a language asked keeps the template's own.
+  const { language: _asked, ...anyLanguage } = fromTemplate;
+  assert.equal(JSON.parse((createCourse(anyLanguage).after['course.json'] as { text: string }).text).language, 'fr');
 });
 
 test('elabora templates lists them; elabora init --template makes the course', () => {

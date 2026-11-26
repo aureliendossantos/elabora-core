@@ -148,7 +148,7 @@ export function checkBrief(brief: CourseBrief): void {
 // title on the course, the plan and the first screen (the cover), the course's language, its brief, and
 // AGENTS.md's notes saying where it comes from, with CLAUDE.md and .gitignore. read gives a text of the
 // copy (null: not there). The same bytes on a computer (createFromTemplate) and in a browser (D124).
-export function templateTexts(read: (rel: string) => string | null, { id, title, language = 'fr', brief }: NewCourseOptions, template: string): Map<string, string> {
+export function templateTexts(read: (rel: string) => string | null, { id, title, language, brief }: NewCourseOptions, template: string): Map<string, string> {
   if (!COURSE_ID.test(id)) throw new CommandError('id: lowercase letters, digits and hyphens, starting with a letter');
   if (brief) checkBrief(brief);
   const json = (rel: string): Record<string, unknown> => {
@@ -160,7 +160,8 @@ export function templateTexts(read: (rel: string) => string | null, { id, title,
   const course = json('course.json');
   course.id = id;
   course.title = title.trim();
-  course.language = language;
+  // Without a language asked, the template's own: its files are in it.
+  course.language = language ?? (typeof course.language === 'string' ? course.language : 'fr');
   course.version = '1.0.0';
   delete course.translationOf;
   // The catalogue's description was the template's.
@@ -214,6 +215,20 @@ export function withCharter(courseText: string, charter: CharterCourse, presenta
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
+// What a module starts from, as a host or a room's editor sent it: refused before anything is written when it is not
+// one (D124).
+function checkStart(from: unknown): asserts from is CourseStart {
+  const start = from as Partial<Record<string, unknown>> | null;
+  if (!isObject(start) || (start.kind !== 'template' && start.kind !== 'charter')) throw new CommandError('from: a template or a charter ({ kind: "template" | "charter", … })');
+  if (start.kind === 'template' && (typeof start.template !== 'string' || !start.template)) throw new CommandError('from.template: the template\'s id');
+  if (start.kind === 'charter' && (typeof start.title !== 'string' || !start.title || (start.courseId !== null && typeof start.courseId !== 'string') || !isObject(start.course))) throw new CommandError('from: a charter has the title and course id of its course, and its course\'s fields (course)');
+  if (!isObject(start.files)) throw new CommandError('from.files: the files by their path');
+  for (const [rel, file] of Object.entries(start.files)) {
+    const ok = isObject(file) && (file.kind === 'text' ? typeof file.text === 'string' : file.kind === 'binary' && typeof file.hash === 'string' && /^sha256:[0-9a-f]{64}$/.test(file.hash) && Number.isSafeInteger(file.size) && (file.size as number) >= 0);
+    if (!ok) throw new CommandError(`from.files: "${rel}" is neither a text ({ kind: "text", text }) nor a medium ({ kind: "binary", hash, size })`);
+  }
+}
+
 // create_course (D112): a new module's files as the first change of an empty project. A project that
 // has a course.json already is left as it is (created: false): two copies that open the same empty
 // project and both make it write it once. Its files are those a project reads as text: .gitignore,
@@ -222,6 +237,7 @@ const isObject = (value: unknown): value is Record<string, unknown> => typeof va
 export function createCourse(context: CommandContext, options: NewCourseOptions): CommandOutput<{ created: boolean }> {
   if (context.files.has('course.json')) return { files: context.files, result: { created: false } };
   const { from } = options;
+  if (from !== undefined) checkStart(from);
   const files = new Map(context.files);
   const given = new Map<string, StartFile>();
   for (const [rel, file] of Object.entries(from?.files ?? {})) {

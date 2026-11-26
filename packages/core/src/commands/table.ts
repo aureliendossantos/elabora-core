@@ -471,7 +471,13 @@ const TABLE = {
         }
       }),
       // A browser's host only (D124): the template or the charter it starts from, its files given whole.
-      from: formatValue<CourseStart>()({ type: 'object', required: ['kind', 'files'], properties: { kind: { enum: ['template', 'charter'] }, files: { type: 'object' } } })
+      from: formatValue<CourseStart>()({
+        type: 'object', required: ['kind', 'files'],
+        properties: {
+          kind: { enum: ['template', 'charter'] }, template: { type: 'string', minLength: 1 }, title: { type: 'string', minLength: 1 }, courseId: { type: ['string', 'null'] }, course: { type: 'object' },
+          files: { type: 'object', additionalProperties: { type: 'object', required: ['kind'], properties: { kind: { enum: ['text', 'binary'] }, text: { type: 'string' }, hash: { type: 'string', pattern: '^sha256:[0-9a-f]{64}$' }, size: { type: 'integer', minimum: 0 } } } }
+        }
+      })
     }, ['id', 'title']),
     run: createCourse,
     // The files it started from are in the operations: the journal names the template.
