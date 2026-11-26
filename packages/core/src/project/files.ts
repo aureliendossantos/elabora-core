@@ -49,6 +49,10 @@ export interface SyncArtefact {
 
 const TEXT_EXTENSIONS = new Set(['.json', '.md', '.css', '.html', '.htm', '.js', '.mjs', '.svg', '.xlf', '.vtt', '.txt', '.csv']);
 export const isTextPath = (p: string): boolean => TEXT_EXTENSIONS.has(extname(p).toLowerCase());
+// A file of a free object's tests, not of the course: its visual baselines (objects/<id>/__snapshots__/,
+// what `elabora object test` compares with, and records again where none is). A module made from an
+// example or a template starts without them. `p` is relative to the course, with forward slashes.
+export const isTestFile = (p: string): boolean => /(?:^|\/)__snapshots__(?:\/|$)/.test(p);
 
 export const textFile = (text: string): TextFile => Object.freeze({ kind: 'text', text });
 export const binaryFile = (size: number, extra: { hash?: FileHash; media?: FileMedia } = {}): BinaryFile => Object.freeze({ kind: 'binary', size, ...extra });

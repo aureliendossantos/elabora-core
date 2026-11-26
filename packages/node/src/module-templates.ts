@@ -9,6 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkBrief, templateTexts, type CourseBrief } from '@elabora/core/commands/new-course';
+import { isTestFile } from '@elabora/core/project/files';
 import { buildTranslation } from './translate.ts';
 import { fieldOf } from './util/values.ts';
 
@@ -93,7 +94,7 @@ export interface FromTemplateResult {
 }
 
 // What a copy leaves behind: the project's own data, builds, and the template's licence (the fonts
-// keep theirs, beside them in theme/fonts).
+// keep theirs, beside them in theme/fonts); at any depth, its free objects' test baselines (isTestFile).
 const LEFT_OUT = /^(\.elabora|dist|node_modules|plan-versions|LICENSE\.md|\.DS_Store)$/;
 
 // The files of the template folder `source` in a language, as a copy of it is before it is made the
@@ -150,7 +151,7 @@ function copyTemplate(source: string, target: string): void {
   fs.mkdirSync(target, { recursive: true });
   for (const entry of fs.readdirSync(source)) {
     if (LEFT_OUT.test(entry)) continue;
-    fs.cpSync(path.join(source, entry), path.join(target, entry), { recursive: true, mode: fs.constants.COPYFILE_FICLONE, filter: (from) => !/[\\/]\.DS_Store$/.test(from) });
+    fs.cpSync(path.join(source, entry), path.join(target, entry), { recursive: true, mode: fs.constants.COPYFILE_FICLONE, filter: (from) => !/[\\/]\.DS_Store$/.test(from) && !isTestFile(path.relative(source, from).split(path.sep).join('/')) });
   }
 }
 
