@@ -19,8 +19,11 @@ export interface ElevenRequest {
   keyed: boolean;
 }
 
-// A voice's sample: a file of ElevenLabs' public bucket.
+// A voice's sample: a file of ElevenLabs' public bucket, or its API's own preview route, which takes no
+// key (api.elevenlabs.io or a region's, as api.us.elevenlabs.io: about one library voice in five).
 export const PREVIEWS = 'https://storage.googleapis.com/eleven-public-prod/';
+// The whole address, so no user, port, other query or dot segment can pass.
+const PREVIEW_ROUTE = /^https:\/\/api(?:\.[a-z0-9-]+)*\.elevenlabs\.io\/v1\/voices\/[A-Za-z0-9]{1,64}\/previews\/[a-z]{1,20}(?:\?payload=[A-Za-z0-9%_=-]{1,400})?$/;
 const TEXT_MAX = 10_000;
 const VALUE_MAX = 200;
 
@@ -107,7 +110,7 @@ export function elevenLabsRequest(op: string, params: unknown = {}): ElevenReque
     case 'preview': {
       const { url, ...rest } = p;
       if (Object.keys(rest).length) refuse('preview takes its url only');
-      if (typeof url !== 'string' || !url.startsWith(PREVIEWS) || url.includes('..') || url.length > 600) refuse('url is not a sample of ElevenLabs\' public bucket');
+      if (typeof url !== 'string' || url.length > 600 || !((url.startsWith(PREVIEWS) && !url.includes('..')) || PREVIEW_ROUTE.test(url))) refuse('url is not a sample of ElevenLabs\' public bucket or of its preview route');
       return { method: 'GET', path: url as string, answer: 'bytes', keyed: false };
     }
     default: return refuse(`no operation ${op}`);
