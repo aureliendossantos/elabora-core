@@ -8,7 +8,7 @@
 //                            └── a measurer: one frame at the course's reference size, kept in the view and clipped to a pixel
 //
 // What it asks of the window: an element of its size when `show` is called, `release()` when it goes (thumbs-protocol.ts). It watches
-// what is in the view itself: it makes a frame for an element 120 ms after the element is in the view, nearest to the view first (the
+// what is in the view itself: it makes a frame for an element 120 ms after the element is in the view, in reading order (the
 // editor's own screen before any), and keeps the frame when the element leaves the view while a place is free, so a row that comes
 // back is already drawn; when an element in the view needs a place and none is free, the frame farthest from the view goes (a browser
 // draws no frame that is out of the view, and a frame is about 20 MB). A frame moved to another parent loads again, so a frame is never
@@ -137,11 +137,13 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     const { name, params } = requestOf(scene);
     return source.render(name, params as never) as Promise<SceneRender>;
   };
+  // How far from the view an element is, and among those in it, its place in reading order (a line, then the left first): a view of more
+  // miniatures than places draws them as the eye reads them, the top line of a Planche first, and a place freed goes to the next one.
   const distance = (entry: Entry): number => {
     const box = entry.element.getBoundingClientRect();
     const dy = Math.max(0, box.top - innerHeight, -box.bottom);
     const dx = Math.max(0, box.left - innerWidth, -box.right);
-    return Math.hypot(dx, dy) * 1000 + Math.abs(box.top + box.height / 2 - innerHeight / 2) + Math.abs(box.left + box.width / 2 - innerWidth / 2) / 1000;
+    return Math.hypot(dx, dy) * 1e9 + Math.round(Math.max(0, box.top)) * 1e4 + Math.max(0, box.left);
   };
   const firstOf = (waiting: Entry[]): Entry => {
     const now = current?.() ?? null;
@@ -163,7 +165,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
 
   // The frames wanted, in the order they are asked for, while a place is free; when none is, a frame out of the view gives its place,
   // the farthest from the view first. A preview the author chooses from comes before the miniatures under it: when every place is
-  // held in the view, the miniature farthest from the middle of the view gives it its place, and takes it back once the preview goes.
+  // held in the view, the last miniature in reading order gives it its place, and takes it back once the preview goes.
   function pump(): void {
     if (closed) return;
     for (;;) {

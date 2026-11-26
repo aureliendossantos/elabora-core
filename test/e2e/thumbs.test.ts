@@ -289,7 +289,20 @@ for (const name of wanted) {
     }
   });
 
-  test(`thumbnails (${name}): a block's preview opened over a view whose every place is held takes the place of the miniature farthest from its middle, which is drawn again once the preview goes`, PATIENT, async (t) => {
+  test(`thumbnails (${name}): a view of more miniatures than places draws them in reading order, and a place freed goes to the next`, PATIENT, async (t) => {
+    // A grid of five columns and four lines, all in the view (a Planche, a Storyboard).
+    await withThumbs(name, t, 'rows=20&width=1000&height=880&row=192&limit=8', async (page) => {
+      const drawnRows = () => page.evaluate(() => [...(window as unknown as Win).thumbsApp.drawn.entries()].filter(([, ok]) => ok).map(([index]) => index).sort((a, b) => a - b));
+      await untilDrawn(page, 8);
+      await page.waitForTimeout(400);
+      assert.deepEqual(await drawnRows(), [0, 1, 2, 3, 4, 5, 6, 7], 'the first eight as the eye reads them');
+      await page.evaluate(() => { for (const index of [0, 1, 2, 3]) (window as unknown as Win).thumbsApp.release(index); });
+      await page.waitForFunction(() => [8, 9, 10, 11].every((index) => (window as unknown as Win).thumbsApp.drawn.get(index) === true), null, { timeout: 30000 });
+      assert.deepEqual(await drawnRows(), [4, 5, 6, 7, 8, 9, 10, 11]);
+    });
+  });
+
+  test(`thumbnails (${name}): a block's preview opened over a view whose every place is held takes the place of the last miniature in reading order, which is drawn again once the preview goes`, PATIENT, async (t) => {
     await withThumbs(name, t, 'rows=8&height=800&limit=8', async (page) => {
       await untilDrawn(page, 8);
       const rowsFramed = () => page.evaluate(() => (window as unknown as Win).thumbsApp.frames().filter((frame) => frame.parent !== null).length);
