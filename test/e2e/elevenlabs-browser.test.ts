@@ -159,8 +159,6 @@ test(`ElevenLabs in ${BROWSER}: the key typed in its own page, a line said by th
     const frame = document.getElementById('keys') as HTMLIFrameElement;
     frame.contentWindow!.postMessage({ v: 1, kind: 'connect' }, 'https://keys.elabora.test', [port1]);
     const connected = await ask('voiceKeyPort', {}, [port2]);
-    // The page's state reaches the engine as its port opens.
-    await new Promise((resolve) => setTimeout(resolve, 200));
     const account = await ask('voiceAccount', { provider: 'elevenlabs' });
     const given = await ask('setVoiceKey', { provider: 'elevenlabs', key: 'sk_0123456789abcdef0123456789abcdef' });
     const said = await ask('generateVoice', { screen: screenId, lines: [lineId], language: 'en' });

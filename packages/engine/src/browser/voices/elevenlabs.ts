@@ -35,8 +35,8 @@ export class BrowserElevenLabs {
     const host: ElevenLabsHost = {
       key: () => (this.#port && this.#state.present && this.#state.masked ? { id: this.#state.masked, masked: this.#state.masked, source: 'app' } : null),
       missing: () => new VoiceError('E_VOICE_KEY_MISSING', `No ElevenLabs key in this browser: add it in ${NEW_KEY}.`),
-      call: async <T>(op: ElevenOp, params: Record<string, unknown>, { what }: { what: string }) => {
-        const answer = await this.#ask(op, params);
+      call: async <T>(op: ElevenOp, params: Record<string, unknown>, { what, signal }: { what: string; signal?: AbortSignal }) => {
+        const answer = await this.#ask(op, params, signal);
         if (!answer.ok) throw new VoiceError(answer.code, answer.message);
         if (answer.status >= 400) throw failure(answer.status, typeof answer.body === 'string' ? answer.body : JSON.stringify(answer.body ?? ''), what, { newKey: NEW_KEY });
         return { body: answer.body as T, cost: answer.cost };
@@ -72,6 +72,14 @@ export class BrowserElevenLabs {
     port.start();
   }
 
+  // The page's state asked again, when this session knows of no key (the window's commit may not have
+  // reached this port yet). Without a port, nothing to ask.
+  async refresh(): Promise<void> {
+    if (!this.#port || this.#state.present) return;
+    const answer = await this.#ask('keyState', {});
+    if (answer.ok && answer.key) this.#state = answer.key;
+  }
+
   // The key forgotten by its page (setVoiceKey { key: null }).
   async forget(): Promise<void> {
     if (!this.#port) return;
@@ -84,12 +92,17 @@ export class BrowserElevenLabs {
     this.#port = null;
   }
 
-  #ask(op: string, params: Record<string, unknown>): Promise<Answer> {
+  // An operation asked of the page; stopped (cancelVoice, the session closed) it no longer waits for
+  // the answer, the page's request to ElevenLabs going on to its end.
+  #ask(op: string, params: Record<string, unknown>, signal?: AbortSignal): Promise<Answer> {
     const port = this.#port;
     if (!port) return Promise.resolve({ ok: false, code: 'E_VOICE_KEY_MISSING', message: `No ElevenLabs key in this browser: add it in ${NEW_KEY}.` });
+    if (signal?.aborted) return Promise.reject(signal.reason);
     const id = ++this.#next;
-    return new Promise((resolve) => {
-      this.#waiting.set(id, resolve);
+    return new Promise((resolve, reject) => {
+      const stop = () => { this.#waiting.delete(id); reject(signal!.reason); };
+      signal?.addEventListener('abort', stop, { once: true });
+      this.#waiting.set(id, (answer) => { signal?.removeEventListener('abort', stop); resolve(answer); });
       port.postMessage({ v: VERSION, id, op, params });
     });
   }

@@ -85,7 +85,9 @@ export class BrowserVoices {
 
   async #answer<T>(work: () => Promise<T>): Promise<T> {
     try {
-      await this.#pocket.ready();
+      // The key's state, asked again when the engine knows of none: one committed in the window a moment
+      // ago may not have reached this port yet.
+      await Promise.all([this.#pocket.ready(), this.#elevenLabs.refresh()]);
       return await work();
     } catch (error) {
       throw toolError(error);
@@ -154,9 +156,11 @@ export class BrowserVoices {
   }
 
   // The port to the page that holds the ElevenLabs key (the window frames it and transfers it).
-  voiceKeyPort(port: MessagePort | undefined): Record<string, never> {
+  // Answered once the page has said whether it holds a key.
+  async voiceKeyPort(port: MessagePort | undefined): Promise<Record<string, never>> {
     if (!port) throw new EngineError('bad-request', 'voiceKeyPort takes the port transferred with its message');
     this.#elevenLabs.connect(port);
+    await this.#elevenLabs.refresh();
     return {};
   }
 
