@@ -42,7 +42,7 @@ export const groups: TestMap = {
     // Words timed and lines said in a browser: the core's aligner and voices, the models Worker and its
     // store (D113, D114). Run with ELABORA_ALIGNER_TEST_MODELS and ELABORA_VOICE_TEST_MODELS.
     { name: 'models in a browser', files: ['packages/core/src/align/**', 'packages/core/src/voice/**', 'packages/core/src/util/onnx.ts', 'packages/core/src/util/model-files.ts', 'packages/engine/src/browser/models/**', 'packages/engine/src/browser/voices/**', 'test/browser-page.ts', 'test/native-models.ts'], checks: [e2e('align-browser'), e2e('voice-browser')] },
-    // « Éléments téléchargés » in a browser (D137): the window's list, over the models' store.
+    // « Éléments téléchargés » in a browser (D138): the window's list, over the models' store.
     { name: 'downloads in a browser', files: ['packages/engine/src/browser/downloads.ts', 'packages/engine/src/browser/models/store.ts', 'packages/core/src/downloads/**'], checks: [e2e('downloads-browser')] },
     // ElevenLabs in a browser (D136): the core's provider, the key's page and the session's provider.
     { name: 'ElevenLabs in a browser', files: ['packages/core/src/voice/elevenlabs/**', 'packages/engine/src/browser/keys/**', 'packages/engine/src/browser/voices/**'], checks: [e2e('elevenlabs-browser')] },
