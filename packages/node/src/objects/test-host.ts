@@ -48,6 +48,7 @@ interface TestHost {
 const createHost = createObjectHost as unknown as (options: TestHostOptions) => TestHost;
 
 let host: TestHost | null = null;
+let frame: HTMLIFrameElement | null = null;
 let reduced = false;
 window.__events = [];
 window.__startHost = ({ def, props, strings, tokens, fonts, language, seed, reducedMotion, savedState, safeArea, decorative, context, view }) => new Promise<HostStarted>((resolve) => {
@@ -58,6 +59,7 @@ window.__startHost = ({ def, props, strings, tokens, fonts, language, seed, redu
   iframe.setAttribute('referrerpolicy', 'no-referrer');
   iframe.title = def.id;
   iframe.src = `${def.dir}/frame.html`;
+  frame = iframe;
   const timer = setTimeout(() => resolve({ ok: false, error: 'timeout: the object never answered object/initialize (see console errors)' }), 15000);
   host = createHost({
     iframe, def, props, strings, tokens, fonts: fonts || [], locale: language, reducedMotion, savedState, safeArea, decorative, context, view, seed, testMode: true, baseUrl: '',
@@ -92,8 +94,11 @@ window.__call = (call: HostCall) => {
     case 'setContext': return host.setContext(call.context);
     case 'setSafeArea': return host.setSafeArea(call.safeArea);
     case 'setView': return host.setView(call.view);
-    case 'testClick': return host.testClick(call.target);
-    case 'testKey': return host.testKey(call.key);
+    // A click or a key reaches the object as it does a learner who clicked or tabbed into it: its
+    // frame holds the focus. Without it, Chrome refuses the frame a focus() it makes without a gesture
+    // (the test's Tab moves the focus by script): a permissions policy violation in the console.
+    case 'testClick': frame?.focus(); return host.testClick(call.target);
+    case 'testKey': frame?.focus(); return host.testKey(call.key);
     case 'testDry': return host.testDry(call.dry, call.drawOffscreen);
     case 'perf': return host.perf();
     case 'dispose': return host.dispose();
