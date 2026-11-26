@@ -108,6 +108,14 @@ async function privateWindow(t: { skip(message: string): void; diagnostic(messag
     await serve(page);
     assert.equal(await page.evaluate(() => navigator.storage.getDirectory().then(() => 'a file system', (error: Error) => error.name)), refused, 'no private file system here');
     await keptAndServed(page);
+    // Kept, not only served from the app again: WebKit's private window refuses a Blob there, and takes
+    // its bytes.
+    const kept = await page.evaluate(() => new Promise<number>((resolve, reject) => {
+      const open = indexedDB.open('elabora-copy-media-tm_test.webkit');
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => { const count = open.result.transaction('media').objectStore('media').count(); count.onsuccess = () => { open.result.close(); resolve(count.result); }; };
+    }));
+    assert.equal(kept, media.length, 'the media kept in IndexedDB');
     // A narration line from a recording: the media Worker writes its master in memory.
     const line = await page.evaluate(async (aacEncoder) => {
       const file = await (await fetch('/recording.wav')).blob();

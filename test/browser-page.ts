@@ -7,8 +7,14 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 
 // A page of a browser (ELABORA_BROWSER: chromium, firefox, webkit) whose origin has a private file
 // system, as an author's has: Playwright's WebKit has none in a throwaway profile, so it gets a profile
-// on disk, removed when the page closes.
+// on disk, removed when the page closes. ELABORA_PRIVATE=1: a private window's instead (WebKit's
+// context without a profile, Firefox's private browsing; Chromium's context is always off the record).
 export async function pageWithStorage(name: string): Promise<{ page: Page; close(): Promise<void> }> {
+  if (process.env.ELABORA_PRIVATE === '1' && (name === 'webkit' || name === 'firefox')) {
+    const playwright = await import('playwright-core');
+    const browser = name === 'webkit' ? await playwright.webkit.launch() : await playwright.firefox.launch({ firefoxUserPrefs: { 'browser.privatebrowsing.autostart': true } });
+    return { page: await (await browser.newContext()).newPage(), close: () => browser.close() };
+  }
   if (name !== 'webkit') {
     const browser = await launchBrowser(name);
     return { page: await browser.newPage(), close: () => browser.close() };

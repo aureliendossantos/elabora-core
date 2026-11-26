@@ -16,6 +16,7 @@ import { ROOT } from '../helpers.ts';
 // Worker, given a port to that page, says a line with the course's ElevenLabs voice and keeps its take.
 // The key reaches ElevenLabs, and nothing the window or the engine receives carries it. The page
 // refuses a port from another origin, and an operation outside the list.
+// ELABORA_PRIVATE=1: in a private window (Firefox, WebKit), where the take is kept in memory.
 
 const BROWSER = process.env.ELABORA_BROWSER ?? 'chromium';
 const APP = 'https://app.elabora.test';

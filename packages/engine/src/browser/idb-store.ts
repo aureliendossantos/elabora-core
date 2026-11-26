@@ -237,7 +237,17 @@ async function mediaDatabase(key: string): Promise<KeptMedia> {
   open.onupgradeneeded = () => { open.result.createObjectStore('media'); };
   const db = await result(open);
   const turn = inTurn();
-  const get = (hash: string) => result(db.transaction('media').objectStore('media').get(hash)) as Promise<Blob | undefined>;
+  // A Blob, or its bytes where the browser refuses to keep a Blob (a private window of WebKit: « Error
+  // preparing Blob/File data to be stored in object store »).
+  const get = async (hash: string): Promise<Blob | undefined> => {
+    const kept = await result(db.transaction('media').objectStore('media').get(hash)) as Blob | ArrayBuffer | undefined;
+    return kept instanceof ArrayBuffer ? new Blob([kept]) : kept;
+  };
+  const keep = async (value: Blob | ArrayBuffer, hash: string) => {
+    const tx = db.transaction('media', 'readwrite');
+    tx.objectStore('media').put(value, hash);
+    await done(tx);
+  };
   return {
     async file(hash) {
       await turn(hash, async () => hash).catch(() => {});
@@ -250,11 +260,7 @@ async function mediaDatabase(key: string): Promise<KeptMedia> {
         if (expected && await get(expected)) return expected;
         const hash = `sha256:${await sha256OfBlob(blob, SLICE)}`;
         if (expected && hash !== expected) throw mismatch(expected);
-        if (!(await get(hash))) {
-          const tx = db.transaction('media', 'readwrite');
-          tx.objectStore('media').put(blob, hash);
-          await done(tx);
-        }
+        if (!(await get(hash))) await keep(blob, hash).catch(async () => keep(await blob.arrayBuffer(), hash));
         return hash;
       });
     }

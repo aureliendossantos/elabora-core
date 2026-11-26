@@ -1,14 +1,23 @@
 // A browser's takes of a line (D24, D25): kept in the origin's private file system, a folder a copy,
 // never in the course nor sent to the room, as the desktop keeps them in the project's machine-local
 // data: elabora-takes/<copy>/<language>/<screen>/<line>/take-<n>.wav and .json. A take is named by its
-// path there (« opfs:elabora-takes/… »). A take at another speed keeps its pitch (WSOLA, as ffmpeg's
-// atempo does at the desktop).
+// path there (« opfs:elabora-takes/… »). Where the origin has no such file system (a private window of
+// Safari or Firefox), the takes are kept in memory for the session's life (« memory:elabora-takes/… »),
+// as the media Worker makes a master there. A take at another speed keeps its pitch (WSOLA, as
+// ffmpeg's atempo does at the desktop).
 
 import type { StoredTake, TakeStore } from '@elabora/core/voice/generate';
 import { wavBytes } from '@elabora/core/voice/wav';
 
 const ROOT = 'elabora-takes';
 const PREFIX = 'opfs:';
+const MEMORY = 'memory:';
+
+// Whether the origin has a private file system, asked once.
+let files: Promise<boolean> | null = null;
+const hasFiles = () => (files ??= Promise.resolve().then(() => navigator.storage.getDirectory()).then(() => true, () => false));
+// The takes kept in memory, by path: the audio and its facts.
+const held = new Map<string, Blob>();
 
 async function folder(parts: readonly string[], create: boolean): Promise<FileSystemDirectoryHandle | null> {
   try {
@@ -34,6 +43,7 @@ async function write(dir: FileSystemDirectoryHandle, name: string, bytes: Uint8A
 
 // The audio of a take by its name, or null (the browser erased it).
 export async function takeAudio(file: string): Promise<Blob | null> {
+  if (file.startsWith(MEMORY)) return held.get(file.slice(MEMORY.length)) ?? null;
   if (!file.startsWith(PREFIX)) return null;
   const parts = file.slice(PREFIX.length).split('/');
   const dir = await folder(parts.slice(0, -1), false);
@@ -44,6 +54,16 @@ export function browserTakes(copy: string): TakeStore {
   const path = (language: string, screen: string, line: string) => [ROOT, copy, language, screen, line];
   return {
     async list(language, screen, line) {
+      if (!(await hasFiles())) {
+        const at = `${path(language, screen, line).join('/')}/`;
+        const takes: StoredTake[] = [];
+        for (const [kept, blob] of held) {
+          if (!kept.startsWith(at) || !/^take-\d+\.json$/.test(kept.slice(at.length))) continue;
+          const wav = kept.replace(/\.json$/, '.wav');
+          if (held.has(wav)) takes.push({ ...(JSON.parse(await blob.text()) as Omit<StoredTake, 'file'>), file: `${MEMORY}${wav}` });
+        }
+        return takes.sort((a, b) => a.take - b.take);
+      }
       const dir = await folder(path(language, screen, line), false);
       if (!dir) return [];
       const present = new Set(await names(dir));
@@ -60,10 +80,17 @@ export function browserTakes(copy: string): TakeStore {
       return takes.sort((a, b) => a.take - b.take);
     },
     async keep({ language, screen, line, take, samples, sampleRate, speed, meta }) {
+      const name = `take-${take}.wav`;
+      const audio = wavBytes(speed === 1 ? samples : tempo(samples, sampleRate, speed), sampleRate);
+      if (!(await hasFiles())) {
+        const at = path(language, screen, line).join('/');
+        held.set(`${at}/${name}`, new Blob([audio as BlobPart], { type: 'audio/wav' }));
+        held.set(`${at}/take-${take}.json`, new Blob([`${JSON.stringify(meta, null, 2)}\n`], { type: 'application/json' }));
+        return `${MEMORY}${at}/${name}`;
+      }
       const dir = await folder(path(language, screen, line), true);
       if (!dir) throw new Error('This browser keeps no files for this site (a private window?): the take cannot be kept.');
-      const name = `take-${take}.wav`;
-      await write(dir, name, wavBytes(speed === 1 ? samples : tempo(samples, sampleRate, speed), sampleRate));
+      await write(dir, name, audio);
       await write(dir, `take-${take}.json`, `${JSON.stringify(meta, null, 2)}\n`);
       return `${PREFIX}${[...path(language, screen, line), name].join('/')}`;
     }
