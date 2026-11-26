@@ -142,8 +142,11 @@ test('a local voice in a browser\'s session: its model downloaded and kept, a li
     // Each line's audio is now its take.
     const current = [];
     for (const id of ids as string[]) current.push(((await ask('voiceTakes', { screen: screenId, line: id })).result as { takes: { current: boolean }[] }).takes.some((one) => one.current));
+    // The second line's take, heard like the first.
+    const next = ((await ask('voiceTakes', { screen: screenId, line: ids[1] })).result as { takes: { file: string; seed: number }[] }).takes.at(-1)!;
+    const said2 = await take(next.file);
     const threads = crossOriginIsolated ? Math.max(1, Math.min(4, Math.floor((navigator.hardwareConcurrency || 2) / 2))) : 1;
-    return { before, installed, set, first, second, current, said, seed: last.seed, ms, nextMs, threads, progress };
+    return { before, installed, set, first, second, current, said: [said, said2], seeds: [last.seed, next.seed], ms, nextMs, threads, progress };
   }, [{ link, confirmed: [...exampleFiles] }, screen, lines.map((line) => line.id), MODELS_ORIGIN, lines[0]!.speaker, `${bundle.id}@${bundle.version}`] as unknown as [object, string, string[], string, string, string]);
 
   assert.ok(!('failed' in result), JSON.stringify({ installed: result.installed, set: result.set, first: result.first, takes: (result as { takes?: unknown }).takes }).slice(0, 3000));
@@ -162,9 +165,8 @@ test('a local voice in a browser\'s session: its model downloaded and kept, a li
   // The take, heard by the desktop's aligner: every word of the line, none swallowed, and its words
   // heard surely.
   const tools = await findMediaTools();
-  const text = lines[0]!.text!;
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-voice-browser-'));
-  const heard = async (wav: Uint8Array) => {
+  const heard = async (wav: Uint8Array, text: string) => {
     fs.writeFileSync(path.join(temp, 'take.wav'), wav);
     const { stdout } = await run(tools.ffmpeg, ['-v', 'error', '-i', path.join(temp, 'take.wav'), '-ac', '1', '-ar', '16000', '-f', 'f32le', '-'], { encoding: 'buffer', maxBuffer: 1 << 28 });
     const samples = new Float32Array(stdout.buffer, stdout.byteOffset, stdout.length / 4).slice();
@@ -173,18 +175,22 @@ test('a local voice in a browser\'s session: its model downloaded and kept, a li
     return { words, seconds: samples.length / 16000, mean: scores.reduce((sum, score) => sum + score, 0) / scores.length, lowest: Math.min(...scores) };
   };
   try {
-    const here = await heard(Uint8Array.from(result.said));
-    const desktop = await desktopTake(VOICE, path.join(VOICES, 'english_2026-04/grace.f16'), text, result.seed);
-    const desktopMs = desktop.ms;
-    const there = await heard(desktop.wav);
-    t.diagnostic(`${lines[0]!.id}: « ${text} », ${here.seconds.toFixed(2)} s said in ${(result.ms / 1000).toFixed(1)} s on ${result.threads} thread(s) (download, model and voice loaded included), the next line in ${(result.nextMs / 1000).toFixed(1)} s (the model downloaded again included); ${here.words.length} words heard, mean score ${here.mean.toFixed(2)} (lowest ${here.lowest.toFixed(2)}); the desktop's take of the same seed ${there.seconds.toFixed(2)} s in ${(desktopMs / 1000).toFixed(1)} s (its model loaded before), ${there.mean.toFixed(2)} (lowest ${there.lowest.toFixed(2)})`);
-    t.diagnostic(`words: ${here.words.map((word) => `${word.text} ${(word.score ?? 0).toFixed(2)}`).join(', ')}; the desktop's: ${there.words.map((word) => `${word.text} ${(word.score ?? 0).toFixed(2)}`).join(', ')}`);
-    assert.equal(here.words.length, spokenWords(text, 'en').length);
-    assert.deepEqual(here.words.filter((word) => (word.score ?? 0) < 0.25 && word.text.length > 1).map((word) => word.text), [], 'no word swallowed');
-    // As sure as a take a listener follows. Not the desktop's take of the same seed: onnxruntime-web and
-    // the native runtime compute apart, and their takes of one seed part (nell1 under macOS: 0.79 in the
-    // three browsers, on one thread as on four; 0.90 at the desktop, where the study's takes scored 0.88 to 0.96).
-    assert.ok(here.mean >= 0.7, `mean score ${here.mean.toFixed(2)}, the desktop's take of the same seed ${there.mean.toFixed(2)}`);
+    for (const [i, line] of lines.entries()) {
+      const text = line.text!;
+      const here = await heard(Uint8Array.from(result.said[i]!), text);
+      const desktop = await desktopTake(VOICE, path.join(VOICES, 'english_2026-04/grace.f16'), text, result.seeds[i]!);
+      const there = await heard(desktop.wav, text);
+      const said = i === 0 ? `said in ${(result.ms / 1000).toFixed(1)} s on ${result.threads} thread(s) (download, model and voice loaded included)` : `said in ${(result.nextMs / 1000).toFixed(1)} s (the model downloaded again included)`;
+      t.diagnostic(`${line.id}: « ${text} », ${here.seconds.toFixed(2)} s ${said}; ${here.words.length} words heard, mean score ${here.mean.toFixed(2)} (lowest ${here.lowest.toFixed(2)}); the desktop's take of the same seed ${there.seconds.toFixed(2)} s in ${(desktop.ms / 1000).toFixed(1)} s (its model loaded before), ${there.mean.toFixed(2)} (lowest ${there.lowest.toFixed(2)})`);
+      t.diagnostic(`words: ${here.words.map((word) => `${word.text} ${(word.score ?? 0).toFixed(2)}`).join(', ')}; the desktop's: ${there.words.map((word) => `${word.text} ${(word.score ?? 0).toFixed(2)}`).join(', ')}`);
+      assert.equal(here.words.length, spokenWords(text, 'en').length);
+      assert.deepEqual(here.words.filter((word) => (word.score ?? 0) < 0.25 && word.text.length > 1).map((word) => word.text), [], `${line.id}: no word swallowed`);
+      // As sure as a take a listener follows. Not the desktop's take of the same seed: onnxruntime-web and
+      // the native runtime compute apart, and their takes of one seed may part. Under macOS, nell2's are
+      // nearly one (0.98 here, 0.99 at the desktop, the same length); nell1's part (0.79 in the three
+      // browsers, on one thread as on four; 0.90 at the desktop, where the study's takes scored 0.88 to 0.96).
+      assert.ok(here.mean >= 0.7, `${line.id}: mean score ${here.mean.toFixed(2)}, the desktop's take of the same seed ${there.mean.toFixed(2)}`);
+    }
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }
