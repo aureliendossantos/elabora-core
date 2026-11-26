@@ -108,6 +108,10 @@ test('a course from a template: its id and title, the cover saying it, in French
   assert.match(agents, /Ton chaleureux\./);
   assert.doesNotMatch(agents, /Generated translation/);
   for (const gone of ['LICENSE.md', 'translations', 'dist']) assert.ok(!fs.existsSync(path.join(dir, gone)), gone);
+  // The template's free objects come without their test baselines (__snapshots__/): `elabora object test` records them again.
+  assert.ok(fs.existsSync(path.join(moduleTemplate('flow').dir, 'objects')) && fs.readdirSync(path.join(moduleTemplate('flow').dir, 'objects'), { recursive: true }).some((rel) => String(rel).includes('__snapshots__')), 'the template has baselines');
+  assert.ok(fs.existsSync(path.join(dir, 'objects')), 'its free objects come along');
+  assert.ok(!fs.readdirSync(dir, { recursive: true }).some((rel) => String(rel).includes('__snapshots__')), 'no test baseline');
   assert.ok(fs.existsSync(path.join(dir, 'README.md')), 'the charter\'s guide comes along');
   assert.equal(validateDir(dir).summary.errors, 0);
 
@@ -116,6 +120,7 @@ test('a course from a template: its id and title, the cover saying it, in French
   await createFromTemplate(moduleTemplate('shapes').dir, english, { id: 'methods', title: 'A method in four steps', language: 'en' });
   assert.equal(readJSON(english, 'course.json').language, 'en');
   assert.ok(fs.existsSync(path.join(english, 'translations/fr.xlf')));
+  assert.ok(!fs.readdirSync(english, { recursive: true }).some((rel) => String(rel).includes('__snapshots__')), 'no test baseline in its own language either');
   assert.equal(validateDir(english).summary.errors, 0);
 
   // Refused before anything is written: a language it is not in, a folder that holds a course, a bad id.
