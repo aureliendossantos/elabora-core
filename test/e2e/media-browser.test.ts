@@ -267,12 +267,18 @@ test(`narration lines and sounds in ${BROWSER}: the desktop's M4A, its silence c
         // The desktop's length: its silence cut by ffmpeg when it is a recording (a WAV, an MP3 here).
         const trimmed = name.endsWith('.wav') || name.endsWith('.mp3');
         const desktop = (await decoded(input, 48000, trimmed ? ['-af', LINE_SILENCE] : [])).length / 48000;
-        assert.ok(Math.abs((line.duration ?? 0) - desktop) < 0.03, `${name}: ${line.duration} s, the desktop's ${desktop} s`);
+        // To the sample, whatever the encoder: an Opus stream in WebM ends 8 ms later only, its end padding
+        // (Matroska's DiscardPadding) that Mediabunny does not read.
+        assert.ok(Math.abs((line.duration ?? 0) - desktop) < 0.01, `${name}: ${line.duration} s, the desktop's ${desktop} s`);
+        // Its first sound where the desktop's is, within a millisecond: a WebM's timestamps are in its 1 ms timescale.
+        const onset = (samples: Float32Array) => samples.findIndex((value) => Math.abs(value) > 0.01);
+        const [heard, theirs] = [onset(await decoded(file, 48000)), onset(await decoded(input, 48000, trimmed ? ['-af', LINE_SILENCE] : []))];
+        assert.ok(Math.abs(heard - theirs) <= 48, `${name}: its first sound at sample ${heard}, the desktop's ${theirs}`);
         // As loud as the desktop's: a stereo recording mixed down as ffmpeg mixes it.
         const rms = (samples: Float32Array) => Math.sqrt(samples.reduce((sum, value) => sum + value * value, 0) / samples.length);
         const ratio = rms(await decoded(file, 16000)) / rms(await decoded(input, 16000, trimmed ? ['-af', LINE_SILENCE] : []));
         assert.ok(Math.abs(20 * Math.log10(ratio)) < 0.5, `${name}: ${(20 * Math.log10(ratio)).toFixed(2)} dB from the desktop's`);
-        st.diagnostic(`${answer.master.action} → ${line.duration} s (the desktop's ${desktop.toFixed(3)} s), ${(20 * Math.log10(ratio)).toFixed(2)} dB from it, ${line.size} bytes`);
+        st.diagnostic(`${answer.master.action} → ${line.duration} s (the desktop's ${desktop.toFixed(3)} s), first sound at ${heard} (the desktop's ${theirs}), ${(20 * Math.log10(ratio)).toFixed(2)} dB from it, ${line.size} bytes`);
       });
       await t.test(`${name}: its samples at 16 kHz and its waveform`, async (st) => {
         const answer = await inWorker(name, 'samples') as { samples?: number[]; error?: string };
@@ -280,6 +286,8 @@ test(`narration lines and sounds in ${BROWSER}: the desktop's M4A, its silence c
         const theirs = await decoded(input, 16000);
         const n = Math.min(theirs.length, answer.samples.length);
         assert.ok(Math.abs(theirs.length - answer.samples.length) <= 16000 * 0.03, `${name}: ${answer.samples.length} samples, ffmpeg's ${theirs.length}`);
+        const onset = (samples: ArrayLike<number>) => Array.prototype.findIndex.call(samples, (value: number) => Math.abs(value) > 0.01);
+        assert.ok(Math.abs(onset(answer.samples) - onset(theirs)) <= 16, `${name}: its first sound at sample ${onset(answer.samples)}, ffmpeg's ${onset(theirs)}`);
         // Compared by their loudness every 10 ms, what the waveform and the aligner read: a phase a few
         // samples apart (an Opus stream's start in WebM) changes nothing there.
         const envelope = (samples: ArrayLike<number>) => Array.from({ length: Math.floor(n / 160) }, (_, w) => { let sum = 0; for (let i = w * 160; i < (w + 1) * 160; i++) sum += samples[i] ** 2; return Math.sqrt(sum / 160); });
@@ -292,7 +300,7 @@ test(`narration lines and sounds in ${BROWSER}: the desktop's M4A, its silence c
         const gaps = desktop.slice(0, Math.min(desktop.length, peaks.length) - 1).map((value, i) => Math.abs(value - peaks[i]));
         const gap = Math.max(...gaps), mean = gaps.reduce((sum, g) => sum + g, 0) / gaps.length;
         assert.ok(mean <= 3 && gap <= 40, `${name}: waveform ${mean.toFixed(1)} of 255 from the desktop's on average, ${gap} at most`);
-        st.diagnostic(`loudness ${(apart * 100).toFixed(2)} % apart from ffmpeg's 16 kHz, waveform ${mean.toFixed(1)} of 255 from the desktop's on average, ${gap} at most`);
+        st.diagnostic(`first sound at ${onset(answer.samples)} (ffmpeg's ${onset(theirs)}), loudness ${(apart * 100).toFixed(2)} % apart from ffmpeg's 16 kHz, waveform ${mean.toFixed(1)} of 255 from the desktop's on average, ${gap} at most`);
       });
     }
     // An encoder's priming, said or not (Apple's AudioToolbox primes 2112 samples and Chromium does
