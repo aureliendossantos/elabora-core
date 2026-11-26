@@ -75,7 +75,7 @@ export class SessionThumbs {
   // The screen as learners see it, its texts marked (fields), to be measured by the canvas.
   measureRender({ screen, language }: { screen: string; language: string | null }): SceneRender {
     this.#host.assertOpen();
-    return this.#scene('measure', this.#host.renderer.render(this.#host.project(), { screen, ...(language ? { language } : {}) }));
+    return this.#scene('measure', this.#host.renderer.render(this.#host.project(), { screen, ...(language ? { language } : {}) }), '', true);
   }
 
   // A preview: the project with the change, rendered with what every screen shares as it is now.
@@ -85,10 +85,10 @@ export class SessionThumbs {
     return renderScreen(loadProject(files, this.#host.root ? { root: this.#host.root } : {}), screen, { ...(layer ? { layer } : {}), chrome }, context);
   }
 
-  #scene(kind: string, render: RenderedScreen, suffix = ''): SceneRender {
+  #scene(kind: string, render: RenderedScreen, suffix = '', bars = false): SceneRender {
     this.#host.named(render);
     const size = referenceSize(this.#host.project());
-    return { id: `${kind}-${++this.#renders}`, render: screenRenderOf(render), ...size, version: `${versionOf(render, size)}${suffix}` };
+    return { id: `${kind}-${++this.#renders}`, render: screenRenderOf(render), ...size, version: `${versionOf(render, size, bars)}${suffix}` };
   }
 }
 
@@ -102,6 +102,10 @@ export function referenceSize(project: Project): { width: number; height: number
 }
 
 // What a miniature shows: the render (its files by hash, its stylesheets by theirs) at its size. The
-// player's code is the page's own, the same for every render a page draws.
-const versionOf = (render: RenderedScreen, size: { width: number; height: number }): string =>
-  sha256(JSON.stringify([size, { ...render, styles: render.styles.hash }])).slice(0, 32);
+// player's code is the page's own, the same for every render a page draws. A miniature has no bars:
+// of the course's outline it shows only where the screen is (a backdrop's rank, its section), not the
+// titles, so that a screen renamed does not draw every miniature again; the measure has the bars.
+const versionOf = (render: RenderedScreen, size: { width: number; height: number }, bars: boolean): string => {
+  const outline = render.outline && !bars ? render.outline.sections.map((section) => [section.id, section.screens.map((screen) => screen.id)]) : render.outline;
+  return sha256(JSON.stringify([size, { ...render, styles: render.styles.hash, outline }])).slice(0, 32);
+};

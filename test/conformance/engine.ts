@@ -554,8 +554,11 @@ export function engineConformance(target: ConformanceTarget): void {
     scene(first, 'chemin');
     assert.deepEqual([first.width, first.height], [1280, 720]);
     assert.equal((await client.request('thumbRender', { screen: 'chemin' })).version, first.version);
+    const other = await client.request('thumbRender', { screen: 'accueil' });
     await client.request('run', { command: 'update_screen', args: { id: 'chemin', title: 'Le chemin' } });
     assert.notEqual((await client.request('thumbRender', { screen: 'chemin' })).version, first.version);
+    // Another screen's miniature shows no title of the outline: it is not drawn again.
+    assert.equal((await client.request('thumbRender', { screen: 'accueil' })).version, other.version, 'a screen renamed draws only its own miniature again');
     await assert.rejects(client.request('thumbRender', { screen: 'absent' }), refused('not-found'));
   }, ['canvas']);
 

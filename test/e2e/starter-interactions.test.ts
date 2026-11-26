@@ -255,7 +255,7 @@ test('steps scroll in slides: its steps one under the other, each with its pictu
 // words sit in the middle of a room taller than them, and the player is in a frame of another origin,
 // as in the editor's canvas and in an LMS (where an implicit root ignored the observer's margins).
 const COFFEE = path.resolve(import.meta.dirname, '../../examples/coffee-in-brief');
-test('steps scroll follows the words: the figure changes once a step\'s words cross the middle of the window, not its room; at the top and in a frame of another origin, both ways, by keyboard and wheel', { timeout: 240000 }, async () => {
+test('steps scroll follows the words: the figure changes once a step\'s words cross the middle of the window, not its room; at the top and in a frame of another origin, both ways, by keyboard and wheel', { timeout: 240000 }, async (t) => {
   const b = await build(copyExample(COFFEE), { emit: 'dir', out: tmp('elabora-follow-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   const server = await startServer();
@@ -342,24 +342,35 @@ test('steps scroll follows the words: the figure changes once a step\'s words cr
       // late by a loaded runner) once ended the wait before the key had moved anything (CI's macOS,
       // 13 Nov 2026).
       const scrolls = async (what: string, act: () => Promise<void>) => {
-        const before = await frame.evaluate(() => {
-          const start = scrollY;
-          (window as unknown as { scrolled: Promise<number> }).scrolled = new Promise((resolve) => {
-            const ended = () => { if (scrollY === start) return; removeEventListener('scrollend', ended); resolve(scrollY); };
-            addEventListener('scrollend', ended);
+        for (let attempt = 1; ; attempt++) {
+          const before = await frame.evaluate(() => {
+            const start = scrollY;
+            const page = window as unknown as { scrolled: Promise<number>; keys: string[]; keyed?: boolean };
+            page.keys = [];
+            if (!page.keyed) { page.keyed = true; addEventListener('keydown', (event) => page.keys.push(event.key), true); }
+            page.scrolled = new Promise((resolve) => {
+              const ended = () => { if (scrollY === start) return; removeEventListener('scrollend', ended); resolve(scrollY); };
+              addEventListener('scrollend', ended);
+            });
+            return start;
           });
-          return start;
-        });
-        await act();
-        const after = await Promise.race([frame.evaluate(() => (window as unknown as { scrolled: Promise<number> }).scrolled), new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000))]);
-        const y = await frame.evaluate(() => scrollY);
-        // A key that moved nothing (CI's macOS, now and then): what tells its possible causes apart, in the message.
-        const why = after !== null && y !== before ? null : await frame.evaluate(() => {
-          const selected = getSelection()?.anchorNode;
-          const scroller = (node: Element | null): string | null => { for (let at = node; at; at = at.parentElement) { const style = getComputedStyle(at); if (at.scrollHeight > at.clientHeight && /auto|scroll|hidden/.test(style.overflowY)) return `${at.tagName}.${at.className}`; } return null; };
-          return { focus: document.hasFocus(), active: `${document.activeElement?.tagName}.${document.activeElement?.className}`, selected: selected?.parentElement?.className ?? null, max: document.scrollingElement!.scrollHeight - innerHeight, scroller: scroller(selected?.parentElement ?? null) };
-        });
-        assert.ok(after !== null && y !== before, `${framed ? 'framed' : 'top'}, ${what} did not scroll: ${JSON.stringify({ before, after, y, why })}`);
+          await act();
+          const after = await Promise.race([frame.evaluate(() => (window as unknown as { scrolled: Promise<number> }).scrolled), new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000))]);
+          const y = await frame.evaluate(() => scrollY);
+          if (after !== null && y !== before) break;
+          // A key or a wheel turn that moved nothing: what tells its possible causes apart, in the message.
+          const why = await frame.evaluate(() => {
+            const selected = getSelection()?.anchorNode;
+            const scroller = (node: Element | null): string | null => { for (let at = node; at; at = at.parentElement) { const style = getComputedStyle(at); if (at.scrollHeight > at.clientHeight && /auto|scroll|hidden/.test(style.overflowY)) return `${at.tagName}.${at.className}`; } return null; };
+            return { focus: document.hasFocus(), active: `${document.activeElement?.tagName}.${document.activeElement?.className}`, selected: selected?.parentElement?.className ?? null, max: document.scrollingElement!.scrollHeight - innerHeight, scroller: scroller(selected?.parentElement ?? null), keys: (window as unknown as { keys: string[] }).keys };
+          });
+          const message = `${framed ? 'framed' : 'top'}, ${what} did not scroll: ${JSON.stringify({ before, after, y, why })}`;
+          // CI's macOS loses one now and then (26 Nov 2026: the page focused, the window free to scroll,
+          // no box of its own under the selection): it is given once more, and a second that moves
+          // nothing fails. The log keeps the first.
+          assert.ok(attempt < 2, message);
+          t.diagnostic(`given again: ${message}`);
+        }
         await followed();
       };
       for (const key of ['PageDown', 'PageDown', 'ArrowDown', 'ArrowDown', 'PageDown', 'PageUp', 'ArrowUp', 'PageUp']) await scrolls(key, () => page.keyboard.press(key));

@@ -58,6 +58,28 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      # Playwright's own Chromium, WebKit and Firefox, for the tests that take them and no other browser
+      # (the relay's, the miniatures', the browser engine's in WebKit and in private windows: 24 tests,
+      # skipped as « not here » without them). Ubuntu's e2e jobs only: macOS's are the longest already.
+      # The browsers are kept by the cache under Playwright's version; their system packages are
+      # installed at each run.
+      - name: Playwright's version
+        if: runner.os == 'Linux' && matrix.suite == 'e2e'
+        id: playwright
+        run: echo "version=$(node -p "require('playwright-core/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        if: runner.os == 'Linux' && matrix.suite == 'e2e'
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Playwright's browsers
+        if: runner.os == 'Linux' && matrix.suite == 'e2e' && steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright-core install --with-deps --only-shell chromium webkit firefox
+      - name: Playwright's browsers' system packages
+        if: runner.os == 'Linux' && matrix.suite == 'e2e' && steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright-core install-deps chromium webkit firefox
+
       # ffmpeg: the GPL builds of BtbN/FFmpeg-Builds (libx264, libwebp, zimg) on Linux and
       # Windows, Homebrew on macOS. Google Chrome and Microsoft Edge are already installed on the
       # runners (test/e2e/edge.test.ts compares them). Both downloads retry: BtbN's `latest`

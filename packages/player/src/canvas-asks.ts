@@ -2,6 +2,7 @@
 // CanvasAsks): the measures a host used to inject into the page as scripts, now messages, so that a host
 // in another origin asks them the same way. canvas.ts hands each ask to answerAsk and posts the answer.
 
+import { holdStill } from './canvas-still.ts';
 import { isRecord } from './json.ts';
 import type { AnswerMessage, AskMessage, AskName, BlockPreviewMeasure, CanvasAsks, ScreenMeasurement } from './canvas-protocol.ts';
 import type { LayoutMessage } from './canvas-protocol.ts';
@@ -42,10 +43,14 @@ export function askOf(data: Record<string, unknown>): AskMessage | null {
   return null;
 }
 
-// The screen of a render is the one shown and ready (false: it was not within 3 s).
+// The screen of a render is the one shown and ready (false: it was not within 3 s). A miniature's page then holds it still.
 async function shown(canvas: AskedCanvas, id: string | number): Promise<boolean> {
   for (let i = 0; i < SHOWN_POLLS; i++) {
-    if (canvas.appliedId() === id) { await canvas.ready(READY_MS); return true; }
+    if (canvas.appliedId() === id) {
+      await canvas.ready(READY_MS);
+      if (document.documentElement.hasAttribute('data-thumb')) holdStill();
+      return true;
+    }
     await sleep(SHOWN_EVERY_MS);
   }
   return false;
