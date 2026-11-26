@@ -13,7 +13,7 @@ import { initProject } from '../scaffold.ts';
 import { createFromTemplate, moduleTemplate } from '../module-templates.ts';
 import { copyCharter } from '../charter.ts';
 import type { ModuleTemplate } from '../module-templates.ts';
-import type { CourseBrief } from '@elabora/core/commands/new-course';
+import { charterNote, type CourseBrief } from '@elabora/core/commands/new-course';
 import { withProjectLock } from '../journal/lock.ts';
 import { appendMark } from '../journal/journal.ts';
 import { LibraryError } from './errors.ts';
@@ -409,11 +409,6 @@ export function charterSource(reference: string): string {
   const dir = libraryProjectDir(id);
   if (!fs.existsSync(path.join(dir, 'course.json'))) throw new LibraryError('E_INVALID_ARGUMENT', `${reference}: not a module with a course.json.`);
   return dir;
-}
-
-// What AGENTS.md says of a charter taken from another course, for the agents that write the screens.
-function charterNote(title: string, courseId: string | null): string {
-  return `This course's charter is copied from the module « ${title} »${courseId ? ` (${courseId})` : ''}: its theme (tokens, fonts, stylesheet, named styles, backdrop and its variants), its components and the player's bars. Keep it: build the screens with its components, styles and backdrop variants (elabora look shows them), and change the charter only when the author asks.`;
 }
 
 // The author's request under the course's notes for agents, as the app's « Nouveau module » page

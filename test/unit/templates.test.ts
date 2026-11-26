@@ -8,7 +8,16 @@ import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { extractUnits } from '@elabora/core/i18n/units';
 import { readXliff } from '@elabora/core/i18n/xliff';
 import { translationStatus } from '@elabora/node/translate';
-import { createFromTemplate, listModuleTemplates, moduleTemplate, MODULE_TEMPLATES_DIR } from '@elabora/node/module-templates';
+import { createFromTemplate, listModuleTemplates, moduleTemplate, MODULE_TEMPLATES_DIR, templateCopy } from '@elabora/node/module-templates';
+import { copyCharter } from '@elabora/node/charter';
+import { namedCommand } from '@elabora/core/commands/table';
+import { executeCommand } from '@elabora/core/commands/index';
+import { isTextPath, type ProjectFiles } from '@elabora/core/project/files';
+import { loadProject } from '@elabora/core/project/load';
+import { validateProject } from '@elabora/core/validate/index';
+import { applyOps } from '@elabora/core/ops/apply';
+import type { StartFile } from '@elabora/core/commands/new-course';
+import { createHash } from 'node:crypto';
 import { createProject, libraryRoot } from '@elabora/node/library/index';
 import { ROOT } from '../helpers.ts';
 
@@ -185,6 +194,58 @@ test('the library creates a project from a template and records where it comes f
   assert.equal(project.language, 'fr');
   assert.deepEqual({ ...project.origin, at: undefined }, { kind: 'template', id: 'organic', version: '1.0.0', at: undefined });
   assert.equal(project.validation?.errors, 0);
+});
+
+// A folder's files as a browser's host gives them (D124): texts, and media by their hash and size.
+const startFiles = (dir: string, only?: readonly string[]): Record<string, StartFile> => Object.fromEntries((only ?? files(dir)).map((rel): [string, StartFile] => {
+  const bytes = fs.readFileSync(path.join(dir, rel));
+  return [rel, isTextPath(rel) ? { kind: 'text', text: bytes.toString('utf8') } : { kind: 'binary', hash: `sha256:${createHash('sha256').update(bytes).digest('hex')}`, size: bytes.length }];
+}));
+// What a library's project holds of its course, as a browser's copy would: .gitignore and the library's data aside.
+// Media by their hash alone: a change writes a medium by its hash (ops/types.ts).
+const byHash = (given: Record<string, StartFile>) => Object.fromEntries(Object.entries(given).map(([rel, file]) => [rel, file.kind === 'text' ? file : { kind: 'binary', hash: file.hash }]));
+const projectOf = (dir: string) => byHash(startFiles(dir, files(dir).filter((rel) => rel !== '.gitignore' && !rel.startsWith('.elabora/'))));
+const createCourse = (args: object) => {
+  const made = executeCommand(new Map() as ProjectFiles, 'create_course', (context) => namedCommand('create_course')!.run(context, args as never, undefined as never), { author: { kind: 'human', name: 'Ada' } });
+  const after = Object.fromEntries([...made.after].map(([rel, file]) => [rel, file.kind === 'text' ? { kind: 'text', text: file.text } : { kind: 'binary', hash: file.hash }]));
+  return { made, after };
+};
+
+test('in a browser, a module from a template (create_course from) has the bytes a computer writes: in the template\'s translation, and from its charter alone in another language', async () => {
+  const brief = { audience: 'Nouveaux arrivants', presentation: 'scroll' as const, notes: 'Ton : chaleureux.' };
+  const template = moduleTemplate('watercolor');
+  delete process.env.ELABORA_DATA_DIR;
+  process.env.ELABORA_LIBRARY = path.join(tempDir('elabora-library-'), 'Library');
+
+  // In French, its translation: the copy a host ships, made the author's by the command.
+  const copy = path.join(tempDir('elabora-template-copy-'), 'fr');
+  assert.equal(await templateCopy(template.dir, copy, 'fr'), 'fr');
+  const fromTemplate = { id: 'accueil', title: 'L\'accueil « en douceur »', language: 'fr', brief, from: { kind: 'template', template: 'watercolor', files: startFiles(copy, files(copy).filter((rel) => !rel.startsWith('.elabora/'))) } };
+  const browser = createCourse(fromTemplate);
+  const desktop = await createProject({ id: 'accueil', title: 'L\'accueil « en douceur »', language: 'fr', brief, template: template.dir });
+  assert.deepEqual(browser.after, projectOf(desktop.path));
+  assert.ok(Object.values(browser.after).some((file) => file.kind === 'binary'), 'its fonts and pictures, by their hash');
+  assert.deepEqual(validateProject(loadProject(browser.made.after as ProjectFiles)).diagnostics.filter((d) => d.severity === 'error'), []);
+  // The journal names the template, not its files; undone, the project is empty again.
+  assert.deepEqual(namedCommand('create_course')!.journal!(fromTemplate as never, undefined as never), { name: 'create_course', args: { id: 'accueil', title: 'L\'accueil « en douceur »', language: 'fr', brief, from: { kind: 'template', template: 'watercolor', files: Object.keys(fromTemplate.from.files).length } } });
+  assert.deepEqual([...applyOps(browser.made.after, browser.made.inverse).keys()], []);
+
+  // In German, which it is not translated into: a blank module with its charter (D69), as the desktop makes it;
+  // the files the charter takes as copyCharter writes them (its pictures' provenance, only theirs).
+  const blank = path.join(tempDir('elabora-charter-'), 'blank');
+  fs.mkdirSync(blank);
+  fs.writeFileSync(path.join(blank, 'course.json'), '{}');
+  const charter = copyCharter(template.dir, blank);
+  const course = readJSON(template.dir, 'course.json');
+  const fromCharter = { id: 'willkommen', title: 'Willkommen', language: 'de', brief, from: { kind: 'charter', title: course.title, courseId: course.id, files: startFiles(blank, charter.files), course: { theme: course.theme, presentation: course.presentation, player: course.player } } };
+  const charterBrowser = createCourse(fromCharter);
+  const charterDesktop = await createProject({ id: 'willkommen', title: 'Willkommen', language: 'de', brief, charter: template.dir });
+  assert.deepEqual(charterBrowser.after, projectOf(charterDesktop.path));
+  assert.deepEqual(validateProject(loadProject(charterBrowser.made.after as ProjectFiles)).diagnostics.filter((d) => d.severity === 'error'), []);
+
+  // A path out of the project, or a medium given as a text, is refused before anything is written.
+  assert.throws(() => createCourse({ ...fromTemplate, from: { ...fromTemplate.from, files: { ...fromTemplate.from.files, '../x.txt': { kind: 'text', text: '' } } } }), /"\.\.\/x\.txt" is not a path of the project/);
+  assert.throws(() => createCourse({ ...fromTemplate, from: { ...fromTemplate.from, files: { ...fromTemplate.from.files, 'assets/x.png': { kind: 'text', text: '' } } } }), /"assets\/x\.png" is a medium/);
 });
 
 test('elabora templates lists them; elabora init --template makes the course', () => {

@@ -33,7 +33,7 @@ import { addSound, type AddSoundRequest } from './sounds.ts';
 import { imageToVideo, replaceMediaReferences, setCaptions, type ImageToVideoRequest } from './media.ts';
 import { settleImportReport } from './import-report.ts';
 import { upgradeThemeCascade } from './theme.ts';
-import { createCourse, type CourseBrief } from './new-course.ts';
+import { createCourse, type CourseBrief, type CourseStart } from './new-course.ts';
 import type { CourseGlossary } from '@elabora/format';
 
 // The commands by name (docs/decisions.md D84, D110): every command of the core, by the names the
@@ -460,7 +460,7 @@ const TABLE = {
   }),
 
   create_course: command({
-    description: 'A new module\'s first files in an empty project (D112), as « Nouveau module » writes them (D111): course.json, plan.json (a draft), an intro screen and the rules for agents (AGENTS.md, CLAUDE.md); a folder\'s .gitignore is not the project\'s. id: the course\'s id; brief: what the author said of it (D51). A project that has a course.json already is left as it is (created: false).',
+    description: 'A new module\'s first files in an empty project (D112), as « Nouveau module » writes them (D111): course.json, plan.json (a draft), an intro screen and the rules for agents (AGENTS.md, CLAUDE.md); a folder\'s .gitignore is not the project\'s. id: the course\'s id; brief: what the author said of it (D51); from: a browser\'s host gives the module template or the charter it starts from (D124). A project that has a course.json already is left as it is (created: false).',
     args: objectSchema({
       id: SLUG, title: { type: 'string', minLength: 1 }, language: LANGUAGE,
       brief: formatValue<CourseBrief>()({
@@ -469,9 +469,13 @@ const TABLE = {
           duration: { type: 'object', additionalProperties: false, properties: { min: { type: 'integer', minimum: 1, maximum: 600 }, max: { type: 'integer', minimum: 1, maximum: 600 } } },
           presentation: { enum: ['scroll', 'slides'] }, lms: { type: 'array', items: { type: 'string' } }, notes: { type: 'string' }
         }
-      })
+      }),
+      // A browser's host only (D124): the template or the charter it starts from, its files given whole.
+      from: formatValue<CourseStart>()({ type: 'object', required: ['kind', 'files'], properties: { kind: { enum: ['template', 'charter'] }, files: { type: 'object' } } })
     }, ['id', 'title']),
-    run: createCourse
+    run: createCourse,
+    // The files it started from are in the operations: the journal names the template.
+    journal: ({ from, ...args }) => ({ name: 'create_course', args: { ...args, ...(from ? { from: { kind: from.kind, ...(from.kind === 'template' ? { template: from.template } : { title: from.title, courseId: from.courseId }), files: Object.keys(from.files).length } } : {}) } })
   }),
 
   // ── what needs its host (host.ts) ─────────────────────────────────────

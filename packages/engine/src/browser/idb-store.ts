@@ -102,8 +102,9 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
     mediaFacts: async (refs) => facts.get(refs, (hash) => sizes.get(hash) ?? null),
     async sendMedia(hashes) {
       if (!remote) throw new Error('The project\'s media cannot be sent: not connected.');
+      // Kept here, else the host's (a module made from a template its host ships, D124), taken and kept.
       return remote.send(hashes, async (hash) => {
-        const file = await media.file(hash);
+        const file = await media.file(hash) ?? (source ? await copy.medium(hash) : null);
         if (!file) throw new Error(`The medium ${hash.slice(7, 19)}… is not kept in this browser.`);
         return file;
       });

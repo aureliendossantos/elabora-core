@@ -26,7 +26,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D11](decisions/D11.md) | LESSON.md for simple blocks |  |
 | [D110](decisions/D110.md) | Every command in the table, each saying what it expects from its host | 19 Nov 2026 |
 | [D111](decisions/D111.md) | A new module's files made by the core, from a template it carries | 19 Nov 2026 |
-| [D112](decisions/D112.md) | A new module's files, the first change of an empty project | 19 Nov 2026 |
+| [D112](decisions/D112.md) | A new module's files, the first change of an empty project, revised by D124 | 19 Nov 2026 |
 | [D113](decisions/D113.md) | Models in a browser: from the origin the host names, checked as they come, kept in the origin's private file system, refused where they cannot run | 20 Nov 2026 |
 | [D114](decisions/D114.md) | A browser's models run in a Worker of their own, onnxruntime-web loaded by address, the code that reads numbers in the core | 20 Nov 2026 |
 | [D115](decisions/D115.md) | What the canvas shows is asked of it by messages, not by scripts injected into its page | 18 Nov 2026 |
@@ -39,6 +39,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D121](decisions/D121.md) | The host of the editor canvas for a page: what links a window that has no local server to the canvas page and the relay | 19 Nov 2026 |
 | [D122](decisions/D122.md) | What a canvas page or a relay page says is read as data, and what the host posts goes to one exact origin | 19 Nov 2026 |
 | [D123](decisions/D123.md) | The renders reach a canvas page without a server as events of the engine, never through the relay | 19 Nov 2026 |
+| [D124](decisions/D124.md) | A module made from a template in a browser: the template's files given to create_course | 26 Nov 2026 |
 | [D125](decisions/D125.md) | A medium's facts go by its hash, beside the reference, in elabora-sync/1 | 19 Nov 2026 |
 | [D126](decisions/D126.md) | A copy that holds a medium gives its facts: with the change that writes it, and in passing for those already there | 19 Nov 2026 |
 | [D127](decisions/D127.md) | A browser's local voices: the desktop's generation in the core, the catalogue served by the app, the takes in the origin's private file system | 20 Nov 2026 |

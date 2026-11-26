@@ -8,10 +8,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { stringifyJSON } from '@elabora/core/util/json';
-import { agentsFile, courseNotes, CLAUDE_FILE, CLAUDE_TEXT } from './agent-rules.ts';
-import { checkBrief, type CourseBrief } from '@elabora/core/commands/new-course';
-import { TEMPLATES_DIR } from './scaffold.ts';
+import { checkBrief, templateTexts, type CourseBrief } from '@elabora/core/commands/new-course';
 import { buildTranslation } from './translate.ts';
 import { fieldOf } from './util/values.ts';
 
@@ -99,34 +96,48 @@ export interface FromTemplateResult {
 // keep theirs, beside them in theme/fonts).
 const LEFT_OUT = /^(\.elabora|dist|node_modules|plan-versions|LICENSE\.md|\.DS_Store)$/;
 
-// Makes a new course in `dir` from the template folder `source`: its files copied (or its translation
-// built, when another language is asked), then the author's id and title on the course, the plan and
-// the first screen (the cover), and AGENTS.md's notes saying where it comes from. The template's
-// lock goes with it: its keys are the screens' and the activities', which the copy keeps. `dir` must not hold a course already; nothing is written there when a step fails.
+// The files of the template folder `source` in a language, as a copy of it is before it is made the
+// author's, written into `out` (a folder that does not exist yet): its files without its licence, history
+// or builds, or, in another language than its own, its translation built (without translations/). Gives
+// the language. A browser's host ships these copies (D124).
+export async function templateCopy(source: string, out: string, language?: string): Promise<string> {
+  const template = JSON.parse(fs.readFileSync(path.join(source, 'course.json'), 'utf8')) as Record<string, unknown>;
+  const own = typeof template.language === 'string' ? template.language : 'en';
+  const wanted = language ?? own;
+  if (wanted !== own && !fs.existsSync(path.join(source, 'translations', `${wanted}.xlf`))) {
+    const available = [own, ...fs.readdirSync(path.join(source, 'translations')).filter((name) => name.endsWith('.xlf')).map((name) => name.slice(0, -4))];
+    throw new Error(`The template is in ${available.join(', ')}, not in ${wanted}.`);
+  }
+  if (wanted === own) { copyTemplate(source, out); return wanted; }
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-template-'));
+  try {
+    const copy = path.join(work, 'copy');
+    copyTemplate(source, copy);
+    await buildTranslation(copy, { to: wanted, out });
+    fs.rmSync(path.join(out, 'translations'), { recursive: true, force: true });
+    return wanted;
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true });
+  }
+}
+
+// Makes a new course in `dir` from the template folder `source`: its copy in the language asked
+// (templateCopy), then the author's id and title on the course, the plan and the first screen (the
+// cover), and AGENTS.md's notes saying where it comes from (templateTexts, the browser's bytes). The
+// template's lock goes with it: its keys are the screens' and the activities', which the copy keeps.
+// `dir` must not hold a course already; nothing is written there when a step fails.
 export async function createFromTemplate(source: string, dir: string, options: FromTemplateOptions): Promise<FromTemplateResult> {
   const root = path.resolve(dir);
   if (fs.existsSync(path.join(root, 'course.json'))) throw new Error(`${root} already contains a course.json`);
   if (!/^[a-z][a-z0-9-]{0,47}$/.test(options.id)) throw new Error('id: lowercase letters, digits and hyphens, starting with a letter');
   if (options.brief) checkBrief(options.brief);
   const template = JSON.parse(fs.readFileSync(path.join(source, 'course.json'), 'utf8')) as Record<string, unknown>;
-  const own = typeof template.language === 'string' ? template.language : 'en';
-  const language = options.language ?? own;
-  const translated = language !== own;
-  if (translated && !fs.existsSync(path.join(source, 'translations', `${language}.xlf`))) {
-    const available = [own, ...fs.readdirSync(path.join(source, 'translations')).filter((name) => name.endsWith('.xlf')).map((name) => name.slice(0, -4))];
-    throw new Error(`The template is in ${available.join(', ')}, not in ${language}.`);
-  }
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-template-'));
   try {
-    const copy = path.join(work, 'copy');
-    copyTemplate(source, copy);
-    let made = copy;
-    if (translated) {
-      made = path.join(work, 'translated');
-      await buildTranslation(copy, { to: language, out: made });
-      fs.rmSync(path.join(made, 'translations'), { recursive: true, force: true });
-    }
-    personalize(made, { ...options, language }, typeof template.id === 'string' ? template.id : path.basename(source));
+    const made = path.join(work, 'made');
+    const language = await templateCopy(source, made, options.language);
+    const read = (rel: string) => { const file = path.join(made, rel); return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null; };
+    for (const [rel, text] of templateTexts(read, { ...options, language }, typeof template.id === 'string' ? template.id : path.basename(source))) fs.writeFileSync(path.join(made, rel), text);
     fs.mkdirSync(root, { recursive: true });
     for (const entry of fs.readdirSync(made)) fs.cpSync(path.join(made, entry), path.join(root, entry), { recursive: true, mode: fs.constants.COPYFILE_FICLONE });
     return { dir: root, language, files: countFiles(made) };
@@ -141,47 +152,6 @@ function copyTemplate(source: string, target: string): void {
     if (LEFT_OUT.test(entry)) continue;
     fs.cpSync(path.join(source, entry), path.join(target, entry), { recursive: true, mode: fs.constants.COPYFILE_FICLONE, filter: (from) => !/[\\/]\.DS_Store$/.test(from) });
   }
-}
-
-function personalize(dir: string, { id, title, language, brief }: FromTemplateOptions & { language: string }, template: string): void {
-  const read = (file: string) => JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')) as Record<string, unknown>;
-  const write = (file: string, value: unknown) => fs.writeFileSync(path.join(dir, file), stringifyJSON(value));
-  const course = read('course.json');
-  course.id = id;
-  course.title = title.trim();
-  course.language = language;
-  course.version = '1.0.0';
-  delete course.translationOf;
-  // The catalogue's description was the template's.
-  delete course.description;
-  if (brief?.presentation) course.presentation = { ...(fieldOf(course, 'presentation') as object), mode: brief.presentation };
-  if (brief?.lms?.length) course.delivery = { lms: [...new Set(brief.lms)] };
-  write('course.json', course);
-
-  const plan = read('plan.json');
-  plan.id = id.toUpperCase().replace(/[^A-Z0-9]+/g, '-').slice(0, 24);
-  plan.title = title.trim();
-  delete plan.translationOf;
-  if (brief?.businessGoal?.trim()) plan.businessGoal = brief.businessGoal.trim();
-  if (brief?.audience?.trim()) plan.audience = { ...(fieldOf(plan, 'audience') as object), role: brief.audience.trim() };
-  if (brief?.duration) plan.duration = { ...(brief.duration.min ? { min: brief.duration.min } : {}), ...(brief.duration.max ? { max: brief.duration.max } : {}) };
-  write('plan.json', plan);
-
-  // The cover says the module's title from the start.
-  const first = (Array.isArray(course.sections) ? course.sections : []).flatMap((section) => (fieldOf(section, 'screens') as unknown[] | undefined) ?? [])[0];
-  if (typeof first === 'string' && fs.existsSync(path.join(dir, 'screens', `${first}.json`))) {
-    const screen = read(`screens/${first}.json`);
-    screen.title = title.trim();
-    write(`screens/${first}.json`, screen);
-  }
-
-  const notes = [
-    `This course starts from the template \`${template}\` (elabora templates): README.md says how its charter works (theme, fonts, components, backdrop and its variants) and how to make it the brand's. Its texts are placeholders at their real length: replace them, and change, add or remove screens and blocks as the storyboard asks; a new screen takes the charter as it is.`,
-    brief?.notes?.trim() ?? ''
-  ].filter(Boolean).join('\n\n');
-  fs.writeFileSync(path.join(dir, 'AGENTS.md'), agentsFile(courseNotes(notes)));
-  fs.writeFileSync(path.join(dir, CLAUDE_FILE), CLAUDE_TEXT);
-  fs.copyFileSync(path.join(TEMPLATES_DIR, 'course', 'gitignore'), path.join(dir, '.gitignore'));
 }
 
 function localized(value: unknown, fallback: string): Localized {

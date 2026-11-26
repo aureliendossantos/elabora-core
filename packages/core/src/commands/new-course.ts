@@ -1,6 +1,6 @@
 import { getProfile } from '../lms/profiles.ts';
 import { stringifyJSON } from '../util/json.ts';
-import { isTextPath, textFile } from '../project/files.ts';
+import { binaryFile, isTextPath, projectPath, textFile, type FileHash } from '../project/files.ts';
 import { AGENT_RULES, COURSE_TEMPLATE } from '../project/course-template.generated.ts';
 import { CommandError, type CommandContext, type CommandOutput } from './context.ts';
 
@@ -30,7 +30,27 @@ export interface NewCourseOptions {
   title: string;
   language?: string; // default fr
   brief?: CourseBrief;
+  // What it starts from in a browser (D124): a module template's files, or a template's charter.
+  from?: CourseStart;
 }
+
+// A file a new module starts with, as a browser's host gives it: a text, or a medium by its hash and size
+// (the host holds its bytes; the copy takes them before the change is sent).
+export type StartFile = { kind: 'text'; text: string } | { kind: 'binary'; hash: FileHash; size: number };
+
+// What a module made in a browser starts from (D124), the bytes of the desktop's:
+// - template: a module template (D68) in the course's language, its files as a copy of it is before it is
+//   made the author's (@elabora/node templateCopy: without its licence, history, builds and translations,
+//   its translation built when the language is not its own); the copy takes the author's id, title,
+//   language and brief (templateTexts), as createFromTemplate makes it on a computer.
+// - charter: the charter of a course in another language (D69): a blank module (newCourseFiles), the files
+//   the charter takes (@elabora/node copyCharter) and its course's theme, presentation and player.
+export type CourseStart =
+  | { kind: 'template'; template: string; files: Record<string, StartFile> }
+  | { kind: 'charter'; title: string; courseId: string | null; files: Record<string, StartFile>; course: CharterCourse };
+
+// The fields of course.json a charter brings (copyCharter).
+export interface CharterCourse { theme?: unknown; presentation?: unknown; player?: unknown }
 
 export const AGENTS_FILE = 'AGENTS.md';
 export const CLAUDE_FILE = 'CLAUDE.md';
@@ -124,14 +144,106 @@ export function checkBrief(brief: CourseBrief): void {
   for (const lms of brief.lms ?? []) getProfile(lms);
 }
 
+// The texts a copy of a template changes as it becomes the author's module (D68): the author's id and
+// title on the course, the plan and the first screen (the cover), the course's language, its brief, and
+// AGENTS.md's notes saying where it comes from, with CLAUDE.md and .gitignore. read gives a text of the
+// copy (null: not there). The same bytes on a computer (createFromTemplate) and in a browser (D124).
+export function templateTexts(read: (rel: string) => string | null, { id, title, language = 'fr', brief }: NewCourseOptions, template: string): Map<string, string> {
+  if (!COURSE_ID.test(id)) throw new CommandError('id: lowercase letters, digits and hyphens, starting with a letter');
+  if (brief) checkBrief(brief);
+  const json = (rel: string): Record<string, unknown> => {
+    const text = read(rel);
+    if (text === null) throw new CommandError(`The template has no ${rel}.`);
+    return JSON.parse(text) as Record<string, unknown>;
+  };
+  const texts = new Map<string, string>();
+  const course = json('course.json');
+  course.id = id;
+  course.title = title.trim();
+  course.language = language;
+  course.version = '1.0.0';
+  delete course.translationOf;
+  // The catalogue's description was the template's.
+  delete course.description;
+  if (brief?.presentation) course.presentation = { ...(isObject(course.presentation) ? course.presentation : {}), mode: brief.presentation };
+  if (brief?.lms?.length) course.delivery = { lms: [...new Set(brief.lms)] };
+  texts.set('course.json', stringifyJSON(course));
+
+  const plan = json('plan.json');
+  plan.id = id.toUpperCase().replace(/[^A-Z0-9]+/g, '-').slice(0, 24);
+  plan.title = title.trim();
+  delete plan.translationOf;
+  if (brief?.businessGoal?.trim()) plan.businessGoal = brief.businessGoal.trim();
+  if (brief?.audience?.trim()) plan.audience = { ...(isObject(plan.audience) ? plan.audience : {}), role: brief.audience.trim() };
+  if (brief?.duration) plan.duration = { ...(brief.duration.min ? { min: brief.duration.min } : {}), ...(brief.duration.max ? { max: brief.duration.max } : {}) };
+  texts.set('plan.json', stringifyJSON(plan));
+
+  // The cover says the module's title from the start.
+  const sections = Array.isArray(course.sections) ? course.sections as unknown[] : [];
+  const first = sections.flatMap((section) => (isObject(section) && Array.isArray(section.screens) ? section.screens as unknown[] : []))[0];
+  if (typeof first === 'string' && read(`screens/${first}.json`) !== null) {
+    const screen = json(`screens/${first}.json`);
+    screen.title = title.trim();
+    texts.set(`screens/${first}.json`, stringifyJSON(screen));
+  }
+
+  const notes = [
+    `This course starts from the template \`${template}\` (elabora templates): README.md says how its charter works (theme, fonts, components, backdrop and its variants) and how to make it the brand's. Its texts are placeholders at their real length: replace them, and change, add or remove screens and blocks as the storyboard asks; a new screen takes the charter as it is.`,
+    brief?.notes?.trim() ?? ''
+  ].filter(Boolean).join('\n\n');
+  texts.set(AGENTS_FILE, agentsFile(courseNotes(notes)));
+  texts.set(CLAUDE_FILE, CLAUDE_TEXT);
+  texts.set('.gitignore', COURSE_TEMPLATE.gitignore!);
+  return texts;
+}
+
+// The note a module made from another course's charter starts with (D69), before the author's.
+export function charterNote(title: string, courseId: string | null): string {
+  return `This course's charter is copied from the module « ${title} »${courseId ? ` (${courseId})` : ''}: its theme (tokens, fonts, stylesheet, named styles, backdrop and its variants), its components and the player's bars. Keep it: build the screens with its components, styles and backdrop variants (elabora look shows them), and change the charter only when the author asks.`;
+}
+
+// A new course's course.json with a charter's theme, presentation (the mode the author chose kept) and
+// player bars (D69).
+export function withCharter(courseText: string, charter: CharterCourse, presentation?: 'slides' | 'scroll'): string {
+  const made = JSON.parse(courseText) as Record<string, unknown>;
+  if (isObject(charter.theme)) made.theme = charter.theme;
+  if (isObject(charter.presentation)) made.presentation = { ...charter.presentation, ...(presentation ? { mode: presentation } : {}) };
+  if (isObject(charter.player)) made.player = charter.player;
+  return stringifyJSON(made);
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+
 // create_course (D112): a new module's files as the first change of an empty project. A project that
 // has a course.json already is left as it is (created: false): two copies that open the same empty
 // project and both make it write it once. Its files are those a project reads as text: .gitignore,
-// which a folder reads as bytes (isTextPath), is a folder's own file for git, not the project's.
+// which a folder reads as bytes (isTextPath), is a folder's own file for git, not the project's. From a
+// template or a charter (D124), the files it starts from are written with them, media by their hash.
 export function createCourse(context: CommandContext, options: NewCourseOptions): CommandOutput<{ created: boolean }> {
   if (context.files.has('course.json')) return { files: context.files, result: { created: false } };
-  const made = newCourseFiles(options);
+  const { from } = options;
   const files = new Map(context.files);
+  const given = new Map<string, StartFile>();
+  for (const [rel, file] of Object.entries(from?.files ?? {})) {
+    if (projectPath(rel) !== rel || rel === '.elabora' || rel.startsWith('.elabora/')) throw new CommandError(`from.files: "${rel}" is not a path of the project`);
+    // A folder's .gitignore, which a template carries, is not the project's (D112).
+    if (rel === '.gitignore') continue;
+    if ((file.kind === 'text') !== isTextPath(rel)) throw new CommandError(`from.files: "${rel}" is ${isTextPath(rel) ? 'a text' : 'a medium'}`);
+    given.set(rel, file);
+  }
+  const put = (rel: string, file: StartFile) => files.set(rel, file.kind === 'text' ? textFile(file.text) : binaryFile(file.size, { hash: file.hash }));
+  if (from?.kind === 'template') {
+    for (const [rel, file] of given) put(rel, file);
+    const read = (rel: string) => { const file = given.get(rel); return file?.kind === 'text' ? file.text : null; };
+    for (const [rel, text] of templateTexts(read, options, from.template)) if (isTextPath(rel)) files.set(rel, textFile(text));
+    return { files, result: { created: true } };
+  }
+  const brief = from?.kind === 'charter' ? { ...options.brief, notes: [charterNote(from.title, from.courseId), options.brief?.notes?.trim() ?? ''].filter(Boolean).join('\n\n') } : options.brief;
+  const made = newCourseFiles({ ...options, ...(brief ? { brief } : {}) });
   for (const [rel, text] of made) if (isTextPath(rel)) files.set(rel, textFile(text));
+  if (from?.kind === 'charter') {
+    for (const [rel, file] of given) put(rel, file);
+    files.set('course.json', textFile(withCharter(made.get('course.json')!, from.course, options.brief?.presentation)));
+  }
   return { files, result: { created: true } };
 }

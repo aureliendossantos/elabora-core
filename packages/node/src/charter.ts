@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { stringifyJSON } from '@elabora/core/util/json';
+import { withCharter } from '@elabora/core/commands/new-course';
 import { fieldOf, isRecord } from './util/values.ts';
 
 export interface CharterCopy {
@@ -107,13 +108,8 @@ export function copyCharter(source: string, target: string, { presentation }: { 
     files.add(PROVENANCE);
   }
 
-  const made = readJSON(path.join(to, 'course.json'));
-  if (isRecord(theme)) made.theme = theme;
-  const shown = fieldOf(course, 'presentation');
-  if (isRecord(shown)) made.presentation = { ...shown, ...(presentation ? { mode: presentation } : {}) };
-  const player = fieldOf(course, 'player');
-  if (isRecord(player)) made.player = player;
-  fs.writeFileSync(path.join(to, 'course.json'), stringifyJSON(made));
+  // The course's theme, presentation and player, as a browser writes them (withCharter, D124).
+  fs.writeFileSync(path.join(to, 'course.json'), withCharter(fs.readFileSync(path.join(to, 'course.json'), 'utf8'), { theme, presentation: fieldOf(course, 'presentation'), player: fieldOf(course, 'player') }, presentation));
 
   return { files: [...files].sort(), components, object, generators: [...generators].sort() };
 }
