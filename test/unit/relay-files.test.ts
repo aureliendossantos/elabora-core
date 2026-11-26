@@ -27,8 +27,9 @@ test('relay files: one script for both hosts that says its version and leaves it
   assert.doesNotMatch(files['canvas/index.html']!, /canvas-connect/);
   assert.match(canvasPageHtml(), /canvas-connect\.js/);
   for (const html of [files['relay.html']!, files['canvas/index.html']!]) {
-    const opened = html.match(/<script\b[^>]*>/g) ?? [];
-    assert.ok(opened.length > 0, 'a script');
-    for (const tag of opened) assert.match(tag, /^<script src="[^"]+"/, 'every script is a file, none is written in the page');
+    // What follows each opening of a script element, whatever its case: an address, then the element closed at once.
+    const scripts = html.toLowerCase().split('<script').slice(1);
+    assert.ok(scripts.length > 0, 'a script');
+    for (const rest of scripts) assert.match(rest, /^ src="[^"]+"[^>]*><\/script>/, 'every script is a file, none is written in the page');
   }
 });
