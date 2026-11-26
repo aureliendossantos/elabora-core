@@ -57,11 +57,11 @@ const processes = () => execFileSync('ps', ['-A', '-o', 'pid=,ppid=,rss=,command
 
 // The memory of the browser this process started, at its peak: the resident memory of every process
 // under this one, and of its WebKit's services, summed (pages they share counted in each), sampled
-// every quarter of a second. mark(name) starts a phase: phases() says each one's peak and its last
-// sample, in MB.
-export function watchMemory(): { mark(name: string): void; phases(): { name: string; peak: number; end: number }[]; stop(): number } {
+// every quarter of a second. mark(name) starts a phase: phases() says each one's peak, its median and
+// its last sample, in MB.
+export function watchMemory(): { mark(name: string): void; phases(): { name: string; peak: number; median: number; end: number }[]; stop(): number } {
   let peak = 0;
-  const phases: { name: string; peak: number; end: number }[] = [{ name: 'start', peak: 0, end: 0 }];
+  const phases: { name: string; samples: number[] }[] = [{ name: 'start', samples: [] }];
   const sample = () => {
     const rows = processes();
     const children = new Map<number, number[]>();
@@ -72,16 +72,17 @@ export function watchMemory(): { mark(name: string): void; phases(): { name: str
     walk(process.pid);
     if (webkitBefore) for (const row of rows) if (WEBKIT.test(row.command) && !webkitBefore.has(row.pid)) total += row.rss;
     peak = Math.max(peak, total);
-    const phase = phases.at(-1)!;
-    phase.peak = Math.max(phase.peak, total);
-    phase.end = total;
+    phases.at(-1)!.samples.push(total);
   };
   sample();
   const timer = setInterval(sample, 250);
   const mb = (kb: number) => Math.round(kb / 1024);
   return {
-    mark: (name) => { sample(); phases.push({ name, peak: 0, end: 0 }); sample(); },
-    phases: () => phases.map((phase) => ({ name: phase.name, peak: mb(phase.peak), end: mb(phase.end) })),
+    mark: (name) => { sample(); phases.push({ name, samples: [] }); sample(); },
+    phases: () => phases.map(({ name, samples }) => {
+      const sorted = [...samples].sort((a, b) => a - b);
+      return { name, peak: mb(sorted.at(-1) ?? 0), median: mb(sorted[Math.floor(sorted.length / 2)] ?? 0), end: mb(samples.at(-1) ?? 0) };
+    }),
     stop: () => { clearInterval(timer); sample(); return mb(peak); }
   };
 }

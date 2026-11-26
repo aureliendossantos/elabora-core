@@ -158,13 +158,13 @@ test('a local voice in a browser\'s session: its model downloaded and kept, a li
     const next = ((await ask('voiceTakes', { screen: screenId, line: ids[1], language })).result as { takes: { file: string; seed: number }[] }).takes.at(-1)!;
     const said2 = await take(next.file);
     // What the browser keeps once the lines are said: the model stays loaded for the next one.
-    await phase('ten seconds after');
-    await new Promise((resolve) => setTimeout(resolve, 10_000));
+    await phase('thirty seconds after');
+    await new Promise((resolve) => setTimeout(resolve, 30_000));
     const threads = crossOriginIsolated ? Math.max(1, Math.min(4, Math.floor((navigator.hardwareConcurrency || 2) / 2))) : 1;
     return { before, installed, set, first, second, current, said: [said, said2], seeds: [last.seed, next.seed], ms, nextMs, threads, progress, granted: { usage: granted.usage ?? 0, quota: granted.quota ?? 0, persisted: await navigator.storage.persisted() } };
   }, [{ link, confirmed: [...exampleFiles] }, screen, lines.map((line) => line.id), MODELS_ORIGIN, lines[0]!.speaker, `${bundle.id}@${bundle.version}`, LANGUAGE, voice.id] as unknown as [object, string, string[], string, string, string, string, string]);
   const peak = memory.stop();
-  t.diagnostic(`memory by phase (peak, then at its end): ${memory.phases().map((one) => `${one.name} ${one.peak}, ${one.end} MB`).join('; ')}`);
+  t.diagnostic(`memory by phase (peak, median, end): ${memory.phases().map((one) => `${one.name} ${one.peak}, ${one.median}, ${one.end} MB`).join('; ')}`);
 
   assert.ok(!('failed' in result), JSON.stringify({ installed: result.installed, set: result.set, first: result.first, takes: (result as { takes?: unknown }).takes }).slice(0, 3000));
   const listed = (result.before.result as { id: string; installed: boolean; size: number }[] | undefined)?.find((one) => one.id === voice.id);
