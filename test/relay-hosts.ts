@@ -30,7 +30,7 @@ export async function startHosts(handlers: Record<string, Handler>): Promise<Hos
   const table = new Map(Object.entries(handlers));
   const tls = createHttpsServer({ key: readFileSync(join(dir, 'key.pem')), cert: readFileSync(join(dir, 'cert.pem')) }, (request, response) => {
     const handler = table.get((request.headers.host ?? '').split(':')[0]!);
-    if (!handler) { response.writeHead(404).end('no such name'); return; }
+    if (typeof handler !== 'function') { response.writeHead(404).end('no such name'); return; }
     handler(request, response);
   });
   await new Promise<void>((resolve) => tls.listen(0, '127.0.0.1', resolve));

@@ -18,5 +18,9 @@ test('relay files: one script for both hosts that says its version and leaves it
   assert.match(files['canvas/index.html']!, /<script src="\/relay-page\.js" data-relay-role="canvas"><\/script>/);
   assert.doesNotMatch(files['canvas/index.html']!, /canvas-connect/);
   assert.match(canvasPageHtml(), /canvas-connect\.js/);
-  for (const html of [files['relay.html']!, files['canvas/index.html']!]) assert.doesNotMatch(html.replace(/<script src="[^"]+"[^>]*><\/script>/g, ''), /<script/);
+  for (const html of [files['relay.html']!, files['canvas/index.html']!]) {
+    const opened = html.match(/<script\b[^>]*>/g) ?? [];
+    assert.ok(opened.length > 0, 'a script');
+    for (const tag of opened) assert.match(tag, /^<script src="[^"]+"/, 'every script is a file, none is written in the page');
+  }
 });
