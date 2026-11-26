@@ -179,7 +179,8 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.deepEqual(await client.request('courseSounds', {}), [], 'no sound in the module');
     // A relay's port comes transferred with the message (D105): without one, not a request.
     await assert.rejects(client.request('relayPort', { host: 'canvas' }), refused('bad-request'));
-    await assert.rejects(client.request('voiceKeyPort', {}), refused('bad-request'));
+    // The key's page's port too, where the session has its voices (without them, not here).
+    await assert.rejects(client.request('voiceKeyPort', {}), refused(services.has('voices') ? 'bad-request' : 'not-available'));
   });
 
   it('what the events of a screen can name: its blocks, steps and layers, the course\'s screens and variables', async () => {
