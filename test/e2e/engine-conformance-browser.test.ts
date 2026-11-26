@@ -9,7 +9,7 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import type { EventMessage, RequestMessage, ResponseMessage } from '@elabora/engine/protocol';
 import type { WorkerAnswer, WorkerOpen } from '@elabora/engine/browser/worker';
 import { bundleForBrowser } from '../browser-bundle.ts';
-import { aacEncoderModule } from '../aac-encoder.ts';
+import { aacEncoderModule } from '@elabora/engine/aac-encoder';
 import { engineConformance, type ConformanceTarget, type Sample } from '../conformance/engine.ts';
 import { EXAMPLE, BILINGUAL, NETWORK_SAMPLE } from '../helpers.ts';
 

@@ -13,7 +13,7 @@ import { fileMedia, masterPlan, presetDimensions } from '@elabora/core/media/con
 import { PEAKS_RATE, peaksOf, soundPlan } from '@elabora/core/media/audio';
 import { bundleForBrowser } from '../browser-bundle.ts';
 import { makeMediaFixtures } from '../media-fixtures.ts';
-import { aacEncoderModule } from '../aac-encoder.ts';
+import { aacEncoderModule } from '@elabora/engine/aac-encoder';
 import type { MediaFixtures } from '../media-fixtures.ts';
 
 // The media of a browser's engine in a Worker (packages/engine/src/browser/media/), judged by the

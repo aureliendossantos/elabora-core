@@ -18,6 +18,8 @@
     "@elabora/format": "workspace:*",
     "@elabora/node": "workspace:*",
     "@elabora/player": "workspace:*",
+    "@mediabunny/aac-encoder": "1.66.0",
+    "esbuild": "0.28.2",
     "mediabunny": "1.66.0",
     "onnxruntime-web": "1.23.2"
   }

@@ -19,7 +19,7 @@ import { withoutDirections } from '@elabora/core/narration/directions';
 import { narrationLines } from '@elabora/core/narration/narration';
 import { loadProjectFromDir, readProjectFiles } from '@elabora/node/project-reader';
 import { bundleForBrowser } from '../browser-bundle.ts';
-import { aacEncoderModule } from '../aac-encoder.ts';
+import { aacEncoderModule } from '@elabora/engine/aac-encoder';
 import { wavBytes } from '@elabora/core/voice/wav';
 import { ROOT } from '../helpers.ts';
 

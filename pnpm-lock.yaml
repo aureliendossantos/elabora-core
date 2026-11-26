@@ -34,9 +34,6 @@ importers:
       '@elabora/player':
         specifier: workspace:*
         version: link:packages/player
-      '@mediabunny/aac-encoder':
-        specifier: 1.66.0
-        version: 1.66.0(mediabunny@1.66.0)
       '@types/node':
         specifier: ^24.0.0
         version: 24.19.1
@@ -134,6 +131,12 @@ importers:
       '@elabora/player':
         specifier: workspace:*
         version: link:../player
+      '@mediabunny/aac-encoder':
+        specifier: 1.66.0
+        version: 1.66.0(mediabunny@1.66.0)
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
       mediabunny:
         specifier: 1.66.0
         version: 1.66.0
