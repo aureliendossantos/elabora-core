@@ -20,8 +20,18 @@ export interface ModelProgress { received: number; total: number }
 const ROOT = 'elabora-models';
 const SLICE = 4 * 1024 * 1024;
 const PART = 16 * 1024 * 1024;
-const writing = (model: StoredModel) => `elabora-model:${model.id}`;
-const using = (model: StoredModel) => `elabora-model-use:${model.id}`;
+export const writing = (model: StoredModel) => `elabora-model:${model.id}`;
+export const using = (model: StoredModel) => `elabora-model-use:${model.id}`;
+
+// Every context of the origin hears a model's download as it goes and a model kept or removed
+// (« Éléments téléchargés », downloads.ts): progress at most four times a second.
+export const MODEL_CHANNEL = 'elabora-models';
+export type ModelChange = { model: string; progress: ModelProgress } | { model: string; changed: true };
+let channel: BroadcastChannel | null | undefined;
+function announce(change: ModelChange): void {
+  channel ??= typeof BroadcastChannel === 'function' ? new BroadcastChannel(MODEL_CHANNEL) : null;
+  channel?.postMessage(change);
+}
 
 // A model's files that cannot be fetched, or do not match their pins.
 export class ModelError extends Error {
@@ -68,17 +78,34 @@ export const modelSize = (model: StoredModel): number => model.files.reduce((sum
 
 // Downloads what is missing from base (the models' origin: https://…, its files at the core's paths).
 export async function installModel(model: StoredModel, base: string, { onProgress, signal }: { onProgress?: (progress: ModelProgress) => void; signal?: AbortSignal } = {}): Promise<void> {
-  await navigator.locks.request(writing(model), { signal }, async () => {
-    const folder = await folderOf(model, true);
-    if (!folder) throw new ModelError('E_LOCAL_AI_STORAGE', 'This browser keeps no files for this site (a private window?): the models cannot be downloaded.');
-    const total = modelSize(model);
-    let done = 0;
-    for (const file of model.files) {
-      if ((await fileIn(folder, file.name))?.size === file.size) { done += file.size; onProgress?.({ received: done, total }); continue; }
-      await downloadFile(folder, file, base, (received) => onProgress?.({ received: done + received, total }), signal);
-      done += file.size;
-    }
-  });
+  // Announced at most every 250 ms, the latest one always said (a download that stalls shows where).
+  let said = 0;
+  let later: ReturnType<typeof setTimeout> | null = null;
+  let latest: ModelProgress | null = null;
+  const say = () => { later = null; if (latest) { said = Date.now(); announce({ model: model.id, progress: latest }); latest = null; } };
+  const progress = (received: number, total: number) => {
+    onProgress?.({ received, total });
+    latest = { received, total };
+    if (Date.now() - said >= 250) say();
+    else later ??= setTimeout(say, 250 - (Date.now() - said));
+  };
+  try {
+    await navigator.locks.request(writing(model), { signal }, async () => {
+      const folder = await folderOf(model, true);
+      if (!folder) throw new ModelError('E_LOCAL_AI_STORAGE', 'This browser keeps no files for this site (a private window?): the models cannot be downloaded.');
+      const total = modelSize(model);
+      let done = 0;
+      for (const file of model.files) {
+        if ((await fileIn(folder, file.name))?.size === file.size) { done += file.size; progress(done, total); continue; }
+        await downloadFile(folder, file, base, (received) => progress(done + received, total), signal);
+        done += file.size;
+      }
+    });
+  } finally {
+    if (later) clearTimeout(later);
+    say();
+    announce({ model: model.id, changed: true });
+  }
 }
 
 async function downloadFile(folder: FileSystemDirectoryHandle, file: ModelFile, base: string, progress: (received: number) => void, signal?: AbortSignal): Promise<void> {
@@ -152,18 +179,23 @@ export async function holdModel(model: StoredModel): Promise<() => void> {
 
 // Removed, unless it is in use (a session aligning or speaking with it) or being downloaded.
 export async function removeModel(model: StoredModel): Promise<boolean> {
-  return navigator.locks.request(using(model), { ifAvailable: true }, async (held) => {
-    if (!held) throw new ModelError('E_MODEL_IN_USE', 'It is in use: it can be removed once the words are placed or the line said.');
+  // Said once the locks are let go (Firefox reports an error thrown in a lock's callback as unhandled).
+  const done = await navigator.locks.request(using(model), { ifAvailable: true }, async (held) => {
+    if (!held) return 'used' as const;
     return navigator.locks.request(writing(model), { ifAvailable: true }, async (free) => {
-      if (!free) throw new ModelError('E_MODEL_IN_USE', 'It is being downloaded.');
+      if (!free) return 'downloading' as const;
       const root = await (await navigator.storage.getDirectory()).getDirectoryHandle(ROOT, { create: true });
       let removed = false;
       for await (const name of (root as FileSystemDirectoryHandle & { keys(): AsyncIterable<string> }).keys()) {
         if (name === model.id || name.startsWith(`${model.id}@`)) { await root.removeEntry(name, { recursive: true }); removed = true; }
       }
+      if (removed) announce({ model: model.id, changed: true });
       return removed;
     });
   });
+  if (done === 'used') throw new ModelError('E_MODEL_IN_USE', 'It is in use: it can be removed once the words are placed or the line said.');
+  if (done === 'downloading') throw new ModelError('E_MODEL_IN_USE', 'It is being downloaded.');
+  return done;
 }
 
 // What the browser lets this site keep, and whether it keeps it for good (persist).
@@ -172,6 +204,8 @@ export async function storageState(): Promise<{ used: number; quota: number; per
   return { used: estimate.usage ?? 0, quota: estimate.quota ?? 0, persisted: await navigator.storage.persisted() };
 }
 
+// Asked of the browser by a window (no browser's Worker has persist): the browser decides, and may
+// ask the author (Firefox does).
 export async function keepStorage(): Promise<boolean> {
-  return navigator.storage.persist();
+  return typeof navigator.storage.persist === 'function' ? navigator.storage.persist() : navigator.storage.persisted();
 }

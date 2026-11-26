@@ -105,6 +105,7 @@ async function open(request: WorkerOpen): Promise<void> {
   await navigator.locks.request(`elabora-copy:${key}`, { ifAvailable: true }, async (lock) => {
     if (!lock) { scope.postMessage({ kind: 'held' }); return; }
     // What only this browser holds (the changes waiting) is kept for good where the browser allows it.
+    // No browser's Worker has persist today: the window asks it (D137); asked here should one gain it.
     await navigator.storage.persist?.().catch(() => false);
     const online = !request.offline;
     const options = {
