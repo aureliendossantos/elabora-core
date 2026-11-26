@@ -572,6 +572,10 @@ export class Session {
       case 'relayPort':
         if (!ports[0]) throw new EngineError('bad-request', 'relayPort takes the port transferred with its message');
         throw new EngineError('not-available', 'This session serves the module\'s files from its local server', { code: 'E_NOT_HERE' });
+      // The desktop holds the ElevenLabs key itself (setVoiceKey): no page holds it for this session.
+      case 'voiceKeyPort':
+        if (!ports[0]) throw new EngineError('bad-request', 'voiceKeyPort takes the port transferred with its message');
+        throw new EngineError('not-available', 'This session holds the ElevenLabs key itself (setVoiceKey)', { code: 'E_NOT_HERE' });
     }
   }
 

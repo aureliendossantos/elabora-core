@@ -42,6 +42,8 @@ export const groups: TestMap = {
     // Words timed and lines said in a browser: the core's aligner and voices, the models Worker and its
     // store (D113, D114). Run with ELABORA_ALIGNER_TEST_MODELS and ELABORA_VOICE_TEST_MODELS.
     { name: 'models in a browser', files: ['packages/core/src/align/**', 'packages/core/src/voice/**', 'packages/core/src/util/onnx.ts', 'packages/core/src/util/model-files.ts', 'packages/engine/src/browser/models/**', 'packages/engine/src/browser/voices/**', 'test/browser-page.ts', 'test/native-models.ts'], checks: [e2e('align-browser'), e2e('voice-browser')] },
+    // ElevenLabs in a browser (D136): the core's provider, the key's page and the session's provider.
+    { name: 'ElevenLabs in a browser', files: ['packages/core/src/voice/elevenlabs/**', 'packages/engine/src/browser/keys/**', 'packages/engine/src/browser/voices/**'], checks: [e2e('elevenlabs-browser')] },
     { name: 'media in a browser', files: ['packages/engine/src/browser/media/**', 'packages/engine/src/aac-encoder.ts', 'test/media-fixtures.ts'], checks: [e2e('media-browser')] },
     { name: 'fonts', files: ['packages/fonts/**', 'packages/node/src/fonts/**', 'scripts/fonts.ts'], checks: [e2e('fonts')] },
     { name: 'LMS and packages', files: ['packages/core/profiles/**', 'packages/node/emulator-harness/**', 'packages/player/src/scorm12.ts', 'packages/player/src/scorm2004.ts', 'packages/player/src/xapi.ts', 'packages/player/src/lms-boot.ts', 'packages/player/src/activity-id.ts', 'packages/core/src/lms/**', 'packages/core/src/interop/**', 'packages/node/src/emulator/**', 'packages/node/src/packaging/**', 'packages/node/src/package-folder.ts', 'packages/node/src/zip.ts'], checks: [e2e('lms'), e2e('edge'), e2e('capture-width'), matrix('lms-matrix')] },

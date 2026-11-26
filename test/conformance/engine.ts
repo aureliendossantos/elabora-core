@@ -31,9 +31,9 @@ export interface ConformanceTarget {
   name: string;
   // The services its sessions have (D102): every one by default. A case of another is skipped.
   services?: readonly Service[];
-  // false: its voices service has no ElevenLabs (a browser's, until the key's own frame comes): what
-  // needs it says it is not offered here.
-  elevenLabs?: false;
+  // true: the ElevenLabs key is held by a page of its own (a browser's, keys.elabora.studio), which the
+  // session reaches by a port (voiceKeyPort): the key is never given to the session.
+  keyPage?: true;
   // services: those the session opened has, fewer than the target's (none for the case of a service
   // that is not here).
   open(sample: Sample, options?: { services?: readonly Service[] }): Promise<Connection>;
@@ -63,7 +63,7 @@ const REQUESTS: Record<RequestType, true> = {
   backups: true, createBackup: true, restoreBackup: true, renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, thumbRender: true, momentRender: true, blockPreviewRender: true, measureRender: true, migrate: true, voices: true,
   installVoices: true, setSpeakerVoice: true, setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true,
   courseSounds: true, soundEstimate: true, generateSound: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
-  alignNarration: true, build: true, packageWeights: true, close: true, relayPort: true
+  alignNarration: true, build: true, packageWeights: true, close: true, relayPort: true, voiceKeyPort: true
 };
 
 // A wait in a test is bounded for failures only.
@@ -179,6 +179,7 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.deepEqual(await client.request('courseSounds', {}), [], 'no sound in the module');
     // A relay's port comes transferred with the message (D105): without one, not a request.
     await assert.rejects(client.request('relayPort', { host: 'canvas' }), refused('bad-request'));
+    await assert.rejects(client.request('voiceKeyPort', {}), refused('bad-request'));
   });
 
   it('what the events of a screen can name: its blocks, steps and layers, the course\'s screens and variables', async () => {
@@ -621,14 +622,15 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.equal(new TextDecoder().decode(sample.audio.slice(0, 4)), 'RIFF');
   }, ['voices']);
 
-  if (target.elevenLabs === false) it('ElevenLabs not offered here: the key, the account and the search say so, by their code', async () => {
+  if (target.keyPage) it('ElevenLabs without the key\'s page: refused with its code; a key given to the session refused (it is typed in its page); forgotten, nothing held', async () => {
     const { client } = await engine('network');
-    for (const asked of [client.request('voiceAccount', { provider: 'elevenlabs' }), client.request('voiceSearch', { query: 'warm' } as never), client.request('setVoiceKey', { provider: 'elevenlabs', key: null })]) {
-      await assert.rejects(asked, refused('not-available', 'E_VOICE_SERVICE_NOT_HERE'));
-    }
+    await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('refused', 'E_VOICE_KEY_MISSING'));
+    await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));
+    await assert.rejects(client.request('setVoiceKey', { provider: 'elevenlabs', key: 'sk_0123456789abcdef0123456789abcdef' }), refused('bad-request'));
+    assert.deepEqual(await client.request('setVoiceKey', { provider: 'elevenlabs', key: null }), { key: null });
   }, ['voices']);
 
-  if (target.elevenLabs !== false) it('ElevenLabs without a key: refused with its code; a key given is kept masked, ElevenLabs out of reach said not available, the key forgotten', async () => {
+  if (!target.keyPage) it('ElevenLabs without a key: refused with its code; a key given is kept masked, ElevenLabs out of reach said not available, the key forgotten', async () => {
     const { client } = await engine('network');
     await assert.rejects(client.request('voiceAccount', { provider: 'elevenlabs' }), refused('refused', 'E_VOICE_KEY_MISSING'));
     await assert.rejects(client.request('voiceSearch', { query: 'warm' } as never), refused('refused', 'E_VOICE_KEY_MISSING'));

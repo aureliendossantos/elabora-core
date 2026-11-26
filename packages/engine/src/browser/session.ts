@@ -302,9 +302,10 @@ export class BrowserSession {
       case 'voiceTakes': this.#assertOpen(); return this.#voices!.voiceTakes(request.params, this.author);
       case 'voiceSample': this.#assertOpen(); return this.#voices!.voiceSample(request.params);
       case 'cancelVoice': this.#assertOpen(); return this.#voices!.cancelVoice(request.params?.screen);
-      case 'setVoiceKey': this.#assertOpen(); return this.#voices!.setVoiceKey();
-      case 'voiceAccount': this.#assertOpen(); return this.#voices!.voiceAccount();
-      case 'voiceSearch': this.#assertOpen(); return this.#voices!.voiceSearch();
+      case 'setVoiceKey': this.#assertOpen(); return this.#voices!.setVoiceKey(request.params);
+      case 'voiceAccount': this.#assertOpen(); return this.#voices!.voiceAccount(request.params);
+      case 'voiceSearch': this.#assertOpen(); return this.#voices!.voiceSearch(request.params ?? {});
+      case 'voiceKeyPort': this.#assertOpen(); return this.#voices!.voiceKeyPort(ports[0]);
       case 'openCanvas': this.#assertOpen(); return this.#canvas.open();
       case 'canvasView': this.#assertOpen(); return this.#canvas.view(request.params ?? {});
       case 'closeCanvas': return this.#canvas.close();

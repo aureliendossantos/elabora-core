@@ -4,7 +4,7 @@
 // (@elabora/core/voice/generate), as at the desktop; here the takes are kept in the origin's private
 // file system (takes.ts), a take's audio is written by set_narration_audio as a file that comes beside
 // the command (D108), and a line is timed at once when the align service keeps its language's aligner.
-// ElevenLabs is not offered in a browser yet: what needs it says so, by its code.
+// ElevenLabs is the core's provider, through the page that holds the author's key (elevenlabs.ts).
 
 import type { Author } from '@elabora/core/ops/types';
 import type { Project } from '@elabora/core/project/model';
@@ -13,13 +13,14 @@ import type { VoiceHost, VoiceWriter } from '@elabora/core/voice/generate';
 import { VoiceRegistry } from '@elabora/core/voice/provider';
 import type { VoiceProvider } from '@elabora/core/voice/provider';
 import { standIn } from '@elabora/core/voice/stand-in';
-import type { GenerateResult, TakeInfo, VoiceEstimate } from '@elabora/core/voice/types';
+import type { GenerateResult, TakeInfo, VoiceAccount, VoiceEstimate, VoiceQuery, VoiceSearchResult } from '@elabora/core/voice/types';
 import { EngineError, toolError } from '../../base/errors.ts';
 import type { EngineEvent, GenerateVoiceParams, RunResult, VoiceView } from '../../protocol.ts';
 import type { ModelsWorker } from '../models/align.ts';
 import type { Attachments } from '../media/service.ts';
 import { BrowserPocket } from './pocket.ts';
 import { browserTakes, takeAudio } from './takes.ts';
+import { BrowserElevenLabs } from './elevenlabs.ts';
 
 export interface VoicesHost {
   copy: string;                  // the copy's id: its takes' folder
@@ -33,22 +34,12 @@ export interface VoicesHost {
   standIn?: boolean;             // tones in Pocket TTS's place, for routine checks (never a course's voice)
 }
 
-const NOT_HERE = (): never => { throw new EngineError('not-available', 'ElevenLabs is not offered in a browser yet: its voices are used from the desktop app.', { code: 'E_VOICE_SERVICE_NOT_HERE' }); };
-
-// ElevenLabs in a browser, until it comes: a course's ElevenLabs voice is known, and every use says it
-// is not offered here, before anything is made.
-const notHere: VoiceProvider = {
-  id: 'elevenlabs', name: 'ElevenLabs', paid: true,
-  voices: () => [], status: () => ({ installed: true, size: 0 }),
-  install: async () => NOT_HERE(), synthesize: async () => NOT_HERE(), estimate: async () => NOT_HERE(), lookup: async () => NOT_HERE(),
-  dispose: async () => {}
-};
-
 const tokenOf = (take: number) => `elabora-file:${Array.from(crypto.getRandomValues(new Uint8Array(12)), (byte) => byte.toString(16).padStart(2, '0')).join('')}/take-${take}.wav`;
 
 export class BrowserVoices {
   readonly #host: VoicesHost;
   readonly #pocket: BrowserPocket;
+  readonly #elevenLabs = new BrowserElevenLabs();
   readonly #providers = new VoiceRegistry();
   readonly #jobs = new Set<{ screen: string | null; controller: AbortController }>();
 
@@ -56,7 +47,7 @@ export class BrowserVoices {
     this.#host = host;
     this.#pocket = new BrowserPocket(models, { catalogue: host.catalogue, models: host.models });
     this.#providers.register(host.standIn ? standIn(this.#pocket) : this.#pocket);
-    this.#providers.register(notHere);
+    this.#providers.register(this.#elevenLabs.elevenLabs.provider);
   }
 
   // A take's audio given to set_narration_audio as the file beside it, as a window's file is.
@@ -159,9 +150,28 @@ export class BrowserVoices {
 
   close(): void {
     for (const job of this.#jobs) if (!job.controller.signal.aborted) job.controller.abort();
+    this.#elevenLabs.close();
   }
 
-  setVoiceKey(): never { return NOT_HERE(); }
-  voiceAccount(): never { return NOT_HERE(); }
-  voiceSearch(): never { return NOT_HERE(); }
+  // The port to the page that holds the ElevenLabs key (the window frames it and transfers it).
+  voiceKeyPort(port: MessagePort | undefined): Record<string, never> {
+    if (!port) throw new EngineError('bad-request', 'voiceKeyPort takes the port transferred with its message');
+    this.#elevenLabs.connect(port);
+    return {};
+  }
+
+  // In a browser the key is typed in its own page, never given here: only forgetting it is asked.
+  async setVoiceKey(params: { key?: string | null } | undefined): Promise<{ key: null }> {
+    if (params?.key) throw new EngineError('bad-request', 'In a browser, the ElevenLabs key is typed in its own page (« Clé ElevenLabs »), never given to the session.');
+    try { await this.#elevenLabs.forget(); } catch (error) { throw toolError(error); }
+    return { key: null };
+  }
+
+  voiceAccount(params: { check?: boolean } | undefined): Promise<VoiceAccount> {
+    return this.#answer(() => this.#elevenLabs.elevenLabs.account({ check: !!params?.check }));
+  }
+
+  voiceSearch(query: VoiceQuery): Promise<VoiceSearchResult> {
+    return this.#answer(() => this.#elevenLabs.elevenLabs.searchVoices({ ...query, provider: 'elevenlabs' }));
+  }
 }

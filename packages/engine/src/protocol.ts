@@ -581,6 +581,8 @@ export interface Requests {
   // or the free objects' frames', through the MessagePort transferred with this message. A session
   // that serves them from elsewhere (the desktop's local server) answers not-available, E_NOT_HERE.
   relayPort: { params: { host: 'canvas' | 'frames' }; result: Record<string, never> };
+  // A browser's session: the port to the page that holds the ElevenLabs key, transferred with the message.
+  voiceKeyPort: { params: Record<string, never>; result: Record<string, never> };
 }
 
 export type RequestType = keyof Requests;

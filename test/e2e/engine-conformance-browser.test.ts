@@ -136,7 +136,7 @@ function attachedTo(message: unknown): Record<string, string> {
 const chromium: ConformanceTarget = {
   name: 'browser (Chromium, IndexedDB)',
   services: ['canvas', 'media', 'align', 'voices'],
-  elevenLabs: false,
+  keyPage: true,
   async open(sample, { services } = {}) {
     // A Worker a Worker starts does not go through the test's routes: the page gives both scripts by blob addresses.
     scripts ??= await page.evaluate(async () => {
