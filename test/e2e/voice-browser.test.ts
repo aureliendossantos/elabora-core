@@ -13,7 +13,7 @@ import { bundleFor } from '@elabora/core/voice/pocket/models';
 import { narrationLines } from '@elabora/core/narration/narration';
 import { loadProjectFromDir, readProjectFiles } from '@elabora/node/project-reader';
 import { bundleForBrowser } from '../browser-bundle.ts';
-import { emptyStorage, ISOLATED, pageWithStorage } from '../browser-page.ts';
+import { emptyStorage, ISOLATED, pageWithStorage, watchMemory } from '../browser-page.ts';
 import { desktopAlignment, desktopTake } from '../native-models.ts';
 import { aacEncoderModule } from '@elabora/engine/aac-encoder';
 import { ROOT } from '../helpers.ts';
@@ -23,9 +23,11 @@ import { ROOT } from '../helpers.ts';
 // models Worker by onnxruntime-web, its take kept and its audio written; the take judged by the
 // desktop's word aligner (every word said, none swallowed, as the native voice's takes score); the
 // model erased by the browser, then downloaded again as the next line is said, without an error.
-// ELABORA_VOICE_TEST_MODELS names a folder holding the English model's files (126 MB) and
-// ELABORA_ALIGNER_TEST_MODELS the English aligner's (95 MB), both from the models' mirror (D57);
-// without them, the test is skipped.
+// ELABORA_MODELS_LANGUAGE says the language (en by default, fr); ELABORA_VOICE_TEST_MODELS names a
+// folder holding that language's voice model (English 126 MB, French 338 MB) and
+// ELABORA_ALIGNER_TEST_MODELS its aligner's (95 MB, 339 MB), both from the models' mirror (D57);
+// without them, the test is skipped. It says what the browser grants the origin and the browser's
+// memory at its peak.
 
 const run = promisify(execFile);
 const VOICE = process.env.ELABORA_VOICE_TEST_MODELS;
@@ -35,8 +37,11 @@ const MODELS_ORIGIN = 'https://models.elabora.test';
 const ORT = path.join(ROOT, 'node_modules/onnxruntime-web/dist');
 const VOICES = path.join(ROOT, 'packages/node/voices/pocket-tts');
 const EXAMPLE = path.join(ROOT, 'examples/canal-locks');
-const bundle = bundleFor('en')!;
-const english = ALIGNER_MODELS.find((model) => model.language === 'en')!;
+const LANGUAGE = process.env.ELABORA_MODELS_LANGUAGE ?? 'en';
+const bundle = bundleFor(LANGUAGE)!;
+const aligner = ALIGNER_MODELS.find((model) => model.language === LANGUAGE)!;
+// The language's first voice of the catalogue (packages/node/voices/pocket-tts/voices.json).
+const voice = (JSON.parse(fs.readFileSync(path.join(VOICES, 'voices.json'), 'utf8')) as { voices: { id: string; language: string; file: string }[] }).voices.find((one) => one.language === LANGUAGE)!;
 const exampleFiles = readProjectFiles(EXAMPLE).files;
 const exampleMedia = new Map([...exampleFiles].flatMap(([rel, file]) => (file.kind === 'binary' && file.hash ? [[file.hash, fs.readFileSync(path.join(EXAMPLE, rel))] as [string, Buffer]] : [])));
 
@@ -98,10 +103,11 @@ after(async () => { await browser?.close(); });
 test('a local voice in a browser\'s session: its model downloaded and kept, a line said and written, the take saying every word; erased, downloaded again', { timeout: 900_000 }, async (t) => {
   if (!VOICE || !ALIGNER) return t.skip('ELABORA_VOICE_TEST_MODELS and ELABORA_ALIGNER_TEST_MODELS name no folders of the English voice\'s and aligner\'s files');
   const project = loadProjectFromDir(EXAMPLE);
-  const screen = [...project.screens.keys()].find((id) => (narrationLines(project, id, 'en')?.filter((line) => line.text).length ?? 0) >= 2)!;
-  const lines = narrationLines(project, screen, 'en')!.filter((line) => line.text).slice(0, 2);
+  const screen = [...project.screens.keys()].find((id) => (narrationLines(project, id, LANGUAGE)?.filter((line) => line.text).length ?? 0) >= 2)!;
+  const lines = narrationLines(project, screen, LANGUAGE)!.filter((line) => line.text).slice(0, 2);
   const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
-  const result = await page.evaluate(async ([seed, screenId, ids, base, speaker, folder]) => {
+  const memory = watchMemory();
+  const result = await page.evaluate(async ([seed, screenId, ids, base, speaker, folder, language, voiceId]) => {
     // A Worker a Worker starts does not go through the test's routes: the page gives its scripts by blob addresses.
     const blob = async (url: string, type = 'text/javascript') => URL.createObjectURL(new Blob([await (await fetch(url)).arrayBuffer()], { type }));
     const open = {
@@ -124,35 +130,38 @@ test('a local voice in a browser\'s session: its model downloaded and kept, a li
       for (const part of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(part);
       return Array.from(new Uint8Array(await (await (await dir.getFileHandle(parts.at(-1)!)).getFile()).arrayBuffer()));
     };
-    const before = await ask('voices', { language: 'en' });
-    const installed = await ask('installVoices', { language: 'en' });
-    const set = await ask('setSpeakerVoice', { speaker, voice: 'grace', provider: 'pocket-tts', language: 'en' });
+    const before = await ask('voices', { language });
+    const installed = await ask('installVoices', { language });
+    const granted = await navigator.storage.estimate();
+    const set = await ask('setSpeakerVoice', { speaker, voice: voiceId, provider: 'pocket-tts', language });
     const started = performance.now();
-    const first = await ask('generateVoice', { screen: screenId, lines: [ids[0]] });
+    const first = await ask('generateVoice', { screen: screenId, lines: [ids[0]], language });
     const ms = performance.now() - started;
-    const takes = await ask('voiceTakes', { screen: screenId, line: ids[0] });
+    const takes = await ask('voiceTakes', { screen: screenId, line: ids[0], language });
     const last = (takes.result as { takes: { file: string; seed: number }[] } | undefined)?.takes.at(-1);
     if (!last) return { before, installed, set, first, takes, failed: true };
     const said = await take(last.file);
     // The browser erases the model: the next line downloads it again first.
     await (await (await navigator.storage.getDirectory()).getDirectoryHandle('elabora-models')).removeEntry(folder as string, { recursive: true });
     const again = performance.now();
-    const second = await ask('generateVoice', { screen: screenId, lines: [ids[1]] });
+    const second = await ask('generateVoice', { screen: screenId, lines: [ids[1]], language });
     const nextMs = performance.now() - again;
     // Each line's audio is now its take.
     const current = [];
-    for (const id of ids as string[]) current.push(((await ask('voiceTakes', { screen: screenId, line: id })).result as { takes: { current: boolean }[] }).takes.some((one) => one.current));
+    for (const id of ids as string[]) current.push(((await ask('voiceTakes', { screen: screenId, line: id, language })).result as { takes: { current: boolean }[] }).takes.some((one) => one.current));
     // The second line's take, heard like the first.
-    const next = ((await ask('voiceTakes', { screen: screenId, line: ids[1] })).result as { takes: { file: string; seed: number }[] }).takes.at(-1)!;
+    const next = ((await ask('voiceTakes', { screen: screenId, line: ids[1], language })).result as { takes: { file: string; seed: number }[] }).takes.at(-1)!;
     const said2 = await take(next.file);
     const threads = crossOriginIsolated ? Math.max(1, Math.min(4, Math.floor((navigator.hardwareConcurrency || 2) / 2))) : 1;
-    return { before, installed, set, first, second, current, said: [said, said2], seeds: [last.seed, next.seed], ms, nextMs, threads, progress };
-  }, [{ link, confirmed: [...exampleFiles] }, screen, lines.map((line) => line.id), MODELS_ORIGIN, lines[0]!.speaker, `${bundle.id}@${bundle.version}`] as unknown as [object, string, string[], string, string, string]);
+    return { before, installed, set, first, second, current, said: [said, said2], seeds: [last.seed, next.seed], ms, nextMs, threads, progress, granted: { usage: granted.usage ?? 0, quota: granted.quota ?? 0, persisted: await navigator.storage.persisted() } };
+  }, [{ link, confirmed: [...exampleFiles] }, screen, lines.map((line) => line.id), MODELS_ORIGIN, lines[0]!.speaker, `${bundle.id}@${bundle.version}`, LANGUAGE, voice.id] as unknown as [object, string, string[], string, string, string, string, string]);
+  const peak = memory.stop();
 
   assert.ok(!('failed' in result), JSON.stringify({ installed: result.installed, set: result.set, first: result.first, takes: (result as { takes?: unknown }).takes }).slice(0, 3000));
-  const grace = (result.before.result as { id: string; installed: boolean; size: number }[] | undefined)?.find((voice) => voice.id === 'grace');
-  assert.ok(grace && !grace.installed && grace.size > 100e6, JSON.stringify(result.before));
-  assert.deepEqual(result.installed.result, { language: 'en', installed: true }, JSON.stringify(result.installed.error));
+  const listed = (result.before.result as { id: string; installed: boolean; size: number }[] | undefined)?.find((one) => one.id === voice.id);
+  assert.ok(listed && !listed.installed && listed.size > 100e6, JSON.stringify(result.before));
+  assert.deepEqual(result.installed.result, { language: LANGUAGE, installed: true }, JSON.stringify(result.installed.error));
+  t.diagnostic(`${LANGUAGE}, ${voice.id}: the origin uses ${(result.granted.usage / 1e6).toFixed(0)} MB of the ${(result.granted.quota / 1e9).toFixed(1)} GB the browser grants it (kept for good: ${result.granted.persisted}); the browser's memory at its peak ${peak} MB (its processes' RSS)`);
   assert.ok(result.set.ok, JSON.stringify(result.set.error));
   assert.ok(result.first.ok, JSON.stringify(result.first.error));
   assert.deepEqual((result.first.result as { lines: { status: string }[] }).lines.map((line) => line.status), ['generated']);
@@ -170,7 +179,7 @@ test('a local voice in a browser\'s session: its model downloaded and kept, a li
     fs.writeFileSync(path.join(temp, 'take.wav'), wav);
     const { stdout } = await run(tools.ffmpeg, ['-v', 'error', '-i', path.join(temp, 'take.wav'), '-ac', '1', '-ar', '16000', '-f', 'f32le', '-'], { encoding: 'buffer', maxBuffer: 1 << 28 });
     const samples = new Float32Array(stdout.buffer, stdout.byteOffset, stdout.length / 4).slice();
-    const { words } = (await desktopAlignment(ALIGNER, samples, text, 'en', english)).alignment;
+    const { words } = (await desktopAlignment(ALIGNER, samples, text, LANGUAGE, aligner)).alignment;
     const scores = words.map((word) => word.score ?? 0);
     return { words, seconds: samples.length / 16000, mean: scores.reduce((sum, score) => sum + score, 0) / scores.length, lowest: Math.min(...scores) };
   };
@@ -178,12 +187,12 @@ test('a local voice in a browser\'s session: its model downloaded and kept, a li
     for (const [i, line] of lines.entries()) {
       const text = line.text!;
       const here = await heard(Uint8Array.from(result.said[i]!), text);
-      const desktop = await desktopTake(VOICE, path.join(VOICES, 'english_2026-04/grace.f16'), text, result.seeds[i]!);
+      const desktop = await desktopTake(VOICE, path.join(VOICES, voice.file), text, result.seeds[i]!);
       const there = await heard(desktop.wav, text);
       const said = i === 0 ? `said in ${(result.ms / 1000).toFixed(1)} s on ${result.threads} thread(s) (download, model and voice loaded included)` : `said in ${(result.nextMs / 1000).toFixed(1)} s (the model downloaded again included)`;
       t.diagnostic(`${line.id}: « ${text} », ${here.seconds.toFixed(2)} s ${said}; ${here.words.length} words heard, mean score ${here.mean.toFixed(2)} (lowest ${here.lowest.toFixed(2)}); the desktop's take of the same seed ${there.seconds.toFixed(2)} s in ${(desktop.ms / 1000).toFixed(1)} s (its model loaded before), ${there.mean.toFixed(2)} (lowest ${there.lowest.toFixed(2)})`);
       t.diagnostic(`words: ${here.words.map((word) => `${word.text} ${(word.score ?? 0).toFixed(2)}`).join(', ')}; the desktop's: ${there.words.map((word) => `${word.text} ${(word.score ?? 0).toFixed(2)}`).join(', ')}`);
-      assert.equal(here.words.length, spokenWords(text, 'en').length);
+      assert.equal(here.words.length, spokenWords(text, LANGUAGE).length);
       assert.deepEqual(here.words.filter((word) => (word.score ?? 0) < 0.25 && word.text.length > 1).map((word) => word.text), [], `${line.id}: no word swallowed`);
       // As sure as a take a listener follows. Not the desktop's take of the same seed: onnxruntime-web and
       // the native runtime compute apart, and their takes of one seed may part. Under macOS, nell2's are

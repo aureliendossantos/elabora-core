@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import type { Page } from 'playwright-core';
@@ -13,6 +14,7 @@ export async function pageWithStorage(name: string): Promise<{ page: Page; close
     return { page: await browser.newPage(), close: () => browser.close() };
   }
   const { webkit } = await import('playwright-core');
+  webkitBefore = new Set(processes().filter((row) => WEBKIT.test(row.command)).map((row) => row.pid));
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-webkit-'));
   const context = await webkit.launchPersistentContext(profile, {});
   return {
@@ -34,4 +36,36 @@ export async function emptyStorage(page: Page): Promise<void> {
     if (root) for await (const name of (root as FileSystemDirectoryHandle & { keys(): AsyncIterable<string> }).keys()) await root.removeEntry(name, { recursive: true });
     for (const { name } of await indexedDB.databases()) if (name) indexedDB.deleteDatabase(name);
   });
+}
+
+// Playwright's WebKit runs its pages in XPC services that launchd starts, not under the browser: known
+// by their path, those that were not there before this process launched its WebKit (another WebKit
+// started meanwhile would be counted too).
+const WEBKIT = /ms-playwright\/webkit-[^/]+\/com\.apple\.WebKit\./;
+let webkitBefore: Set<number> | null = null;
+
+const processes = () => execFileSync('ps', ['-A', '-o', 'pid=,ppid=,rss=,command='], { encoding: 'utf8' }).trim().split('\n').map((row) => {
+  const [pid, ppid, rss, ...command] = row.trim().split(/\s+/);
+  return { pid: Number(pid), ppid: Number(ppid), rss: Number(rss), command: command.join(' ') };
+});
+
+// The memory of the browser this process started, at its peak: the resident memory of every process
+// under this one, and of its WebKit's services, summed (pages they share counted in each), sampled
+// every quarter of a second.
+export function watchMemory(): { stop(): number } {
+  let peak = 0;
+  const sample = () => {
+    const rows = processes();
+    const children = new Map<number, number[]>();
+    for (const { pid, ppid } of rows) children.set(ppid, [...(children.get(ppid) ?? []), pid]);
+    const rss = new Map(rows.map(({ pid, rss: kb }) => [pid, kb]));
+    let total = 0;
+    const walk = (pid: number) => { for (const child of children.get(pid) ?? []) { total += rss.get(child) ?? 0; walk(child); } };
+    walk(process.pid);
+    if (webkitBefore) for (const row of rows) if (WEBKIT.test(row.command) && !webkitBefore.has(row.pid)) total += row.rss;
+    peak = Math.max(peak, total);
+  };
+  sample();
+  const timer = setInterval(sample, 250);
+  return { stop: () => { clearInterval(timer); sample(); return Math.round(peak / 1024); } };
 }
