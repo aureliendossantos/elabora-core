@@ -51,9 +51,11 @@ const processes = () => execFileSync('ps', ['-A', '-o', 'pid=,ppid=,rss=,command
 
 // The memory of the browser this process started, at its peak: the resident memory of every process
 // under this one, and of its WebKit's services, summed (pages they share counted in each), sampled
-// every quarter of a second.
-export function watchMemory(): { stop(): number } {
+// every quarter of a second. mark(name) starts a phase: phases() says each one's peak and its last
+// sample, in MB.
+export function watchMemory(): { mark(name: string): void; phases(): { name: string; peak: number; end: number }[]; stop(): number } {
   let peak = 0;
+  const phases: { name: string; peak: number; end: number }[] = [{ name: 'start', peak: 0, end: 0 }];
   const sample = () => {
     const rows = processes();
     const children = new Map<number, number[]>();
@@ -64,8 +66,16 @@ export function watchMemory(): { stop(): number } {
     walk(process.pid);
     if (webkitBefore) for (const row of rows) if (WEBKIT.test(row.command) && !webkitBefore.has(row.pid)) total += row.rss;
     peak = Math.max(peak, total);
+    const phase = phases.at(-1)!;
+    phase.peak = Math.max(phase.peak, total);
+    phase.end = total;
   };
   sample();
   const timer = setInterval(sample, 250);
-  return { stop: () => { clearInterval(timer); sample(); return Math.round(peak / 1024); } };
+  const mb = (kb: number) => Math.round(kb / 1024);
+  return {
+    mark: (name) => { sample(); phases.push({ name, peak: 0, end: 0 }); sample(); },
+    phases: () => phases.map((phase) => ({ name: phase.name, peak: mb(phase.peak), end: mb(phase.end) })),
+    stop: () => { clearInterval(timer); sample(); return mb(peak); }
+  };
 }
