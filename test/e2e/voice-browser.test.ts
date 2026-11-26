@@ -160,10 +160,25 @@ test('a local voice in a browser\'s session: its model downloaded and kept, a li
     // What the browser keeps once the lines are said: the model stays loaded for the next one.
     await phase('thirty seconds after');
     await new Promise((resolve) => setTimeout(resolve, 30_000));
+    // A minute without a line: the models Worker is stopped, its memory given back (MODELS_IDLE_MS).
+    await phase('stopped after a minute');
+    await new Promise((resolve) => setTimeout(resolve, 45_000));
+    // The next line starts it again: the runtime and the model loaded once more.
+    await phase('a line once stopped');
+    const restarted = performance.now();
+    const third = await ask('generateVoice', { screen: screenId, lines: [ids[0]], language });
+    const afterStopMs = performance.now() - restarted;
+    // And the one after it, the model loaded: what the restart cost is told against.
+    const warm = performance.now();
+    await ask('generateVoice', { screen: screenId, lines: [ids[1]], language });
+    const warmMs = performance.now() - warm;
     const threads = crossOriginIsolated ? Math.max(1, Math.min(4, Math.floor((navigator.hardwareConcurrency || 2) / 2))) : 1;
-    return { before, installed, set, first, second, current, said: [said, said2], seeds: [last.seed, next.seed], ms, nextMs, threads, progress, granted: { usage: granted.usage ?? 0, quota: granted.quota ?? 0, persisted: await navigator.storage.persisted() } };
+    return { third, afterStopMs, warmMs, before, installed, set, first, second, current, said: [said, said2], seeds: [last.seed, next.seed], ms, nextMs, threads, progress, granted: { usage: granted.usage ?? 0, quota: granted.quota ?? 0, persisted: await navigator.storage.persisted() } };
   }, [{ link, confirmed: [...exampleFiles] }, screen, lines.map((line) => line.id), MODELS_ORIGIN, lines[0]!.speaker, `${bundle.id}@${bundle.version}`, LANGUAGE, voice.id] as unknown as [object, string, string[], string, string, string, string, string]);
   const peak = memory.stop();
+  assert.deepEqual(((result as { third: { result?: { lines: { status: string }[] } } }).third.result)?.lines.map((line) => line.status), ['generated'], 'a line said once the models Worker stopped');
+  const timed = result as { afterStopMs: number; warmMs: number };
+  t.diagnostic(`a line once the models Worker stopped: ${(timed.afterStopMs / 1000).toFixed(1)} s, the runtime and the model loaded again; the next, the model loaded: ${(timed.warmMs / 1000).toFixed(1)} s`);
   t.diagnostic(`memory by phase (peak, median, end): ${memory.phases().map((one) => `${one.name} ${one.peak}, ${one.median}, ${one.end} MB`).join('; ')}`);
 
   assert.ok(!('failed' in result), JSON.stringify({ installed: result.installed, set: result.set, first: result.first, takes: (result as { takes?: unknown }).takes }).slice(0, 3000));

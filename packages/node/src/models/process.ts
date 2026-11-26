@@ -3,8 +3,8 @@ import type { ChildProcess } from 'node:child_process';
 import { workerExecArgv } from '../edit/auto-version.ts';
 
 // A model run by ONNX Runtime in a process of its own (the word aligner, align/worker.ts; the
-// transcriber, transcribe/worker.ts), started on the first job and kept; it stops after two idle
-// minutes, which frees the model's memory (0.8 to 1.5 GB) as the end of a process does. ONNX Runtime
+// transcriber, transcribe/worker.ts), started on the first job and kept; it stops after one idle
+// minute, which frees the model's memory (0.8 to 1.5 GB) as the end of a process does. ONNX Runtime
 // is native code that answers a request it cannot fit in memory by aborting the process: in a thread
 // of the engine that stopped the engine and closed the module the author was editing (a recording of
 // 90 s, 12 Oct 2026); in a process of its own, that stops the model alone, and the job it was running
@@ -12,7 +12,7 @@ import { workerExecArgv } from '../edit/auto-version.ts';
 // own, as its command line is, ELECTRON_RUN_AS_NODE); it keeps the engine alive only while it works.
 
 const BOOTSTRAP = 'import(process.env.ELABORA_MODEL_MODULE).then((worker) => worker.serve({ on: (event, listener) => process.on(event, listener), postMessage: (message) => process.send(message) }));';
-const IDLE_MS = 120_000;
+const IDLE_MS = 60_000;
 
 // The messages between a process and the module it serves.
 export type ToModel<Job> =

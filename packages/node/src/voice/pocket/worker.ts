@@ -6,7 +6,7 @@ import type { TextRules } from './text.ts';
 // synchronously, a tenth of a second or more, and the model loads in most of a second, so a voice
 // said on the thread of the engine or of the MCP server would hold every other request that long.
 // The thread keeps one model in memory and one voice's state, as the provider did before; the
-// provider frees them after two idle minutes (release).
+// provider frees them after an idle minute (release).
 
 export type { Rules } from '@elabora/core/voice/pocket/models';
 import type { Rules } from '@elabora/core/voice/pocket/models';

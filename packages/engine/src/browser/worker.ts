@@ -95,11 +95,15 @@ scope.onmessage = ({ data, ports }: MessageEvent<WorkerOpen | Envelope>) => {
 };
 
 // The models Worker, when the page gives all it needs.
+export const MODELS_IDLE_MS = 60_000;
+
 function modelsOf({ modelsWorker, ort, ortWasm, models }: WorkerOpen): { worker: ModelsWorker; base: string } | null {
   if (!modelsWorker || !ort || !ortWasm || !models) return null;
   const at = (url: string) => new URL(url, self.location.href).href;
   const wasm = typeof ortWasm === 'string' ? at(ortWasm) : { mjs: at(ortWasm.mjs), wasm: at(ortWasm.wasm) };
-  return { worker: workerClient<ModelsInit, ModelsAsk, ModelsAnswer>(at(modelsWorker), { ort: at(ort), wasm }, (error) => ({ error })), base: models };
+  // Stopped after a minute with neither a line said nor words timed: a language's models take 1 to
+  // 2 GB, given back while the author does something else (the desktop frees them after two).
+  return { worker: workerClient<ModelsInit, ModelsAsk, ModelsAnswer>(at(modelsWorker), { ort: at(ort), wasm }, (error) => ({ error }), { idleMs: MODELS_IDLE_MS }), base: models };
 }
 
 // The copy's key in the browser's storage: its team and project.

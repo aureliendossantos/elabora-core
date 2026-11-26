@@ -14,7 +14,7 @@ import { localAiSupported, requireLocalAi } from '../../models/platform.ts';
 // recordings given for speech synthesis (packages/node/voices/pocket-tts/: sources.json by hand,
 // voices.json and the voices' embeddings written by scripts/pocket-voices.ts); the model of a
 // language is downloaded on first use (models.ts). The model speaks in a worker thread (thread.ts),
-// one at a time in memory, freed after two idle minutes.
+// one at a time in memory, freed after an idle minute.
 
 export type { CatalogueVoice } from '@elabora/core/voice/pocket/models';
 
@@ -129,7 +129,7 @@ class PocketProvider implements VoiceProvider {
     } finally {
       release?.();
       this.#saying--;
-      this.idle = setTimeout(() => { void this.thread.release(); }, 120_000);
+      this.idle = setTimeout(() => { void this.thread.release(); }, 60_000);
       this.idle.unref();
     }
   }
