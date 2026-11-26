@@ -853,6 +853,8 @@ test('archives: a 50 MB video is streamed through export and import (peak memory
   const library = tempDir('elabora-library-');
   // The same module without the video, then with it: what the video adds to the peak is measured,
   // not where the process's peak happened to be before (the validator's garbage, the GC's timing).
+  // The young generation is kept at its smallest: left to grow (16 MB by default), its growth landed
+  // between the two rounds or not with the order modules were evaluated in, 0 to 16 MB of the peak.
   const without = example('diagnostic-reseau');
   const project = example('diagnostic-reseau');
   fs.mkdirSync(path.join(project, 'assets', 'video'), { recursive: true });
@@ -861,7 +863,7 @@ test('archives: a 50 MB video is streamed through export and import (peak memory
   for (let i = 0; i < 50; i++) fs.writeSync(handle, crypto.randomBytes(1024 * 1024));
   fs.closeSync(handle);
   const outDir = tempDir('elabora-archive-');
-  const report = JSON.parse(execFileSync(process.execPath, ['--expose-gc', '--input-type=module', '-e', `
+  const report = JSON.parse(execFileSync(process.execPath, ['--expose-gc', '--max-semi-space-size=1', '--input-type=module', '-e', `
     const library = await import(${JSON.stringify(moduleUrl('packages/node/src/library/index.ts'))});
     const peak = () => process.resourceUsage().maxRSS * 1024;
     const round = async (project, out) => {
