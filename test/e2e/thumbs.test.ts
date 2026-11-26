@@ -1,9 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { chromium, webkit } from 'playwright-core';
 import type { BrowserContext, Frame, Page } from 'playwright-core';
+import { readProjectFiles } from '@elabora/node/project-reader';
 import { startHosts } from '../relay-hosts.ts';
 import { launch } from '../relay-browsers.ts';
-import { APP, CANVAS, FRAMES, authorFiles, handlers } from '../relay-site.ts';
+import { APP, CANVAS, FRAMES, authorFiles, engineMedia, handlers } from '../relay-site.ts';
+import { EXAMPLE } from '../helpers.ts';
 
 // The editor's miniatures in a browser (D130): a list of rows that shows each in view as a live frame of the canvas page, through createThumbs,
 // the engine's requests faked (test/fixtures/thumbs-app.ts). ELABORA_RELAY_BROWSERS picks the browsers (Chromium by default). In Playwright's
@@ -25,6 +31,7 @@ interface ThumbsApp {
   scrollTo(top: number): void;
   setCurrent(screen: string | null): void;
   measure(screen: string, language: string | null): Promise<{ overflow: number; fields: unknown[] } | null>;
+  startEngine(seed: unknown, screens: string[]): Promise<number>;
 }
 type Win = Window & { thumbsApp: ThumbsApp };
 
@@ -197,5 +204,49 @@ for (const name of wanted) {
       const second = await page.evaluate(() => (window as unknown as Win).thumbsApp.measure('simulation', 'en'));
       assert.ok(second && typeof second.overflow === 'number', JSON.stringify(second));
     });
+  });
+
+  test(`thumbnails (${name}): with the engine's renders, each screen of a module is drawn with its files, and measured with its fields`, { timeout: 300000 }, async (t) => {
+    if (name === 'firefox') return t.skip('a frame of another origin shows as about:blank in Playwright\'s Firefox, and a frame after the first gets no relay: the BiDi script looks inside');
+    const hosts = await startHosts(handlers());
+    // A profile on disk: the engine keeps its copy in the origin's private file system, which a throwaway profile has none of in WebKit.
+    const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-thumbs-engine-'));
+    let context: BrowserContext | null = null;
+    try {
+      context = await ({ chromium, webkit } as Record<string, typeof webkit>)[name]!.launchPersistentContext(profile, { headless: true, proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: name === 'chromium' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 900 }, serviceWorkers: 'allow' });
+    } catch (error) {
+      hosts.close();
+      fs.rmSync(profile, { recursive: true, force: true });
+      return t.skip(`${name} is not here: ${String(error).split('\n')[0]}`);
+    }
+    try {
+      const { files } = readProjectFiles(EXAMPLE);
+      for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) engineMedia.set(file.hash, fs.readFileSync(path.join(EXAMPLE, rel)));
+      const screens = [...files.keys()].map((rel) => /^screens\/([^/]+)\.json$/.exec(rel)?.[1]).filter((screen): screen is string => !!screen).sort();
+      const page = context.pages()[0] ?? await context.newPage();
+      await page.goto(`${APP}/thumbs?engine=1&height=800`);
+      await page.waitForFunction(() => !!(window as unknown as Win).thumbsApp, null, { timeout: 30000 });
+      const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
+      await page.evaluate(({ seed, screens }) => (window as unknown as Win).thumbsApp.startEngine(seed, screens), { seed: { link, confirmed: [...files] }, screens });
+      await untilDrawn(page, screens.length);
+      assert.equal(await drawnCount(page), screens.length, 'every row drawn');
+      // Inside each frame: the screen the engine rendered, and its pictures loaded through the frame's own route (the files its render named).
+      const inside = await Promise.all(thumbFrames(page).map((frame) => frame.evaluate(() => ({
+        screen: (window as unknown as { __elaboraCanvas: { screen: string | null } }).__elaboraCanvas.screen,
+        pictures: [...document.querySelectorAll('img')].map((image) => ({ src: image.getAttribute('src'), loaded: image.complete && image.naturalWidth > 0 }))
+      }))));
+      assert.deepEqual(inside.map((each) => each.screen).sort(), screens);
+      const pictures = inside.flatMap((each) => each.pictures);
+      assert.ok(pictures.length >= 2, `the module's screens show pictures: ${JSON.stringify(inside)}`);
+      assert.deepEqual(pictures.filter((picture) => !picture.loaded), [], 'every picture loaded');
+      // The measure: the screen's render with its fields (measureRender), measured in a frame of its own.
+      const measured = await page.evaluate((screen) => (window as unknown as Win).thumbsApp.measure(screen, null), screens[0]!);
+      assert.ok(measured && typeof measured.overflow === 'number' && measured.fields.length > 0, JSON.stringify(measured));
+    } finally {
+      engineMedia.clear();
+      await context.close();
+      hosts.close();
+      fs.rmSync(profile, { recursive: true, force: true });
+    }
   });
 }
