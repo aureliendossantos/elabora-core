@@ -289,6 +289,53 @@ for (const name of wanted) {
     }
   });
 
+  test(`thumbnails (${name}): a miniature at rest moves nothing: an author's animation that wins over the page's rule, an SVG's SMIL and a GIF are held still once its screen is drawn`, PATIENT, async (t) => {
+    if (name === 'firefox') return t.skip('a frame of another origin shows as about:blank in Playwright\'s Firefox: what is inside is looked at in Chromium and WebKit');
+    await withThumbs(name, t, 'rows=1&refresh=0', async (page) => {
+      await untilDrawn(page, 1);
+      const frame = thumbFrames(page)[0]!;
+      // What a course could bring: a rule more specific than the page's, with !important; SMIL kept in an inline SVG; a GIF.
+      await frame.evaluate(() => {
+        const style = document.createElement('style');
+        style.textContent = '@keyframes turn { to { rotate: 1turn } } html body div#moving.moving { animation: turn 1s linear infinite !important }';
+        const moving = Object.assign(document.createElement('div'), { id: 'moving', className: 'moving' });
+        const holder = document.createElement('div');
+        holder.innerHTML = '<svg id="smil" viewBox="0 0 10 10"><circle cx="2" cy="5" r="2"><animate attributeName="cx" values="2;8;2" dur="1s" repeatCount="indefinite"/></circle></svg><img id="gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">';
+        document.head.append(style);
+        document.body.append(moving, holder);
+      });
+      await frame.waitForFunction(() => (document.getElementById('gif') as HTMLImageElement).complete);
+      const state = () => frame.evaluate(() => ({
+        running: document.getAnimations().filter((animation) => animation.playState === 'running').length,
+        smil: !(document.getElementById('smil') as unknown as SVGSVGElement).animationsPaused(),
+        gif: (document.getElementById('gif') as HTMLImageElement).src.startsWith('data:image/gif')
+      }));
+      assert.deepEqual(await state(), { running: 1, smil: true, gif: true }, 'they move before a screen is drawn');
+      // The screen drawn again (a new version).
+      const before = await page.evaluate(() => (window as unknown as Win).thumbsApp.calls.length);
+      await page.evaluate(() => { const app = (window as unknown as Win).thumbsApp; app.bump('simulation'); app.bump('accueil'); app.refresh(0); });
+      await page.waitForFunction((count) => (window as unknown as Win).thumbsApp.calls.length > count, before, { timeout: 15000 });
+      await frame.waitForFunction(() => document.getAnimations().every((animation) => animation.playState !== 'running'), null, { timeout: 15000 });
+      assert.deepEqual(await state(), { running: 0, smil: false, gif: false }, 'held still once the screen is drawn');
+    });
+  });
+
+  test(`thumbnails (${name}): a frame that does not answer is made again twice, then its place is freed and the skeleton stays until the scene is refreshed`, PATIENT, async (t) => {
+    // Every answer waited for 1 ms: no frame ever says its screen is shown.
+    await withThumbs(name, t, 'rows=1&timeout=1', async (page) => {
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.drawn.get(0) === false, null, { timeout: 30000 });
+      const state = () => page.evaluate(() => ({ live: (window as unknown as Win).thumbsApp.live, made: (window as unknown as Win).thumbsApp.calls.length, frames: (window as unknown as Win).thumbsApp.frames().length }));
+      const given = await state();
+      assert.deepEqual([given.live, given.frames], [0, 0], 'its place is freed, no frame is left');
+      assert.equal(given.made, 3, 'three frames made, each with its render: the first and two more');
+      await page.waitForTimeout(1500);
+      assert.equal((await state()).made, 3, 'then nothing more');
+      // The scene refreshed: tried again.
+      await page.evaluate(() => (window as unknown as Win).thumbsApp.refresh(0));
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.calls.length > 3, null, { timeout: 15000 });
+    });
+  });
+
   test(`thumbnails (${name}): a view of more miniatures than places draws them in reading order, and a place freed goes to the next`, PATIENT, async (t) => {
     // A grid of five columns and four lines, all in the view (a Planche, a Storyboard).
     await withThumbs(name, t, 'rows=20&width=1000&height=880&row=192&limit=8', async (page) => {

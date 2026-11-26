@@ -13,7 +13,7 @@ const params = new URLSearchParams(location.search);
 const number = (name: string, fallback: number, least: number, most: number): number => { const value = Number(params.get(name)); return Number.isFinite(value) && params.has(name) ? Math.max(least, Math.min(most, Math.round(value))) : fallback; };
 const CANVAS = 'https://canvas.elabora.page';
 const ENGINE = params.get('engine') === '1';
-const ROWS = number('rows', 8, 1, 60);
+const ROWS = number('rows', 8, 1, 200);
 const LIMIT = number('limit', THUMB_LIMIT, 1, 60);
 const REFRESH = number('refresh', 400, 0, 5000);
 const HEIGHT = number('height', 360, 90, 8000);
@@ -77,7 +77,9 @@ const relayPort = async (host: RelayHost, port: MessagePort): Promise<void> => {
   ends.push(serveRelayPort(port, files, host));
 };
 
-const thumbs = createThumbs({ canvasOrigin: CANVAS, relayPort, source, limit: LIMIT, refreshMs: REFRESH, current: () => current, drawTimeoutMs: 30000 });
+// How long a frame's answer is waited for (a frame that never answers: a few ms).
+const DRAW_TIMEOUT = number('timeout', 30000, 1, 60000);
+const thumbs = createThumbs({ canvasOrigin: CANVAS, relayPort, source, limit: LIMIT, refreshMs: REFRESH, current: () => current, drawTimeoutMs: DRAW_TIMEOUT });
 
 document.body.style.cssText = 'margin:0;font:12px sans-serif';
 const list = document.createElement('div');

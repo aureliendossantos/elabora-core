@@ -49,6 +49,9 @@ export interface Thumbs {
 }
 
 const MEASURER_IDLE_MS = 15000;
+// A frame in the view that does not say its screen is shown in time (a page that stopped answering, a browser short of memory) is made
+// again after these waits, then its place is freed and the window's skeleton stays, until the scene is refreshed.
+const RETRY_MS = [1000, 4000];
 const FADE_MS = 120;
 
 interface Entry {
@@ -65,6 +68,9 @@ interface Entry {
   // Holds one of the `limit` places (a render asked for, a frame made).
   slot: boolean;
   failed: boolean;
+  // Frames made that did not answer in time, and the wait before the next one.
+  tries: number;
+  retry: ReturnType<typeof setTimeout> | null;
   settle: ReturnType<typeof setTimeout> | null;
   wrapper: HTMLElement | null;
   frame: HTMLIFrameElement | null;
@@ -199,7 +205,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
         if (entry.stale) { entry.stale = false; refresh(entry); }
         return;
       }
-      if (!entry.settled && !entry.settle) entry.settle = setTimeout(() => { entry.settle = null; if (entry.visible) { entry.settled = true; pumpSoon(); } }, settleMs);
+      if (!entry.settled && !entry.settle && !entry.retry && !entry.failed) entry.settle = setTimeout(() => { entry.settle = null; if (entry.visible) { entry.settled = true; pumpSoon(); } }, settleMs);
       return;
     }
     // Gone before it was waited for, or before a place was free: it waits again when it comes back (a flick of the wheel asks for none).
@@ -278,10 +284,20 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       if (ended()) return;
       // It left the view before it was drawn: the frame goes, and it is asked for again when the row comes back.
       if (!shown && !entry.visible) { entry.settled = false; drop(entry); pumpSoon(); return; }
+      // In the view and not drawn in time: the frame goes and is made again a while later; after the last try its place is freed.
+      if (!shown) {
+        const wait = RETRY_MS[entry.tries++];
+        entry.settled = false;
+        if (wait === undefined) { entry.failed = true; freeFrame(entry); entry.finish(false); return; }
+        freeFrame(entry);
+        entry.retry = setTimeout(() => { entry.retry = null; if (entry.visible && !entry.released) { entry.settled = true; pumpSoon(); } }, wait);
+        return;
+      }
+      entry.tries = 0;
       entry.version = made.version;
       entry.drawnAt = performance.now();
-      if (shown) wrapper.style.opacity = '1';
-      entry.finish(shown);
+      wrapper.style.opacity = '1';
+      entry.finish(true);
     } catch {
       if (ended()) return;
       entry.failed = true;
@@ -429,7 +445,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       let tellOverflow: ((overflow: boolean) => void) | null = null;
       const overflow = scene.kind === 'block' ? new Promise<boolean>((resolve) => { tellOverflow = resolve; }) : undefined;
       const entry: Entry = {
-        element, scene, visible: !observer, settled: false, stale: false, turn: 0, released: false, slot: false, failed: false, settle: null, wrapper: null, frame: null, host: null, size: null, version: null, renders: 0, drawnAt: 0,
+        element, scene, visible: !observer, settled: false, stale: false, turn: 0, released: false, slot: false, failed: false, tries: 0, retry: null, settle: null, wrapper: null, frame: null, host: null, size: null, version: null, renders: 0, drawnAt: 0,
         crop: null, tellOverflow, again: false, redrawing: false, refreshTimer: null, resize: null, finish: (done) => { finish(done); entry.tellOverflow?.(false); entry.tellOverflow = null; }, drawn, release: () => undefined
       };
       const handle: ThumbShown = {
@@ -439,12 +455,21 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
           if (entry.released) return;
           entry.released = true;
           if (entry.settle) clearTimeout(entry.settle);
+          if (entry.retry) clearTimeout(entry.retry);
           entries.delete(entry);
           if (byElement.get(element) === entry) { byElement.delete(element); observer?.unobserve(element); }
           freeFrame(entry);
           entry.finish(false);
         },
-        refresh() { refresh(entry); }
+        // A scene that could not be drawn is tried again when it may have changed.
+        refresh() {
+          if (!entry.failed && !entry.retry) { refresh(entry); return; }
+          if (entry.retry) clearTimeout(entry.retry);
+          entry.retry = null;
+          entry.failed = false;
+          entry.tries = 0;
+          if (entry.visible) { entry.settled = true; pumpSoon(); }
+        }
       };
       entry.release = handle.release;
       // An element shown again is shown once: what it showed before is released.
@@ -464,7 +489,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       if (pumpTimer) clearTimeout(pumpTimer);
       observer?.disconnect();
       byElement.clear();
-      for (const entry of [...entries]) { entry.released = true; if (entry.settle) clearTimeout(entry.settle); drop(entry); entry.finish(false); }
+      for (const entry of [...entries]) { entry.released = true; if (entry.settle) clearTimeout(entry.settle); if (entry.retry) clearTimeout(entry.retry); drop(entry); entry.finish(false); }
       entries.clear();
       if (measurerIdle) clearTimeout(measurerIdle);
       dropMeasurer();
