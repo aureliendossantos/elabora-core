@@ -7,10 +7,12 @@
 //   window ── createThumbs ──┬── an element, a frame inside it (at most `limit` live frames; the others keep what the window shows)
 //                            └── a measurer: one frame at the course's reference size, kept in the view and clipped to a pixel
 //
-// What it asks of the window: an element of its size when `show` is called, mounted only while it is seen (a browser draws no frame
-// that is out of the view, and a frame is about 20 MB), `release()` when it goes (thumbs-protocol.ts). It makes a frame for an element
-// 120 ms after it asks, nearest to the view first (the editor's own screen before any), and destroys it with `release()`: a frame moved
-// to another parent loads again, so a frame is never given to another element.
+// What it asks of the window: an element of its size when `show` is called, `release()` when it goes (thumbs-protocol.ts). It watches
+// what is in the view itself: it makes a frame for an element 120 ms after the element is in the view, nearest to the view first (the
+// editor's own screen before any), and keeps the frame when the element leaves the view while a place is free, so a row that comes
+// back is already drawn; when an element in the view needs a place and none is free, the frame farthest from the view goes (a browser
+// draws no frame that is out of the view, and a frame is about 20 MB). A frame moved to another parent loads again, so a frame is never
+// given to another element; `release()` destroys it.
 
 import { createPageCanvasHost } from './canvas-page-host.ts';
 import type { PageCanvasHost } from './canvas-page-host.ts';
@@ -52,7 +54,13 @@ const FADE_MS = 120;
 interface Entry {
   element: HTMLElement;
   scene: Scene;
+  // In the view now (what the observer last said), and seen there for the wait: a frame is wanted.
+  visible: boolean;
   settled: boolean;
+  // A refresh asked for while out of the view: drawn when it comes back (a frame out of the view does not draw).
+  stale: boolean;
+  // Counts the frames made for it: a frame made, then taken for another element, ends what it was doing.
+  turn: number;
   released: boolean;
   // Holds one of the `limit` places (a render asked for, a frame made).
   slot: boolean;
@@ -72,6 +80,7 @@ interface Entry {
   resize: ResizeObserver | null;
   finish(drawn: boolean): void;
   drawn: Promise<boolean>;
+  release(): void;
 }
 
 function requestOf(scene: Scene): { name: ThumbRequestName; params: ThumbRequests[ThumbRequestName]['params'] } {
@@ -89,6 +98,7 @@ const screenOf = (scene: Scene): string | null => (scene.kind === 'block' || sce
 
 export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LIMIT, settleMs = THUMB_SETTLE_MS, refreshMs = THUMB_REFRESH_MS, refreshParallel = THUMB_REFRESH_PARALLEL, current, mount, drawTimeoutMs = 20000 }: ThumbsOptions): Thumbs {
   const entries = new Set<Entry>();
+  const byElement = new Map<Element, Entry>();
   let slots = 0;
   let refreshing = 0;
   let closed = false;
@@ -121,14 +131,46 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     pumpTimer = setTimeout(() => { pumpTimer = null; pump(); }, 30);
   }
 
-  // The frames wanted, in the order they are asked for, while a place is free.
+  // The frames wanted, in the order they are asked for, while a place is free; when none is, a frame out of the view gives its place,
+  // the farthest from the view first.
   function pump(): void {
     if (closed) return;
-    while (slots < limit) {
-      const waiting = [...entries].filter((entry) => entry.settled && !entry.slot && !entry.released && !entry.failed && !entry.frame && entry.element.isConnected);
+    for (;;) {
+      const waiting = [...entries].filter((entry) => entry.visible && entry.settled && !entry.slot && !entry.released && !entry.failed && entry.element.isConnected);
       if (!waiting.length) return;
+      if (slots >= limit) {
+        const kept = [...entries].filter((entry) => entry.slot && (!entry.visible || !entry.element.isConnected));
+        if (!kept.length) return;
+        const away = (entry: Entry): number => (entry.element.isConnected ? distance(entry) : Infinity);
+        drop(kept.reduce((far, entry) => (away(entry) > away(far) ? entry : far)));
+        continue;
+      }
       void start(firstOf(waiting));
     }
+  }
+
+  // What is in the view. Without an observer (an old engine of a test), everything shown is.
+  const observer = typeof IntersectionObserver === 'function' ? new IntersectionObserver((changes) => {
+    for (const change of changes) {
+      const entry = byElement.get(change.target);
+      if (entry) seenNow(entry, change.isIntersecting);
+    }
+  }) : null;
+  function seenNow(entry: Entry, visible: boolean): void {
+    if (entry.released || entry.visible === visible) return;
+    entry.visible = visible;
+    if (visible) {
+      if (entry.slot) {
+        if (entry.stale) { entry.stale = false; refresh(entry); }
+        return;
+      }
+      if (!entry.settled && !entry.settle) entry.settle = setTimeout(() => { entry.settle = null; if (entry.visible) { entry.settled = true; pumpSoon(); } }, settleMs);
+      return;
+    }
+    // Gone before it was waited for, or before a place was free: it waits again when it comes back (a flick of the wheel asks for none).
+    if (entry.settle) { clearTimeout(entry.settle); entry.settle = null; }
+    if (!entry.slot) entry.settled = false;
+    pumpSoon();
   }
 
   function place(entry: Entry): void {
@@ -141,9 +183,13 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   async function start(entry: Entry): Promise<void> {
     entry.slot = true;
     slots++;
+    const turn = ++entry.turn;
+    const ended = (): boolean => entry.released || closed || entry.turn !== turn;
     try {
       const made = await fetchRender(entry.scene);
-      if (entry.released || closed) return;
+      if (ended()) return;
+      // Out of the view by now: no frame (it would not draw), and it waits again when it comes back.
+      if (!entry.visible) { entry.settled = false; drop(entry); pumpSoon(); return; }
       const host = createPageCanvasHost({ canvasOrigin, frames: false, relayPort, mount: entry.element, askTimeoutMs: drawTimeoutMs });
       const wrapper = document.createElement('div');
       wrapper.setAttribute('aria-hidden', 'true');
@@ -173,12 +219,15 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       if (typeof ResizeObserver === 'function') { entry.resize = new ResizeObserver(() => place(entry)); entry.resize.observe(entry.element); }
       host.push(made.render, { id: ++entry.renders });
       const shown = await host.ask('shown', { id: entry.renders }).catch(() => false);
-      if (entry.released) return;
+      if (ended()) return;
+      // It left the view before it was drawn: the frame goes, and it is asked for again when the row comes back.
+      if (!shown && !entry.visible) { entry.settled = false; drop(entry); pumpSoon(); return; }
       entry.version = made.version;
       entry.drawnAt = performance.now();
       if (shown) wrapper.style.opacity = '1';
       entry.finish(shown);
     } catch {
+      if (ended()) return;
       entry.failed = true;
       freeFrame(entry);
       entry.finish(false);
@@ -186,6 +235,15 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   }
 
   function freeFrame(entry: Entry): void {
+    drop(entry);
+    pump();
+  }
+  // The frame goes; the element keeps its place among those shown (it is drawn again when it is in the view and a place is free).
+  function drop(entry: Entry): void {
+    entry.turn++;
+    entry.version = null;
+    entry.stale = false;
+    entry.again = false;
     if (entry.refreshTimer) clearTimeout(entry.refreshTimer);
     entry.refreshTimer = null;
     entry.resize?.disconnect();
@@ -198,13 +256,13 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     if (entry.slot) { entry.slot = false; slots--; }
     const queued = refreshQueue.indexOf(entry);
     if (queued >= 0) refreshQueue.splice(queued, 1);
-    pump();
   }
 
   // A live frame given a new render by message when its screen may have changed: at most once every `refreshMs`, `refreshParallel` at a time,
   // the editor's screen first, and only when the render's version is not the one drawn.
   function refresh(entry: Entry): void {
     if (entry.released || !entry.host || !entry.slot || !entry.version) return;
+    if (!entry.visible) { entry.stale = true; return; }
     if (entry.redrawing) { entry.again = true; return; }
     if (entry.refreshTimer || refreshQueue.includes(entry)) return;
     const wait = refreshMs - (performance.now() - entry.drawnAt);
@@ -216,15 +274,17 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     while (refreshing < refreshParallel && refreshQueue.length) {
       const entry = firstOf(refreshQueue);
       refreshQueue.splice(refreshQueue.indexOf(entry), 1);
+      if (!entry.visible) { entry.stale = true; continue; }
       void redraw(entry);
     }
   }
   async function redraw(entry: Entry): Promise<void> {
     refreshing++;
     entry.redrawing = true;
+    const turn = entry.turn;
     try {
       const made = await fetchRender(entry.scene);
-      if (entry.released || !entry.host) return;
+      if (entry.released || !entry.host || entry.turn !== turn) return;
       if (made.version !== entry.version) {
         if (entry.size && (entry.size.width !== made.width || entry.size.height !== made.height) && entry.frame) {
           entry.size = { width: made.width, height: made.height };
@@ -233,8 +293,9 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
           place(entry);
         }
         entry.host.push(made.render, { id: ++entry.renders });
-        await entry.host.ask('shown', { id: entry.renders }).catch(() => false);
-        entry.version = made.version;
+        const shown = await entry.host.ask('shown', { id: entry.renders }).catch(() => false);
+        if (entry.turn !== turn) return;
+        if (shown) entry.version = made.version; else entry.stale = true;
       }
     } catch { /* the thumbnail stays as it is drawn */ } finally {
       // The wait runs from the end of a redraw: a change that came during it is drawn after it, not at once.
@@ -308,23 +369,28 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       let finish!: (drawn: boolean) => void;
       const drawn = new Promise<boolean>((resolve) => { finish = resolve; });
       const entry: Entry = {
-        element, scene, settled: false, released: false, slot: false, failed: false, settle: null, wrapper: null, frame: null, host: null, size: null, version: null, renders: 0, drawnAt: 0, again: false, redrawing: false,
-        refreshTimer: null, resize: null, finish, drawn
+        element, scene, visible: !observer, settled: false, stale: false, turn: 0, released: false, slot: false, failed: false, settle: null, wrapper: null, frame: null, host: null, size: null, version: null, renders: 0, drawnAt: 0, again: false, redrawing: false,
+        refreshTimer: null, resize: null, finish, drawn, release: () => undefined
       };
-      entries.add(entry);
-      entry.settle = setTimeout(() => { entry.settle = null; entry.settled = true; pumpSoon(); }, settleMs);
-      return {
+      const handle: ThumbShown = {
         drawn,
         release() {
           if (entry.released) return;
           entry.released = true;
           if (entry.settle) clearTimeout(entry.settle);
           entries.delete(entry);
+          if (byElement.get(element) === entry) { byElement.delete(element); observer?.unobserve(element); }
           freeFrame(entry);
           entry.finish(false);
         },
         refresh() { refresh(entry); }
       };
+      entry.release = handle.release;
+      // An element shown again is shown once: what it showed before is released.
+      byElement.get(element)?.release();
+      entries.add(entry);
+      if (observer) { byElement.set(element, entry); observer.observe(element); } else entry.settle = setTimeout(() => { entry.settle = null; entry.settled = true; pumpSoon(); }, settleMs);
+      return handle;
     },
     measure(screen, language) {
       const run = measures.then(() => measureNow(screen, language));
@@ -335,7 +401,9 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     close() {
       closed = true;
       if (pumpTimer) clearTimeout(pumpTimer);
-      for (const entry of [...entries]) { entry.released = true; if (entry.settle) clearTimeout(entry.settle); freeFrame(entry); entry.finish(false); }
+      observer?.disconnect();
+      byElement.clear();
+      for (const entry of [...entries]) { entry.released = true; if (entry.settle) clearTimeout(entry.settle); drop(entry); entry.finish(false); }
       entries.clear();
       if (measurerIdle) clearTimeout(measurerIdle);
       dropMeasurer();

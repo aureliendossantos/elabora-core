@@ -1,5 +1,6 @@
-// The web app's page in the miniatures' tests: a list of rows that shows each in view as a miniature (as the window's list of screens will:
-// an element mounted while seen, released when it leaves), through createThumbs. The renders come from a stand-in that holds the test's
+// The web app's page in the miniatures' tests: a list of rows, each shown as a miniature through createThumbs as the window's list of
+// screens will (shown when it is mounted, released when it goes; createThumbs draws those in the view), or, with `view=1`, as a window
+// that mounts a row only while it is seen and releases those that leave. The renders come from a stand-in that holds the test's
 // hosts' renders (its versions under the test's hand), or, with `engine=1`, from the engine's own Worker opened on a project's files
 // (thumbsApp.startEngine), which also answers each frame's port of the relay, as the web app has it. window.thumbsApp is what the test drives.
 import { createThumbs } from '@elabora/player/canvas-thumbs';
@@ -19,8 +20,8 @@ const HEIGHT = number('height', 360, 90, 8000);
 const WIDTH = number('width', 420, 100, 4000);
 const ROW = number('row', 160, 40, 1000);
 const SCREENS = ['simulation', 'accueil'];
-// A trial: a row's miniature kept when it leaves the view (not released), to see what a frame kept alive costs and gives back.
-const KEEP = params.get('keep') === '1';
+// The window that shows only the rows in the view, and releases those that leave (no frame is kept out of the view).
+const VIEW = params.get('view') === '1';
 
 const files: RelaySource = {
   async get(request: RelayRequest): Promise<RelayAnswer> {
@@ -84,15 +85,18 @@ const drawn = new Map<number, boolean>();
 // When each row was seen and when its miniature was drawn (ms of the page's clock): what the measures read.
 const seen = new Map<number, number>();
 const drawnAt = new Map<number, number>();
+function showRow(index: number): void {
+  const one = thumbs.show(rows[index]!, { kind: 'screen', screen: screensOf[index]! });
+  shown.set(index, one);
+  void one.drawn.then((ok) => { if (shown.get(index) !== one) return; drawn.set(index, ok); if (ok) drawnAt.set(index, performance.now()); });
+}
 const observer = new IntersectionObserver((changes) => {
   for (const change of changes) {
     const index = rows.indexOf(change.target as HTMLElement);
-    if (change.isIntersecting && !shown.has(index)) {
-      const one = thumbs.show(rows[index]!, { kind: 'screen', screen: screensOf[index]! });
-      shown.set(index, one);
-      seen.set(index, performance.now());
-      void one.drawn.then((ok) => { if (shown.get(index) !== one) return; drawn.set(index, ok); if (ok) drawnAt.set(index, performance.now()); });
-    } else if (!change.isIntersecting && shown.has(index) && !KEEP) { shown.get(index)!.release(); shown.delete(index); drawn.delete(index); }
+    if (change.isIntersecting) seen.set(index, performance.now());
+    if (!VIEW) continue;
+    if (change.isIntersecting && !shown.has(index)) showRow(index);
+    else if (!change.isIntersecting && shown.has(index)) { shown.get(index)!.release(); shown.delete(index); drawn.delete(index); }
   }
 });
 function build(screens: string[]): void {
@@ -105,6 +109,7 @@ function build(screens: string[]): void {
     rows.push(row);
     screensOf.push(screen);
     observer.observe(row);
+    if (!VIEW) showRow(rows.length - 1);
   }
 }
 if (!ENGINE) build(Array.from({ length: ROWS }, (_, index) => SCREENS[index % SCREENS.length]!));

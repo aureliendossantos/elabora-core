@@ -23,6 +23,7 @@ interface ThumbsApp {
   drawn: Map<number, boolean>;
   ports: number;
   loads: number;
+  rows: HTMLElement[];
   live: number;
   frames(): Array<{ src: string; sandbox: string | null; inert: boolean; ariaHidden: string | null; parent: string | null }>;
   bump(screen: string): void;
@@ -116,17 +117,62 @@ for (const name of wanted) {
     });
   });
 
-  test(`thumbnails (${name}): a list scrolled shows the rows in view, and frees the rows that left`, PATIENT, async (t) => {
+  test(`thumbnails (${name}): a list scrolled shows the rows in view; a row that left keeps its frame while a place is free, and comes back drawn`, PATIENT, async (t) => {
     await withThumbs(name, t, 'rows=40&height=300', async (page) => {
+      const inView = () => page.evaluate(() => (window as unknown as Win).thumbsApp.rows.map((row, index) => ({ index, box: row.getBoundingClientRect() })).filter(({ box }) => box.bottom > 0 && box.top < 300).map(({ index }) => index));
+      const framed = () => page.evaluate(() => (window as unknown as Win).thumbsApp.frames().map((frame) => Number(frame.parent)).sort((a, b) => a - b));
+      const first = await inView();
+      await page.waitForFunction((rows) => rows.every((index) => (window as unknown as Win).thumbsApp.drawn.get(index) === true), first, { timeout: 90000 });
+      await page.waitForTimeout(400);
+      assert.deepEqual(await framed(), first, 'only the rows in view are drawn: a row out of the view is shown, not drawn');
+      await page.evaluate(() => (window as unknown as Win).thumbsApp.scrollTo(1500));
+      const later = await inView();
+      await page.waitForFunction((rows) => rows.every((index) => (window as unknown as Win).thumbsApp.drawn.get(index) === true), later, { timeout: 90000 });
+      await page.waitForTimeout(400);
+      assert.deepEqual(await framed(), [...first, ...later].sort((a, b) => a - b), 'the rows that left keep their frames: fewer than the limit are live');
+      const loads = await page.evaluate(() => (window as unknown as Win).thumbsApp.loads);
+      await page.evaluate(() => (window as unknown as Win).thumbsApp.scrollTo(0));
+      await page.waitForTimeout(400);
+      assert.equal(await page.evaluate(() => (window as unknown as Win).thumbsApp.loads), loads, 'a row that comes back is drawn in the frame it kept: nothing loads');
+    });
+  });
+
+  test(`thumbnails (${name}): a refresh asked for while a row is out of the view is drawn when it comes back, not before`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=40&height=300&refresh=0', async (page) => {
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.drawn.get(0) === true, null, { timeout: 90000 });
+      await page.evaluate(() => (window as unknown as Win).thumbsApp.scrollTo(1500));
+      await page.waitForTimeout(800);
+      const calls = () => page.evaluate(() => (window as unknown as Win).thumbsApp.calls.length);
+      const before = await calls();
+      await page.evaluate(() => { const app = (window as unknown as Win).thumbsApp; app.bump('simulation'); app.bump('accueil'); app.refresh(0); });
+      await page.waitForTimeout(800);
+      assert.equal(await calls(), before, 'nothing is asked for a frame out of the view');
+      await page.evaluate(() => (window as unknown as Win).thumbsApp.scrollTo(0));
+      await page.waitForFunction((count) => (window as unknown as Win).thumbsApp.calls.length > count, before, { timeout: 15000 });
+      assert.equal(await calls(), before + 1, 'its render is asked for once it is back');
+    });
+  });
+
+  test(`thumbnails (${name}): when no place is free, a frame out of the view gives its place to a row in the view`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=40&height=300&limit=6', async (page) => {
       await untilDrawn(page, 1);
-      const first = await page.evaluate(() => [...(window as unknown as Win).thumbsApp.drawn.keys()].sort((a, b) => a - b));
-      assert.ok(first.length >= 1 && first.length <= 16 && Math.max(...first) < 20, JSON.stringify(first));
+      await page.evaluate(() => (window as unknown as Win).thumbsApp.scrollTo(1500));
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.frames().filter((frame) => Number(frame.parent) > 15).length === 6, null, { timeout: 90000 });
+      await page.waitForTimeout(500);
+      const after = await page.evaluate(() => (window as unknown as Win).thumbsApp.frames().map((frame) => Number(frame.parent)));
+      assert.ok(after.length === 6 && after.every((index) => index > 12), `only the rows now in view hold a frame: ${JSON.stringify(after)}`);
+      assert.equal(await page.evaluate(() => (window as unknown as Win).thumbsApp.live), 6);
+    });
+  });
+
+  test(`thumbnails (${name}): a window that shows only the rows in view and releases those that leave keeps no frame out of the view`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=40&height=300&view=1', async (page) => {
+      await untilDrawn(page, 1);
       await page.evaluate(() => (window as unknown as Win).thumbsApp.scrollTo(1500));
       await page.waitForFunction(() => { const keys = [...(window as unknown as Win).thumbsApp.drawn.entries()].filter(([, ok]) => ok).map(([index]) => index); return keys.length > 0 && Math.min(...keys) > 15; }, null, { timeout: 90000 });
       await page.waitForTimeout(500);
-      const after = await page.evaluate(() => ({ drawn: [...(window as unknown as Win).thumbsApp.drawn.keys()], frames: (window as unknown as Win).thumbsApp.frames().map((frame) => Number(frame.parent)) }));
-      assert.ok(after.frames.every((index) => index > 12), `only the rows now in view hold a frame: ${JSON.stringify(after)}`);
-      assert.ok(after.frames.length <= 16);
+      const after = await page.evaluate(() => (window as unknown as Win).thumbsApp.frames().map((frame) => Number(frame.parent)));
+      assert.ok(after.every((index) => index > 12), `only the rows now in view hold a frame: ${JSON.stringify(after)}`);
     });
   });
 

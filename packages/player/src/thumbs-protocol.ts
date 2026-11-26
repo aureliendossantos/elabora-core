@@ -14,18 +14,21 @@
 //
 // The window guarantees to the host:
 // - the element has its size when `show` is called (a box of the course's aspect, `width`/`height` of the render say it);
-// - it is mounted only while the author can see it (a list that shows 40 rows asks for the rows in view, 120 ms after they
-//   are, and releases those that left): a browser does not draw a frame out of the view, and each live frame costs memory;
-// - `release()` is called when the element goes away, and `refresh()` when what the scene shows may have changed (the
-//   host decides whether it has: see THUMB_REFRESH_MS);
+// - `show` is called when the element is mounted and `release()` when it goes away (a list may mount all its rows or only
+//   those near the view): the host itself draws those in the view, 120 ms after they are, and keeps a frame whose element left
+//   the view while a place is free (THUMB_LIMIT), so a row that comes back is drawn at once; a window that releases a row as
+//   it leaves the view is right too, it only keeps nothing;
+// - `refresh()` is called when what the scene shows may have changed (the host decides whether it has: see
+//   THUMB_REFRESH_MS; out of the view, when the element comes back);
 // - the frame of the canvas has `info.sandbox` as its sandbox attribute (canvas-page-host.ts); thumbnails carry their own.
 
 import type { ScreenMeasurement, ScreenRender } from './canvas-protocol.ts';
 
 // How many live thumbnails a window holds at once in a browser. A live thumbnail is a frame of the canvas page: about 20 MB
 // resident in Chromium (12 to 20 MB; 40 of them: +860 MB and 2.4 s before the first one), 25 to 60 ms of drawing, 150 to 300 ms of
-// loading the first time. Sixteen is 130 to 320 MB in the worst case. Beyond it a thumbnail keeps its skeleton until a frame is
-// free (the ones nearest to the view, and the screen of the canvas, first). A « sheet » page (one runtime, a document of
+// loading the first time. Sixteen is 130 to 320 MB in the worst case. Frames out of the view are kept while fewer are live;
+// beyond it the frame farthest from the view gives its place to an element in the view, and an element in the view keeps its
+// skeleton until a frame is free (the ones nearest to the view, and the screen of the canvas, first). A « sheet » page (one runtime, a document of
 // its own for each screen: 8 MB each) is the fallback if a real machine finds this too much (D130).
 export const THUMB_LIMIT = 16;
 // A live thumbnail is shown again at most this often, in ms, however often the window says its screen may have changed: a
