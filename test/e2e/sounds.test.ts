@@ -186,7 +186,8 @@ test('a sound of the story: its part of the file, louder than recorded up to −
   await player(dir, async (page) => {
     await page.mouse.click(5, 450);
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('green-coffee'));
-    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'ring' && entry.heard), null, { timeout: 30000, polling: 20 });
+    // Each is written down once its file is decoded, the café's maybe after the ring's.
+    await page.waitForFunction(() => ['ring', 'cafe'].every((sound) => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === sound && entry.heard)), null, { timeout: 30000, polling: 20 });
     // The music and the ambiences (the café here) go down while it plays (12 dB: a quarter of their
     // level), and come back after it; a voice never does. What lowers them is read as planned on the
     // audio clock: where no sound card is, that clock advances by large steps, past the 1.5 s of the

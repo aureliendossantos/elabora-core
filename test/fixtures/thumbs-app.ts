@@ -1,10 +1,12 @@
-// The web app's page in the miniatures' tests: a list of rows that shows each in view as a miniature (as the window's list of screens will:
-// an element mounted while seen, released when it leaves), through createThumbs. The renders come from a stand-in that holds the test's
+// The web app's page in the miniatures' tests: a list of rows, each shown as a miniature through createThumbs as the window's list of
+// screens will (shown when it is mounted, released when it goes; createThumbs draws those in the view), or, with `view=1`, as a window
+// that mounts a row only while it is seen and releases those that leave. The renders come from a stand-in that holds the test's
 // hosts' renders (its versions under the test's hand), or, with `engine=1`, from the engine's own Worker opened on a project's files
 // (thumbsApp.startEngine), which also answers each frame's port of the relay, as the web app has it. window.thumbsApp is what the test drives.
 import { createThumbs } from '@elabora/player/canvas-thumbs';
 import { serveRelayPort } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayHost, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
+import { THUMB_LIMIT } from '@elabora/player/thumbs-protocol';
 import type { ThumbRequestName, ThumbRequests, ThumbShown, ThumbSource } from '@elabora/player/thumbs-protocol';
 
 const params = new URLSearchParams(location.search);
@@ -12,15 +14,20 @@ const number = (name: string, fallback: number, least: number, most: number): nu
 const CANVAS = 'https://canvas.elabora.page';
 const ENGINE = params.get('engine') === '1';
 const ROWS = number('rows', 8, 1, 60);
-const LIMIT = number('limit', 16, 1, 60);
+const LIMIT = number('limit', THUMB_LIMIT, 1, 60);
 const REFRESH = number('refresh', 400, 0, 5000);
 const HEIGHT = number('height', 360, 90, 8000);
 // A row's size and the list's width: a column of the window's list of screens, or a grid (a Storyboard, a Planche).
 const WIDTH = number('width', 420, 100, 4000);
 const ROW = number('row', 160, 40, 1000);
 const SCREENS = ['simulation', 'accueil'];
-// A trial: a row's miniature kept when it leaves the view (not released), to see what a frame kept alive costs and gives back.
-const KEEP = params.get('keep') === '1';
+// The window that shows only the rows in the view, and releases those that leave (no frame is kept out of the view).
+const VIEW = params.get('view') === '1';
+// A block's preview in the stand-in: the screen's render with one of its blocks as the block added, in a course of slides or not.
+const PREVIEWED: Record<string, string> = { accueil: 'accueil-objectifs', simulation: 'simulation-bravo' };
+const SLIDES = params.get('slides') === '1';
+// The course's reference height in the stand-in's renders (720): a shorter one, and a screen runs past its window.
+const PAGE_HEIGHT = number('page', 720, 200, 2000);
 
 const files: RelaySource = {
   async get(request: RelayRequest): Promise<RelayAnswer> {
@@ -55,11 +62,13 @@ let ports = 0;
 let current: string | null = params.get('current') === 'accueil' ? 'accueil' : null;
 const source: ThumbSource = {
   async render<Name extends ThumbRequestName>(name: Name, request: ThumbRequests[Name]['params']): Promise<ThumbRequests[Name]['result']> {
-    const screen = (request as { screen?: string }).screen ?? SCREENS[0]!;
+    const screen = (request as { screen?: string }).screen ?? (request as { args?: { screen?: string } }).args?.screen ?? SCREENS[0]!;
     calls.push({ name, screen, at: performance.now() });
     if (ENGINE) return engine(name, request);
     if (!renders.has(screen)) renders.set(screen, await (await fetch(`/render/a/${encodeURIComponent(screen)}.json`)).json());
-    return { id: `${name}:${screen}`, render: renders.get(screen), width: 1280, height: 720, version: `${screen}:${versions.get(screen) ?? 0}` } as unknown as ThumbRequests[Name]['result'];
+    const made = { id: `${name}:${screen}`, render: renders.get(screen), width: 1280, height: PAGE_HEIGHT, version: `${name}:${screen}:${versions.get(screen) ?? 0}` };
+    const preview = name === 'blockPreviewRender' ? { block: PREVIEWED[screen] ?? '', slides: SLIDES } : {};
+    return { ...made, ...preview } as unknown as ThumbRequests[Name]['result'];
   }
 };
 const relayPort = async (host: RelayHost, port: MessagePort): Promise<void> => {
@@ -84,15 +93,18 @@ const drawn = new Map<number, boolean>();
 // When each row was seen and when its miniature was drawn (ms of the page's clock): what the measures read.
 const seen = new Map<number, number>();
 const drawnAt = new Map<number, number>();
+function showRow(index: number): void {
+  const one = thumbs.show(rows[index]!, { kind: 'screen', screen: screensOf[index]! });
+  shown.set(index, one);
+  void one.drawn.then((ok) => { if (shown.get(index) !== one) return; drawn.set(index, ok); if (ok) drawnAt.set(index, performance.now()); });
+}
 const observer = new IntersectionObserver((changes) => {
   for (const change of changes) {
     const index = rows.indexOf(change.target as HTMLElement);
-    if (change.isIntersecting && !shown.has(index)) {
-      const one = thumbs.show(rows[index]!, { kind: 'screen', screen: screensOf[index]! });
-      shown.set(index, one);
-      seen.set(index, performance.now());
-      void one.drawn.then((ok) => { if (shown.get(index) !== one) return; drawn.set(index, ok); if (ok) drawnAt.set(index, performance.now()); });
-    } else if (!change.isIntersecting && shown.has(index) && !KEEP) { shown.get(index)!.release(); shown.delete(index); drawn.delete(index); }
+    if (change.isIntersecting) seen.set(index, performance.now());
+    if (!VIEW) continue;
+    if (change.isIntersecting && !shown.has(index)) showRow(index);
+    else if (!change.isIntersecting && shown.has(index)) { shown.get(index)!.release(); shown.delete(index); drawn.delete(index); }
   }
 });
 function build(screens: string[]): void {
@@ -105,6 +117,7 @@ function build(screens: string[]): void {
     rows.push(row);
     screensOf.push(screen);
     observer.observe(row);
+    if (!VIEW) showRow(rows.length - 1);
   }
 }
 if (!ENGINE) build(Array.from({ length: ROWS }, (_, index) => SCREENS[index % SCREENS.length]!));
@@ -121,6 +134,18 @@ const api = {
   release(index: number) { shown.get(index)?.release(); shown.delete(index); drawn.delete(index); },
   scrollTo(top: number) { list.scrollTop = top; },
   measure: (screen: string, language: string | null) => thumbs.measure(screen, language),
+  // A block's preview (« Ajouter un bloc ») in an element of its own above the list, of the size given: whether it was drawn, whether the
+  // slide runs past the window, and the element's box (the frame's own box is the test's to read inside it).
+  async showBlock(screen: string, mini: boolean, width: number, height: number): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null }> {
+    const element = document.createElement('div');
+    element.className = 'block-preview';
+    element.style.cssText = `width:${width}px;height:${height}px;overflow:hidden;background:#ddd;position:relative`;
+    document.body.prepend(element);
+    const one = thumbs.show(element, { kind: 'block', args: { screen }, mini });
+    const ok = await one.drawn;
+    const overflow = one.overflow ? await one.overflow : null;
+    return { drawn: ok, overflow, transform: element.querySelector('iframe')?.style.transform ?? null };
+  },
   // More rows, one for each screen given.
   build,
   // A render as createThumbs asks for it.

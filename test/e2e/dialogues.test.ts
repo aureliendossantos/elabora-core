@@ -273,6 +273,20 @@ test('the scene in a slide: the décor, the cast, the characters\' state during 
       return group ? Object.fromEntries([...group.attributes].map((a) => [a.name, a.value])) : null;
     }, speaker);
     // r1, Marc's line: he speaks (mouth moving on the clock), Leïla listens; « saluer » at « Bonjour ».
+    // A gesture lasts its own seconds of the page's time (1.2 here), not of the dialogue's virtual
+    // clock, which this loop moves: a loaded machine can spend them between two looks. The page notes
+    // each gesture as it is set, with the line then said.
+    await page.evaluate(() => {
+      const notes: [string | null, string][] = [];
+      (window as unknown as { __gestures: typeof notes }).__gestures = notes;
+      new MutationObserver((records) => {
+        for (const record of records) {
+          const target = record.target as Element;
+          const gesture = target.getAttribute('data-gesture');
+          if (gesture && target.closest('.t-dialogue-actor')?.getAttribute('data-speaker') === 'marc') notes.push([(window as DialogueWindow).__elabora.dialogues.state('rencontre-marc').line, gesture]);
+        }
+      }).observe(document.querySelector('[data-block="rencontre-marc"]')!, { subtree: true, attributes: true, attributeFilter: ['data-gesture'] });
+    });
     let seen: { speaking?: boolean; listening?: boolean; gesture?: string; mouths: Set<string>; expression?: string } = { mouths: new Set() };
     for (let i = 0; i < 80; i++) {
       const now = await state(page, 'rencontre-marc');
@@ -281,7 +295,6 @@ test('the scene in a slide: the décor, the cast, the characters\' state during 
         const leila = await actor('leila');
         if (marc && 'data-speaking' in marc) seen.speaking = true;
         if (leila && 'data-listening' in leila) seen.listening = true;
-        if (marc?.['data-gesture']) seen.gesture = marc['data-gesture'];
         if (marc?.['data-mouth']) seen.mouths.add(marc['data-mouth']);
         seen.expression = marc?.['data-expression'];
       }
@@ -290,6 +303,7 @@ test('the scene in a slide: the décor, the cast, the characters\' state during 
       if (now.waiting) await page.click('[data-block="rencontre-marc"] .t-dialogue-next');
       else await page.evaluate(() => (window as DialogueWindow).__elabora.dialogues.advance(0.1));
     }
+    seen.gesture = await page.evaluate(() => (window as unknown as { __gestures: [string | null, string][] }).__gestures.find(([line]) => line === 'r1')?.[1]);
     assert.deepEqual([seen.speaking, seen.listening, seen.gesture, seen.expression], [true, true, 'saluer', 'inquiet'], JSON.stringify({ ...seen, mouths: [...seen.mouths] }));
     assert.ok(seen.mouths.size >= 2, `the mouth moves (${[...seen.mouths].join(', ')})`);
     const first = await boxes(page, 'rencontre-marc');
