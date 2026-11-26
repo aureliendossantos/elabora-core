@@ -221,6 +221,7 @@ test(`video masters in ${BROWSER}: the desktop's plan, an MP4 conformant, fully 
           else {
             assert.deepEqual([master.width, master.height], Object.values(presetDimensions(source, 'high')!), `${name}: the high preset's size`);
             assert.equal(master.rotation, 0, `${name}: turned as it shows`);
+            assert.equal(colour, 'yuv420p,tv,bt709,bt709,bt709', `${name}: its picture in the video range, BT.709, as the desktop's format=yuv420p makes it`);
             // Its first picture, the same as the native ffmpeg's turned the same way.
             const { stderr: compared }: { stderr: string } = await execute(tools.ffmpeg, ['-i', input, '-i', file, '-lavfi', `[0:v]scale=${master.width}:${master.height},format=rgb24[a];[1:v]format=rgb24[b];[a][b]psnr`, '-frames:v', '1', '-f', 'null', '-']);
             const psnr = Number(/average:([\d.]+|inf)/.exec(compared)?.[1].replace('inf', '99'));

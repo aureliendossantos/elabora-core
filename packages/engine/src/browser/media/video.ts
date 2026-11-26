@@ -58,7 +58,7 @@ export async function videoMaster(file: Blob, name: string, info: MediaInfo, { t
     } else {
       audio = { discard: true };
     }
-    const output = new Output({ format: new Mp4OutputFormat({ fastStart: 'reserve' }), target: new StreamTarget(withoutNames(target)) });
+    const output = new Output({ format: new Mp4OutputFormat({ fastStart: 'reserve' }), target: new StreamTarget(withoutNames(target, { videoRange: plan.video === 'encode' })) });
     // No metadata, no date of creation: the master says nothing of where or when it was made.
     const conversion = await Conversion.init({ input, output, video, audio, tracks: 'primary', tags: { creationTime: null }, showWarnings: false });
     const lost = conversion.discardedTracks.filter((t) => t.reason !== 'discarded_by_user');
@@ -83,19 +83,23 @@ export async function videoMaster(file: Blob, name: string, info: MediaInfo, { t
 // Mediabunny names itself in the index it writes: its version as the picture's compressor, its own
 // handler names. The desktop's ffmpeg writes no compressor (bitexact) and the handlers VideoHandler and
 // SoundHandler: the same here, at the same sizes, as the index goes to the target.
+// videoRange: the picture was encoded from toVideoRange's pictures, and its colours (the index's
+// `colr`) are said as they are, BT.709 in the video range. Mediabunny writes what the encoder reports,
+// and Safari's reports the full range and sRGB's transfer for the video range it writes (its stream
+// says so): players read the index first and would show its blacks grey.
 const ascii = (text: string) => Uint8Array.from(text, (c) => c.charCodeAt(0));
 const padded = (text: string, length: number) => { const out = new Uint8Array(length); out.set(ascii(text)); return out; };
 
-export function withoutNames(target: WritableStream<StreamTargetChunk>): WritableStream<StreamTargetChunk> {
+export function withoutNames(target: WritableStream<StreamTargetChunk>, { videoRange = false } = {}): WritableStream<StreamTargetChunk> {
   const writer = target.getWriter();
   return new WritableStream<StreamTargetChunk>({
-    write: (chunk) => writer.write(chunk.type === 'write' ? { ...chunk, data: scrub(chunk.data) } : chunk),
+    write: (chunk) => writer.write(chunk.type === 'write' ? { ...chunk, data: scrub(chunk.data, videoRange) } : chunk),
     close: () => writer.close(),
     abort: (reason) => writer.abort(reason)
   });
 }
 
-function scrub(data: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> {
+function scrub(data: Uint8Array<ArrayBuffer>, videoRange: boolean): Uint8Array<ArrayBuffer> {
   let out = data;
   const replace = (at: number, bytes: Uint8Array) => {
     if (out === data) out = data.slice();
@@ -106,10 +110,14 @@ function scrub(data: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> {
     if (at > 0 && data[at - 1] > 0 && data[at - 1] < 32) replace(at - 1, new Uint8Array(32));
   }
   for (const [from, to] of NAMES) for (let at = indexOf(data, from, 0); at >= 0; at = indexOf(data, from, at + 1)) replace(at, to);
+  // A colour box (ISO/IEC 23001-8 nclx): its type, then primaries, transfer and matrix on 16 bits, then the range's bit.
+  if (videoRange) for (let at = indexOf(data, COLOUR, 0); at >= 0; at = indexOf(data, COLOUR, at + 1)) replace(at + COLOUR.length, BT709_VIDEO_RANGE);
   return out;
 }
 
 const COMPRESSOR = ascii('Mediabunny v');
+const COLOUR = ascii('colrnclx');
+const BT709_VIDEO_RANGE = Uint8Array.of(0, 1, 0, 1, 0, 1, 0);
 const NAMES: [Uint8Array, Uint8Array][] = (['Video', 'Sound', 'Text'] as const).map((kind) => [ascii(`Mediabunny${kind}Handler`), padded(`${kind}Handler`, `Mediabunny${kind}Handler`.length)]);
 
 function indexOf(data: Uint8Array, pattern: Uint8Array, from: number): number {
