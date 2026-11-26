@@ -16,7 +16,7 @@
 
 import { createPageCanvasHost } from './canvas-page-host.ts';
 import type { PageCanvasHost } from './canvas-page-host.ts';
-import type { ScreenMeasurement } from './canvas-protocol.ts';
+import type { BlockPreviewMeasure, LayoutRect, ScreenMeasurement } from './canvas-protocol.ts';
 import type { RelayHost } from './relay-protocol.ts';
 import { THUMB_LIMIT, THUMB_REFRESH_MS, THUMB_REFRESH_PARALLEL, THUMB_SETTLE_MS } from './thumbs-protocol.ts';
 import type { Scene, SceneRender, ThumbRequestName, ThumbRequests, ThumbShown, ThumbSource } from './thumbs-protocol.ts';
@@ -73,6 +73,10 @@ interface Entry {
   version: string | null;
   renders: number;
   drawnAt: number;
+  // What of the page the element shows (a block's preview: around the block, or the block alone); null: the whole page.
+  crop: LayoutRect | null;
+  // A block's preview: whether the slide runs past the window, said once, at its first drawing.
+  tellOverflow: ((overflow: boolean) => void) | null;
   // A refresh was asked for while one was being drawn: it follows, after the wait.
   again: boolean;
   redrawing: boolean;
@@ -95,6 +99,29 @@ function requestOf(scene: Scene): { name: ThumbRequestName; params: ThumbRequest
   }
 }
 const screenOf = (scene: Scene): string | null => (scene.kind === 'block' || scene.kind === 'charter' ? scene.args.screen : scene.screen);
+
+// « Ajouter un bloc » (Lin 34), as the desktop's capture frames it: the block with a narrow margin around it, at the window's
+// proportions, centred on it (its top when even the whole window is shorter), as large as it can be read; a small block keeps some of
+// what surrounds it (`PREVIEW_LEAST` of the window's width). `mini`: the block alone, a very long block its start (three times as wide
+// as it is tall at most); null when it is too small to show, and the preview is shown instead.
+const PREVIEW_MARGIN = 0.035;
+const PREVIEW_LEAST = 0.42;
+const within = (start: number, size: number, room: number): number => Math.round(Math.max(0, Math.min(start, room - size)));
+export function blockPreviewFrame(block: LayoutRect, page: { width: number; height: number }): LayoutRect {
+  const ratio = page.height / page.width;
+  const margin = page.width * PREVIEW_MARGIN;
+  const width = Math.round(Math.min(page.width, Math.max(page.width * PREVIEW_LEAST, block.width + margin * 2, (block.height + margin * 2) / ratio)));
+  const height = Math.round(width * ratio);
+  const top = block.height + margin * 2 <= height ? block.y + block.height / 2 - height / 2 : block.y - margin;
+  return { x: within(block.x + block.width / 2 - width / 2, width, page.width), y: within(top, height, page.height), width, height };
+}
+export function blockMiniFrame(block: LayoutRect, page: { width: number; height: number }): LayoutRect | null {
+  const x = Math.max(0, Math.round(block.x));
+  const y = Math.max(0, Math.round(block.y));
+  const height = Math.min(Math.round(block.height), page.height - y);
+  const width = Math.min(Math.round(block.width), page.width - x, height * 3);
+  return width > 4 && height > 4 ? { x, y, width, height } : null;
+}
 
 export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LIMIT, settleMs = THUMB_SETTLE_MS, refreshMs = THUMB_REFRESH_MS, refreshParallel = THUMB_REFRESH_PARALLEL, current, mount, drawTimeoutMs = 20000 }: ThumbsOptions): Thumbs {
   const entries = new Set<Entry>();
@@ -173,11 +200,31 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     pumpSoon();
   }
 
+  // The page at its size, scaled to the element; a part of it (a block's preview) fills the element, centred, as an image would with
+  // `object-fit: cover`.
   function place(entry: Entry): void {
     if (!entry.wrapper || !entry.frame || !entry.size) return;
     const width = entry.element.clientWidth;
     if (!width) return;
-    entry.frame.style.transform = `scale(${width / entry.size.width})`;
+    const crop = entry.crop;
+    if (!crop) { entry.frame.style.transform = `scale(${width / entry.size.width})`; return; }
+    const height = entry.element.clientHeight || width * (crop.height / crop.width);
+    const scale = Math.max(width / crop.width, height / crop.height);
+    const x = (width - crop.width * scale) / 2 - crop.x * scale;
+    const y = (height - crop.height * scale) / 2 - crop.y * scale;
+    entry.frame.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+  }
+  // A block's preview, once its screen is drawn: the page fades the block's neighbours and scrolls to it (the canvas's `block-preview`),
+  // says where the block is and whether the slide runs past the window, and the element shows the part around it.
+  async function framed(entry: Entry, made: SceneRender): Promise<void> {
+    if (entry.scene.kind !== 'block' || !entry.host || !entry.size) return;
+    const { block, slides } = made as SceneRender & { block: string; slides: boolean };
+    const seen: BlockPreviewMeasure | null = await entry.host.ask('block-preview', { id: entry.renders, block, slides }).catch(() => null);
+    if (!seen) return;
+    entry.crop = seen.block ? (entry.scene.mini ? blockMiniFrame(seen.block, entry.size) : null) ?? blockPreviewFrame(seen.block, entry.size) : null;
+    place(entry);
+    entry.tellOverflow?.(seen.overflow);
+    entry.tellOverflow = null;
   }
 
   async function start(entry: Entry): Promise<void> {
@@ -219,6 +266,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       if (typeof ResizeObserver === 'function') { entry.resize = new ResizeObserver(() => place(entry)); entry.resize.observe(entry.element); }
       host.push(made.render, { id: ++entry.renders });
       const shown = await host.ask('shown', { id: entry.renders }).catch(() => false);
+      if (shown) await framed(entry, made);
       if (ended()) return;
       // It left the view before it was drawn: the frame goes, and it is asked for again when the row comes back.
       if (!shown && !entry.visible) { entry.settled = false; drop(entry); pumpSoon(); return; }
@@ -242,6 +290,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   function drop(entry: Entry): void {
     entry.turn++;
     entry.version = null;
+    entry.crop = null;
     entry.stale = false;
     entry.again = false;
     if (entry.refreshTimer) clearTimeout(entry.refreshTimer);
@@ -294,6 +343,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
         }
         entry.host.push(made.render, { id: ++entry.renders });
         const shown = await entry.host.ask('shown', { id: entry.renders }).catch(() => false);
+        if (shown && entry.turn === turn) await framed(entry, made);
         if (entry.turn !== turn) return;
         if (shown) entry.version = made.version; else entry.stale = true;
       }
@@ -368,12 +418,15 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     show(element, scene): ThumbShown {
       let finish!: (drawn: boolean) => void;
       const drawn = new Promise<boolean>((resolve) => { finish = resolve; });
+      let tellOverflow: ((overflow: boolean) => void) | null = null;
+      const overflow = scene.kind === 'block' ? new Promise<boolean>((resolve) => { tellOverflow = resolve; }) : undefined;
       const entry: Entry = {
-        element, scene, visible: !observer, settled: false, stale: false, turn: 0, released: false, slot: false, failed: false, settle: null, wrapper: null, frame: null, host: null, size: null, version: null, renders: 0, drawnAt: 0, again: false, redrawing: false,
-        refreshTimer: null, resize: null, finish, drawn, release: () => undefined
+        element, scene, visible: !observer, settled: false, stale: false, turn: 0, released: false, slot: false, failed: false, settle: null, wrapper: null, frame: null, host: null, size: null, version: null, renders: 0, drawnAt: 0,
+        crop: null, tellOverflow, again: false, redrawing: false, refreshTimer: null, resize: null, finish: (done) => { finish(done); entry.tellOverflow?.(false); entry.tellOverflow = null; }, drawn, release: () => undefined
       };
       const handle: ThumbShown = {
         drawn,
+        ...(overflow ? { overflow } : {}),
         release() {
           if (entry.released) return;
           entry.released = true;

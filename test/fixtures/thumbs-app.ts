@@ -6,6 +6,7 @@
 import { createThumbs } from '@elabora/player/canvas-thumbs';
 import { serveRelayPort } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayHost, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
+import { THUMB_LIMIT } from '@elabora/player/thumbs-protocol';
 import type { ThumbRequestName, ThumbRequests, ThumbShown, ThumbSource } from '@elabora/player/thumbs-protocol';
 
 const params = new URLSearchParams(location.search);
@@ -13,7 +14,7 @@ const number = (name: string, fallback: number, least: number, most: number): nu
 const CANVAS = 'https://canvas.elabora.page';
 const ENGINE = params.get('engine') === '1';
 const ROWS = number('rows', 8, 1, 60);
-const LIMIT = number('limit', 16, 1, 60);
+const LIMIT = number('limit', THUMB_LIMIT, 1, 60);
 const REFRESH = number('refresh', 400, 0, 5000);
 const HEIGHT = number('height', 360, 90, 8000);
 // A row's size and the list's width: a column of the window's list of screens, or a grid (a Storyboard, a Planche).
@@ -22,6 +23,11 @@ const ROW = number('row', 160, 40, 1000);
 const SCREENS = ['simulation', 'accueil'];
 // The window that shows only the rows in the view, and releases those that leave (no frame is kept out of the view).
 const VIEW = params.get('view') === '1';
+// A block's preview in the stand-in: the screen's render with one of its blocks as the block added, in a course of slides or not.
+const PREVIEWED: Record<string, string> = { accueil: 'accueil-objectifs', simulation: 'simulation-bravo' };
+const SLIDES = params.get('slides') === '1';
+// The course's reference height in the stand-in's renders (720): a shorter one, and a screen runs past its window.
+const PAGE_HEIGHT = number('page', 720, 200, 2000);
 
 const files: RelaySource = {
   async get(request: RelayRequest): Promise<RelayAnswer> {
@@ -56,11 +62,13 @@ let ports = 0;
 let current: string | null = params.get('current') === 'accueil' ? 'accueil' : null;
 const source: ThumbSource = {
   async render<Name extends ThumbRequestName>(name: Name, request: ThumbRequests[Name]['params']): Promise<ThumbRequests[Name]['result']> {
-    const screen = (request as { screen?: string }).screen ?? SCREENS[0]!;
+    const screen = (request as { screen?: string }).screen ?? (request as { args?: { screen?: string } }).args?.screen ?? SCREENS[0]!;
     calls.push({ name, screen, at: performance.now() });
     if (ENGINE) return engine(name, request);
     if (!renders.has(screen)) renders.set(screen, await (await fetch(`/render/a/${encodeURIComponent(screen)}.json`)).json());
-    return { id: `${name}:${screen}`, render: renders.get(screen), width: 1280, height: 720, version: `${screen}:${versions.get(screen) ?? 0}` } as unknown as ThumbRequests[Name]['result'];
+    const made = { id: `${name}:${screen}`, render: renders.get(screen), width: 1280, height: PAGE_HEIGHT, version: `${name}:${screen}:${versions.get(screen) ?? 0}` };
+    const preview = name === 'blockPreviewRender' ? { block: PREVIEWED[screen] ?? '', slides: SLIDES } : {};
+    return { ...made, ...preview } as unknown as ThumbRequests[Name]['result'];
   }
 };
 const relayPort = async (host: RelayHost, port: MessagePort): Promise<void> => {
@@ -126,6 +134,18 @@ const api = {
   release(index: number) { shown.get(index)?.release(); shown.delete(index); drawn.delete(index); },
   scrollTo(top: number) { list.scrollTop = top; },
   measure: (screen: string, language: string | null) => thumbs.measure(screen, language),
+  // A block's preview (« Ajouter un bloc ») in an element of its own above the list, of the size given: whether it was drawn, whether the
+  // slide runs past the window, and the element's box (the frame's own box is the test's to read inside it).
+  async showBlock(screen: string, mini: boolean, width: number, height: number): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null }> {
+    const element = document.createElement('div');
+    element.className = 'block-preview';
+    element.style.cssText = `width:${width}px;height:${height}px;overflow:hidden;background:#ddd;position:relative`;
+    document.body.prepend(element);
+    const one = thumbs.show(element, { kind: 'block', args: { screen }, mini });
+    const ok = await one.drawn;
+    const overflow = one.overflow ? await one.overflow : null;
+    return { drawn: ok, overflow, transform: element.querySelector('iframe')?.style.transform ?? null };
+  },
   // More rows, one for each screen given.
   build,
   // A render as createThumbs asks for it.

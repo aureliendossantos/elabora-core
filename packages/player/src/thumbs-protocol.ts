@@ -24,13 +24,13 @@
 
 import type { ScreenMeasurement, ScreenRender } from './canvas-protocol.ts';
 
-// How many live thumbnails a window holds at once in a browser. A live thumbnail is a frame of the canvas page: about 20 MB
-// resident in Chromium (12 to 20 MB; 40 of them: +860 MB and 2.4 s before the first one), 25 to 60 ms of drawing, 150 to 300 ms of
-// loading the first time. Sixteen is 130 to 320 MB in the worst case. Frames out of the view are kept while fewer are live;
-// beyond it the frame farthest from the view gives its place to an element in the view, and an element in the view keeps its
-// skeleton until a frame is free (the ones nearest to the view, and the screen of the canvas, first). A « sheet » page (one runtime, a document of
-// its own for each screen: 8 MB each) is the fallback if a real machine finds this too much (D130).
-export const THUMB_LIMIT = 16;
+// How many live thumbnails a window holds at once in a browser. A live thumbnail is a frame of the canvas page, 25 to 60 ms of
+// drawing and 150 to 300 ms of loading the first time; eight of them cost +277 MB in Chromium, +133 MB in Firefox and +272 MB in
+// WebKit (sixteen: +441, +238 and +561 MB, measured on a quiet Mac). Frames out of the view are kept while fewer are live; beyond
+// it the frame farthest from the view gives its place to an element in the view, and an element in the view keeps its skeleton
+// until a frame is free (the ones nearest to the view, and the screen of the canvas, first): a view of more than eight rows (the
+// Planche shows 9 to 12) draws the eight nearest its middle (D130).
+export const THUMB_LIMIT = 8;
 // A live thumbnail is shown again at most this often, in ms, however often the window says its screen may have changed: a
 // retouch in the canvas (a keystroke) does not draw sixteen frames each time. A refresh waits for the rest of this time,
 // the screen of the canvas first, one frame in flight for each thumbnail and no more than THUMB_REFRESH_PARALLEL at once.
@@ -67,8 +67,7 @@ export interface BlockPreviewArgs {
 // What a miniature of the Charte shows: the screen with a backdrop variant (null: the course's own), a screen style or a layout.
 export type CharterPreviewArgs = { screen: string; backdrop: string | null } | { screen: string; style: string } | { screen: string; layout: string };
 
-// What is shown. `key` is what the scene shows, as a string (the same scene has the same key): two elements with it
-// show one render. `mini` (a block scene): the block alone, small, as the list of blocks shows it.
+// What is shown. `mini` (a block scene): the block alone, small, as the list of blocks shows it.
 export type Scene =
   | { kind: 'screen'; screen: string; language?: string | null }
   | { kind: 'moment'; screen: string; at: MomentAt }
@@ -79,10 +78,14 @@ export type Scene =
 // What the host gives back for `show`: release when the element goes, refresh when the scene may have changed, `drawn`
 // settles once it is drawn (true) or cannot be (false: closed, refused, no frame free before it was released). A thumbnail that
 // cannot be drawn stays what the window shows while it waits (its skeleton).
+// A block's scene shows the part of the screen around the block (`mini`: the block alone), as the desktop's capture frames it, and
+// gives `overflow`: whether the slide runs past the window with the block in it, from its first drawing (false when it cannot be
+// drawn); a refresh does not change it, a scene shown again asks again.
 export interface ThumbShown {
   release(): void;
   refresh(): void;
   readonly drawn: Promise<boolean>;
+  readonly overflow?: Promise<boolean>;
 }
 // The window's call, on the host's `captures` domain (the module is the window's id of it).
 export type CapturesShow = (module: string, scene: Scene, element: HTMLElement) => ThumbShown;
