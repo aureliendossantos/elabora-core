@@ -353,7 +353,13 @@ test('steps scroll follows the words: the figure changes once a step\'s words cr
         await act();
         const after = await Promise.race([frame.evaluate(() => (window as unknown as { scrolled: Promise<number> }).scrolled), new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000))]);
         const y = await frame.evaluate(() => scrollY);
-        assert.ok(after !== null && y !== before, `${framed ? 'framed' : 'top'}, ${what} did not scroll: ${JSON.stringify({ before, after, y })}`);
+        // A key that moved nothing (CI's macOS, now and then): what tells its possible causes apart, in the message.
+        const why = after !== null && y !== before ? null : await frame.evaluate(() => {
+          const selected = getSelection()?.anchorNode;
+          const scroller = (node: Element | null): string | null => { for (let at = node; at; at = at.parentElement) { const style = getComputedStyle(at); if (at.scrollHeight > at.clientHeight && /auto|scroll|hidden/.test(style.overflowY)) return `${at.tagName}.${at.className}`; } return null; };
+          return { focus: document.hasFocus(), active: `${document.activeElement?.tagName}.${document.activeElement?.className}`, selected: selected?.parentElement?.className ?? null, max: document.scrollingElement!.scrollHeight - innerHeight, scroller: scroller(selected?.parentElement ?? null) };
+        });
+        assert.ok(after !== null && y !== before, `${framed ? 'framed' : 'top'}, ${what} did not scroll: ${JSON.stringify({ before, after, y, why })}`);
         await followed();
       };
       for (const key of ['PageDown', 'PageDown', 'ArrowDown', 'ArrowDown', 'PageDown', 'PageUp', 'ArrowUp', 'PageUp']) await scrolls(key, () => page.keyboard.press(key));
