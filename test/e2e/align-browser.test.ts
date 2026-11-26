@@ -41,6 +41,8 @@ const BROWSER = process.env.ELABORA_BROWSER ?? 'chromium';
 let browser: Awaited<ReturnType<typeof pageWithStorage>> | undefined;
 let page: Page;
 const asked: string[] = [];
+// What onnxruntime-web writes to the console: its errors only (the models Worker sets its log level).
+const runtimeSaid: string[] = [];
 
 before(async () => {
   if (!MODELS) return;
@@ -93,6 +95,7 @@ provideMedia(async (hash) => { const response = await fetch('/example-media/' + 
     return route.fulfill({ headers: ISOLATED, contentType: 'text/html', body: '<!doctype html><title>align</title>' });
   });
   page.on('pageerror', (error) => console.error('page:', error.message));
+  page.on('console', (message) => { if (/onnxruntime/i.test(message.text())) runtimeSaid.push(message.text()); });
   await page.goto(`${ORIGIN}/`);
   await emptyStorage(page);
 });
@@ -220,5 +223,6 @@ test('the align service of a browser\'s session: a screen\'s lines timed, the de
     t.diagnostic(`${line.id}: ${words.length} words written, ${Math.round(worst * 1000)} ms from the desktop's at worst`);
   }
   t.diagnostic(`progress: ${[...new Set(result.progress)].join(', ')}`);
+  assert.deepEqual(runtimeSaid, [], 'onnxruntime-web said nothing but its errors (not « Unknown CPU vendor » under macOS)');
 });
 

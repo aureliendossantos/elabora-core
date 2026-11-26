@@ -32,7 +32,7 @@ export type ModelsAsk =
 export type ModelsAnswer = { alignment: Alignment } | { samples: Float32Array; sampleRate: number; retries: number } | { error: string; code?: string };
 
 type OrtWeb = OnnxRuntime & {
-  env: { wasm: { wasmPaths?: string | { mjs: string; wasm: string }; numThreads?: number } };
+  env: { logLevel?: 'verbose' | 'info' | 'warning' | 'error' | 'fatal'; wasm: { wasmPaths?: string | { mjs: string; wasm: string }; numThreads?: number } };
   InferenceSession: { create(model: Uint8Array, options: object): Promise<OnnxSession> };
 };
 
@@ -66,6 +66,8 @@ function ort(): Promise<OrtWeb> {
     const loadedRuntime = (module.InferenceSession ? module : module.default) as OrtWeb;
     loadedRuntime.env.wasm.wasmPaths = typeof wasm !== 'string' ? wasm : wasm.endsWith('/') ? wasm : `${wasm}/`;
     loadedRuntime.env.wasm.numThreads = threadsHere();
+    // Its errors only: under macOS it warns of an unknown CPU vendor on every load, which says nothing.
+    loadedRuntime.env.logLevel = 'error';
     return loadedRuntime;
   });
   return runtime;
