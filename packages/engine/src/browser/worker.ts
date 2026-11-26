@@ -23,7 +23,7 @@ export type WorkerOpen = RoomAccess & {
   seed?: { link: CopyLink; confirmed: [string, FileContent][] };
   services?: Service[];
   // The media Worker's script, which the app serves beside this one (D106): with it, the media service
-  // may be had; the AAC encoder's address, for a browser without its own (D107: tests only for now).
+  // may be had; the AAC encoder's address, for a browser without its own (D107, D135).
   mediaWorker?: string;
   aacEncoder?: string;
   // The models Worker's script, onnxruntime-web's ESM build and the folder of its wasm, all served by

@@ -12,7 +12,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { findMediaTools } from '@elabora/node/media/index';
 import { bundleForBrowser } from '../browser-bundle.ts';
-import { aacEncoderModule } from '../aac-encoder.ts';
+import { aacEncoderModule } from '@elabora/engine/aac-encoder';
 
 const args = process.argv.slice(2);
 const option = (name: string, fallback: string) => { const at = args.indexOf(`--${name}`); return at >= 0 ? args[at + 1]! : fallback; };
