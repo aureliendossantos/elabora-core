@@ -30,3 +30,17 @@ test('the browser\'s ElevenLabs: the key\'s state asked of the page, an operatio
   eleven.close();
   port2.close();
 });
+
+test('the browser\'s ElevenLabs: a key\'s page that does not answer is taken as holding no key, within two seconds', async () => {
+  const eleven = new BrowserElevenLabs();
+  const { port1, port2 } = new MessageChannel();
+  // The page was removed: nothing answers.
+  port2.onmessage = () => {};
+  eleven.connect(port1);
+  const started = Date.now();
+  await eleven.refresh();
+  assert.ok(Date.now() - started < 2500, 'not waited for');
+  await assert.rejects(eleven.elevenLabs.account(), (error: { code?: string }) => error.code === 'E_VOICE_KEY_MISSING');
+  eleven.close();
+  port2.close();
+});

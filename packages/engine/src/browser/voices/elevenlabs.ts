@@ -43,7 +43,11 @@ export class BrowserElevenLabs {
       },
       cache: {
         get: async (op, params) => this.#generations.get(`${op}\0${JSON.stringify(params)}`) ?? null,
-        put: async (op, params, answer) => { this.#generations.set(`${op}\0${JSON.stringify(params)}`, answer); }
+        // The last 50 answers: each holds its audio.
+      put: async (op, params, answer) => {
+        this.#generations.set(`${op}\0${JSON.stringify(params)}`, answer);
+        for (const key of this.#generations.keys()) { if (this.#generations.size <= 50) break; this.#generations.delete(key); }
+      }
       },
       charges: () => this.#charges,
       recordCharge: (charge) => { this.#charges.push(charge); this.#charges.splice(0, this.#charges.length - 200); },
@@ -74,10 +78,12 @@ export class BrowserElevenLabs {
 
   // The page's state asked again, when this session knows of no key (the window's commit may not have
   // reached this port yet). Without a port, nothing to ask.
+  // A page that does not answer within a second and a half (reloaded, removed) is taken as holding no
+  // key: what does not need ElevenLabs goes on.
   async refresh(): Promise<void> {
     if (!this.#port || this.#state.present) return;
-    const answer = await this.#ask('keyState', {});
-    if (answer.ok && answer.key) this.#state = answer.key;
+    const answer = await this.#ask('keyState', {}, AbortSignal.timeout(1500)).catch(() => null);
+    if (answer?.ok && answer.key) this.#state = answer.key;
   }
 
   // The key forgotten by its page (setVoiceKey { key: null }).

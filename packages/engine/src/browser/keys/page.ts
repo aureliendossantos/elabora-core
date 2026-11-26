@@ -63,23 +63,28 @@ async function answer(port: MessagePort, data: unknown): Promise<void> {
   if (v !== VERSION) { port.postMessage({ v: VERSION, id, ok: false, code: 'E_KEY_PROTOCOL', message: `This page speaks version ${VERSION}.` }); return; }
   if (typeof op !== 'string') return;
   let reply: Record<string, unknown>;
-  switch (op) {
-    case 'keyState': reply = { ok: true, key: keeper.state() }; break;
-    case 'forgetKey': field.value = ''; reply = { ok: true, key: await keeper.forget() }; keyEvent(keeper.state()); break;
-    case 'setKeep': keep = !!(params as { keep?: unknown } | undefined)?.keep; reply = { ok: true, key: await keeper.setKeep(keep) }; keyEvent(keeper.state()); break;
-    case 'commit': {
-      const done = await keeper.commit(field.value, keep);
-      if (done.ok) { field.value = ''; fieldEvent(); keyEvent(keeper.state()); reply = { ok: true, key: keeper.state() }; }
-      else reply = done;
-      break;
+  try {
+    switch (op) {
+      case 'keyState': reply = { ok: true, key: keeper.state() }; break;
+      case 'forgetKey': field.value = ''; reply = { ok: true, key: await keeper.forget() }; keyEvent(keeper.state()); break;
+      case 'setKeep': keep = !!(params as { keep?: unknown } | undefined)?.keep; reply = { ok: true, key: await keeper.setKeep(keep) }; keyEvent(keeper.state()); break;
+      case 'commit': {
+        const done = await keeper.commit(field.value, keep);
+        if (done.ok) { field.value = ''; fieldEvent(); keyEvent(keeper.state()); reply = { ok: true, key: keeper.state() }; }
+        else reply = done;
+        break;
+      }
+      case 'focus': field.focus(); reply = { ok: true }; break;
+      case 'clear': field.value = ''; fieldEvent(); reply = { ok: true }; break;
+      default: {
+        const asked: KeyAnswer = await keeper.ask(op, params);
+        if (asked.ok && asked.bytes) { port.postMessage({ v: VERSION, id, ...asked }, [asked.bytes]); return; }
+        reply = asked;
+      }
     }
-    case 'focus': field.focus(); reply = { ok: true }; break;
-    case 'clear': field.value = ''; fieldEvent(); reply = { ok: true }; break;
-    default: {
-      const asked: KeyAnswer = await keeper.ask(op, params);
-      if (asked.ok && asked.bytes) { port.postMessage({ v: VERSION, id, ...asked }, [asked.bytes]); return; }
-      reply = asked;
-    }
+  } catch (error) {
+    // The browser's storage refused (the key kept, or erased): said, never left unanswered.
+    reply = { ok: false, code: 'E_KEY_STORAGE', message: `This browser could not keep or erase the key (${error instanceof Error ? error.name : 'error'}).` };
   }
   port.postMessage({ v: VERSION, id, ...reply });
 }
