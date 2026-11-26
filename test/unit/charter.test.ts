@@ -6,6 +6,8 @@ import path from 'node:path';
 import { validateDir } from '@elabora/node/project-reader';
 import { initProject } from '@elabora/node/scaffold';
 import { copyCharter } from '@elabora/node/charter';
+import { charterOf, PROVENANCE } from '@elabora/core/project/charter';
+import { isTextPath } from '@elabora/core/project/files';
 import { listModuleTemplates } from '@elabora/node/module-templates';
 import { createModule, libraryRoot } from '@elabora/node/library/index';
 import { ROOT, GEARSET } from '../helpers.ts';
@@ -55,6 +57,34 @@ test('a blank course in the charter of each template and example: its theme, its
     for (const left of ['plan-versions', 'translations', 'sources', 'LICENSE.md', 'README.md', 'elabora.lock.json']) assert.ok(!fs.existsSync(path.join(dir, left)), `${name}: no ${left}`);
     const { diagnostics } = validateDir(dir);
     assert.deepEqual(diagnostics.filter((d) => d.severity === 'error').map((d) => `${d.code} ${d.file ?? ''}: ${d.message}`), [], name);
+  }
+});
+
+// A course's files as a team's room gives them (texts with their text, media by their hash only), as a browser
+// reads them to copy a charter (D136).
+const roomOf = (dir: string) => {
+  const files = new Map<string, string | null>();
+  const walk = (folder: string) => {
+    for (const entry of fs.readdirSync(path.join(dir, folder), { withFileTypes: true })) {
+      const rel = folder ? `${folder}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) walk(rel);
+      else if (entry.isFile()) files.set(rel, isTextPath(rel) ? fs.readFileSync(path.join(dir, rel), 'utf8') : null);
+    }
+  };
+  walk('');
+  const text = (rel: string) => { const value = files.get(rel); if (typeof value !== 'string') throw new Error(`${rel} is not a text`); return value; };
+  return { course: JSON.parse(text('course.json')) as Record<string, unknown>, isFile: (rel: string) => files.has(rel), text, list: (folder: string) => [...files.keys()].filter((rel) => path.posix.dirname(rel) === folder), walk: (folder: string) => [...files.keys()].filter((rel) => rel.startsWith(`${folder}/`)) };
+};
+
+test('a charter read from a room\'s files takes what the desktop copies from the folder, for each template and example', () => {
+  for (const source of sources) {
+    const name = path.basename(source);
+    const dir = path.join(tempDir('elabora-charter-room-'), 'course');
+    initProject(dir, { id: 'charter-test', title: 'Charter test', language: 'en' });
+    const copied = copyCharter(source, dir);
+    const read = charterOf(roomOf(source));
+    assert.deepEqual([...read.files, ...(Object.keys(read.provenance).length ? [PROVENANCE] : [])].sort(), copied.files, `${name}: the same files`);
+    assert.deepEqual({ components: read.components, object: read.object, generators: read.generators }, { components: copied.components, object: copied.object, generators: copied.generators }, name);
   }
 });
 

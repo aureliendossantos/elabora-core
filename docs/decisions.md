@@ -51,7 +51,8 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D134](decisions/D134.md) | A block added without a slot goes in a slot that takes it | 26 Nov 2026 |
 | [D135](decisions/D135.md) | The AAC encoder in wasm is distributed, with what the LGPL asks | 26 Nov 2026 |
 | [D136](decisions/D136.md) | ElevenLabs in a browser: the core's provider, the key held by a page of its own | 26 Nov 2026 |
-| [D137](decisions/D137.md) | « Éléments téléchargés » in a browser: the window's, with no session | 26 Nov 2026 |
+| [D137](decisions/D137.md) | A module in another module's charter, in a browser: the charter picked by the core | 26 Nov 2026 |
+| [D138](decisions/D138.md) | « Éléments téléchargés » in a browser: the window's, with no session | 26 Nov 2026 |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
 | [D15](decisions/D15.md) | Files are the source of truth; every change is an operation | 6 Oct 2026 |
 | [D16](decisions/D16.md) | Media inside the package, one master per file at the high preset | 6 Oct 2026 |
