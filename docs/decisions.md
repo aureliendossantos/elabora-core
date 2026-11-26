@@ -45,6 +45,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |
 | [D130](decisions/D130.md) | A miniature in a browser is a live frame of the canvas page, at most sixteen, asked for through one call of the host | 21 Nov 2026 |
 | [D133](decisions/D133.md) | The miniatures' renders are four requests of the session's base, the canvas service's | 21 Nov 2026 |
+| [D134](decisions/D134.md) | A block added without a slot goes in a slot that takes it | 26 Nov 2026 |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
 | [D15](decisions/D15.md) | Files are the source of truth; every change is an operation | 6 Oct 2026 |
 | [D16](decisions/D16.md) | Media inside the package, one master per file at the high preset | 6 Oct 2026 |

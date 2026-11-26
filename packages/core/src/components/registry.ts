@@ -223,6 +223,13 @@ export function defaultSlotOf(slots: readonly ComponentSlot[] | null | undefined
   return (declared.find((s) => s.default) || declared[0])?.id || null;
 }
 
+// Whether a slot accepts a block of this lineage (itself, then its parents): a fork is accepted
+// where its parent is. accepts that is not a list (a schema error) restricts nothing.
+export function slotAccepts(slot: Pick<ComponentSlot, 'accepts'>, lineage: readonly string[]): boolean {
+  const accepts = Array.isArray(slot.accepts) ? slot.accepts : null;
+  return !accepts || lineage.some((type) => accepts.includes(type));
+}
+
 // Hash of a component's files, to know whether a copy from a library was edited.
 export function componentHash(c: Pick<ComponentSource, 'manifest' | 'template' | 'css' | 'migrations' | 'migrationsSource'>): string {
   const { origin, $schema, ...manifest } = c.manifest || ({} as Partial<ComponentManifest>);

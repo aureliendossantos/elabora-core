@@ -159,6 +159,31 @@ test('a screen created with a layout of the course: its props written, its first
   assert.equal(validateDir(dir).diagnostics.filter((d: { severity: string; file?: string }) => d.severity === 'error' && d.file === 'screens/page-blanche.json').length, 0);
 });
 
+test('a block added without a slot goes in a slot that takes it: the one of the block it follows, the default, then the first that has room for its type', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const slotErrors = () => validateDir(dir).diagnostics.filter((d: { code: string; file?: string }) => d.code === 'E_COMPONENT_SLOT' && d.file === 'screens/accueil.json');
+  const slotOf = (id: string) => readJSON(dir, 'screens/accueil.json').blocks.find((block: { id: string }) => block.id === id)?.slot;
+  assert.deepEqual(slotErrors(), []);
+  // After the free object, whose « scene » takes no text: the default slot, which has room for one more.
+  const first = edit.run(dir, 'add_block', { screen: 'accueil', after: 'accueil-reseau', block: { type: 'text', props: { markdown: 'Un.' } } });
+  assert.equal(slotOf(first.block), undefined);
+  // The default slot full (four blocks): the next slot that takes a text.
+  const second = edit.run(dir, 'add_block', { screen: 'accueil', after: 'accueil-reseau', block: { type: 'text', props: { markdown: 'Deux.' } } });
+  assert.equal(slotOf(second.block), 'note');
+  // After a block of « note »: « note » again.
+  const third = edit.run(dir, 'add_block', { screen: 'accueil', after: second.block, block: { type: 'callout', props: { markdown: 'Trois.' } } });
+  assert.equal(slotOf(third.block), 'note');
+  assert.deepEqual(slotErrors(), []);
+  // An image after a text, the scene emptied: the first slot that accepts an image.
+  edit.run(dir, 'remove_block', { block: 'accueil-reseau' });
+  const image = edit.run(dir, 'add_block', { screen: 'accueil', after: first.block, block: { type: 'image', props: { asset: 'images/portrait-marc.svg', alt: 'Marc' } } });
+  assert.equal(slotOf(image.block), 'scene');
+  assert.deepEqual(slotErrors(), []);
+  // A slot named is the caller's.
+  const named = edit.run(dir, 'add_block', { screen: 'accueil', block: { type: 'text', slot: 'body', props: { markdown: 'Cinq.' } } });
+  assert.equal(slotOf(named.block), 'body');
+});
+
 test('a language started and translated text by text, as changes: stale when the source changes, a lost link refused, a new language started by its first text', () => {
   const dir = copyExample();
   const started = edit.run(dir, 'export_translation', { to: 'en' });

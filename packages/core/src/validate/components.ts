@@ -1,6 +1,6 @@
 import { validateSchema, compileInline, BLOCK_TYPES, isBuiltinBlockType, isBuiltinLayoutType } from '@elabora/format';
 import type { ValidateFunction, ErrorObject } from '@elabora/format';
-import { getRegistry, analysisOf, stylesOf, componentHash, BEHAVIORS, PRIMITIVE_HOOKS, LAYOUT_HOOKS, BUTTON_HOOKS, PRIMITIVE_TAGS } from '../components/registry.ts';
+import { getRegistry, analysisOf, stylesOf, componentHash, slotAccepts, BEHAVIORS, PRIMITIVE_HOOKS, LAYOUT_HOOKS, BUTTON_HOOKS, PRIMITIVE_TAGS } from '../components/registry.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
 import type { TemplateHook } from '../components/template.ts';
 import { CONTROL_NAME, NAMED_CONTROL_HOOKS } from '../components/controls.ts';
@@ -345,9 +345,7 @@ export function checkSlots(ctx: CheckContext, { holder, component, blocks, file,
     const slot = slots.get(slotId);
     if (!slot) { reporter.emit('E_COMPONENT_SLOT', { file, path: `${path}/slot`, target: block.id, message: `${component.level === 'screen' ? 'Layout' : 'Component'} "${component.id}" has no slot "${block.slot}" (slots: ${[...slots.keys()].join(', ')}).` }); return; }
     const lineage = registry.get(block.type)?.lineage || [block.type];
-    // A list of types; anything else (a schema error) restricts nothing.
-    const accepts = Array.isArray(slot.accepts) ? slot.accepts : null;
-    if (accepts && !lineage.some((type) => accepts.includes(type))) reporter.emit('E_COMPONENT_SLOT', { file, path: `${path}/slot`, target: block.id, message: `Slot "${slotId}" of ${component.id} accepts ${accepts.join(', ')}, not ${block.type}.` });
+    if (!slotAccepts(slot, lineage)) reporter.emit('E_COMPONENT_SLOT', { file, path: `${path}/slot`, target: block.id, message: `Slot "${slotId}" of ${component.id} accepts ${slot.accepts!.join(', ')}, not ${block.type}.` });
     count.set(slotId, (count.get(slotId) || 0) + 1);
   });
   for (const [slotId, n] of count) {

@@ -1,7 +1,7 @@
-import type { Block, Screen } from '../project/model.ts';
+import type { Block, ComponentSlot, Project, Screen } from '../project/model.ts';
 import type { Op, Segment } from '../ops/types.ts';
 import { planIndex, resolveBlockProps, screenBlocks } from '../project/load.ts';
-import { getRegistry } from '../components/registry.ts';
+import { getRegistry, slotAccepts } from '../components/registry.ts';
 import { fallbackBlocks } from '../components/fallback.ts';
 import { isRecord, objectsIn } from '../util/values.ts';
 import {
@@ -31,9 +31,34 @@ export function addBlock(context: CommandContext, args: AddBlockArgs): CommandOu
   const added = { props: {}, ...block, id } as Block;
   // Extra the learner may skip (D63): only written when true.
   if (added.optional !== true) delete added.optional;
-  insertAt(targetList(screen, { layer, parent, screen: screenId }), added, { after, position });
+  const target = targetList(screen, { layer, parent, screen: screenId });
+  if (block.slot === undefined) {
+    const slot = slotFor(context.project(), screen, target, { layer, parent }, added.type, after);
+    if (slot) added.slot = slot;
+  }
+  insertAt(target, added, { after, position });
   draft.writeJson(screenFile(screenId), screen);
   return { files: draft.files(), result: { block: id } };
+}
+
+// The slot of a new block that names none (D134), in the screen's layout or the parent instance's
+// component: the slot of the block it follows if that slot takes it, else the default slot, else the
+// first slot that takes it. A slot takes a block it accepts while it has room under maxBlocks (the
+// validator's rules, E_COMPONENT_SLOT). Undefined for the default slot (a block without slot goes
+// there), where there are no slots (a layer), and where no slot takes it: the validator says so.
+function slotFor(project: Project, screen: Screen, list: readonly Block[], { layer, parent }: Pick<AddBlockArgs, 'layer' | 'parent'>, type: string, after: string | null | undefined): string | undefined {
+  if (layer) return undefined;
+  const registry = getRegistry(project);
+  const holder = parent ? [...screenBlocks(screen)].find((placed) => placed.block.id === parent)?.block.type : screen.layout;
+  const component = holder ? registry.get(holder) : undefined;
+  if (!component?.slots.length) return undefined;
+  const lineage = registry.get(type)?.lineage ?? [type];
+  const home = (block: Block) => block.slot || component.defaultSlot;
+  const takes = (slot: ComponentSlot) => slotAccepts(slot, lineage) && (!slot.maxBlocks || list.filter((block) => home(block) === slot.id).length < slot.maxBlocks);
+  const anchor = after ? list.find((block) => block.id === after) : undefined;
+  const order = [anchor ? home(anchor) : null, component.defaultSlot, ...component.slots.map((slot) => slot.id)];
+  const chosen = order.map((id) => component.slots.find((slot) => slot.id === id)).find((slot) => slot && takes(slot));
+  return chosen && chosen.id !== component.defaultSlot ? chosen.id : undefined;
 }
 
 export interface UpdateBlockArgs {
