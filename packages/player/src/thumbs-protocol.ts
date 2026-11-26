@@ -45,7 +45,7 @@ export interface MomentAt {
 }
 
 // What « Ajouter un bloc » previews: add_block's arguments (the screen, the block, where it goes);
-// replace: a block it takes the place of (the paragraph « / » was typed in), gone from the preview;
+// replace: a block it takes the place of (the paragraph « / » was typed in: add_block's own replace);
 // layout: a screen layout given to the screen instead of a block added (a recipe, D63); backdrop: a
 // backdrop variant instead (null: the course's own backdrop, as a screen that picks none);
 // screenStyle: a screen style instead.

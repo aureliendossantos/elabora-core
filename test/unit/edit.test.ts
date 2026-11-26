@@ -179,9 +179,25 @@ test('a block added without a slot goes in a slot that takes it: the one of the 
   const image = edit.run(dir, 'add_block', { screen: 'accueil', after: first.block, block: { type: 'image', props: { asset: 'images/portrait-marc.svg', alt: 'Marc' } } });
   assert.equal(slotOf(image.block), 'scene');
   assert.deepEqual(slotErrors(), []);
+  // In place of a block (the paragraph « / » was typed in), in one change: its slot, which it frees, though full.
+  const before = readJSON(dir, 'screens/accueil.json').blocks.map((block: { id: string }) => block.id);
+  const replaced = edit.run(dir, 'add_block', { screen: 'accueil', replace: image.block, block: { type: 'image', props: { asset: 'images/logo-helios.svg', alt: 'Helios' } } });
+  assert.deepEqual(readJSON(dir, 'screens/accueil.json').blocks.map((block: { id: string }) => block.id), before.map((id: string) => (id === image.block ? replaced.block : id)));
+  assert.equal(slotOf(replaced.block), 'scene');
+  assert.deepEqual(slotErrors(), []);
+  edit.undo(dir);
+  assert.deepEqual(readJSON(dir, 'screens/accueil.json').blocks.map((block: { id: string }) => block.id), before, 'one step undoes it');
   // A slot named is the caller's.
   const named = edit.run(dir, 'add_block', { screen: 'accueil', block: { type: 'text', slot: 'body', props: { markdown: 'Cinq.' } } });
   assert.equal(slotOf(named.block), 'body');
+});
+
+test('in a layer, a block added after one in a column of a columns block goes in that column', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  edit.run(dir, 'upsert_layer', { screen: 'accueil', layer: { id: 'accueil-aide', title: 'Aide', blocks: [{ id: 'aide-colonnes', type: 'columns', props: {}, blocks: [{ id: 'aide-a', type: 'text', slot: 'first', props: { markdown: 'A.' } }, { id: 'aide-b', type: 'text', slot: 'second', props: { markdown: 'B.' } }] }] } });
+  const added = edit.run(dir, 'add_block', { screen: 'accueil', layer: 'accueil-aide', parent: 'aide-colonnes', after: 'aide-b', block: { type: 'text', props: { markdown: 'C.' } } });
+  const columns = readJSON(dir, 'screens/accueil.json').layers.find((layer: { id: string }) => layer.id === 'accueil-aide').blocks[0];
+  assert.equal(columns.blocks.find((block: { id: string }) => block.id === added.block).slot, 'second');
 });
 
 test('a language started and translated text by text, as changes: stale when the source changes, a lost link refused, a new language started by its first text', () => {
