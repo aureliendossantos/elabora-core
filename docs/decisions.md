@@ -47,6 +47,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D131](decisions/D131.md) | The relay keeps its host's own files, named by their SHA-256, so that the canvas opens without the network | 26 Nov 2026 |
 | [D132](decisions/D132.md) | In a browser, a screen is measured in a frame kept in the view, and the Lecteur's preview is the canvas page with the player's bars in a frame that may open a link | 26 Nov 2026 |
 | [D133](decisions/D133.md) | The miniatures' renders are four requests of the session's base, the canvas service's | 21 Nov 2026 |
+| [D134](decisions/D134.md) | A block added without a slot goes in a slot that takes it | 26 Nov 2026 |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
 | [D15](decisions/D15.md) | Files are the source of truth; every change is an operation | 6 Oct 2026 |
 | [D16](decisions/D16.md) | Media inside the package, one master per file at the high preset | 6 Oct 2026 |

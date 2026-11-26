@@ -1,5 +1,5 @@
 import { commandContext } from '@elabora/core/commands/context';
-import { addBlock, removeBlock, type AddBlockArgs } from '@elabora/core/commands/blocks';
+import { addBlock, type AddBlockArgs } from '@elabora/core/commands/blocks';
 import { updateScreen } from '@elabora/core/commands/screens';
 import type { ProjectFiles } from '@elabora/core/project/files';
 import { loadProject } from '@elabora/core/project/load';
@@ -57,7 +57,7 @@ export class SessionThumbs {
     this.#host.assertOpen();
     const project = this.#host.project();
     if (!project.screens.has(args.screen)) throw new EngineError('not-found', `No screen "${args.screen}"`);
-    const { replace, layout, backdrop, screenStyle, ...added } = args;
+    const { layout, backdrop, screenStyle, ...added } = args;
     const context = commandContext(this.#host.files(), this.#host.root ? { root: this.#host.root } : {});
     const slides = isSlides(project);
     if (layout || backdrop !== undefined || screenStyle) {
@@ -68,8 +68,7 @@ export class SessionThumbs {
       return { ...scene, block: '', slides };
     }
     const output = addBlock(context, added as AddBlockArgs);
-    const files = replace ? removeBlock(commandContext(output.files!, this.#host.root ? { root: this.#host.root } : {}), { block: replace }).files ?? output.files! : output.files!;
-    const scene = this.#scene('block', this.#preview(project, files, args.screen, args.layer ?? undefined), `:${output.result.block}`);
+    const scene = this.#scene('block', this.#preview(project, output.files!, args.screen, args.layer ?? undefined), `:${output.result.block}`);
     return { ...scene, block: output.result.block, slides };
   }
 

@@ -1,7 +1,7 @@
-import type { Block, Screen } from '../project/model.ts';
+import type { Block, ComponentSlot, Project, Screen } from '../project/model.ts';
 import type { Op, Segment } from '../ops/types.ts';
 import { planIndex, resolveBlockProps, screenBlocks } from '../project/load.ts';
-import { getRegistry } from '../components/registry.ts';
+import { getRegistry, slotAccepts } from '../components/registry.ts';
 import { fallbackBlocks } from '../components/fallback.ts';
 import { isRecord, objectsIn } from '../util/values.ts';
 import {
@@ -19,10 +19,14 @@ export interface AddBlockArgs extends Placement {
   block: Omit<Block, 'props' | 'id'> & { id?: string; props?: Props };
   layer?: string | null;
   parent?: string | null; // a component instance: the block goes in one of its slots (block.slot)
+  // A block of that list the new one takes the place of, in the same change (the paragraph « / » was typed in):
+  // it goes, the new block where it was, in its slot when that slot takes it. Instead of after and position.
+  replace?: string;
 }
 
 export function addBlock(context: CommandContext, args: AddBlockArgs): CommandOutput<{ block: string }> {
-  const { screen: screenId, block, layer, parent, after, position } = args;
+  const { screen: screenId, block, layer, parent, replace } = args;
+  let { after, position } = args;
   const ids = allIds(context.project());
   if (block.id && ids.has(block.id)) throw new CommandError(`Id "${block.id}" is already used`);
   const id = block.id || freshId(ids, `${screenId}-${block.type}`, context);
@@ -31,9 +35,42 @@ export function addBlock(context: CommandContext, args: AddBlockArgs): CommandOu
   const added = { props: {}, ...block, id } as Block;
   // Extra the learner may skip (D63): only written when true.
   if (added.optional !== true) delete added.optional;
-  insertAt(targetList(screen, { layer, parent, screen: screenId }), added, { after, position });
+  const target = targetList(screen, { layer, parent, screen: screenId });
+  let near = after ? target.find((placed) => placed.id === after) : undefined;
+  if (replace) {
+    const index = target.findIndex((placed) => placed.id === replace);
+    if (index < 0) throw new CommandError(`"${replace}" is not in the list the block goes in`);
+    [near] = target.splice(index, 1);
+    after = null;
+    position = index;
+  }
+  if (block.slot === undefined) {
+    const slot = slotFor(context.project(), screen, target, { layer, parent }, added.type, near);
+    if (slot) added.slot = slot;
+  }
+  insertAt(target, added, { after, position });
   draft.writeJson(screenFile(screenId), screen);
   return { files: draft.files(), result: { block: id } };
+}
+
+// The slot of a new block that names none (D134), in the screen's layout or the parent instance's
+// component: the slot of the block near it (the one it follows, or the one it replaces, out of the list
+// already) if that slot takes it, else the default slot, else the first slot that takes it. A slot takes a
+// block it accepts while it has room under maxBlocks (the validator's rules, E_COMPONENT_SLOT). Undefined
+// for the default slot (a block without slot goes there), where there are no slots (a layer's own list),
+// and where no slot takes it: the validator says so.
+function slotFor(project: Project, screen: Screen, list: readonly Block[], { layer, parent }: Pick<AddBlockArgs, 'layer' | 'parent'>, type: string, near: Block | undefined): string | undefined {
+  if (layer && !parent) return undefined;
+  const registry = getRegistry(project);
+  const holder = parent ? [...screenBlocks(screen)].find((placed) => placed.block.id === parent)?.block.type : screen.layout;
+  const component = holder ? registry.get(holder) : undefined;
+  if (!component?.slots.length) return undefined;
+  const lineage = registry.get(type)?.lineage ?? [type];
+  const home = (block: Block) => block.slot || component.defaultSlot;
+  const takes = (slot: ComponentSlot) => slotAccepts(slot, lineage) && (!slot.maxBlocks || list.filter((block) => home(block) === slot.id).length < slot.maxBlocks);
+  const order = [near ? home(near) : null, component.defaultSlot, ...component.slots.map((slot) => slot.id)];
+  const chosen = order.map((id) => component.slots.find((slot) => slot.id === id)).find((slot) => slot && takes(slot));
+  return chosen && chosen.id !== component.defaultSlot ? chosen.id : undefined;
 }
 
 export interface UpdateBlockArgs {

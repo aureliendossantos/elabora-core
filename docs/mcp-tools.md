@@ -474,7 +474,7 @@ Copy a screen after it in its section: its blocks, layers and events get new ids
 
 ### `elabora_add_block`
 
-Add a block {id, type, props} (built-in type or course component) to a screen, one of its layers, or the slots of a component instance (parent + block.slot). Read elabora_get_schema(&lt;type&gt;) first. Component instances may carry blocks (their slot contents). Without an id the block gets one (&lt;screen&gt;-&lt;type&gt;-&lt;random suffix&gt;), returned as block.
+Add a block {id, type, props} (built-in type or course component) to a screen, one of its layers, or the slots of a component instance (parent + block.slot). Read elabora_get_schema(&lt;type&gt;) first. Component instances may carry blocks (their slot contents). Without an id the block gets one (&lt;screen&gt;-&lt;type&gt;-&lt;random suffix&gt;), returned as block. Without block.slot, on a screen with a layout or in a component instance, it goes in a slot that takes it (accepts its type, has room under maxBlocks): the slot of the block it follows (or replaces), else the default slot, else the first such slot (D134). replace: a block of the same list the new one takes the place of, in the same change.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -484,6 +484,7 @@ Add a block {id, type, props} (built-in type or course component) to a screen, o
 | `parent` | string |  | Component instance receiving the block in one of its slots. |
 | `after` | string |  |  |
 | `position` | integer |  |  |
+| `replace` | string |  | A block of the same list the new one takes the place of: it goes in the same change, the new block where it was (instead of after and position). |
 
 ### `elabora_update_block`
 

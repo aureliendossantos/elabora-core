@@ -26,6 +26,8 @@ const inputOf = (file: Blob) => new Input({ source: new BlobSource(file, { useSt
 // The decoded samples of a file's sound, one array a channel, at its own rate: each decoded sample
 // laid at its time, what comes before zero (an AAC encoder's priming) and after the length its
 // container says (an MP3's padding, `duration`: the probe's) left out, as ffmpeg leaves them out.
+// An Opus stream's pre-skip (its OpusHead) is already out: Mediabunny's decoder drops it and dates
+// the first sample after it.
 export async function decodeSound(file: Blob, name: string, duration?: number | null): Promise<{ channels: Float32Array[]; rate: number }> {
   const input = inputOf(file);
   try {
@@ -34,16 +36,11 @@ export async function decodeSound(file: Blob, name: string, duration?: number | 
     if (!(await track.canDecode())) throw new MediaNotDecodable(name, `the ${track.codec ?? 'unknown'} sound`);
     const parts: { at: number; planes: Float32Array[] }[] = [];
     let rate = track.sampleRate;
-    // An Opus stream's pre-skip in WebM (its OpusHead), which ffmpeg leaves out and the decoded times keep.
-    const config = await track.getDecoderConfig();
-    const matroska = ['WebM', 'Matroska'].includes((await input.getFormat()).name);
-    const head = matroska && track.codec === 'opus' && config?.description ? bytesOf(config.description) : null;
-    const preSkip = head && head.length >= 12 && head[0] === 0x4f ? head[10] | (head[11] << 8) : 0;
     let count = 1;
     for await (const sample of new AudioSampleSink(track).samples()) {
       rate = sample.sampleRate;
       count = Math.max(count, sample.numberOfChannels);
-      parts.push({ at: Math.round(sample.timestamp * rate) - Math.round(preSkip * rate / 48000), planes: Array.from({ length: sample.numberOfChannels }, (_, planeIndex) => {
+      parts.push({ at: Math.round(sample.timestamp * rate), planes: Array.from({ length: sample.numberOfChannels }, (_, planeIndex) => {
         const plane = new Float32Array(sample.numberOfFrames);
         sample.copyTo(plane, { planeIndex, format: 'f32-planar' });
         return plane;
@@ -64,8 +61,6 @@ export async function decodeSound(file: Blob, name: string, duration?: number | 
     input.dispose();
   }
 }
-
-const bytesOf = (source: AllowSharedBufferSource) => (ArrayBuffer.isView(source) ? new Uint8Array(source.buffer, source.byteOffset, source.byteLength) : new Uint8Array(source));
 
 // Mono samples at a rate (the waveform's 8 kHz, the aligner's 16 kHz): the channels mixed as ffmpeg
 // mixes them, then resampled through a windowed sinc low-passed under the new rate's half.
@@ -183,8 +178,10 @@ export async function primingOf(encoded: Blob, samples: Float32Array): Promise<n
 }
 
 // The encoded line written to its target, its packets moved earlier by the priming found: the file
-// says it (an edit list), so that every player and ffmpeg start where the line starts; its last packet
-// lasts only what is left of the line, so that its length is the line's, not a whole AAC frame's.
+// says it (an edit list), so that every player and ffmpeg start where the line starts. It ends where
+// the line ends, not on a whole AAC frame: the packet the end falls in lasts only what is left of the
+// line, and those an encoder adds after it are left out (Apple's AudioToolbox, in Chromium under
+// macOS, flushes a whole frame more than the line needs).
 async function writeLine(encoded: Blob, priming: number, duration: number, target: WritableStream<StreamTargetChunk>): Promise<void> {
   const input = inputOf(encoded);
   try {
@@ -194,14 +191,17 @@ async function writeLine(encoded: Blob, priming: number, duration: number, targe
     const output = new Output({ format: new Mp4OutputFormat({ fastStart: 'reserve' }), target: new StreamTarget(withoutNames(target)) });
     const source = new EncodedAudioPacketSource('aac');
     const rate = track.sampleRate;
+    const end = Math.round(duration * rate);
     const packets: EncodedPacket[] = [];
-    for await (const packet of new EncodedPacketSink(track).packets()) packets.push(packet);
+    for await (const packet of new EncodedPacketSink(track).packets()) {
+      if (Math.round(packet.timestamp * rate) - priming < end) packets.push(packet);
+    }
     output.addAudioTrack(source, { maximumPacketCount: packets.length });
     output.setMetadataTags({ creationTime: null });
     await output.start();
     for (const [i, packet] of packets.entries()) {
       const timestamp = packet.timestamp - priming / rate;
-      const last = i === packets.length - 1 && duration > timestamp && duration < timestamp + packet.duration;
+      const last = i === packets.length - 1 && duration < timestamp + packet.duration;
       await source.add(packet.clone({ timestamp, ...(last ? { duration: duration - timestamp } : {}) }), i === 0 && config ? { decoderConfig: config } : undefined);
     }
     source.close();

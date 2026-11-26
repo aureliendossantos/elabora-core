@@ -64,7 +64,7 @@ export async function makeMediaFixtures(tools: MediaTools): Promise<MediaFixture
       ffmpeg(...picture('1280x720', 1), '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-profile:v', 'high10', '-pix_fmt', 'yuv420p10le', out('ten-bit.mp4'))
     ] : []),
     ...(has('libx265') ? [ffmpeg(...picture('1280x720', 1), '-an', '-c:v', 'libx265', '-preset', 'ultrafast', '-tag:v', 'hvc1', '-x265-params', 'log-level=error', out('hevc.mp4'))] : []),
-    ...(has('libvpx-vp9') && has('libopus') ? [ffmpeg(...picture('640x360', 2), ...tone(2), '-shortest', '-c:v', 'libvpx-vp9', '-deadline', 'realtime', '-b:v', '500k', '-c:a', 'libopus', out('screen.webm'))] : []),
+    ...(has('libvpx-vp9') && has('libopus') ? [ffmpeg(...picture('640x360', 2), ...tone(2), '-af', 'adelay=250:all=1', '-shortest', '-c:v', 'libvpx-vp9', '-deadline', 'realtime', '-b:v', '500k', '-c:a', 'libopus', out('screen.webm'))] : []),
     // Sounds
     ffmpeg(...tone(2, 44100), '-c:a', 'pcm_s16le', out('voice.wav')),
     ffmpeg(...tone(2), '-ac', '1', '-c:a', 'aac', '-b:a', '96k', out('voice.m4a')),
