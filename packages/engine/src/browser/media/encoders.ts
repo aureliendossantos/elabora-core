@@ -1,4 +1,4 @@
-// The AAC encoder in wasm, for a browser without its own (Chromium and Firefox under Linux), given by
+// The AAC encoder in wasm, for a browser without its own (Firefox, and Chromium under Linux), given by
 // an address only (D107, D135): the media Worker never bundles it. The module at that address is
 // @elabora/engine/aac-encoder's aacEncoderModule: @mediabunny/aac-encoder with its 'mediabunny' taken
 // from globalThis.ElaboraMediabunny, this Worker's own copy, so that it registers into the Mediabunny

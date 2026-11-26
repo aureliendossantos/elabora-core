@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 
 // The AAC encoder in wasm that a host serves to a browser's media Worker, for a browser without its own
-// (Chromium and Firefox under Linux; D107, D135), and what its licence asks the host to serve with it.
+// (Firefox, and Chromium under Linux; D107, D135), and what its licence asks the host to serve with it.
 // Mediabunny's @mediabunny/aac-encoder: its JavaScript under the MPL-2.0, its wasm built from FFmpeg's
 // libavcodec, under the LGPL v2.1 or later.
 
