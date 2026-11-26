@@ -2,10 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import type { Quota } from '@elabora/core/ai/quota';
-import { expectedShare } from '@elabora/core/ai/costs';
 import type { CostBook, OwnCharge, ShareAnswer } from '@elabora/core/ai/costs';
 import { COST_BOOK } from '@elabora/core/ai/cost-ledger.generated';
-import { cacheDir, request } from './api.ts';
+import { cacheDir, call } from './api.ts';
+import { elevenLabsShare, ownCharge } from '@elabora/core/voice/elevenlabs/provider';
+import { QuotaCount, quotaOf } from '@elabora/core/voice/elevenlabs/quota';
+import type { Subscription } from '@elabora/core/voice/elevenlabs/quota';
 
 // What ElevenLabs charges and what the author has left (docs/decisions.md D29, D30, D36).
 //
@@ -29,14 +31,13 @@ import { cacheDir, request } from './api.ts';
 // The account's credit count follows about a minute after a request: what this process spent since
 // it last read the count is added to it until the count catches up.
 
-const PROVIDER = 'elevenlabs';
 const DEFAULT_MODEL = 'eleven_v4';
 // The author's own requests kept on this computer (the estimate reads the last twelve of a key).
 const KEPT = 200;
 
 const chargesFile = (): string => path.join(cacheDir(), 'charges.json');
 
-function readCharges(): OwnCharge[] {
+export function readCharges(): OwnCharge[] {
   try {
     const value = JSON.parse(fs.readFileSync(chargesFile(), 'utf8')) as { charges?: OwnCharge[] };
     return Array.isArray(value?.charges) ? value.charges : [];
@@ -82,9 +83,9 @@ export function forgetVoiceRates(): void {
 
 // The share of its list price a request of this model is expected to be charged on this plan (null:
 // not known), the model's list price per character as the service says it now when it was read
-// (rate), and where the figure comes from (D36).
+// (rate), and where the figure comes from (D36): the core's, with this computer's charges.
 export function expectedCharge(plan: string | null, model = DEFAULT_MODEL, rate?: number, kind: 'speech' | 'dialogue' = 'speech', book: CostBook = COST_BOOK): ShareAnswer {
-  return expectedShare(book, { provider: PROVIDER, model, plan: plan?.toLowerCase() ?? null, kind, ...(rate === undefined ? {} : { rates: { characters: rate } }), own: readCharges() });
+  return elevenLabsShare(plan, model, rate, kind, readCharges(), book);
 }
 
 export const chargedShare = (plan: string | null, model = DEFAULT_MODEL, rate?: number, kind: 'speech' | 'dialogue' = 'speech'): number => expectedCharge(plan, model, rate, kind).share;
@@ -93,12 +94,12 @@ export const chargedShare = (plan: string | null, model = DEFAULT_MODEL, rate?: 
 // model's list price per character then (the last 200; rates.json, kept without dates before D36, is
 // dropped: its requests cannot be placed in a period).
 export function recordCharge(charge: { model: string; plan: string | null; list: number; billed: number; rate?: number; kind?: string; date?: string }): void {
-  if (!(charge.list > 0) || !(charge.billed >= 0)) return;
+  const own = ownCharge(charge);
+  if (own) keepCharge(own);
+}
+
+export function keepCharge(own: OwnCharge): void {
   try {
-    const own: OwnCharge = {
-      provider: PROVIDER, model: charge.model, plan: charge.plan?.toLowerCase() ?? null, date: charge.date ?? new Date().toISOString(),
-      ...(charge.kind ? { kind: charge.kind } : {}), list: charge.list, billed: charge.billed, ...(charge.rate === undefined ? {} : { rates: { characters: charge.rate } })
-    };
     const charges = [...readCharges(), own].slice(-KEPT);
     fs.mkdirSync(cacheDir(), { recursive: true });
     fs.writeFileSync(`${chargesFile()}.part`, JSON.stringify({ charges }));
@@ -109,66 +110,31 @@ export function recordCharge(charge: { model: string; plan: string | null; list:
 
 // ── The quota ─────────────────────────────────────────────────────────
 
-export interface Subscription { tier: string; character_count: number; character_limit: number; next_character_count_reset_unix?: number | null }
+export type { Subscription } from '@elabora/core/voice/elevenlabs/quota';
+export { quotaOf } from '@elabora/core/voice/elevenlabs/quota';
 
-// The plan and its count. From /v1/user, which carries the same subscription in about a quarter of a
-// second: /v1/user/subscription adds the invoices (next, open) and takes 1.3 to 1.9 s every time,
-// which is what « Réglages d'Elabora » waited for to show the quota (measured 13 October 2026).
+// The plan and its count (/v1/user, else /v1/user/subscription), for the sounds and the transcription.
 export async function readSubscription({ signal, key }: { signal?: AbortSignal; key: string }): Promise<Subscription> {
-  const { subscription } = await request<{ subscription?: Subscription }>('GET', '/v1/user', { signal, what: 'read your quota', key });
-  return subscription ?? request<Subscription>('GET', '/v1/user/subscription', { signal, what: 'read your quota', key });
+  const { body } = await call<{ subscription?: Subscription }>('account', {}, { signal, what: 'read your quota', key });
+  return body.subscription ?? (await call<Subscription>('subscription', {}, { signal, what: 'read your quota', key })).body;
 }
-
-const resetOf = (sub: Subscription): string | null => (sub.next_character_count_reset_unix ? new Date(sub.next_character_count_reset_unix * 1000).toISOString().replace(/\.\d+Z$/, 'Z') : null);
-
-// The last count read, by key; what was spent since; a read kept 30 s.
-let known: { key: string; quota: Quota; base: number; at: number } | null = null;
-let pending: { credits: number; at: number }[] = [];
-const FRESH_MS = 30_000;
-const LAG_MS = 5 * 60_000;
 
 export const keyId = (key: string): string => crypto.createHash('sha256').update(key).digest('hex').slice(0, 16);
 
-export function quotaOf(sub: Subscription): Quota {
-  return { plan: sub.tier, limit: sub.character_limit, used: sub.character_count, resetsAt: resetOf(sub) };
-}
+// This process's count of the month's credits: lines, sounds and transcriptions spend the same.
+export const credits = new QuotaCount();
 
 // The month's quota of the key in use, the credits spent here since the count was read added.
 export async function readQuota({ signal, key, fresh = false }: { signal?: AbortSignal; key: string; fresh?: boolean }): Promise<Quota> {
   const id = keyId(key);
-  if (!fresh && known?.key === id && Date.now() - known.at < FRESH_MS) return { ...known.quota };
-  const sub = await readSubscription({ signal, key });
-  return remember(id, quotaOf(sub));
+  return (!fresh && credits.fresh(id)) || credits.remember(id, quotaOf(await readSubscription({ signal, key })));
 }
 
 // A count just read (by readQuota or the account), with what this process spent since the last one.
-export function remember(id: string, read: Quota): Quota {
-  const now = Date.now();
-  if (!known || known.key !== id || known.quota.resetsAt !== read.resetsAt) {
-    pending = [];
-    known = { key: id, quota: { ...read }, base: read.used, at: now };
-    return { ...read };
-  }
-  const spent = pending.reduce((sum, entry) => sum + entry.credits, 0);
-  // The count caught up, or what is pending is old enough to be in it: the count is right.
-  if (read.used >= known.base + spent || pending.every((entry) => now - entry.at > LAG_MS)) {
-    pending = [];
-    known = { key: id, quota: { ...read }, base: read.used, at: now };
-    return { ...read };
-  }
-  known = { key: id, quota: { ...read, used: Math.max(read.used, known.base + spent) }, base: known.base, at: now };
-  return { ...known.quota };
-}
+export const remember = (id: string, read: Quota): Quota => credits.remember(id, read);
 
 // Credits a request of this process was charged: counted until the account's count shows them.
-export function noteSpent(credits: number): void {
-  if (!(credits > 0)) return;
-  pending.push({ credits, at: Date.now() });
-  if (known) known.quota = { ...known.quota, used: known.quota.used + credits };
-}
+export const noteSpent = (credits_: number): void => credits.spent(credits_);
 
 // Forgets the count read and what was spent since (tests, or another account).
-export function forgetQuota(): void {
-  known = null;
-  pending = [];
-}
+export const forgetQuota = (): void => credits.forget();

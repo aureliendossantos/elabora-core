@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { localDataRoot } from '../../data-dir.ts';
 import { VoiceError } from '../provider.ts';
+import { scrubKeys } from '@elabora/core/voice/elevenlabs/answers';
 
 // The author's ElevenLabs API key (docs/decisions.md D29, D40). Never in a course, its journal, a log
 // or a message: Elabora shows it masked (sk_…1a2b). Where it comes from, first found:
@@ -42,14 +43,16 @@ export function resolveKey(): { key: string; source: 'app' | 'environment' | 'fi
   return null;
 }
 
+// Why there is no key, and where to give one.
+export const missingKey = (): VoiceError => new VoiceError('E_VOICE_KEY_MISSING', `No ElevenLabs API key on this computer: create one at https://elevenlabs.io/app/settings/api-keys (Text to Speech, Voices: read, User: read), then elabora voice key set (it reads the key from its input), or set ${KEY_ENV}.`);
+
 export function requireKey(): string {
   const found = resolveKey();
-  if (!found) throw new VoiceError('E_VOICE_KEY_MISSING', `No ElevenLabs API key on this computer: create one at https://elevenlabs.io/app/settings/api-keys (Text to Speech, Voices: read, User: read), then elabora voice key set (it reads the key from its input), or set ${KEY_ENV}.`);
+  if (!found) throw missingKey();
   return found.key;
 }
 
-// sk_…1a2b: enough to tell two keys apart, never enough to use one.
-export const maskKey = (key: string): string => `${key.slice(0, 3)}…${key.slice(-4)}`;
+export { maskKey } from '@elabora/core/voice/elevenlabs/answers';
 
 // Writes the key for the command line and agents, readable by the author only.
 export function writeKeyFile(key: string): string {
@@ -76,5 +79,5 @@ export function removeKeyFile(): boolean {
 export function scrub(message: string): string {
   const keys = [sessionKey, process.env[KEY_ENV]?.trim()].filter((key): key is string => !!key);
   try { const fromFile = fs.readFileSync(keyFile(), 'utf8').trim(); if (fromFile) keys.push(fromFile); } catch { /* none */ }
-  return keys.reduce((text, key) => text.split(key).join(maskKey(key)), message).replace(/sk_[A-Za-z0-9]{20,}/g, (found) => maskKey(found));
+  return scrubKeys(message, keys);
 }
