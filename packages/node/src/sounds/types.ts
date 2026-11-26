@@ -5,27 +5,6 @@ import type { Sound } from '@elabora/format';
 import type { Quota } from '@elabora/core/ai/quota';
 import type { AddedSoundLine } from '@elabora/core/commands/sounds';
 
-// « Ajouter un son » (add_sound): a sound of the library (its id), one found through Openverse
-// (openverse:<uuid>) or a file (an absolute path), copied into assets/sounds/ with its sidecar.
-export interface AddSoundArgs {
-  from: string;
-  id?: string;
-  // The part kept (seconds) and a fade out at its end (seconds).
-  trim?: { start: number; end: number };
-  fade?: number;
-  loop?: boolean;
-  // For a file: what its source says.
-  title?: string;
-  author?: string;
-  license?: string;
-  url?: string;
-  caption?: Record<string, string>;
-  // Made by an AI service (sound generate).
-  generated?: Sound['generated'];
-  // A sound line saying it in a narration, placed in the same change (« Placer dans le script »).
-  line?: AddedSoundLine;
-}
-
 export interface AddedSound {
   id: string;
   path: string;

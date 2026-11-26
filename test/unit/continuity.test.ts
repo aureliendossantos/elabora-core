@@ -69,20 +69,20 @@ test('set_continuity links two blocks, joins chains, cuts one, sets the passage,
   // Screen three gets a text that carries on from screen two's text: a new key, named after it.
   const three = readJSON(dir, 'screens/three.json');
   assert.equal(three.blocks[0].type, 'text');
-  assert.equal(edit.setContinuity(dir, { block: 'three-text', with: 'two-text' }).key, 'two-text');
+  assert.equal(edit.run(dir, 'set_continuity', { block: 'three-text', with: 'two-text' }).key, 'two-text');
   assert.deepEqual([keyOf('two', 'two-text'), keyOf('three', 'three-text')], [{ key: 'two-text' }, { key: 'two-text' }]);
   // The passage, then back to the default.
-  edit.setContinuity(dir, { block: 'three-text', duration: 1200 });
+  edit.run(dir, 'set_continuity', { block: 'three-text', duration: 1200 });
   assert.deepEqual(keyOf('three', 'three-text'), { key: 'two-text', duration: 1200 });
-  edit.setContinuity(dir, { block: 'three-text', duration: null });
+  edit.run(dir, 'set_continuity', { block: 'three-text', duration: null });
   assert.deepEqual(keyOf('three', 'three-text'), { key: 'two-text' });
   // Cut: a key left on one block goes.
-  edit.setContinuity(dir, { block: 'three-text', with: null });
+  edit.run(dir, 'set_continuity', { block: 'three-text', with: null });
   assert.deepEqual([keyOf('two', 'two-text'), keyOf('three', 'three-text')], [undefined, undefined]);
   // A second heading of screen two joining the title's chain would put "title" twice on screen two.
   const two = readJSON(dir, 'screens/two.json');
   two.blocks.push({ id: 'two-subtitle', type: 'heading', props: { text: 'Another title' } });
   writeJSON(dir, 'screens/two.json', two);
-  assert.throws(() => edit.setContinuity(dir, { block: 'two-subtitle', with: 'one-title' }), /one block per screen/);
+  assert.throws(() => edit.run(dir, 'set_continuity', { block: 'two-subtitle', with: 'one-title' }), /one block per screen/);
   assert.equal(keyOf('two', 'two-subtitle'), undefined, 'nothing written');
 });

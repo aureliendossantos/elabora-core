@@ -9,9 +9,9 @@ import { build } from '@elabora/node/build';
 import { testPackage } from '@elabora/node/emulator/run';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
-import { rename } from '@elabora/node/edit';
 import type { Browser } from 'playwright-core';
 import type { PlayerWindow } from '../helpers.ts';
+import { run } from '@elabora/node/edit';
 
 test('the example passes the LMS emulator in Moodle (iframe and popup), with axe-core', { timeout: 300000 }, async () => {
   const dir = copyExample();
@@ -134,7 +134,7 @@ test('a learner who left on a screen resumes there after the screen is renamed',
     });
     await page.waitForFunction(({ storage, key }) => JSON.parse(sessionStorage.getItem(storage) || '{}')['cmi.core.lesson_location'] === key, left);
 
-    const renamed = rename(dir, { from: left.id, to: `${left.id}-renamed` });
+    const renamed = run(dir, 'rename', { from: left.id, to: `${left.id}-renamed` });
     assert.ok(renamed.ok, JSON.stringify(renamed));
     const second = await build(dir, { emit: 'dir', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-e2e-')), writeLock: false });
     assert.ok(second.ok && second.dirPath, JSON.stringify(second.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));

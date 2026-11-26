@@ -23,7 +23,7 @@ test('content heuristics may be ignored by the author, each until the text it re
   for (const d of found) assert.match(d.key ?? '', /^accueil-(maxime|schema)\/.+@[0-9a-f]+$/, d.code);
   const negation = found.find((d) => d.code === 'W_QUIZ_NEGATION')!;
   assert.match(negation.key!, /^accueil-maxime\/stem@[0-9a-f]{12}$/);
-  edit.ignoreFindings(dir, { findings: found.map((d) => ({ code: d.code, key: d.key! })) });
+  edit.run(dir, 'ignore_findings', { findings: found.map((d) => ({ code: d.code, key: d.key! })) });
   assert.deepEqual(keyed().map((d) => d.ignored), [true, true, true, true]);
   assert.equal(validateDir(dir).summary.ignored, 4);
   // The stem rewritten: its negation is a new finding; the other choices hold.
@@ -45,7 +45,7 @@ test('a neuromyth named to be refuted is ignored in its block only, and moving t
   const myths = () => validateDir(dir).diagnostics.filter((d) => d.code === 'W_NEUROMYTH' && d.file === 'screens/accueil.json');
   assert.deepEqual(myths().map((d) => [d.target, d.ignored ?? false]), [['accueil-mythe', false], ['accueil-autre', false]]);
   const refuted = myths().find((d) => d.target === 'accueil-mythe')!;
-  edit.ignoreFindings(dir, { findings: [{ code: refuted.code, key: refuted.key! }] });
+  edit.run(dir, 'ignore_findings', { findings: [{ code: refuted.code, key: refuted.key! }] });
   assert.deepEqual(myths().map((d) => [d.target, d.ignored ?? false]), [['accueil-mythe', true], ['accueil-autre', false]]);
   // Moved before the others: the same key.
   const moved = readJSON(dir, 'screens/accueil.json');

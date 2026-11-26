@@ -12,3 +12,13 @@ declare class TextDecoder {
   decode(input?: Uint8Array): string;
 }
 declare function atob(data: string): string;
+
+// What stops a long piece of work (a voice saying a line): the core reads it, the host makes it.
+interface AbortSignal {
+  readonly aborted: boolean;
+  readonly reason: unknown;
+  throwIfAborted(): void;
+  addEventListener(type: 'abort', listener: () => void, options?: { once?: boolean }): void;
+  removeEventListener(type: 'abort', listener: () => void): void;
+}
+declare function setTimeout(handler: () => void, ms?: number): unknown;

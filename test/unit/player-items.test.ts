@@ -14,7 +14,7 @@ import { aboutCourse } from '@elabora/core/player/config';
 import { createProjectFiles, textFile } from '@elabora/core/project/files';
 import { loadProject } from '@elabora/core/project/load';
 import { snapshotOfExample } from '../validation-corpus.ts';
-import { Renderer } from '@elabora/engine/render';
+import { Renderer } from '@elabora/engine/base/render';
 import { extractUnits } from '@elabora/core/i18n/units';
 import { DEFAULT_PLAYER, packageLanguages, playerConfig } from '@elabora/core/player/config';
 import { svgLogoContrast, svgPaints } from '@elabora/core/player/logo';
@@ -47,12 +47,12 @@ test('the spacer: one per bar, always on, moved within its bar; a bar of only a 
   writeJSON(dir, 'course.json', course);
   assert.deepEqual(ids(compiled(dir).player.top), ['logo', 'title', 'progress', 'resources', 'glossary', 'credits', 'exit']);
   // Enabled, each bar gets its own back at its place.
-  edit.updatePlayer(dir, { enable: ['spacer'] });
+  edit.run(dir, 'update_player', { enable: ['spacer'] });
   assert.deepEqual(listed(dir, 'top'), ['logo', 'title', 'progress', 'spacer', 'resources', 'glossary', 'credits', 'exit']);
   assert.deepEqual(listed(dir, 'bottom'), ['outline', 'controls', 'spacer', 'previous', 'next']);
-  assert.throws(() => edit.updatePlayer(dir, { disable: ['spacer'] }), /always on/);
+  assert.throws(() => edit.run(dir, 'update_player', { disable: ['spacer'] }), /always on/);
   // Moved, it stays in its bar: the other bar's spacer does not move.
-  edit.updatePlayer(dir, { move: [{ item: 'spacer', bar: 'bottom', index: 0 }] });
+  edit.run(dir, 'update_player', { move: [{ item: 'spacer', bar: 'bottom', index: 0 }] });
   assert.deepEqual(listed(dir, 'bottom'), ['spacer', 'outline', 'controls', 'previous', 'next']);
   assert.deepEqual(listed(dir, 'top'), ['logo', 'title', 'progress', 'spacer', 'resources', 'glossary', 'credits', 'exit']);
   // Two in a bar: the first counts, the second is flagged; one in each bar is fine.
@@ -75,7 +75,7 @@ test('display and language: off in a new module, put back where Lin 44 draws the
   assert.deepEqual(report.unused, ['language', 'display']);
   assert.deepEqual(report.content.languages, ['fr']);
   assert.deepEqual(report.navigation, { mode: 'linear', lockUntilComplete: true });
-  edit.updatePlayer(dir, { enable: ['language', 'display'] });
+  edit.run(dir, 'update_player', { enable: ['language', 'display'] });
   assert.deepEqual(listed(dir, 'top'), ['logo', 'title', 'progress', 'spacer', 'language', 'resources', 'glossary', 'credits', 'exit']);
   assert.deepEqual(listed(dir, 'bottom'), ['outline', 'controls', 'spacer', 'display', 'previous', 'next']);
   const after = playerReport(dir);
@@ -92,12 +92,12 @@ test('resources: https links beside files, images among the files; refused when 
   const dir = copyExample();
   const course = readJSON(dir, 'course.json');
   const resources = [...course.resources, { id: 'charte', title: 'Charte informatique', description: 'Sur l\'intranet.', url: 'https://intranet.example.com/charte?v=2#impression' }, { id: 'schema', title: 'Schéma du réseau', asset: 'images/logo-helios.svg' }];
-  edit.updatePlayer(dir, { resources });
+  edit.run(dir, 'update_player', { resources });
   const data = compiled(dir).resources!;
   assert.deepEqual(data.find((resource) => resource.id === 'charte'), { id: 'charte', kind: 'link', title: 'Charte informatique', description: 'Sur l\'intranet.', url: 'https://intranet.example.com/charte?v=2#impression' });
   assert.equal(data.find((resource) => resource.id === 'schema')?.kind, 'file');
-  assert.throws(() => edit.updatePlayer(dir, { resources: [{ id: 'web', title: 'Site', url: 'http://example.com' }] }), /https:\/\//);
-  assert.throws(() => edit.updatePlayer(dir, { resources: [{ id: 'both', title: 'Les deux', url: 'https://example.com', asset: 'images/logo-helios.svg' }] }), /one of the two/);
+  assert.throws(() => edit.run(dir, 'update_player', { resources: [{ id: 'web', title: 'Site', url: 'http://example.com' }] }), /https:\/\//);
+  assert.throws(() => edit.run(dir, 'update_player', { resources: [{ id: 'both', title: 'Les deux', url: 'https://example.com', asset: 'images/logo-helios.svg' }] }), /one of the two/);
   // Written by hand: flagged, and left out of the package.
   const written = readJSON(dir, 'course.json');
   written.resources.push({ id: 'ftp', title: 'Serveur', url: 'javascript:alert(1)' });
@@ -154,7 +154,7 @@ test('the logo: its colours against the bar, the plate that lets it read', () =>
   assert.ok(performance.now() - started < 1000);
   const dir = copyExample();
   fs.writeFileSync(path.join(dir, 'assets/images/logo-sombre.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32"><path fill="#1B2430" d="M0 0h120v32H0z"/></svg>\n');
-  edit.updatePlayer(dir, { options: { logo: { asset: 'images/logo-sombre.svg' } }, tokens: { 'player.top.background': '#101418', 'player.top.text': '#FFFFFF' } });
+  edit.run(dir, 'update_player', { options: { logo: { asset: 'images/logo-sombre.svg' } }, tokens: { 'player.top.background': '#101418', 'player.top.text': '#FFFFFF' } });
   const flagged = validateDir(dir).diagnostics.filter((d) => d.code === 'W_PLAYER_LOGO_CONTRAST');
   assert.equal(flagged.length, 1);
   assert.match(flagged[0].message, /plate/);
@@ -162,7 +162,7 @@ test('the logo: its colours against the bar, the plate that lets it read', () =>
   assert.equal(flagged[0].measured, 1.18);
   assert.equal(flagged[0].limit, 3);
   assert.deepEqual(flagged[0].details, { bar: 'top', token: 'player.top.background', background: '#101418', ratio: 1.18, asset: 'assets/images/logo-sombre.svg' });
-  edit.updatePlayer(dir, { options: { logo: { plate: true } } });
+  edit.run(dir, 'update_player', { options: { logo: { plate: true } } });
   assert.equal(validateDir(dir).diagnostics.some((d) => d.code === 'W_PLAYER_LOGO_CONTRAST'), false);
   assert.deepEqual(compiled(dir).player.top!.items[0], { id: 'logo', src: 'assets/images/logo-sombre.svg', alt: 'Hélios', plate: true });
 });
@@ -217,7 +217,7 @@ test('« Relier les termes aux écrans »: computed when a screen is compiled, t
   assert.equal(readJSON(dir, 'screens/accueil.json').blocks[0].props.textRef, 'TXT-1');
   assert.equal(fs.readFileSync(path.join(dir, 'plan.json'), 'utf8'), plan);
   // « Retirer ce lien » applies there too.
-  edit.updatePlayer(dir, { unlinkTerm: { term: 'pare-feu', screen: 'accueil' } });
+  edit.run(dir, 'update_player', { unlinkTerm: { term: 'pare-feu', screen: 'accueil' } });
   assert.deepEqual(termLinks(blockHtml(compiled(dir), 'accueil-situation'), 'pare-feu'), []);
   assert.equal(fs.readFileSync(path.join(dir, 'plan.json'), 'utf8'), plan);
 });
@@ -227,7 +227,7 @@ test('a link written by hand wins in its screen; « Retirer ce lien » and its w
   addText(dir, 'accueil', 'accueil-note', 'Le routeur, puis [le routeur du siège](glossary:routeur).');
   assert.deepEqual(termLinks(screenHtml(compiled(dir), 'accueil'), 'routeur'), ['le routeur du siège']);
   // « Retirer ce lien »: no link in that screen, the one by hand gone too (its words kept); the others stay.
-  const removed = edit.updatePlayer(dir, { unlinkTerm: { term: 'routeur', screen: 'accueil' } });
+  const removed = edit.run(dir, 'update_player', { unlinkTerm: { term: 'routeur', screen: 'accueil' } });
   assert.deepEqual(removed.unlinked.map((link) => [link.screen, link.text]), [['accueil', 'le routeur du siège']]);
   assert.deepEqual(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, ['accueil']);
   assert.equal(readJSON(dir, 'screens/accueil.json').blocks.at(-1).props.markdown, 'Le routeur, puis le routeur du siège.');
@@ -236,27 +236,27 @@ test('a link written by hand wins in its screen; « Retirer ce lien » and its w
   // The other screens keep theirs.
   assert.equal(termLinks(screenHtml(data, 'chemin'), 'routeur').length, 1);
   // A screen renamed: the entry follows it.
-  edit.rename(dir, { from: 'accueil', to: 'accueil-ticket' });
+  edit.run(dir, 'rename', { from: 'accueil', to: 'accueil-ticket' });
   assert.deepEqual(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, ['accueil-ticket']);
   assert.ok(!validateDir(dir).diagnostics.some((d) => d.severity === 'error'));
   // A screen duplicated: the copy has no link either.
-  const copy = edit.duplicateScreen(dir, { id: 'accueil-ticket' }).screen;
+  const copy = edit.run(dir, 'duplicate_screen', { id: 'accueil-ticket' }).screen;
   assert.deepEqual(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, ['accueil-ticket', copy]);
-  edit.deleteScreen(dir, { id: copy });
+  edit.run(dir, 'delete_screen', { id: copy });
   // Linked again: the first time in the screen.
-  edit.updatePlayer(dir, { relinkTerm: { term: 'routeur', screen: 'accueil-ticket' } });
+  edit.run(dir, 'update_player', { relinkTerm: { term: 'routeur', screen: 'accueil-ticket' } });
   assert.equal(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, undefined);
   assert.deepEqual(termLinks(blockHtml(compiled(dir), 'accueil-note'), 'routeur'), ['routeur']);
-  assert.throws(() => edit.updatePlayer(dir, { unlinkTerm: { term: 'absent', screen: 'chemin' } }), /no entry "absent"/);
-  assert.throws(() => edit.updatePlayer(dir, { unlinkTerm: { term: 'routeur', screen: 'absent' } }), /no screen "absent"/);
+  assert.throws(() => edit.run(dir, 'update_player', { unlinkTerm: { term: 'absent', screen: 'chemin' } }), /no entry "absent"/);
+  assert.throws(() => edit.run(dir, 'update_player', { unlinkTerm: { term: 'routeur', screen: 'absent' } }), /no screen "absent"/);
   // The option off: only the links written by hand.
-  edit.updatePlayer(dir, { unlinkTerm: { term: 'routeur', screen: 'simulation' } });
-  edit.updatePlayer(dir, { options: { glossary: { linkTerms: false } } });
+  edit.run(dir, 'update_player', { unlinkTerm: { term: 'routeur', screen: 'simulation' } });
+  edit.run(dir, 'update_player', { options: { glossary: { linkTerms: false } } });
   data = compiled(dir);
   assert.deepEqual(termLinks(screenHtml(data, 'chemin'), 'routeur'), []);
   assert.ok(termLinks(screenHtml(data, 'chemin'), 'paquet').length > 0, 'chemin keeps its link to paquet written by hand');
   // A screen deleted leaves the entries' lists.
-  edit.deleteScreen(dir, { id: 'simulation' });
+  edit.run(dir, 'delete_screen', { id: 'simulation' });
   assert.equal(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, undefined);
 });
 
@@ -277,14 +277,14 @@ test('a glossary entry says where its term was found: for the author, never in t
   const glossary = readJSON(dir, 'course.json').glossary;
   glossary[0].source = { kind: 'source', id: 'brief-client.pdf', at: 'p. 4' };
   glossary[1].source = { kind: 'screen', id: 'chemin' };
-  edit.updatePlayer(dir, { glossary });
+  edit.run(dir, 'update_player', { glossary });
   assert.deepEqual(readJSON(dir, 'course.json').glossary.slice(0, 2).map((entry: { source?: unknown }) => entry.source), [{ kind: 'source', id: 'brief-client.pdf', at: 'p. 4' }, { kind: 'screen', id: 'chemin' }]);
   assert.ok(!validateDir(dir).diagnostics.some((d) => d.severity === 'error'));
   // Learners never see it, translators never get it.
   assert.doesNotMatch(JSON.stringify(compiled(dir).glossary), /brief-client|p\. 4|"source"/);
   assert.ok(!extractUnits(loadProjectFromDir(dir)).some((unit) => /^course\.glossary\.[^.]+\.source/.test(unit.id) || /brief-client|p\. 4/.test(unit.text)));
   // A screen renamed: the entry names it under its new id.
-  edit.rename(dir, { from: 'chemin', to: 'chemin-impression' });
+  edit.run(dir, 'rename', { from: 'chemin', to: 'chemin-impression' });
   assert.deepEqual(readJSON(dir, 'course.json').glossary[1].source, { kind: 'screen', id: 'chemin-impression' });
   // Only a source or a screen.
   const course = readJSON(dir, 'course.json');
@@ -335,9 +335,9 @@ test('the canvas render data carries what the live bars need: the outline, the r
   assert.equal(render.course.languages, undefined);
   // « Langue » enabled: the languages the course's packages hold (delivery.languages, D71).
   const orbital = copyCourse(BILINGUAL);
-  edit.updatePlayer(orbital, { enable: ['language'] });
+  edit.run(orbital, 'update_player', { enable: ['language'] });
   assert.equal(renderScreen(loadProjectFromDir(orbital), 'intro', {}).course.languages, undefined);
-  edit.updateCourseSettings(orbital, { delivery: { languages: ['en', 'fr'] } });
+  edit.run(orbital, 'update_course', { delivery: { languages: ['en', 'fr'] } });
   assert.deepEqual(renderScreen(loadProjectFromDir(orbital), 'intro', {}).course.languages, ['en', 'fr']);
 });
 
@@ -345,7 +345,7 @@ test('linking reads Markdown as the player does: case for acronyms, links, refer
   const dir = copyExample();
   addText(dir, 'accueil', 'accueil-note', 'Si vous êtes prêt, le SI répond. Voir [le guide][routeur], [un [routeur] imbriqué](https://example.com) et https://example.com/routeur/doc.\n\n    routeur dans un bloc de code\n\nPuis le réseau privé virtuel, et le réseau.\n\n[routeur]: https://example.com/guide');
   const course = readJSON(dir, 'course.json');
-  edit.updatePlayer(dir, { glossary: [
+  edit.run(dir, 'update_player', { glossary: [
     ...course.glossary,
     { id: 'si', term: 'SI', definition: 'Le système d\'information.' },
     { id: 'reseau', term: 'réseau', definition: 'Des équipements reliés.' },
@@ -363,12 +363,12 @@ test('linking and translations: each language links its own words, a term with t
   const before = fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8');
   const course = readJSON(dir, 'course.json');
   // A name kept in every language, and a term the French has not translated yet.
-  edit.updatePlayer(dir, { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }, { id: 'client', term: 'client', definition: 'The spacecraft to catch up with.' }] });
+  edit.run(dir, 'update_player', { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }, { id: 'client', term: 'client', definition: 'The spacecraft to catch up with.' }] });
   // The screens' texts and their translations are left as they are: only the glossary's own units are new.
   const units = (xlf: string) => [...xlf.matchAll(/<unit id="([^"]+)">[\s\S]*?<\/unit>/g)].filter((match) => !match[1].startsWith('course.glossary.')).map((match) => match[0]).join('\n');
   assert.equal(units(fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8')), units(before));
   // The new entries translated: the French is complete again.
-  edit.translateText(dir, { language: 'fr', texts: [
+  edit.run(dir, 'translate_text', { language: 'fr', texts: [
     { unit: 'course.glossary.gemini.definition', target: 'Le programme de la NASA de vaisseaux à deux places (1965-1966).' },
     { unit: 'course.glossary.client.term', target: 'client' },
     { unit: 'course.glossary.client.definition', target: 'Le vaisseau à rattraper.' }
@@ -426,7 +426,7 @@ test('a glossary entry removed takes the links written by hand to it: the words 
   const before = (screens().match(/glossary:routeur/g) ?? []).length;
   assert.equal(before, 2);
   const glossary = readJSON(dir, 'course.json').glossary.filter((entry: { id: string }) => entry.id !== 'routeur');
-  const removed = edit.updatePlayer(dir, { glossary });
+  const removed = edit.run(dir, 'update_player', { glossary });
   assert.doesNotMatch(screens(), /glossary:routeur/);
   assert.deepEqual(removed.unlinked.map((link) => link.text).sort(), ['le routeur du siège', 'routeur']);
   assert.ok(removed.changed.includes('unlink removed terms (2 links)'), removed.changed.join(', '));
@@ -446,7 +446,7 @@ test('a glossary entry removed: the translations that had its links up to date l
   const dir = copyCourse(BILINGUAL);
   const unit = 'block.burns-practice.options.a.feedback';
   const course = readJSON(dir, 'course.json');
-  edit.updatePlayer(dir, { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }] });
+  edit.run(dir, 'update_player', { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }] });
   // A link written by hand in the English text and in its French translation.
   const project = loadProjectFromDir(dir);
   const found = extractUnits(project).find((candidate) => candidate.id === unit)!;
@@ -457,8 +457,8 @@ test('a glossary entry removed: the translations that had its links up to date l
   for (const key of at.slice(0, -1)) target = target[key] as Record<string, unknown>;
   target[at.at(-1)!] = english;
   writeJSON(dir, found.file, screen);
-  edit.translateText(dir, { language: 'fr', texts: [{ unit, target: 'C’est l’instinct qu’a suivi [Gemini](glossary:gemini) 4. Le côté opposé monte, chaque tour dure plus longtemps et le client s’éloigne encore : environ 17 km de plus par orbite pour chaque m/s.' }] });
-  const removed = edit.updatePlayer(dir, { glossary: course.glossary ?? [] });
+  edit.run(dir, 'translate_text', { language: 'fr', texts: [{ unit, target: 'C’est l’instinct qu’a suivi [Gemini](glossary:gemini) 4. Le côté opposé monte, chaque tour dure plus longtemps et le client s’éloigne encore : environ 17 km de plus par orbite pour chaque m/s.' }] });
+  const removed = edit.run(dir, 'update_player', { glossary: course.glossary ?? [] });
   assert.ok(removed.unlinked.some((link) => link.unit === unit && link.text === 'Gemini'));
   assert.deepEqual(removed.translations, [{ language: 'fr', unlinked: [unit], stale: [] }]);
   const xlf = fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8');

@@ -64,7 +64,7 @@ const create = defineCommand({
     const { dir, rest: [id] } = folderAndArguments(positionals, 1);
     const level = flags.level || 'block';
     if (level !== 'block' && level !== 'screen') { console.error('✘ --level is block or screen'); return 2; }
-    const result = edit.createComponent(dir, { id, title: flags.title || id, level });
+    const result = edit.run(dir, 'create_component', { id, title: flags.title || id, level });
     return reportEdit(result, `Created ${result.files.join(', ')}. Write the props, template and fallback, then: elabora component preview ${id}`);
   })
 });
@@ -74,7 +74,7 @@ const fork = defineCommand({
   flags: { title: 'string' },
   run: ({ positionals, flags }) => reportingFailures(() => {
     const { dir, rest: [parent, id] } = folderAndArguments(positionals, 2);
-    const result = edit.forkComponent(dir, { component: parent, id, title: flags.title });
+    const result = edit.run(dir, 'fork_component', { component: parent, id, title: flags.title });
     return reportEdit(result, `Forked ${parent} into components/${id}/ (template copied; props, slots and styles inherited).`);
   })
 });
@@ -104,7 +104,7 @@ const migrate = defineCommand({
     const firstIsCourse = !!first && fs.existsSync(path.join(first, 'course.json'));
     const dir = positionals.length > 1 || firstIsCourse ? first : '.';
     const [id] = positionals.length > 1 ? positionals.slice(1) : fs.existsSync(path.join(first || '.', 'course.json')) ? [] : positionals;
-    const result = await edit.migrateComponents(dir, { component: id, from: flags.from });
+    const result = await edit.run(dir, 'migrate_components', { component: id, from: flags.from });
     if ('message' in result) { console.log(result.message); return 0; }
     for (const component of result.components) console.log(`✔ ${component.id} ${component.from} → ${component.to} (steps ${component.steps.join(', ')})`);
     console.log(`  ${result.migrated.length} instance(s) migrated. Undo with elabora undo.`);
@@ -118,7 +118,7 @@ const add = defineCommand({
   run: ({ positionals, flags }) => reportingFailures(() => {
     const { dir, rest: [id] } = folderAndArguments(positionals, 1);
     if (!flags.library) { console.error('Usage: elabora component add [dir] <id> --library <dir> [--as <id>] [--upgrade] [--force]'); return 2; }
-    const result = edit.addLibraryComponent(dir, { library: flags.library, component: id, as: flags.as, upgrade: flags.upgrade, force: flags.force });
+    const result = edit.run(dir, 'add_component', { library: flags.library, component: id, as: flags.as, upgrade: flags.upgrade, force: flags.force });
     return reportEdit(result, `${flags.upgrade ? 'Upgraded' : 'Added'} ${result.component} ${result.from ? `${result.from} → ` : ''}${result.to} from library ${result.library}.${flags.upgrade ? ' Run elabora component migrate if the props changed.' : ''}`);
   })
 });
@@ -129,7 +129,7 @@ const publish = defineCommand({
   run: ({ positionals, flags }) => reportingFailures(() => {
     const { dir, rest: [id] } = folderAndArguments(positionals, 1);
     if (!flags.library) { console.error('Usage: elabora component publish [dir] <id> --library <dir>'); return 2; }
-    const result = edit.publishComponent(dir, { library: flags.library, component: id });
+    const result = edit.run(dir, 'publish_component', { library: flags.library, component: id });
     return reportEdit(result, `Published ${result.component} ${result.version} to library ${result.library}.`);
   })
 });
@@ -139,7 +139,7 @@ const duplicate = defineCommand({
   flags: { id: 'string' },
   run: ({ positionals, flags }) => reportingFailures(() => {
     const { dir, rest: [block] } = folderAndArguments(positionals, 1);
-    const result = edit.duplicateBlock(dir, { block, id: flags.id });
+    const result = edit.run(dir, 'duplicate_block', { block, id: flags.id });
     const renamed = Object.entries(result.renamed);
     console.log(`✔ ${block} → ${result.block} on screen ${result.screen}${renamed.length > 1 ? ` (${renamed.map(([from, to]) => `${from}→${to}`).join(', ')})` : ''}`);
     return 0;
@@ -151,7 +151,7 @@ const detach = defineCommand({
   flags: {},
   run: ({ positionals }) => reportingFailures(() => {
     const { dir, rest: [block] } = folderAndArguments(positionals, 1);
-    const result = edit.detachBlock(dir, { block });
+    const result = edit.run(dir, 'detach_block', { block });
     console.log(`✔ ${block} replaced by ${result.blocks.join(', ')}`);
     return 0;
   })
@@ -169,7 +169,7 @@ const carryOn = defineCommand({
       console.error('Usage: elabora block continue [dir] <block> --from <block> | --cut [--duration <ms>|default]');
       return 2;
     }
-    const result = edit.setContinuity(dir, { block, ...(flags.from ? { with: flags.from } : flags.cut ? { with: null } : {}), ...(duration !== undefined ? { duration } : {}) });
+    const result = edit.run(dir, 'set_continuity', { block, ...(flags.from ? { with: flags.from } : flags.cut ? { with: null } : {}), ...(duration !== undefined ? { duration } : {}) });
     return reportEdit(result, result.key ? `${block} carries on as "${result.key}".` : `${block} carries on from no other screen.`);
   })
 });
@@ -188,7 +188,7 @@ const place = defineCommand({
       console.error('Usage: elabora block place [dir] <block> --x <share> --y <share> --width <share> [--height <share>] [--z <n>] | --flow');
       return 2;
     }
-    const result = edit.placeBlock(dir, { block, place: flags.flow ? null : { x: x as number, y: y as number, width: width as number, ...(height !== undefined ? { height } : {}), ...(z !== undefined ? { z } : {}) } });
+    const result = edit.run(dir, 'place_block', { block, place: flags.flow ? null : { x: x as number, y: y as number, width: width as number, ...(height !== undefined ? { height } : {}), ...(z !== undefined ? { z } : {}) } });
     return reportEdit(result, flags.flow ? `${block} is back in the flow at its anchor.` : `${block} placed by hand.`);
   })
 });
@@ -200,7 +200,7 @@ const arrange = defineCommand({
   run: ({ positionals, flags }) => reportingFailures(() => {
     const { dir, rest: [screen] } = folderAndArguments(positionals, 1);
     if (!screen) { console.error('Usage: elabora screen arrange [dir] <screen> [--block <id>,…]'); return 2; }
-    const result = edit.arrangeScreen(dir, { screen, ...(flags.block?.length ? { blocks: flags.block } : {}) });
+    const result = edit.run(dir, 'arrange_screen', { screen, ...(flags.block?.length ? { blocks: flags.block } : {}) });
     return reportEdit(result, result.blocks.length ? `Back in the flow: ${result.blocks.join(', ')}.` : `No block placed by hand on ${screen}.`);
   })
 });
@@ -217,7 +217,7 @@ const convert = defineCommand({
     const place = findBlock(project, block);
     if (place.screenId !== screen) { console.error(`✘ Block "${block}" is on screen "${place.screenId}", not "${screen}"`); return 1; }
     const [type, presentation] = (flags.to ?? '').split(':');
-    const result = edit.convertBlock(dir, { block, ...(type ? { to: { type, ...(presentation ? { presentation } : {}) } } : {}), ...(flags['dry-run'] ? { dryRun: true } : {}), ...(flags.lang ? { language: flags.lang } : {}) });
+    const result = edit.run(dir, 'convert_block', { block, ...(type ? { to: { type, ...(presentation ? { presentation } : {}) } } : {}), ...(flags['dry-run'] ? { dryRun: true } : {}), ...(flags.lang ? { language: flags.lang } : {}) });
     if (flags.json) { printJson(result); return 0; }
     const name = (to: { type: string; presentation?: string }) => `${to.type}${to.presentation ? `:${to.presentation}` : ''}`;
     const sentences = (entry: { kept?: string; lost?: string; added?: string }) => [entry.kept, entry.lost, entry.added].filter(Boolean).join(' ');

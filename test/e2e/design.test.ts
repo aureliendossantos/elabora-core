@@ -387,8 +387,8 @@ test('backdrop: layers and a decorative object follow the learner, hidden from a
 
 test('backdrop decoration: object new --decoration, its gates, where the screen stands in the course, the default variant on #elabora-app, and its replay behind the course', { timeout: 420000 }, async () => {
   const { dir, course } = slidesCopy();
-  assert.throws(() => edit.createObject(dir, { id: 'drift', title: 'Drift' }), /--decoration/);
-  edit.createObject(dir, { id: 'drift', title: 'Drift', decoration: true });
+  assert.throws(() => edit.run(dir, 'create_object', { id: 'drift', title: 'Drift' }), /--decoration/);
+  edit.run(dir, 'create_object', { id: 'drift', title: 'Drift', decoration: true });
   const manifest = readJSON(dir, 'objects/drift/object.manifest.json');
   assert.equal(manifest.pedagogicalRole, 'decoration');
   assert.equal(manifest.planRefs, undefined);
@@ -693,7 +693,7 @@ test('cascade layers: each order as the package and the canvas show it, a theme 
   const general = `.t-callout { background-color: ${theme}; color: ${theme}; }\n`;
   const overridden = ['component-overridden .lp-probe .t-callout', 'component-overridden .t-block--layer-probe .t-callout.lp-probe .t-callout'];
   const upgraded = variant(undefined, general);
-  const upgrade = edit.upgradeThemeCascade(upgraded);
+  const upgrade = edit.run(upgraded, 'upgrade_theme', {});
   assert.ok(upgrade.upgraded && upgrade.moved === 2, JSON.stringify(upgrade));
   const cases: { name: string; dir: string; expected: ReturnType<typeof probe>; conflicts: string[] }[] = [
     // Before D32 (no theme.cascade): the theme's rule beats the component's, whatever the

@@ -71,15 +71,6 @@ test('a translation for a source that changed, or over a target written meanwhil
   assert.equal(session.translationTable('en').rows.find((candidate) => candidate.id === row.id)?.target, 'New words');
 });
 
-test('the protocol carries expect', async () => {
-  const session = await open();
-  await session.run('add_block', { screen: 'chemin', block: { id: 'chemin-photo', type: 'image', props: { asset: 'images/a.svg', alt: 'Déjà' } } });
-  const answer = await session.handle({ kind: 'request', id: 'r1', type: 'run', params: { command: 'update_block', args: { block: 'chemin-photo', props: { alt: 'Un plan' } }, expect: [{ block: 'chemin-photo', props: { alt: null } }] } });
-  assert.equal(answer.ok, false);
-  assert.equal(!answer.ok && answer.error.code, 'E_EXPECTED');
-  assert.equal(props(session, 'chemin-photo').alt, 'Déjà');
-});
-
 // Settings changed one by one (I04): the window sends only the field it changed; the engine applies it to
 // course.json and to the layer as they are when it writes, so two edits close together both stay.
 test('delivery changed field by field: both settings stay, null removes one', async () => {

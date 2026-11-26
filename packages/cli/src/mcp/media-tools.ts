@@ -6,10 +6,10 @@ import { mediaToOptimize } from '@elabora/node/media/optimize';
 import { MediaQueue, readJobs } from '@elabora/node/media/jobs';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { packageWeights } from '@elabora/node/packaging/weights';
-import { imageToVideo } from '@elabora/node/media/to-video';
 import { noticedFirst } from '@elabora/core/media/weights';
 import { errorMessage } from '../commands/command.ts';
 import { defineTool, editResult, errorResult, objectSchema, SLUG, textResult } from './tool.ts';
+import { run } from '@elabora/node/edit';
 
 // Media: agents that generate or download images, record audio or receive videos import them; they
 // never write raw files into assets/ (no conversion, metadata kept, W_MEDIA_NOT_OPTIMIZED).
@@ -87,7 +87,7 @@ export const setCaptions = defineTool({
     if (args.file !== undefined && args.text !== undefined) return errorResult({ error: 'Give the captions as file or as text, not both.' });
     const text = args.file !== undefined ? fs.readFileSync(path.resolve(root, args.file), 'utf8') : args.text;
     if (text === undefined) return errorResult({ error: 'Give the captions: file (a .vtt or .srt) or text.' });
-    return editResult(edit.setCaptions(root, { block: args.block, text, ...(args.name ? { name: args.name } : {}) }, { author }));
+    return editResult(edit.run(root, 'set_captions', { block: args.block, text, ...(args.name ? { name: args.name } : {}) }, { author }));
   }
 });
 
@@ -98,7 +98,7 @@ export const imageToVideoTool = defineTool({
     block: { ...SLUG, description: 'The image block.' }
   }, ['block']),
   async handler(args, { root, author }) {
-    const result = await imageToVideo(root, { block: args.block }, { author });
+    const result = await run(root, 'image_to_video', { block: args.block }, { author });
     return editResult(result);
   }
 });

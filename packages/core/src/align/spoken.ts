@@ -4,8 +4,8 @@
 // and symbols spelt out), then into the model's characters. A word's time is the time of its
 // characters, so every word of narrationWords gets one, in order.
 
-import { narrationWords } from '@elabora/core/narration/words';
-import type { TextWord } from '@elabora/core/narration/words';
+import { narrationWords } from '../narration/words.ts';
+import type { TextWord } from '../narration/words.ts';
 import { cardinal, digitByDigit, englishOrdinal, frenchOrdinal, sayDigits } from './numbers.ts';
 import { STAR } from './ctc.ts';
 

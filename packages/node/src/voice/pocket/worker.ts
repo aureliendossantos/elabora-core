@@ -8,7 +8,8 @@ import type { TextRules } from './text.ts';
 // The thread keeps one model in memory and one voice's state, as the provider did before; the
 // provider frees them after two idle minutes (release).
 
-export type Rules = Omit<TextRules, 'removeSemicolons' | 'padWithSpacesForShortInputs'>;
+export type { Rules } from '@elabora/core/voice/pocket/models';
+import type { Rules } from '@elabora/core/voice/pocket/models';
 
 export interface ThreadJob {
   id: number;

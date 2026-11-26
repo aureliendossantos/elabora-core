@@ -14,8 +14,11 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@elabora/format": "workspace:*",
     "@elabora/core": "workspace:*",
-    "@elabora/node": "workspace:*"
+    "@elabora/format": "workspace:*",
+    "@elabora/node": "workspace:*",
+    "@elabora/player": "workspace:*",
+    "mediabunny": "1.66.0",
+    "onnxruntime-web": "1.23.2"
   }
 }

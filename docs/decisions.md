@@ -14,9 +14,37 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D8](decisions/D08.md) | Deterministic packages |  |
 | [D9](decisions/D09.md) | Executable LMS profiles |  |
 | [D10](decisions/D10.md) | Agent interface: MCP + short skills + AGENTS.md |  |
+| [D100](decisions/D100.md) | The session's base without Node, and a project's copy behind its store | 18 Nov 2026 |
+| [D101](decisions/D101.md) | Where a session's changes come from and go, behind one interface | 18 Nov 2026 |
+| [D102](decisions/D102.md) | A service a session does not have: not here, and which it has | 19 Nov 2026 |
+| [D103](decisions/D103.md) | The browser engine: a session of the base, on a copy, in @elabora/engine | 19 Nov 2026 |
+| [D104](decisions/D104.md) | A copy's journal: its numbers, its history, its undo | 19 Nov 2026 |
+| [D105](decisions/D105.md) | The browser engine's relay: a port per route and host, given by `relayPort`; its canvas by events | 19 Nov 2026, revised 19 Nov 2026 |
+| [D106](decisions/D106.md) | Media in a browser: a Worker of its own, the rules both hosts read in the core | 19 Nov 2026 |
+| [D107](decisions/D107.md) | Media in a browser: Mediabunny, and AAC only where the browser has its encoder | 19 Nov 2026 |
+| [D108](decisions/D108.md) | A browser's media service: its requests, the files that come beside them, what its commands are given | 19 Nov 2026 |
 | [D11](decisions/D11.md) | LESSON.md for simple blocks |  |
+| [D110](decisions/D110.md) | Every command in the table, each saying what it expects from its host | 19 Nov 2026 |
+| [D111](decisions/D111.md) | A new module's files made by the core, from a template it carries | 19 Nov 2026 |
+| [D112](decisions/D112.md) | A new module's files, the first change of an empty project | 19 Nov 2026 |
+| [D113](decisions/D113.md) | Models in a browser: from the origin the host names, checked as they come, kept in the origin's private file system, refused where they cannot run | 20 Nov 2026 |
+| [D114](decisions/D114.md) | A browser's models run in a Worker of their own, onnxruntime-web loaded by address, the code that reads numbers in the core | 20 Nov 2026 |
+| [D115](decisions/D115.md) | What the canvas shows is asked of it by messages, not by scripts injected into its page | 18 Nov 2026 |
+| [D116](decisions/D116.md) | Free objects' frames from an origin of their own, for a page served on the web | 18 Nov 2026 |
+| [D117](decisions/D117.md) | A free object's code is bundled by a part that needs no Node, given esbuild and its libraries | 18 Nov 2026 |
+| [D118](decisions/D118.md) | The relay's protocol: the questions a host answers about a module's files, and the messages that carry them | 19 Nov 2026 |
+| [D119](decisions/D119.md) | The relay: one service worker for the canvas host and the frames host, a route per view of a module, and what its pages and a free object's code can and cannot do | 19 Nov 2026 |
 | [D12](decisions/D12.md) | TypeScript workspace packages, run directly by Node | revised 6 Oct 2026 |
+| [D120](decisions/D120.md) | The desktop's local canvas server answers the relay's questions from the project's folder | 19 Nov 2026 |
+| [D121](decisions/D121.md) | The host of the editor canvas for a page: what links a window that has no local server to the canvas page and the relay | 19 Nov 2026 |
+| [D122](decisions/D122.md) | What a canvas page or a relay page says is read as data, and what the host posts goes to one exact origin | 19 Nov 2026 |
+| [D123](decisions/D123.md) | The renders reach a canvas page without a server as events of the engine, never through the relay | 19 Nov 2026 |
+| [D125](decisions/D125.md) | A medium's facts go by its hash, beside the reference, in elabora-sync/1 | 19 Nov 2026 |
+| [D126](decisions/D126.md) | A copy that holds a medium gives its facts: with the change that writes it, and in passing for those already there | 19 Nov 2026 |
+| [D127](decisions/D127.md) | A browser's local voices: the desktop's generation in the core, the catalogue served by the app, the takes in the origin's private file system | 20 Nov 2026 |
 | [D13](decisions/D13.md) | Free design, structured content (design layer prototype) |  |
+| [D130](decisions/D130.md) | A miniature in a browser is a live frame of the canvas page, at most sixteen, asked for through one call of the host | 21 Nov 2026 |
+| [D133](decisions/D133.md) | The miniatures' renders are four requests of the session's base, the canvas service's | 21 Nov 2026 |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
 | [D15](decisions/D15.md) | Files are the source of truth; every change is an operation | 6 Oct 2026 |
 | [D16](decisions/D16.md) | Media inside the package, one master per file at the high preset | 6 Oct 2026 |
@@ -87,7 +115,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D81](decisions/D81.md) | The schemas a course writes: the keywords the interpreter reads, and a clear refusal for the others | 12 Nov 2026 |
 | [D82](decisions/D82.md) | Where Ajv stays, and the proof in a Worker | 12 Nov 2026 |
 | [D83](decisions/D83.md) | A folder linked to a project in the cloud: the engine's session syncs it; an agent's run goes as one change | 12 Nov 2026 |
-| [D84](decisions/D84.md) | The commands by name, with the schema of their arguments, in the core | 12 Nov 2026 |
+| [D84](decisions/D84.md) | The commands by name, with the schema of their arguments, in the core, revised by D110 | 12 Nov 2026 |
 | [D85](decisions/D85.md) | A room's refusals are named in the protocol | 12 Nov 2026 |
 | [D86](decisions/D86.md) | A project's validation kept change by change, in the core | 12 Nov 2026 |
 | [D87](decisions/D87.md) | An undo carries what it left out, through a project's server | 12 Nov 2026 |

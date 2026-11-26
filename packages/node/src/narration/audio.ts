@@ -4,8 +4,10 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import type { NarrationAudioFileArgs } from '@elabora/core/commands/narration';
 import type { FileHash } from '@elabora/core/project/files';
-import { setNarrationAudioChange } from '../edit/index.ts';
+import type { HostNeeds } from '@elabora/core/commands/host';
+import { run } from '../edit/index.ts';
 import type { EditOptions } from '../edit/executor.ts';
+import type { HostOptions } from '../edit/host.ts';
 import { findMediaTools } from '../media/tools.ts';
 import type { MediaTools } from '../media/tools.ts';
 import { probeMedia } from '../media/probe.ts';
@@ -13,32 +15,39 @@ import { runFfmpeg } from '../media/encode.ts';
 import { ALIGNER_MODELS, alignAudio, alignsAtOnce } from '../align/index.ts';
 import { loadProjectFromDir } from '../project-reader.ts';
 import { narrationLines } from '@elabora/core/narration/narration';
+import { linesByName, recordingLines } from '@elabora/core/narration/recordings';
 import type { ImportedFile } from './types.ts';
 import { lineMouth, mouthWords } from './mouth.ts';
 
 // The audio of a narration line (docs/decisions.md D24): an M4A (AAC, mono) at
 // assets/narration/<language>/<screen>/<line>.m4a and its sidecar, written as one change. A voice
-// tool gives the file it made (setNarrationAudio); a recorded human voice is imported
+// tool gives the file it made (set_narration_audio); a recorded human voice is imported
 // (importNarration): converted, its silences at both ends trimmed. When the word aligner of its
 // language is on this computer, its words are timed in the same change (docs/decisions.md D27).
 
 export const LINE_BITRATE = '96k';
 
-// align: false leaves the words untimed (elabora narration align times them later).
-export type NarrationAudioArgs = NarrationAudioFileArgs & { tools?: MediaTools; align?: boolean; onAlign?: () => void };
+// A line's audio and what the host's tools add to a voice writer's call: the arguments of
+// set_narration_audio, and how this computer makes it (HostOptions: tools, align, onAlign).
+export type NarrationAudioArgs = NarrationAudioFileArgs & Pick<HostOptions, 'tools' | 'align' | 'onAlign'>;
 
-export async function setNarrationAudio(dir: string, args: NarrationAudioArgs, options?: EditOptions) {
-  const tools = args.tools ?? await findMediaTools();
+// set_narration_audio on a folder, its host's options taken from a voice writer's call.
+export function setNarrationAudio(dir: string, { tools, align, onAlign, ...args }: NarrationAudioArgs, options: EditOptions = {}) {
+  return run(dir, 'set_narration_audio', args, { ...options, ...(tools ? { tools } : {}), ...(align !== undefined ? { align } : {}), ...(onAlign ? { onAlign } : {}) });
+}
+
+// What set_narration_audio needs of this computer (lineAudio): the file made an M4A, its words timed
+// when the aligner of its language is here (or as given; align: false leaves them untimed), its
+// mouth measured.
+export async function lineAudio<R>(dir: string, args: NarrationAudioFileArgs, options: HostOptions, use: (made: HostNeeds['lineAudio']) => R): Promise<R> {
+  const tools = options.tools ?? await findMediaTools();
   return withLineAudio(args.file, { trim: !!args.trim, tools }, async (audio) => {
-    const timed = args.words?.length ? { words: args.words, ...(args.aligner ? { aligner: args.aligner } : {}) } : args.align === false ? null : await wordsOf(dir, args, audio.file, tools);
+    const timed = args.words?.length ? { words: args.words, ...(args.aligner ? { aligner: args.aligner } : {}) } : options.align === false ? null : await wordsOf(dir, args, audio.file, tools, options.onAlign);
     const mouth = await mouthOf(dir, args, audio, timed && 'words' in timed ? timed.words : null, tools);
-    const written = await setNarrationAudioChange(dir, {
-      screen: args.screen, line: args.line, ...(args.language ? { language: args.language } : {}),
-      audio: { size: audio.bytes.length, hash: audio.hash }, duration: audio.duration, provider: args.provider, voice: args.voice, generated: args.generated,
-      ...(timed && 'words' in timed ? timed : {}), ...(args.take ? { take: args.take } : {}), ...(args.credit ? { credit: args.credit } : {}), ...(args.model ? { model: args.model } : {}),
-      ...(mouth !== null ? { mouth } : {}), createdAt: createdAt()
-    }, new Map([[audio.hash, audio.bytes]]), options);
-    return { ...written, ...(timed && 'alignmentError' in timed ? { alignmentError: timed.alignmentError } : {}) };
+    return use({
+      audio: { size: audio.bytes.length, hash: audio.hash }, duration: audio.duration, ...(timed ?? {}), ...(mouth !== null ? { mouth } : {}), createdAt: createdAt(),
+      bytes: new Map([[audio.hash, audio.bytes]])
+    });
   });
 }
 
@@ -85,7 +94,7 @@ export async function withLineAudio<T>(source: string, { trim, tools }: { trim: 
 
 // The words of a line's new audio, when its language's aligner is here; an alignment that fails
 // leaves them untimed and reports why (placed in proportion to the text until elabora narration align).
-async function wordsOf(dir: string, args: NarrationAudioArgs, file: string, tools: MediaTools): Promise<{ words: NonNullable<NarrationAudioArgs['words']>; aligner: string } | { alignmentError: string } | null> {
+async function wordsOf(dir: string, args: NarrationAudioFileArgs, file: string, tools: MediaTools, onAlign?: () => void): Promise<{ words: NonNullable<NarrationAudioFileArgs['words']>; aligner: string } | { alignmentError: string } | null> {
   if (args.language ? !alignsAtOnce(args.language) : !ALIGNER_MODELS.some((model) => alignsAtOnce(model.language))) return null;
   const project = loadProjectFromDir(dir);
   const language = args.language || project.course?.language || '';
@@ -93,7 +102,7 @@ async function wordsOf(dir: string, args: NarrationAudioArgs, file: string, tool
   const text = narrationLines(project, args.screen, language)?.find((line) => line.id === args.line)?.text;
   if (!text) return null;
   try {
-    args.onAlign?.();
+    onAlign?.();
     const aligned = await alignAudio(file, text, language, { tools });
     return aligned?.words.length ? { words: aligned.words, aligner: aligned.aligner } : null;
   } catch (error) {
@@ -104,7 +113,7 @@ async function wordsOf(dir: string, args: NarrationAudioArgs, file: string, tool
 // The mouth's envelope of a line's new audio (D61): measured on the audio with its words, timed or
 // placed along its text. null when it cannot be measured (the line is not found): the build measures
 // it then.
-async function mouthOf(dir: string, args: NarrationAudioArgs, audio: LineAudio, words: NarrationAudioArgs['words'] | null, tools: MediaTools): Promise<string | null> {
+async function mouthOf(dir: string, args: NarrationAudioFileArgs, audio: LineAudio, words: NarrationAudioFileArgs['words'] | null, tools: MediaTools): Promise<string | null> {
   try {
     if (words?.length) return await lineMouth(tools, audio.file, words);
     const project = loadProjectFromDir(dir);
@@ -125,8 +134,6 @@ export function importNarration(dir: string, { screen, line, language, file, voi
 
 export type { ImportedFile } from './types.ts';
 
-const slugOf = (name: string): string => name.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[\s_.]+/g, '-').replace(/[^a-z0-9-]/g, '');
-
 // Recordings of several lines at once (« Importer des enregistrements »): each file goes to the line
 // its name gives (a line id, <screen>-<line>, or the line's number in the screen), the others to
 // the line whose text the voice says, when the aligner of the language is on this computer; one
@@ -136,21 +143,16 @@ export async function importNarrationFiles(dir: string, { screen, files, languag
   const project = loadProjectFromDir(dir);
   const lang = language || project.course?.language || '';
   if (screen && !project.screens.has(screen)) throw new Error(`Unknown screen "${screen}".`);
-  const screens = screen ? [screen] : [...project.screens.keys()];
-  const lines = screens.flatMap((id) => (narrationLines(project, id, lang) ?? []).map((info, index) => ({ screen: id, line: info.id, index, text: info.text })));
+  const lines = recordingLines(project, screen, lang);
   if (!lines.length) throw new Error(screen ? `Screen "${screen}" has no narration.` : 'The course has no narrated screen.');
   const results: ImportedFile[] = [];
   const taken = new Set<string>();
   const key = (line: { screen: string; line: string }) => `${line.screen}/${line.line}`;
   const pending: string[] = [];
-  for (const file of files) {
-    const name = slugOf(path.basename(file).replace(/\.[^.]+$/, ''));
-    const number = /^(\d{1,3})(?:-|$)/.exec(name);
-    const found = lines.find((line) => !taken.has(key(line)) && [slugOf(line.line), `${line.screen}-${slugOf(line.line)}`].includes(name))
-      ?? (screen && number ? lines.find((line) => line.index === Number(number[1]) - 1 && !taken.has(key(line))) : undefined);
-    if (found) { taken.add(key(found)); results.push({ file, status: 'imported', screen: found.screen, line: found.line, by: 'name' }); }
-    else pending.push(file);
-  }
+  linesByName(lines, files.map((file) => path.basename(file)), screen, taken).forEach((found, i) => {
+    if (found) results.push({ file: files[i]!, status: 'imported', screen: found.screen, line: found.line, by: 'name' });
+    else pending.push(files[i]!);
+  });
   // The others by what they say: each to the free line of the screen the aligner finds best in it.
   if (pending.length && screen && alignsAtOnce(lang)) {
     const scored: { file: string; line: (typeof lines)[number]; score: number }[] = [];

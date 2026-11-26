@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { parseJSON } from '@elabora/core/util/json';
 import { slugify } from '@elabora/core/util/slug';
 import type { Author } from '@elabora/core/ops/types';
-import { updateCourseSettings } from '../edit/index.ts';
+import { run } from '../edit/index.ts';
 import { dataLocation } from '../data-dir.ts';
 import { listProjectFiles, type FileInfo } from '../project-files.ts';
 import { copySources, sourcesSize } from '../sources/index.ts';
@@ -13,7 +13,7 @@ import { initProject } from '../scaffold.ts';
 import { createFromTemplate, moduleTemplate } from '../module-templates.ts';
 import { copyCharter } from '../charter.ts';
 import type { ModuleTemplate } from '../module-templates.ts';
-import type { CourseBrief } from '../scaffold.ts';
+import type { CourseBrief } from '@elabora/core/commands/new-course';
 import { withProjectLock } from '../journal/lock.ts';
 import { appendMark } from '../journal/journal.ts';
 import { LibraryError } from './errors.ts';
@@ -476,7 +476,7 @@ export async function renameProject(id: string, title: string, options: { author
   const dir = libraryProjectDir(id);
   const trimmed = title.trim();
   if (!trimmed) throw new LibraryError('E_INVALID_ARGUMENT', 'A project title cannot be empty.');
-  const result = updateCourseSettings(dir, { title: trimmed }, { author: options.author });
+  const result = run(dir, 'update_course', { title: trimmed }, { author: options.author });
   cacheValidation(dir, result.summary as { errors: number; warnings: number; infos: number; waived: number });
   return getProject(id);
 }

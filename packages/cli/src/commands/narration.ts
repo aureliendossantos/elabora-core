@@ -5,13 +5,13 @@ import { importNarration, importNarrationFiles } from '@elabora/node/narration/a
 import { alignNarration, disposeAligner } from '@elabora/node/align/index';
 import { disposeTranscriber, transcribeAudio } from '@elabora/node/transcribe/index';
 import type { TranscribeProgress, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/index';
-import { addNarrationLineFromAudio, setNarrationTextFromAudio, transcribeNarrationLine } from '@elabora/node/narration/from-audio';
+import { transcribeNarrationLine } from '@elabora/node/narration/from-audio';
 import { timelineReport, formatTimeline, narratedScreens, formatNarratedScreens } from '@elabora/core/narration/report';
 import { parseAnchor } from '@elabora/core/narration/anchor-text';
-import { setBlockTiming, splitStep, narrationFromPlan, keepNarrationAudio } from '@elabora/node/edit';
 import type { MomentPatch } from '@elabora/core/commands/index';
 import { defineCommand, printDiagnostics, printFormatMigration, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
+import { run } from '@elabora/node/edit';
 
 const HELP = `  timeline [dir] [screen] [--language <lang>] [--json]
                                                       A timed screen's timeline as text: its steps and their times,
@@ -152,7 +152,7 @@ const fromPlanCommand = defineCommand({
     const { dir, rest: [screen, ...extra] } = courseAndArguments(positionals);
     if (!screen || extra.length) { console.error('Usage: elabora narration from-plan [dir] <screen> [--replace] [--json]'); return 2; }
     if (notACourse(dir)) { console.error(`✘ ${path.resolve(dir)} is not an Elabora course (no course.json).`); return 1; }
-    const result = await narrationFromPlan(dir, { screen, replace: !!flags.replace });
+    const result = await run(dir, 'narration_from_plan', { screen, replace: !!flags.replace });
     const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file === `screens/${screen}.json`);
     if (flags.json) { printJson({ ok: true, screen, lines: result.lines, change: result.change, undo: result.undo, diagnostics: own }); return 0; }
     printFormatMigration(result.formatMigration);
@@ -231,11 +231,11 @@ const addFromAudioCommand = defineCommand({
     const how = transcribing(flags);
     if (!how) return 2;
     try {
-      const result = await addNarrationLineFromAudio(dir, {
-        screen, file: path.resolve(file), ...how, install: true, onProgress: downloadProgress(!!flags.json), trim: !flags['keep-silence'],
+      const result = await run(dir, 'add_narration_line_with_audio', {
+        screen, file: path.resolve(file), ...how, install: true, trim: !flags['keep-silence'],
         ...(flags.text ? { text: flags.text } : {}), ...(flags.first ? { after: null } : flags.after ? { after: flags.after } : {}), ...(step !== undefined ? { step } : {}),
         ...(flags.speaker ? { speaker: flags.speaker } : {}), ...(flags.layer ? { layer: flags.layer } : {}), ...(flags.language ? { language: flags.language } : {})
-      });
+      }, { onTranscribe: downloadProgress(!!flags.json) });
       const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file === `screens/${screen}.json`);
       if (flags.json) { printJson({ ok: true, screen, line: result.line, text: result.text, audio: result.audio, sidecar: result.sidecar, transcriber: result.transcript?.transcriber ?? null, change: result.change, undo: result.undo, diagnostics: own }); return 0; }
       printFormatMigration(result.formatMigration);
@@ -268,14 +268,14 @@ const retranscribeCommand = defineCommand({
     const language = flags.language ? { language: flags.language } : {};
     try {
       if (flags['dry-run']) {
-        const heard = await transcribeNarrationLine(dir, { screen, line, ...language, ...how, install: true, onProgress: downloadProgress(!!flags.json) });
+        const heard = await transcribeNarrationLine(dir, { screen, line, ...language, ...how, install: true }, { onTranscribe: downloadProgress(!!flags.json) });
         if (flags.json) { printJson({ ok: true, screen, line, before: heard.before, text: heard.transcript.text, transcript: heard.transcript, audioHash: heard.audioHash }); return 0; }
         console.log(`  Now:        ${heard.before}`);
         console.log(`  Recording:  ${heard.transcript.text}`);
         console.log(heard.before === heard.transcript.text ? '  The recording says the line\'s text.' : `  Write it: elabora narration retranscribe ${screen} ${line}${flags.service ? ` --service ${flags.service}` : ''} (or --text with the text checked)`);
         return 0;
       }
-      const result = await setNarrationTextFromAudio(dir, { screen, line, ...language, ...how, install: true, onProgress: downloadProgress(!!flags.json), ...(flags.text ? { text: flags.text } : {}) });
+      const result = await run(dir, 'set_narration_text_from_audio', { screen, line, ...language, ...how, install: true, ...(flags.text ? { text: flags.text } : {}) }, { onTranscribe: downloadProgress(!!flags.json) });
       const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file === `screens/${screen}.json`);
       if (flags.json) { printJson({ ok: true, screen, line, before: result.before, text: result.text, anchors: result.anchors ?? null, transcriber: result.transcript?.transcriber ?? null, change: result.change, undo: result.undo, diagnostics: own }); return 0; }
       printFormatMigration(result.formatMigration);
@@ -304,7 +304,7 @@ const keepCommand = defineCommand({
     const { dir, rest: [screen, line, ...extra] } = courseAndArguments(positionals);
     if (!screen || !line || extra.length) { console.error('Usage: elabora narration keep [dir] <screen> <line> [--language <lang>] [--json]'); return 2; }
     if (notACourse(dir)) { console.error(`✘ ${path.resolve(dir)} is not an Elabora course (no course.json).`); return 1; }
-    const result = await keepNarrationAudio(dir, { screen, line, ...(flags.language ? { language: flags.language } : {}) });
+    const result = await run(dir, 'keep_narration_audio', { screen, line, ...(flags.language ? { language: flags.language } : {}) });
     if (flags.json) { printJson({ ok: true, screen, line, sidecar: result.sidecar, change: result.change, undo: result.undo }); return 0; }
     console.log(`✔ The audio of ${line} (${screen}) says its text as it is now.`);
     if (result.change) console.log(`  Undo: elabora undo --change ${result.change.seq}`);
@@ -319,7 +319,7 @@ const splitCommand = defineCommand({
     const { dir, rest: [screen, line, ...extra] } = courseAndArguments(positionals);
     if (!screen || !line || extra.length) { console.error('Usage: elabora narration split [dir] <screen> <line> [--json]'); return 2; }
     if (notACourse(dir)) { console.error(`✘ ${path.resolve(dir)} is not an Elabora course (no course.json).`); return 1; }
-    const result = await splitStep(dir, { screen, line });
+    const result = await run(dir, 'split_step', { screen, line });
     const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file === `screens/${screen}.json`);
     if (flags.json) { printJson({ ok: true, screen, step: result.step, lines: result.lines, blocks: result.blocks, change: result.change, undo: result.undo, diagnostics: own }); return 0; }
     printFormatMigration(result.formatMigration);
@@ -396,7 +396,7 @@ const timingCommand = defineCommand({
     };
     const args = { block, ...(patchOf('in') !== undefined ? { in: patchOf('in') } : {}), ...(patchOf('out') !== undefined ? { out: patchOf('out') } : {}) };
     if (!('in' in args) && !('out' in args)) { console.error(usage); return 2; }
-    const result = await setBlockTiming(dir, args);
+    const result = await run(dir, 'set_block_timing', args);
     const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file === `screens/${result.screen}.json`);
     if (flags.json) { printJson({ ok: true, block, screen: result.screen, timing: result.timing, change: result.change, undo: result.undo, diagnostics: own }); return 0; }
     printFormatMigration(result.formatMigration);

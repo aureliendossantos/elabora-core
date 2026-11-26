@@ -2,10 +2,11 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { courseSounds } from '@elabora/core/sounds/sounds';
 import { searchLibrary, SOUND_CATEGORIES } from '@elabora/node/sounds/library';
 import { searchOpenverse } from '@elabora/node/sounds/openverse';
-import { addSound, courseLanguage } from '@elabora/node/sounds/add';
+import { courseLanguage } from '@elabora/node/sounds/add';
 import { estimateSound, generateSound } from '@elabora/node/sounds/generate';
 import type { SoundEstimate } from '@elabora/node/sounds/generate';
 import { defineTool, editPayload, errorResult, objectSchema, textResult, SLUG } from './tool.ts';
+import { run } from '@elabora/node/edit';
 
 // Sounds (docs/decisions.md D67): finding one (Elabora's library, Openverse), adding it to the course,
 // making one with ElevenLabs, listing those of the course.
@@ -58,7 +59,7 @@ export const addSoundTool = defineTool({
   async handler(args, { root, author }) {
     try {
       const language = courseLanguage(root);
-      const result = await addSound(root, { from: args.from, ...(args.id ? { id: args.id } : {}), ...(args.trim ? { trim: args.trim } : {}), ...(args.fade !== undefined ? { fade: args.fade } : {}), ...(args.loop ? { loop: true } : {}), ...(args.caption ? { caption: { [language]: args.caption } } : {}), ...(args.license ? { license: args.license } : {}), ...(args.author ? { author: args.author } : {}), ...(args.title ? { title: args.title } : {}), ...(args.url ? { url: args.url } : {}) }, { author });
+      const result = await run(root, 'add_sound', { from: args.from, ...(args.id ? { id: args.id } : {}), ...(args.trim ? { trim: args.trim } : {}), ...(args.fade !== undefined ? { fade: args.fade } : {}), ...(args.loop ? { loop: true } : {}), ...(args.caption ? { caption: { [language]: args.caption } } : {}), ...(args.license ? { license: args.license } : {}), ...(args.author ? { author: args.author } : {}), ...(args.title ? { title: args.title } : {}), ...(args.url ? { url: args.url } : {}) }, { author });
       return textResult({ ...editPayload(result), id: result.id, path: result.path, reused: result.reused, license: result.license, duration: result.duration });
     } catch (error) { return failure(error); }
   }

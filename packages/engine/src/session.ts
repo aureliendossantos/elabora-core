@@ -1,46 +1,30 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { DELIVERY_FORMATS, isDeliveryFormat } from '@elabora/core/lms/formats';
-import type { Author, ChangeLike, Files, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
+import type { Author, ChangeLike, Files, JournalEntry, MarkEntry } from '@elabora/core/ops/types';
 import { readChat } from '@elabora/node/chats';
-import { diffFiles } from '@elabora/core/ops/diff';
-import { applyOps, invertOps } from '@elabora/core/ops/apply';
-import { externalEdit, recentVersions } from '@elabora/core/sync/external';
-import { isJsonPath, sameContent } from '@elabora/core/ops/json';
-import { isAiAuthor, summarizeBatches, undoneChanges } from '@elabora/core/ops/batch';
-import { projectPath } from '@elabora/core/project/files';
+import { sameContent } from '@elabora/core/ops/json';
+import { isAiAuthor } from '@elabora/core/ops/batch';
 import type { ProjectFiles, SourceFile } from '@elabora/core/project/files';
 import type { FileInfo } from '@elabora/core/project/store';
 import type { Project } from '@elabora/core/project/model';
-import { planDiffBetween, planVersionsView } from '@elabora/core/project/plan-versions';
-import type { PlanDiffView, PlanRef, PlanVersionsView } from '@elabora/core/project/plan-versions';
-import { screenParts } from '@elabora/core/project/parts';
-import { screenEstimates } from '@elabora/core/project/duration';
-import { findText } from '@elabora/core/commands/text';
+import type { PlanDiffView, PlanVersionsView } from '@elabora/core/project/plan-versions';
 import type { TextMatch } from '@elabora/core/commands/text';
-import { conversionTargets } from '@elabora/core/commands/convert';
-import { CommandError } from '@elabora/core/commands/context';
-import { screenTranslation, translationStatus, translationTable } from '@elabora/core/i18n/translate';
 import type { ScreenTranslation, TranslationStatus, TranslationTable } from '@elabora/core/i18n/translate';
 import { buildTranslation } from '@elabora/node/translate';
 import { packageWeights } from '@elabora/node/packaging/weights';
 import type { PackageWeights } from '@elabora/core/media/weights';
-import { planDocument } from '@elabora/core/plan-document/model';
 import type { PlanDocument } from '@elabora/core/plan-document/model';
 import { PLAN_DOCUMENT_FORMATS, planDocumentPage, readPlanDocument, writePlanDocument } from '@elabora/node/plan-document';
 import { dialoguePage, writeDialogueExport, DIALOGUE_EXPORT_FORMATS } from '@elabora/node/dialogue-export';
 import type { DialogueExportFormat, ExportedDialogue } from '@elabora/node/dialogue-export';
-import { dialogueView } from '@elabora/core/dialogue/view';
 import type { DialogueView } from '@elabora/core/dialogue/view';
 import { findDialogue } from '@elabora/core/dialogue/project';
-import { playDialogue } from '@elabora/core/dialogue/play';
 import type { PlayReport } from '@elabora/core/dialogue/play';
 import { localDay } from '@elabora/core/util/local-day';
 import type { ExportedPlanDocument, PlanDocumentFormat } from '@elabora/node/plan-document';
 import type { ScreenParts } from '@elabora/core/project/parts';
-import { narrationView, timelineView, screenAt, timelineMarks } from '@elabora/core/narration/view';
 import type { TimelineView, ScreenAt, TimelineMark } from '@elabora/core/narration/view';
-import { effectsOf } from '@elabora/core/narration/timeline';
 import type { EffectInfo } from '@elabora/core/narration/timeline';
 import type { NarrationView } from '@elabora/core/narration/view';
 import { parseJSON } from '@elabora/core/util/json';
@@ -48,15 +32,11 @@ import { sortDiagnostics } from '@elabora/core/diagnostics/index';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
 import type { ValidationOptions } from '@elabora/core/validate/index';
 import * as edit from '@elabora/node/edit';
-import type { EditOptions, EditResult, Written } from '@elabora/node/edit';
-import { keepOriginalTexts } from '@elabora/node/edit/disk';
-import { withProjectLock } from '@elabora/node/journal/lock';
-import { JOURNAL_DIR, JournalError, appendChange, changeFileHashes, lastChanges, storeChangeBlobs, storeChangeBlobsSync } from '@elabora/node/journal/journal';
-import { writeFileAtomic } from '@elabora/node/util/fs';
+import type { EditOptions, EditResult, HostOptions, Written } from '@elabora/node/edit';
+import { JOURNAL_DIR } from '@elabora/node/journal/journal';
 import { projectDataDir } from '@elabora/node/data-dir';
-import { syncArtefact } from '@elabora/node/project-files';
 import { agentRulesState, claudeMissing, updateAgentRules, AGENTS_FILE, CLAUDE_FILE } from '@elabora/node/agent-rules';
-import { copyBlobTo, hasBlob } from '@elabora/node/blobs';
+import { copyBlobTo } from '@elabora/node/blobs';
 import type { BlobHash } from '@elabora/node/blobs';
 import { createVersion, listVersions, restore } from '@elabora/node/backups/index';
 import { findVersion, newestVersionTime, summarize as summarizeVersion } from '@elabora/node/backups/store';
@@ -65,21 +45,21 @@ import { pruneProjectData } from '@elabora/node/project-data';
 import { FsStore } from '@elabora/node/store/fs-store';
 import { readSnapshot } from '@elabora/node/store/snapshot';
 import type { MediaJob } from '@elabora/node/media/jobs';
-import { ProjectState } from './project-state.ts';
-import type { DiagnosticsDelta } from './project-state.ts';
+import { ProjectState } from './base/project-state.ts';
 import { JournalTail } from './journal-tail.ts';
-import { WriteQueue } from './queue.ts';
+import { WriteQueue } from './base/queue.ts';
 import { MediaSupervisor, jobInfo } from './media.ts';
 import type { MediaOptions } from './media.ts';
 import { replaceMediaReferences } from '@elabora/core/commands/media';
-import { commandContext, planVoiceover, unmetExpectation, type Expectation } from '@elabora/core/commands/index';
+import { commandContext, unmetExpectation, type Expectation } from '@elabora/core/commands/index';
 import { binaryFile } from '@elabora/core/project/files';
 import type { FileMedia } from '@elabora/core/media/conformance';
 import { isMediaAsset, mediaStatus, probeAssets } from '@elabora/node/store/media';
-import { readDisk, readDiskSync, hashOf, toSourceFile, withUpdates, tryApply, pathsInside } from './disk.ts';
-import type { DiskRead, SessionStore } from './disk.ts';
-import { COMMANDS, commandResult, isCommandName, runNamedCommand } from './commands.ts';
-import { SessionCanvas } from './session-canvas.ts';
+import { toSourceFile, withUpdates } from './disk.ts';
+import type { SessionStore } from './disk.ts';
+import { SessionThumbs } from './base/thumbs.ts';
+import { SessionCanvas } from './base/canvas.ts';
+import { startCanvasHost } from '@elabora/node/canvas/host';
 import { SessionVoice } from './session-voice.ts';
 import { SessionSounds } from './session-sounds.ts';
 import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
@@ -87,24 +67,27 @@ import type { CourseSound } from '@elabora/core/sounds/sounds';
 import { SessionMonitor } from './session-monitor.ts';
 import { SessionActivity } from './session-activity.ts';
 import type { ActivityEntry } from '@elabora/node/activity';
-import { momentTime } from './render.ts';
+import { SessionReads, documentOptions } from './base/reads.ts';
+import { Renderer } from './base/render.ts';
+import { COMMAND_NAMES, namedCommand } from '@elabora/core/commands/table';
+import { NEED_SERVICES, SERVICES, isRequestType, notHere, serviceOf } from './base/services.ts';
+import { Batches } from './base/batches.ts';
+import { changeView, diagnosticsEvent } from './base/events.ts';
+import { FolderChanges, fileOf } from './session-folder.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
-import { FORMAT } from '@elabora/format';
-import { projectFormat, compareFormats, formatNumbers } from '@elabora/core/format/version';
-import { summarizeNotes } from '@elabora/core/format/migrations/index';
 import { build } from '@elabora/node/build';
 import { WEB_NAVIGATION, WEB_PROGRESS } from '@elabora/node/build';
 import type { BuildOptions, BuildResult } from '@elabora/node/build';
 import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
-import { SessionCloud, type CloudHeld, type CloudOptions, type Where } from './session-cloud.ts';
+import { SessionCloud, type CloudHeld, type CloudOptions, type Where } from './base/session-cloud.ts';
 import { folderSnapshot, type PushSource } from '@elabora/node/cloud/projects';
 import type { Presence } from '@elabora/core/sync/protocol';
 import type {
   BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, ExternalNotes, FileEntry, FileView,
-  FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, BatchCloseReason, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
-  RequestResult, RequestType, ResponseMessage, RestoreView, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
+  FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
+  RequestResult, RequestType, ResponseMessage, RestoreView, Service, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
 } from './protocol.ts';
 import { takeDialogue } from '@elabora/node/voice/index';
 import type { VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate, GenerateResult, TakeInfo } from '@elabora/node/voice/index';
@@ -155,6 +138,8 @@ export interface OpenOptions {
   migrate?: 'ask' | 'auto' | 'never';
   // A folder linked to a project in the cloud (D83): the session syncs it with the project's room.
   cloud?: CloudOptions;
+  // The services the session offers over the protocol (D102): every one by default.
+  services?: readonly Service[];
 }
 
 // Running media jobs at close: cancel them (default: an interrupted conversion of a dropped file is
@@ -166,13 +151,7 @@ export interface CloseOptions {
 }
 
 const FIVE_MINUTES = 5 * 60_000;
-// A binary file written this recently is still being written (copied, downloaded).
-const SETTLE_MS = 400;
-const MAX_SETTLE_MS = 2000;
 const SYSTEM: Author = { kind: 'system' };
-const EXTERNAL: Author = { kind: 'external' };
-// How many recent changes give the versions an external edit may have been read from (D75).
-const RECENT_VERSIONS = 64;
 
 interface SessionInit {
   root: string;
@@ -208,34 +187,29 @@ export class Session {
   readonly author: Author;
   readonly #options: OpenOptions;
   readonly #state: ProjectState;
-  readonly #tail: JournalTail;
   #entries: JournalEntry[];
   readonly #queue = new WriteQueue();
   readonly #listeners = new Set<(message: EventMessage) => void>();
-  readonly #stats: Map<string, FileInfo>; // size and time of each file when last read, for rescans
-  readonly #externalNotes = new Map<string, ExternalNotes>(); // D75, by change id
   #cloud: SessionCloud | null = null;
   readonly #monitor: SessionMonitor;
+  // Where the changes come from and go: the folder (session-folder.ts).
+  readonly #folder: FolderChanges;
   readonly #activity: SessionActivity;
-  readonly #sources = new Map<number, ChangeSource>(); // journal entries the session appended, by sequence number
   readonly #media: MediaSupervisor | null;
-  #openBatch: { id: string; at: number } | null = null;
-  #batchTimer: NodeJS.Timeout | null = null;
-  #closures: { id: string; reason: BatchCloseReason }[] = [];
-  // The turns of Elabora's chat not ended yet, by conversation: the mark's id is the turn's batch,
-  // which neither a human change nor 5 idle minutes close, only the turn's end (endTurn) or the next mark.
-  readonly #turns = new Map<string, string>();
+  // The AI batches and the chat's turns (base/batches.ts).
+  readonly #batches: Batches;
   #versionTimer: NodeJS.Timeout | null = null;
   #versionInFlight: Promise<string | null> | null = null;
   #pruned = false;
   #timers: NodeJS.Timeout[] = [];
   #closing: Promise<{ version: string | null }> | null = null;
   #closed = false;
-  #gone = false;
-  #settlingSince: number | null = null;
   readonly #canvas: SessionCanvas;
+  readonly #thumbs: SessionThumbs;
   readonly #voice: SessionVoice;
   readonly #sounds: SessionSounds;
+  readonly #reads: SessionReads;
+  readonly #services: ReadonlySet<Service>;
   // Media: the hash each media file was probed at, what could not be read, whether ffprobe is there,
   // and whether media jobs started or finished since the media status was last given.
   readonly #mediaChecked = new Map<string, string>();
@@ -250,19 +224,43 @@ export class Session {
     this.root = init.root;
     this.store = init.store;
     this.#state = init.state;
-    this.#tail = init.tail;
     this.#entries = init.entries;
-    this.#stats = init.stats;
     this.#options = init.options;
     this.author = init.options.author ?? { kind: 'human' };
     const project = () => this.#state.project;
     const reportError = (error: unknown, context: string) => this.#emitError(error, context);
-    this.#canvas = new SessionCanvas({ root: this.root, project, reportError });
+    this.#services = new Set(init.options.services ?? SERVICES);
+    this.#batches = new Batches({
+      idleMs: init.options.batchIdleMs ?? FIVE_MINUTES,
+      run: (work) => this.#queue.run(work),
+      version: (batch) => (this.#options.backups?.enabled === false ? Promise.resolve(null) : this.#takeVersion('after-ai', { batch, author: SYSTEM })),
+      emit: (event) => this.#emit(event),
+      reportError: (error, context) => this.#emitError(error, context)
+    });
+    const renderer = new Renderer();
+    this.#canvas = new SessionCanvas({ sink: ({ port, debug }) => startCanvasHost({ root: this.root, port, debug }), project, renderer, reportError });
+    // The miniatures' renders (D133): this computer's canvas host serves the module's files whatever renders named.
+    this.#thumbs = new SessionThumbs({ project, files: () => this.#state.files, root: this.root, renderer, named: () => {}, assertOpen: () => this.#assertOpen() });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
-    this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
+    this.#sounds = new SessionSounds({ run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
+    this.#reads = new SessionReads({
+      root: this.root, state: this.#state, renderer, entries: () => this.#entries, journalSeq: () => this.#folder.lastSeq, openBatch: () => this.openBatch,
+      mediaJobs: () => this.#media?.jobs() ?? [], migrate: init.options.migrate, services: init.options.services ?? SERVICES,
+      takeDialogue: (take) => takeDialogue(this.root, take), assertOpen: () => this.#assertOpen()
+    });
     this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
     // The rescan reads the agents' activity too: a line its watcher missed shows at the next one.
-    this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError, onRescan: () => void this.#activity.poke() });
+    this.#monitor = new SessionMonitor({ store: this.store, journalDir: init.tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#folder.refresh()), reportError, onRescan: () => void this.#activity.poke() });
+    this.#folder = new FolderChanges({
+      root: this.root, store: this.store, state: this.#state, tail: init.tail, monitor: this.#monitor, stats: init.stats, lockTimeoutMs: this.#options.lockTimeoutMs,
+      host: {
+        taken: (entries, source) => this.#taken(entries, source),
+        afterChange: () => this.#afterChange(),
+        emit: (event) => this.#emit(event),
+        owns: (rel) => this.#media?.owns(rel) ?? false,
+        rescanned: () => { this.#jobsChanged = true; }
+      }
+    });
     for (const [rel, file] of init.state.files) {
       if (file.kind !== 'binary' || !file.media) continue;
       this.#mediaChecked.set(rel, file.hash ?? '');
@@ -292,7 +290,7 @@ export class Session {
   // Called by openProject: watchers, media queue, schedules. Resolves once the folder's watcher
   // reports what is written from then on (Store.watch, onReady; 3 s at most).
   async start(): Promise<void> {
-    this.#resumeBatch();
+    this.#batches.resume(this.#entries, (chat, at) => readChat(this.root, chat).some((line) => line.type === 'turn-end' && line.at >= at));
     await this.#monitor.start();
     this.#activity.start(this.#options.watch !== false);
     if (this.#media) {
@@ -332,33 +330,25 @@ export class Session {
   // its authors once linkCloud starts (D88).
   async cloudSnapshot(): Promise<PushSource> {
     this.#assertOpen();
-    return this.#queue.run(() => this.#locked(async () => {
-      await this.#syncWithDisk();
+    return this.#queue.run(() => this.#folder.locked(async () => {
+      await this.#folder.sync();
       return folderSnapshot(this.root);
     }));
   }
 
   async #startCloud(options: CloudOptions): Promise<void> {
     const cloud = new SessionCloud({
-      root: this.root,
       files: () => this.#state.files,
       step: (work) => this.#queue.run(async () => {
         try {
-          return await this.#locked(async () => {
-            await this.#syncWithDisk();
-            try {
-              return await work();
-            } finally {
-              await this.#recordOwn();
-            }
-          });
+          return await this.#folder.write(work);
         } finally {
           await this.#afterChange();
         }
       }),
       write: (before, after, author, batch, seq) => this.#writeFromRoom(before, after, author, batch, seq),
       emit: (event) => this.#emit(event),
-      notes: (change) => this.#externalNotes.get(change),
+      notes: (change) => this.#folder.externalNotes(change),
       ended: () => { if (this.#cloud === cloud) this.#cloud = null; },
       version: (name) => this.#takeVersion('restore', { name, author: SYSTEM })
     }, options);
@@ -402,11 +392,11 @@ export class Session {
         write.set(rel, source);
       } else {
         await copyBlobTo(this.root, file.hash as BlobHash, target);
-        updates.set(rel, fileOf(await this.#readDisk(rel)));
+        updates.set(rel, fileOf(await this.#folder.readDisk(rel)));
       }
     }
     if (!updates.size) return;
-    await this.#journalChange({ updates, author, command: { name: 'sync', args: { seq } }, source: 'cloud', write, ...(batch ? { batch } : {}) });
+    await this.#folder.journal({ updates, author, command: { name: 'sync', args: { seq } }, source: 'cloud', write, ...(batch ? { batch } : {}) });
   }
 
   // Ends the session: stops the voices' jobs (what they said stays), reconciles what changed last,
@@ -419,15 +409,16 @@ export class Session {
       this.#cloud?.stop();
       this.#monitor.stop();
       this.#activity.stop();
-      for (const timer of [...this.#timers, this.#batchTimer, this.#versionTimer]) if (timer) clearTimeout(timer);
+      this.#batches.stop();
+      for (const timer of [...this.#timers, this.#versionTimer]) if (timer) clearTimeout(timer);
       // Results of the jobs that finish meanwhile are journaled by the queue, before what follows.
       const mode = options.media ?? 'cancel';
       if (mode !== 'leave') await this.#media?.close(mode);
-      await this.#queue.run(() => this.#refresh(true)).catch((error) => this.#emitError(error, 'reconciling changes'));
+      await this.#queue.run(() => this.#folder.refresh(true)).catch((error) => this.#emitError(error, 'reconciling changes'));
       let version: string | null = null;
       await this.#queue.run(async () => {
-        this.#closeOpenBatch('close');
-        await this.#flushClosures();
+        this.#batches.close('close');
+        await this.#batches.flush();
         if (this.#options.backups?.enabled !== false) version = await this.#takeVersion('close', { author: SYSTEM });
       });
       if (this.#options.backups?.prune !== false && !this.#pruned) await this.#prune().catch((error) => this.#emitError(error, 'pruning the project data'));
@@ -450,8 +441,8 @@ export class Session {
 
   get files(): ProjectFiles { return this.#state.files; }
   get project(): Project { return this.#state.project; }
-  get journalSeq(): number { return this.#tail.lastSeq; }
-  get openBatch(): string | null { return this.#openBatch?.id ?? null; }
+  get journalSeq(): number { return this.#folder.lastSeq; }
+  get openBatch(): string | null { return this.#batches.open; }
 
   // Receives every event as a message ready for a transport.
   subscribe(listener: (message: EventMessage) => void): () => void {
@@ -468,25 +459,31 @@ export class Session {
       this.#monitor.requestJournal();
     }
     this.#monitor.clearScheduled();
-    await this.#queue.run(() => this.#refresh());
+    await this.#queue.run(() => this.#folder.refresh());
   }
 
   // ── protocol ───────────────────────────────────────────────────────
 
-  async handle(message: unknown): Promise<ResponseMessage> {
+  // ports: what came transferred with the message (a relay's port: not served here).
+  async handle(message: unknown, ports: readonly unknown[] = []): Promise<ResponseMessage> {
     const request = (message ?? {}) as Partial<RequestMessage>;
     const id = typeof request.id === 'string' ? request.id : '';
     const type = typeof request.type === 'string' ? request.type : '';
     try {
       if (!id || request.kind !== 'request' || !isRequestType(type)) throw new EngineError('bad-request', `Not a request of the engine protocol: ${JSON.stringify(message)?.slice(0, 200)}`);
-      const result = await this.#dispatch(request as RequestMessage);
+      const result = await this.#dispatch(request as RequestMessage, ports);
       return { kind: 'response', id, type, ok: true, result } as ResponseMessage;
     } catch (error) {
       return { kind: 'response', id, type, ok: false, error: protocolError(error) };
     }
   }
 
-  async #dispatch(request: RequestMessage): Promise<RequestResult<RequestType>> {
+  async #dispatch(request: RequestMessage, ports: readonly unknown[]): Promise<RequestResult<RequestType>> {
+    const service = serviceOf(request.type);
+    if (service && !this.#services.has(service)) {
+      this.#assertOpen();
+      throw notHere(request.type, service);
+    }
     const params = (request.params ?? {}) as Record<string, unknown>;
     switch (request.type) {
       case 'summary': return this.summary();
@@ -523,7 +520,9 @@ export class Session {
       case 'screenTranslation': return this.screenTranslation(request.params.screen, request.params.language);
       case 'buildTranslation': return this.buildTranslation(request.params);
       case 'run': {
-        if (typeof request.params.command !== 'string' || !isCommandName(request.params.command)) throw new EngineError('bad-request', `Unknown command "${String(params.command)}" (commands: ${Object.keys(COMMANDS).join(', ')})`);
+        if (typeof request.params.command !== 'string' || !namedCommand(request.params.command)) throw new EngineError('bad-request', `Unknown command "${String(params.command)}" (commands: ${COMMAND_NAMES.join(', ')})`);
+        const need = namedCommand(request.params.command)?.needs;
+        if (need && !this.#services.has(NEED_SERVICES[need])) { this.#assertOpen(); throw notHere('run', NEED_SERVICES[need]); }
         return this.run(request.params.command, request.params.args, request.params.author, request.params.expect);
       }
       case 'undo': return this.undo(request.params.seq);
@@ -544,6 +543,10 @@ export class Session {
       case 'openCanvas': return this.openCanvas(request.params);
       case 'canvasView': return this.canvasView(request.params);
       case 'closeCanvas': return this.closeCanvas();
+      case 'thumbRender': return this.#thumbs.thumbRender(request.params);
+      case 'momentRender': return this.#thumbs.momentRender(request.params);
+      case 'blockPreviewRender': return this.#thumbs.blockPreviewRender(request.params);
+      case 'measureRender': return this.#thumbs.measureRender(request.params);
       case 'migrate': return this.migrate();
       case 'voices': return this.voices(request.params.language);
       case 'installVoices': return this.installVoices(request.params.language);
@@ -565,124 +568,32 @@ export class Session {
       case 'alignNarration': return this.alignNarration(request.params);
       case 'build': return this.build(request.params);
       case 'close': return this.close();
+      // The desktop serves the module's files to its canvas from its local server.
+      case 'relayPort':
+        if (!ports[0]) throw new EngineError('bad-request', 'relayPort takes the port transferred with its message');
+        throw new EngineError('not-available', 'This session serves the module\'s files from its local server', { code: 'E_NOT_HERE' });
     }
   }
 
   // ── reads ──────────────────────────────────────────────────────────
 
-  summary(): ProjectSummary {
-    this.#assertOpen();
-    const project = this.#state.project;
-    const course = project.course;
-    const listed = new Set<string>();
-    const estimates = screenEstimates(project);
-    const outline = (Array.isArray(course?.sections) ? course.sections : []).map((section) => ({
-      id: String(section?.id ?? ''),
-      title: String(section?.title ?? ''),
-      screens: (Array.isArray(section?.screens) ? section.screens : []).map((id) => {
-        listed.add(id);
-        const entry = project.screens.get(id);
-        const findings = this.#state.screenDiagnostics(id).filter((d) => !d.waived && !d.ignored);
-        return {
-          id, title: typeof entry?.data?.title === 'string' ? entry.data.title : null, file: entry?.file ?? `screens/${id}.json`,
-          errors: findings.filter((d) => d.severity === 'error').length, warnings: findings.filter((d) => d.severity === 'warning').length,
-          seconds: estimates.get(id)?.seconds ?? 0,
-          ...placedOn(entry?.data)
-        };
-      })
-    }));
-    const jobs = this.#media?.jobs() ?? [];
-    return {
-      root: this.root,
-      course: course ? { id: course.id, title: course.title, language: course.language, version: course.version, format: course.format } : null,
-      format: this.formatStatus(),
-      outline,
-      unlisted: [...project.screens.keys()].filter((id) => !listed.has(id)).sort(),
-      plan: (() => {
-        const versions = planVersionsView(project);
-        return { state: versions.state, objectives: project.plan?.objectives?.length ?? 0, items: project.plan?.items?.length ?? 0, latest: versions.latest, validated: versions.validated, sinceValidated: versions.current.sinceValidated, unversioned: versions.current.unversioned };
-      })(),
-      diagnostics: this.#state.summary,
-      journal: { seq: this.#tail.lastSeq, openBatch: this.openBatch },
-      media: { queued: jobs.filter((job) => job.status === 'queued').length, running: jobs.filter((job) => job.status === 'running').length }
-    };
-  }
+  summary(): ProjectSummary { return this.#reads.summary(); }
 
-  listFiles(dir?: string): FileEntry[] {
-    this.#assertOpen();
-    const prefix = dir ? `${projectPath(String(dir)) ?? ''}/`.replace(/\/+$/, '/') : '';
-    if (dir && prefix === '/') throw new EngineError('bad-request', `Not a folder of the project: ${dir}`);
-    return [...this.#state.files]
-      .filter(([rel]) => rel.startsWith(prefix))
-      .map(([rel, file]): FileEntry => ({ path: rel, kind: file.kind, size: file.kind === 'text' ? Buffer.byteLength(file.text) : file.size }))
-      .sort((a, b) => a.path.localeCompare(b.path));
-  }
+  listFiles(dir?: string): FileEntry[] { return this.#reads.listFiles(dir); }
 
-  readFile(rel: string): FileView {
-    this.#assertOpen();
-    const key = projectPath(String(rel));
-    const file = key === null ? undefined : this.#state.files.get(key);
-    if (!file || key === null) throw new EngineError('not-found', `No file ${rel} in the project`);
-    if (file.kind === 'binary') return { path: key, kind: 'binary', size: file.size, hash: file.hash ?? null };
-    const error = this.#state.brokenError(key);
-    return error === undefined ? { path: key, kind: 'text', text: file.text } : { path: key, kind: 'text', text: file.text, error };
-  }
+  readFile(rel: string): FileView { return this.#reads.readFile(rel); }
 
-  readScreen(id: string): ScreenView {
-    this.#assertOpen();
-    const entry = this.#state.project.screens.get(id);
-    if (!entry) throw new EngineError('not-found', `No screen "${id}"`);
-    const error = this.#state.brokenError(entry.file);
-    const view: ScreenView = { id, file: entry.file, data: entry.data, diagnostics: this.#state.screenDiagnostics(id) };
-    if (error !== undefined) view.error = error;
-    return view;
-  }
+  readScreen(id: string): ScreenView { return this.#reads.readScreen(id); }
 
-  screenParts(id: string): ScreenParts {
-    this.#assertOpen();
-    const parts = screenParts(this.#state.project, id);
-    if (!parts) throw new EngineError('not-found', `No screen "${id}"`);
-    return parts;
-  }
+  screenParts(id: string): ScreenParts { return this.#reads.screenParts(id); }
 
-  // A narrated screen's lines in a language (default: the course's), their audio and their times,
-  // and the exchange each generated line's take was cut from (said as one dialogue, D29); with
-  // layer, that layer's narration (D62).
-  narration(id: string, language?: string, layer?: string): NarrationView | null {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(id)) throw new EngineError('not-found', `No screen "${id}"`);
-    const view = narrationView(this.#state.project, id, language || undefined, { layer: layer ?? null });
-    if (!view) return null;
-    for (const line of view.lines) {
-      if (line.take === null || !line.generated || line.status === 'missing') continue;
-      const dialogue = takeDialogue(this.root, { screen: id, line: line.id, language: view.language, take: line.take });
-      if (dialogue) line.dialogue = dialogue;
-    }
-    return view;
-  }
+  narration(id: string, language?: string, layer?: string): NarrationView | null { return this.#reads.narration(id, language, layer); }
 
-  // A timed screen's timeline: lines and their words, timed blocks, events (docs/decisions.md D28).
-  timeline(id: string, language?: string, layer?: string): TimelineView | null {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(id)) throw new EngineError('not-found', `No screen "${id}"`);
-    return timelineView(this.#state.project, id, language || undefined, { layer: layer ?? null });
-  }
+  timeline(id: string, language?: string, layer?: string): TimelineView | null { return this.#reads.timeline(id, language, layer); }
 
-  // What is seen of a timed screen (or of a layer's timeline, D62) at a time, or at an anchor resolved in that language.
-  timelineAt({ screen, time, at, language, layer }: { screen: string; time?: number; at?: CanvasMoment; language?: string; layer?: string }): ScreenAt | null {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    const moment = at ? momentTime(this.#state.project, screen, at, language, layer) : typeof time === 'number' ? { time } : null;
-    if (!moment) throw new EngineError('bad-request', 'timelineAt takes a time (seconds) or a moment (at)');
-    return screenAt(this.#state.project, screen, moment.time, language || undefined, { layer: layer ?? null });
-  }
+  timelineAt(params: { screen: string; time?: number; at?: CanvasMoment; language?: string; layer?: string }): ScreenAt | null { return this.#reads.timelineAt(params); }
 
-  // The marks of a timed screen (or of a layer's timeline): a storyboard, one capture per mark (null: not timed).
-  timelineMarks(screen: string, language?: string, layer?: string): TimelineMark[] | null {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    return timelineMarks(this.#state.project, screen, language || undefined, { layer: layer ?? null });
-  }
+  timelineMarks(screen: string, language?: string, layer?: string): TimelineMark[] | null { return this.#reads.timelineMarks(screen, language, layer); }
 
   // The waveform of a narrated screen's lines, decoded once per audio file (cached in the data folder).
   async narrationPeaks({ screen, language, perSecond }: { screen: string; language?: string; perSecond?: number }): Promise<NarrationPeaks | null> {
@@ -691,54 +602,19 @@ export class Session {
     return narrationPeaks(this.root, this.#state.project, screen, { ...(language ? { language } : {}), ...(typeof perSecond === 'number' ? { perSecond } : {}) });
   }
 
-  effects(): EffectInfo[] {
-    this.#assertOpen();
-    return effectsOf(this.#state.project);
-  }
+  effects(): EffectInfo[] { return this.#reads.effects(); }
 
-  planVoiceover(screen: string): { item: string; speaker?: string; text: string }[] {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    return planVoiceover(this.#state.project, screen);
-  }
+  planVoiceover(screen: string): { item: string; speaker?: string; text: string }[] { return this.#reads.planVoiceover(screen); }
 
-  // The plan's versions and what changed (D52), from the project as the session holds it.
-  planVersions(): PlanVersionsView {
-    this.#assertOpen();
-    return planVersionsView(this.#state.project);
-  }
+  planVersions(): PlanVersionsView { return this.#reads.planVersions(); }
 
-  planDiff({ from, to }: { from?: unknown; to?: unknown }): PlanDiffView {
-    this.#assertOpen();
-    const ref = (value: unknown, fallback: PlanRef): PlanRef => {
-      if (value === undefined) return fallback;
-      if (value === 'validated' || value === 'latest' || value === 'current' || (typeof value === 'number' && Number.isInteger(value) && value >= 1)) return value;
-      throw new EngineError('bad-request', 'planDiff takes from and to: a version number, "validated", "latest" or "current"');
-    };
-    try { return planDiffBetween(this.#state.project, { from: ref(from, 'validated'), to: ref(to, 'current') }); } catch (error) {
-      if (error instanceof EngineError) throw error;
-      throw new EngineError('not-found', error instanceof Error ? error.message : String(error));
-    }
-  }
+  planDiff(refs: { from?: unknown; to?: unknown }): PlanDiffView { return this.#reads.planDiff(refs); }
 
-  // What a document shows: a version (2) or « current »; the latest version by default.
-  #documentOptions(date: unknown, version: unknown): { date?: string; version?: number | 'current' } {
-    if (version !== undefined && version !== 'current' && !(typeof version === 'number' && Number.isInteger(version) && version >= 1)) throw new EngineError('bad-request', 'version is a version number (2) or "current"');
-    return { ...(typeof date === 'string' && date ? { date } : {}), ...(version !== undefined ? { version: version as number | 'current' } : {}) };
-  }
-
-  // The plan's document (D48), from the project as the session holds it.
-  planDocument(date?: string, version?: number | 'current'): PlanDocument | null {
-    this.#assertOpen();
-    try { return planDocument(this.#state.project, this.#documentOptions(date, version)); } catch (error) {
-      if (error instanceof EngineError) throw error;
-      throw new EngineError('not-found', error instanceof Error ? error.message : String(error));
-    }
-  }
+  planDocument(date?: string, version?: number | 'current'): PlanDocument | null { return this.#reads.planDocument(date, version); }
 
   planDocumentPage(date?: string, version?: number | 'current'): { html: string; date: string; title: string; version: string | null } {
     this.#assertOpen();
-    const options = this.#documentOptions(date, version);
+    const options = documentOptions(date, version);
     let doc: PlanDocument;
     try { doc = readPlanDocument(this.#state.project, options); } catch (error) { throw new EngineError('not-found', error instanceof Error ? error.message : String(error)); }
     return { html: planDocumentPage(doc), date: doc.date, title: doc.title, version: doc.plan.version };
@@ -750,7 +626,7 @@ export class Session {
     this.#assertOpen();
     if (!PLAN_DOCUMENT_FORMATS.includes(params?.format)) throw new EngineError('bad-request', 'exportPlanDocument takes a format: docx, pdf or html');
     if (typeof params.file !== 'string' || !path.isAbsolute(params.file)) throw new EngineError('bad-request', 'exportPlanDocument takes file: an absolute path');
-    const options = this.#documentOptions(params.date, params.version);
+    const options = documentOptions(params.date, params.version);
     let exported: ExportedPlanDocument;
     let day: string;
     try {
@@ -764,20 +640,9 @@ export class Session {
     return { ...exported, sent: true };
   }
 
-  // A dialogue for its editor (D61), from the project as the session holds it.
-  dialogue(block: string): DialogueView | null {
-    this.#assertOpen();
-    if (typeof block !== 'string') throw new EngineError('bad-request', 'dialogue takes block: a dialogue block id');
-    return dialogueView(this.#state.project, block);
-  }
+  dialogue(block: string): DialogueView | null { return this.#reads.dialogue(block); }
 
-  dialoguePlay(params: { block: string; choices: string[] }): PlayReport {
-    this.#assertOpen();
-    const ref = typeof params?.block === 'string' ? findDialogue(this.#state.project, params.block) : null;
-    if (!ref) throw new EngineError('not-found', `No dialogue block "${String(params?.block)}"`);
-    if (!Array.isArray(params.choices) || params.choices.some((choice) => typeof choice !== 'string')) throw new EngineError('bad-request', 'dialoguePlay takes choices: option ids');
-    return playDialogue(this.#state.project, ref, params.choices);
-  }
+  dialoguePlay(params: { block: string; choices: string[] }): PlayReport { return this.#reads.dialoguePlay(params); }
 
   dialoguePage(params: { block: string; date?: string }): { html: string; date: string; title: string } {
     this.#assertOpen();
@@ -810,24 +675,9 @@ export class Session {
     }
   }
 
-  // « Transformer en… » (D63): the targets of a block, in the app's language.
-  conversions(params: ConversionsParams): ConversionsView {
-    this.#assertOpen();
-    if (params?.probe === true) return { supported: true, targets: [], refused: [] };
-    if (typeof params?.block !== 'string') throw new EngineError('bad-request', 'conversions takes block: a block id (or probe: true)');
-    try {
-      return { supported: true, ...conversionTargets(this.#state.project, params.block, params.language) };
-    } catch (error) {
-      if (error instanceof CommandError) throw new EngineError('not-found', error.message);
-      throw error;
-    }
-  }
+  conversions(params: ConversionsParams): ConversionsView { return this.#reads.conversions(params); }
 
-  findText(query: string, caseSensitive = false): TextMatch[] {
-    this.#assertOpen();
-    if (typeof query !== 'string') throw new EngineError('bad-request', 'findText takes a query (the words to find)');
-    return findText(this.#state.project, query, { caseSensitive });
-  }
+  findText(query: string, caseSensitive = false): TextMatch[] { return this.#reads.findText(query, caseSensitive); }
 
   // What a package would weigh at each media quality (« Publier »), and each media in it, as the
   // project is in memory: renditions and narration tracks as cached, else estimated; nothing encoded
@@ -837,42 +687,15 @@ export class Session {
     return packageWeights(this.#state.project);
   }
 
-  translationStatus(to?: string): TranslationStatus[] {
-    this.#assertOpen();
-    return translationStatus(this.#state.project, to ? { to } : {});
-  }
+  translationStatus(to?: string): TranslationStatus[] { return this.#reads.translationStatus(to); }
 
-  translationTable(language: string): TranslationTable {
-    this.#assertOpen();
-    try { return translationTable(this.#state.project, language); } catch (error) { throw new EngineError('bad-request', error instanceof Error ? error.message : String(error)); }
-  }
+  translationTable(language: string): TranslationTable { return this.#reads.translationTable(language); }
 
-  screenTranslation(screen: string, language: string): ScreenTranslation {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    try { return screenTranslation(this.#state.project, { screen, language }); } catch (error) { throw new EngineError('bad-request', error instanceof Error ? error.message : String(error)); }
-  }
+  screenTranslation(screen: string, language: string): ScreenTranslation { return this.#reads.screenTranslation(screen, language); }
 
-  diagnostics(screen?: string): DiagnosticsView {
-    this.#assertOpen();
-    const { screens, project, summary } = this.#state.diagnostics();
-    if (screen !== undefined) return { screens: { [screen]: this.#state.screenDiagnostics(screen) }, project, summary };
-    return { screens: Object.fromEntries(screens), project, summary };
-  }
+  diagnostics(screen?: string): DiagnosticsView { return this.#reads.diagnostics(screen); }
 
-  // The journal's last changes and batches. With ops, each change says what it did, for a window
-  // that did not see the changes arrive.
-  history(limit = 50, options: { ops?: boolean } = {}): HistoryView {
-    this.#assertOpen();
-    const entries = this.#entries;
-    const undone = undoneChanges(entries);
-    const changes = entries.filter((entry): entry is ChangeLike => entry.type !== 'mark').slice(-limit).map((entry) => ({
-      seq: entry.seq, id: entry.id, op: entry.command?.name ?? (entry.type === 'undo' ? 'undo' : entry.author.kind), at: entry.at, author: entry.author,
-      batch: entry.batch, files: entry.files.map((file) => file.path), undone: undone.has(entry.id),
-      ...(options.ops ? { ops: entry.ops as Op[] } : {})
-    }));
-    return { changes, batches: summarizeBatches(entries).slice(-limit), openBatch: this.openBatch };
-  }
+  history(limit = 50, options: { ops?: boolean } = {}): HistoryView { return this.#reads.history(limit, options); }
 
   // What agents did lately, through Elabora's tools (the 'activity' events say what comes next).
   activity(limit?: number): ActivityEntry[] {
@@ -890,24 +713,11 @@ export class Session {
     return listVersions(this.root).map(backupSummary);
   }
 
-  // One screen as the player shows it (memoised; the canvas shows the same).
-  renderScreen(params: RenderScreenParams): RenderedScreen {
-    this.#assertOpen();
-    return this.#canvas.render(params);
-  }
+  renderScreen(params: RenderScreenParams): RenderedScreen { return this.#reads.renderScreen(params); }
 
-  // The format of the files, and what the migrate option says to do about an older one.
-  formatStatus(): FormatStatus {
-    const project = this.#state.project;
-    const format = projectFormat(this.#state.files);
-    const base = { format, latest: FORMAT, migrate: this.#options.migrate ?? 'ask' } as const;
-    if (project.migration) return { ...base, state: 'outdated', changes: summarizeNotes(project.migration.notes), files: project.migration.changed };
-    if (format === FORMAT) return { ...base, state: 'current' };
-    if (format !== null && formatNumbers(format) !== null && compareFormats(format, FORMAT) > 0) return { ...base, state: 'newer' };
-    return { ...base, state: 'unknown' };
-  }
+  formatStatus(): FormatStatus { return this.#reads.formatStatus(); }
 
-  // ── canvas (session-canvas.ts) ─────────────────────────────────────
+  // ── canvas (base/canvas.ts) ─────────────────────────────────────
 
   // Starts the canvas host of the project (once): the app shows its page in a frame.
   async openCanvas(options: { port?: number; debug?: boolean } = {}): Promise<CanvasInfo> {
@@ -945,7 +755,7 @@ export class Session {
     const ref = edit.migrateIfOutdated(this.root, this.#editOptions(SYSTEM));
     if (!ref) return null;
     this.#adopt(ref.written);
-    if (ref.change) this.#sources.set(ref.change.seq, 'engine');
+    if (ref.change) this.#folder.own(ref.change.seq, 'engine');
     return { from: ref.from, to: ref.to, seq: ref.change?.seq ?? null };
   }
 
@@ -962,20 +772,20 @@ export class Session {
     const options = buildOptions(params, this.#options.validation);
     return this.#queue.run(async () => {
       this.#assertPresent();
-      this.#closeOpenBatch('human');
-      await this.#flushClosures();
-      await this.#locked(() => this.#syncWithDisk());
+      this.#batches.close('human');
+      await this.#batches.flush();
+      await this.#folder.locked(() => this.#folder.sync());
       let result: BuildResult;
       let seq: number | null = null;
       try {
         result = await build(this.root, { ...options, emit: options.target === 'web' ? 'both' : 'zip', onMedia: ({ job }) => this.#emit({ type: 'mediaJob', job: jobInfo(job) }) });
       } finally {
         // Written even when the build stops after assigning keys, or fails.
-        seq = await this.#locked(async () => {
+        seq = await this.#folder.locked(async () => {
           try {
             return await this.#journalLock(params);
           } finally {
-            await this.#recordOwn();
+            await this.#folder.takeNew();
           }
         });
         await this.#afterChange();
@@ -996,17 +806,16 @@ export class Session {
   // Under the lock, after a build: elabora.lock.json as it wrote it, journaled as a system change
   // (the journal's new entries first, so the change starts from what other writers left).
   async #journalLock(params: BuildParams): Promise<number | null> {
-    const entries = await this.#tail.read();
-    if (entries.length) await this.#absorb(entries);
+    await this.#folder.takeNew();
     this.#monitor.forget(LOCK_FILE);
-    const disk = await this.#readDisk(LOCK_FILE);
+    const disk = await this.#folder.readDisk(LOCK_FILE);
     const file = fileOf(disk);
     if (disk.kind === 'unstable' || !file || sameContent(this.#state.files.get(LOCK_FILE), file)) return null;
     if (file.kind !== 'text' || parseJSON(file.text).error !== undefined) {
       this.#monitor.observe(LOCK_FILE); // not the build's: left to the watcher
       return null;
     }
-    return this.#journalChange({ updates: new Map([[LOCK_FILE, file]]), author: SYSTEM, command: { name: 'build', args: params }, source: 'engine' });
+    return this.#folder.journal({ updates: new Map([[LOCK_FILE, file]]), author: SYSTEM, command: { name: 'build', args: params }, source: 'engine' });
   }
 
   // A language as its own package (the app's « Versions »): the translated course generated in the
@@ -1021,7 +830,7 @@ export class Session {
     const options = buildOptions(params, this.#options.validation);
     return this.#queue.run(async () => {
       this.#assertPresent();
-      await this.#locked(() => this.#syncWithDisk());
+      await this.#folder.locked(() => this.#folder.sync());
       const out = path.join(projectDataDir(this.root), 'translations', params.language);
       let made;
       try {
@@ -1046,16 +855,17 @@ export class Session {
   // engine (a future in-app assistant) says so.
   // expect: the values the change was decided on (Expectation), checked here, in the write queue and
   // under the lock, after the folder was read again: one changed meanwhile refuses it, nothing written.
-  async run<Name extends CommandName>(name: Name, args: CommandArgs[Name], author: Author = this.author, expect?: readonly Expectation[]): Promise<RunResult> {
+  // host: how this computer makes what the command needs (a voice's aligner, its progress).
+  async run<Name extends CommandName>(name: Name, args: CommandArgs[Name], author: Author = this.author, expect?: readonly Expectation[], host: Omit<HostOptions, keyof EditOptions> = {}): Promise<RunResult> {
     this.#assertOpen();
-    if (!isCommandName(name)) throw new EngineError('bad-request', `Unknown command "${String(name)}"`);
+    if (!namedCommand(name)) throw new EngineError('bad-request', `Unknown command "${String(name)}"`);
     if (expect !== undefined && !Array.isArray(expect)) throw new EngineError('bad-request', 'expect: a list of expected values');
     return this.#change(author, async () => {
       // An outdated course is migrated first, by its own change after a migration version.
       await this.#migrateFormat();
       const unmet = expect?.length ? unmetExpectation(this.#state.project, expect) : null;
       if (unmet) throw new EngineError('refused', `${unmet}: nothing written.`, { code: 'E_EXPECTED' });
-      const result = await runNamedCommand(name, this.root, args, this.#editOptions(author));
+      const result: EditResult = await edit.run(this.root, name, args, { ...this.#editOptions(author), ...host });
       return this.#committed(result);
     }).then(({ result, change }) => this.#runResult(result.op ?? name, result, change));
   }
@@ -1063,7 +873,11 @@ export class Session {
   // ⌘Z without seq: the author's last step (D79): their last change, or the batch of an agent they launched.
   async undo(seq?: number, author: Author = this.author): Promise<UndoView> {
     this.#assertOpen();
-    return this.#change(author, async () => this.#committed(edit.undo(this.root, seq, this.#editOptions(author))))
+    return this.#change(author, async () => {
+      // A change the journal does not have is not found (the protocol's not-found), not refused.
+      if (seq !== undefined && !this.#entries.some((entry) => entry.type !== 'mark' && entry.seq === seq)) throw new EngineError('not-found', `No change ${seq} in the journal`);
+      return this.#committed(edit.undo(this.root, seq, this.#editOptions(author)));
+    })
       .then(({ result, change }) => ({ ...this.#runResult('undo', result, change), undone: [result.undone].flat(), skipped: result.skipped }));
   }
 
@@ -1089,17 +903,12 @@ export class Session {
     this.#assertOpen();
     return this.#queue.run(async () => {
       this.#assertPresent();
-      this.#closeOpenBatch('mark');
-      await this.#flushClosures();
-      const mark = await this.#locked(async () => {
-        await this.#syncWithDisk();
-        try {
-          const { mark } = edit.appendMark(this.root, request, { author, ...(chat ? { chat } : {}) });
-          this.#sources.set(mark.seq, 'engine');
-          return mark;
-        } finally {
-          await this.#recordOwn();
-        }
+      this.#batches.close('mark');
+      await this.#batches.flush();
+      const mark = await this.#folder.write(async () => {
+        const { mark } = edit.appendMark(this.root, request, { author, ...(chat ? { chat } : {}) });
+        this.#folder.own(mark.seq, 'engine');
+        return mark;
       });
       await this.#afterChange();
       const version = await this.#takeVersion('before-ai', { author });
@@ -1113,13 +922,12 @@ export class Session {
     this.#assertOpen();
     return this.#queue.run(async () => {
       // The agent's last changes, written by its MCP server, may not have reached the session yet.
-      if (await this.#tail.hasNew()) await this.#locked(() => this.#syncWithDisk());
+      if (await this.#folder.hasNew()) await this.#folder.locked(() => this.#folder.sync());
       const mark = this.#entries.find((entry): entry is MarkEntry => entry.type === 'mark' && entry.id === params.turn);
       const chat = mark?.chat;
       if (!chat) throw new EngineError('not-found', `No turn ${params.turn} of the chat in the journal`);
-      if (this.#turns.get(chat) === params.turn) this.#turns.delete(chat);
-      if (this.#openBatch?.id === params.turn) this.#closeOpenBatch('turn');
-      await this.#flushClosures();
+      this.#batches.endTurn(chat, params.turn);
+      await this.#batches.flush();
       const changes = this.#entries.filter((entry) => entry.type !== 'mark' && entry.batch === params.turn).length;
       return { batch: changes ? params.turn : null, changes };
     });
@@ -1149,7 +957,7 @@ export class Session {
 
   async soundSearch(params: SoundSearchParams): Promise<{ sounds: SoundFound[] }> { return this.#sounds.soundSearch(params); }
   async soundPreview(params: { from: string }): Promise<{ audio: Uint8Array; type: string }> { return this.#sounds.soundPreview(params); }
-  courseSounds(): CourseSound[] { return this.#sounds.courseSounds(); }
+  courseSounds(): CourseSound[] { return this.#reads.courseSounds(); }
   async soundEstimate(params: { duration?: number } = {}): Promise<SoundEstimate> { return this.#sounds.soundEstimate(params); }
   async generateSound(params: GenerateSoundParams, author: Author = this.author): Promise<GeneratedSound> { return this.#sounds.generateSound(params, author); }
 
@@ -1187,8 +995,8 @@ export class Session {
     return this.#change(this.author, async () => {
       const result = await restore(this.root, version, { paths, author: this.author, skip: (rel) => this.#skipInVersions(rel) });
       const updates = new Map<string, SourceFile | null>();
-      for (const change of result.changes) updates.set(change.path, fileOf(await this.#readDisk(change.path)));
-      const seq = await this.#journalChange({ updates, author: this.author, command: { name: 'restore_backup', args: { version, paths: paths ?? null } }, source: 'engine' });
+      for (const change of result.changes) updates.set(change.path, fileOf(await this.#folder.readDisk(change.path)));
+      const seq = await this.#folder.journal({ updates, author: this.author, command: { name: 'restore_backup', args: { version, paths: paths ?? null } }, source: 'engine' });
       const before = result.before ? findVersion(this.root, result.before) : null;
       if (before?.reason === 'restore') this.#emit({ type: 'backupTaken', version: backupSummary(summarizeVersion(before)) });
       return { result, seq };
@@ -1210,20 +1018,13 @@ export class Session {
         throw new EngineError('refused', `This course is in format ${migration.from}, older than the one this Elabora writes (${migration.to}), and the session does not migrate it: nothing is written until it is migrated (the migrate request, or elabora migrate).`, { code: 'I_FORMAT_OUTDATED' });
       }
       if (!isAiAuthor(author)) {
-        this.#closeOpenBatch('human');
-        await this.#flushClosures();
+        this.#batches.close('human');
+        await this.#batches.flush();
       }
       // A course about to be migrated gets its migration version instead.
       if (this.#options.backups?.enabled !== false && !migration && !this.#versionInFlight && this.#versionDue()) await this.#takeVersion('auto', { author: SYSTEM });
       try {
-        return await this.#locked(async () => {
-          await this.#syncWithDisk();
-          try {
-            return await work();
-          } finally {
-            await this.#recordOwn();
-          }
-        });
+        return await this.#folder.write(work);
       } finally {
         await this.#afterChange();
       }
@@ -1237,7 +1038,7 @@ export class Session {
       autoVersion: false,
       lockTimeoutMs: this.#options.lockTimeoutMs,
       files: (stale) => {
-        if (stale.length) this.#reconcileSync(stale);
+        if (stale.length) this.#folder.reconcileSync(stale);
         return this.#state.files;
       }
     };
@@ -1248,10 +1049,10 @@ export class Session {
     // The executor migrated the course first (another writer made it outdated meanwhile).
     if (result.formatMigration) {
       this.#adopt(result.formatMigration.written);
-      if (result.formatMigration.change) this.#sources.set(result.formatMigration.change.seq, 'engine');
+      if (result.formatMigration.change) this.#folder.own(result.formatMigration.change.seq, 'engine');
     }
     this.#adopt(result.written);
-    if (result.change) this.#sources.set(result.change.seq, 'engine');
+    if (result.change) this.#folder.own(result.change.seq, 'engine');
     return { result, change: result.change?.seq ?? null };
   }
 
@@ -1260,7 +1061,7 @@ export class Session {
     const updates = new Map<string, SourceFile | null>();
     for (const [rel, file] of written.after) if (written.before.get(rel) !== file) updates.set(rel, toSourceFile(this.root, rel, file));
     for (const rel of written.before.keys()) if (!written.after.has(rel)) updates.set(rel, null);
-    for (const rel of updates.keys()) this.#recordStatSync(rel);
+    for (const rel of updates.keys()) this.#folder.recordStat(rel);
     this.#state.update(updates);
   }
 
@@ -1270,7 +1071,7 @@ export class Session {
     const all: Diagnostic[] = [...project];
     for (const list of screens.values()) all.push(...list);
     return {
-      command, change: seq === null ? null : this.#changeView(seq), files: result.files, result: commandResult(result),
+      command, change: seq === null ? null : this.#changeView(seq), files: result.files, result: edit.commandResult(result),
       diagnostics: sortDiagnostics(all.filter((d) => touched.has(d.file ?? '') || (d.severity === 'error' && !d.waived))), summary
     };
   }
@@ -1281,257 +1082,13 @@ export class Session {
     return entry ? changeView(entry) : null;
   }
 
-  #locked<T>(work: () => Promise<T>): Promise<T> {
-    return withProjectLock(this.root, work, { timeoutMs: this.#options.lockTimeoutMs });
-  }
-
-  // Under the lock: the journal's new entries first (other processes' changes), then the files
-  // that changed on disk without a journal entry.
-  async #syncWithDisk(): Promise<void> {
-    const entries = await this.#tail.read();
-    if (entries.length) await this.#absorb(entries);
-    if (this.#monitor.needsRescan) await this.#rescan();
-    await this.#reconcileDirty();
-  }
-
-  // Entries the session appended are recorded; the others are applied to the snapshot.
-  async #absorb(entries: JournalEntry[]): Promise<void> {
-    const foreign = entries.filter((entry) => !this.#sources.has(entry.seq));
-    if (foreign.length) await this.#applyForeign(foreign);
-    this.#record(entries);
-    if (this.#cloud) for (const entry of entries) if (entry.type !== 'mark') this.#cloud.take(entry);
-    for (const entry of entries) {
-      if (entry.type !== 'mark') this.#emit({ type: 'changed', source: this.#sources.get(entry.seq) ?? 'journal', change: changeView(entry) });
-      this.#sources.delete(entry.seq);
-    }
-  }
-
-  // Reads what the session itself just appended.
-  async #recordOwn(): Promise<void> {
-    const entries = await this.#tail.read();
-    if (entries.length) await this.#absorb(entries);
-  }
-
-  // Changes of other processes: each touched file is read back when it holds what the journal says
-  // it holds after them (its exact text). A file written again since (by a program that is not a
-  // Elabora tool) gets the journal's version, and the difference is reconciled as an external change.
-  async #applyForeign(entries: JournalEntry[]): Promise<void> {
-    const changes = entries.filter((entry): entry is ChangeLike => entry.type !== 'mark');
-    const expected = new Map<string, string | null>();
-    for (const change of changes) for (const file of change.files) expected.set(file.path, file.after);
-    const updates = new Map<string, SourceFile | null>();
-    let applied: ReturnType<typeof tryApply> | undefined;
-    for (const [rel, hash] of expected) {
-      const disk = await this.#readDisk(rel);
-      if (disk.kind !== 'unstable' && hashOf(fileOf(disk)) === hash) {
-        updates.set(rel, fileOf(disk));
-        continue;
-      }
-      applied ??= tryApply(this.#state.files, changes.flatMap((change) => change.ops));
-      // When the operations do not apply, the snapshot was behind the journal: the disk is taken as it is.
-      updates.set(rel, applied ? toSourceFile(this.root, rel, applied.get(rel)) : fileOf(disk));
-      this.#monitor.observe(rel);
-    }
-    this.#state.update(updates);
-    for (const [rel, file] of updates) if (file) this.#state.setBroken(rel, null);
-  }
-
-  // Under the lock: files that changed on disk and that no journal entry explains, journaled as one
-  // external change. A JSON file that does not parse is left as the snapshot has it (reported).
-  async #reconcileDirty(): Promise<void> {
-    const paths = this.#monitor.takePending((rel) => this.#media?.owns(rel) ?? false);
-    if (!paths.length) return;
-    // Read everything first: a folder removed brings its files, and while a binary file is still
-    // being written the whole burst waits for it (an agent copying a video and editing the screen
-    // that shows it makes one change), up to MAX_SETTLE_MS.
-    const reads = new Map<string, DiskRead>();
-    for (let index = 0; index < paths.length; index++) {
-      const rel = paths[index];
-      const disk = await this.#readDisk(rel, true);
-      reads.set(rel, disk);
-      // A folder reported (removed, or on Windows any folder whose files change) brings its files,
-      // except those a media job will write or replace: they are the job's to journal.
-      if (disk.kind === 'missing' && !this.#state.files.has(rel)) {
-        for (const child of pathsInside(this.#state.files, rel)) if (!paths.includes(child) && !this.#media?.owns(child)) paths.push(child);
-      }
-    }
-    const settling = [...reads.values()].some((disk) => disk.kind === 'unstable');
-    if (settling && Date.now() - (this.#settlingSince ??= Date.now()) < MAX_SETTLE_MS) {
-      for (const rel of paths) this.#monitor.observe(rel);
-      this.#monitor.scheduleRetry();
-      return;
-    }
-    this.#settlingSince = null;
-    const updates = new Map<string, SourceFile | null>();
-    let artefacts = [...this.#state.artefacts];
-    const known = new Set(this.#state.files.keys());
-    for (const [rel, disk] of reads) {
-      if (disk.kind === 'unstable') {
-        this.#monitor.observe(rel);
-        continue;
-      }
-      const current = this.#state.files.get(rel);
-      if (disk.kind === 'missing') {
-        artefacts = artefacts.filter((artefact) => artefact.path !== rel);
-        this.#state.setBroken(rel, null);
-        if (current) updates.set(rel, null);
-        // A new folder: its files are listed.
-        else if (!pathsInside(this.#state.files, rel).length) this.#monitor.requestRescan();
-        continue;
-      }
-      if (!current) {
-        const artefact = syncArtefact(rel, new Set([...known, rel]));
-        if (artefact) {
-          if (!artefacts.some((existing) => existing.path === rel)) artefacts.push(artefact);
-          continue;
-        }
-      }
-      if (sameContent(current, disk.file)) {
-        this.#state.setBroken(rel, null);
-        continue;
-      }
-      if (isJsonPath(rel) && disk.file.kind === 'text') {
-        const parsed = parseJSON(disk.file.text);
-        if (parsed.error !== undefined) {
-          // Being written (or broken): the last valid content stays; a new file waits outside the
-          // snapshot until it parses (its creation is then one change). A file broken since the
-          // session opened has no valid content to keep: its new text is taken without a journal entry.
-          if (current && !(current.kind === 'text' && parseJSON(current.text).error === undefined)) this.#state.update([[rel, disk.file]]);
-          else this.#state.setBroken(rel, parsed.error);
-          continue;
-        }
-      }
-      this.#state.setBroken(rel, null);
-      updates.set(rel, disk.file);
-    }
-    this.#state.setArtefacts(artefacts);
-    if (this.#monitor.pending().some((rel) => !this.#media?.owns(rel))) this.#monitor.scheduleRetry();
-    if (!updates.size) return;
-    try {
-      await this.#journalChange({ updates, author: EXTERNAL, source: 'watcher' });
-    } catch (error) {
-      // A file changed again while its content was stored: everything is read again shortly.
-      if (!(error instanceof JournalError)) throw error;
-      for (const rel of updates.keys()) this.#monitor.observe(rel);
-      this.#monitor.scheduleRetry();
-      return;
-    }
-    await this.#recordOwn();
-  }
-
-  // The same for the files an edit finds changed on disk while it runs (synchronously, from inside
-  // the edit): journaled as an external change before the edit is computed again.
-  #reconcileSync(paths: readonly string[]): void {
-    const updates = new Map<string, SourceFile | null>();
-    for (const rel of paths) {
-      const disk = readDiskSync(this.root, rel);
-      if (disk.kind === 'unstable') continue;
-      const file = fileOf(disk);
-      const current = this.#state.files.get(rel);
-      if (file === null ? current === undefined : sameContent(current, file)) continue;
-      // Mid-write: the edit tries again, and fails with E_CONFLICT if the file stays broken.
-      if (file?.kind === 'text' && isJsonPath(rel) && parseJSON(file.text).error !== undefined) continue;
-      updates.set(rel, file);
-      if (disk.kind === 'file') this.#stats.set(rel, disk.info);
-    }
-    if (!updates.size) return;
-    const { before, after, ops, inverse, unavailable, merged, settled, notes } = this.#prepareChange(updates, true);
-    if (ops.length) {
-      storeChangeBlobsSync(this.root, { ops, inverse, unavailable });
-      keepOriginalTexts(this.root, before, ops);
-      const entry = appendChange(this.root, { author: EXTERNAL, ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
-      this.#sources.set(entry.seq, 'watcher');
-      this.#noteExternal(entry.id, notes);
-    }
-    for (const rel of merged) this.#writeMergedSync(rel, after.get(rel));
-    this.#state.update(settled);
-    for (const rel of updates.keys()) this.#state.setBroken(rel, null);
-  }
-
-  // A file whose external edit was merged with what was written meanwhile (D75): the disk gets the
-  // merged content, the session's own write.
-  #writeMergedSync(rel: string, file: SourceFile | undefined): void {
-    const target = path.join(this.root, rel);
-    if (!file) fs.rmSync(target, { force: true });
-    else if (file.kind === 'text') writeFileAtomic(target, file.text);
-    else return;
-    this.#recordStatSync(rel);
-  }
-
-  // The change a set of new contents makes. A binary file another program overwrote or deleted
-  // before any version or change kept its content cannot come back: the change says so
-  // (unavailable), and undo will skip that part.
-  // A file edit no Elabora tool made (external) is computed from the version its program most likely
-  // read (D75): what was written meanwhile and the edit did not touch is kept; merged lists the
-  // files whose content is no longer what was written, which the session writes again.
-  #prepareChange(updates: ReadonlyMap<string, SourceFile | null>, external = false) {
-    const before = this.#state.files;
-    let after: ProjectFiles = withUpdates(before, updates);
-    let ops = diffFiles(before, after);
-    let merged: string[] = [];
-    let notes: ExternalNotes | null = null;
-    if (external && ops.length) {
-      const paths = [...updates.keys()];
-      const edit = externalEdit(before, after, recentVersions(before, lastChanges(this.root, RECENT_VERSIONS), paths), EXTERNAL);
-      ops = edit.ops;
-      merged = edit.merged;
-      if (edit.merged.length || edit.skipped.length || edit.overwrote.length) notes = { files: edit.merged, skipped: edit.skipped, overwrote: edit.overwrote };
-      // A file the edit gives as it was written keeps that text (its formatting); a merged one is
-      // the merge's.
-      const applied = applyOps(before, ops) as ProjectFiles;
-      after = withUpdates(applied, new Map([...updates].filter(([rel]) => !merged.includes(rel))));
-    }
-    const inverse = invertOps(before, ops);
-    const written = new Set(ops.flatMap((op) => (op.op === 'write' && 'blob' in op ? [op.blob] : [])));
-    const unavailable = [...new Set(inverse.flatMap((op) => (op.op === 'write' && 'blob' in op && !written.has(op.blob) && !hasBlob(this.root, op.blob as BlobHash) ? [op.blob] : [])))];
-    // What the state takes: the files as they are after the change (merged ones included).
-    const settled = new Map<string, SourceFile | null>([...updates.keys()].map((rel) => [rel, (after.get(rel) as SourceFile | undefined) ?? null]));
-    return { before, after, ops, inverse, unavailable, merged, settled, notes };
-  }
-
-  // What a file edit no Elabora tool made left out or replaced (D75), kept by its change and told.
-  #noteExternal(change: string, notes: ExternalNotes | null): void {
-    if (!notes) return;
-    this.#externalNotes.set(change, notes);
-    if (this.#externalNotes.size > 200) this.#externalNotes.delete(this.#externalNotes.keys().next().value as string);
-    this.#emit({ type: 'merged', change, ...notes });
-  }
-
-  // What an external change left out or replaced, by its id (a project in the cloud tells the others).
-  externalNotes(change: string): ExternalNotes | undefined {
-    return this.#externalNotes.get(change);
-  }
-
-  // Journals new contents as one change: files already on disk (what another program or a job
-  // wrote), and files the session writes now (write: references rewritten).
-  async #journalChange(spec: { updates: Map<string, SourceFile | null>; author: Author; command?: { name: string; args: unknown }; source: ChangeSource; write?: ReadonlyMap<string, SourceFile>; batch?: string }): Promise<number | null> {
-    const { before, after, ops, inverse, unavailable, merged, settled, notes } = this.#prepareChange(spec.updates, spec.author.kind === 'external' && spec.source !== 'cloud');
-    let seq: number | null = null;
-    if (ops.length) {
-      await storeChangeBlobs(this.root, { ops, inverse, unavailable });
-      keepOriginalTexts(this.root, before, ops);
-      for (const [rel, file] of spec.write ?? []) {
-        if (file.kind === 'text') await this.store.write(rel, file.text);
-        await this.#readDisk(rel);
-      }
-      const entry = appendChange(this.root, { author: spec.author, ...(spec.command ? { command: spec.command } : {}), ...(spec.batch ? { batch: spec.batch } : {}), ops, inverse, files: changeFileHashes(before, after, ops), unavailable });
-      this.#sources.set(entry.seq, spec.source);
-      seq = entry.seq;
-      this.#noteExternal(entry.id, notes);
-    }
-    for (const rel of merged) this.#writeMergedSync(rel, after.get(rel));
-    this.#state.update(settled);
-    for (const rel of spec.updates.keys()) this.#state.setBroken(rel, null);
-    return seq;
-  }
-
   // Validates what changed and tells the app (the canvas first); then the AI batches that ended.
   async #afterChange(): Promise<void> {
     await this.#refreshMedia();
-    this.#canvas.changed(this.#state.takeChanged(), this.#tail.lastSeq);
+    this.#canvas.changed(this.#state.takeChanged(), this.#folder.lastSeq);
     const delta = this.#state.validate();
     if (delta) this.#emit(diagnosticsEvent(delta));
-    await this.#flushClosures();
+    await this.#batches.flush();
   }
 
   // ── media status ───────────────────────────────────────────────────
@@ -1606,175 +1163,24 @@ export class Session {
     return this.#nonConformant([rel]).length > 0 || (this.#media?.replaced(rel) ?? false);
   }
 
-  // ── watching ───────────────────────────────────────────────────────
-
-  // What the watchers reported. The lock is taken only when something is new: the session's own
-  // writes come back from the watchers as files that hold what the snapshot holds.
-  async #refresh(final = false): Promise<void> {
-    // A project folder moved or deleted while open is not a deletion of every file: nothing is
-    // journaled, and the app is told (it closes the session).
-    if (!fs.existsSync(this.root)) {
-      this.#monitor.forgetAll();
-      if (!this.#gone) this.#emit({ type: 'error', context: 'watching the project', message: `The project folder ${this.root} is gone (moved or deleted).` });
-      this.#gone = true;
-      return;
-    }
-    this.#gone = false;
-    let needLock = false;
-    if (this.#monitor.consumeJournal() || final) {
-      needLock = await this.#tail.hasNew();
-    }
-    if (this.#monitor.needsRescan || final) await this.#rescan();
-    if (!needLock) needLock = await this.#dirtyChanged();
-    if (needLock) await this.#locked(() => this.#syncWithDisk());
-    await this.#afterChange();
-  }
-
-  // Whether a reported file differs from the snapshot; the ones that do not are settled here.
-  async #dirtyChanged(): Promise<boolean> {
-    for (const rel of this.#monitor.pending()) {
-      if (this.#media?.owns(rel)) continue;
-      const disk = await this.#readDisk(rel, true);
-      if (disk.kind === 'unstable') return true;
-      const current = this.#state.files.get(rel);
-      if (disk.kind === 'missing') {
-        if (current || pathsInside(this.#state.files, rel).length || this.#state.artefacts.some((artefact) => artefact.path === rel)) return true;
-        this.#monitor.forget(rel);
-        continue;
-      }
-      if (!sameContent(current, disk.file)) return true;
-      this.#monitor.forget(rel);
-      this.#state.setBroken(rel, null);
-    }
-    return false;
-  }
-
-  // Lists the folder: files whose size or time changed since they were read, new and gone files.
-  async #rescan(): Promise<void> {
-    this.#monitor.finishRescan();
-    this.#jobsChanged = true; // jobs of other processes are seen through their job files
-    const listed = await this.store.list();
-    const seen = new Set<string>();
-    for (const info of listed) {
-      seen.add(info.path);
-      const known = this.#stats.get(info.path);
-      if (!known || known.size !== info.size || known.mtimeMs !== info.mtimeMs) this.#monitor.observe(info.path);
-    }
-    for (const rel of this.#state.files.keys()) if (!seen.has(rel)) this.#monitor.observe(rel);
-    for (const artefact of this.#state.artefacts) if (!seen.has(artefact.path)) this.#monitor.observe(artefact.path);
-  }
-
-  async #readDisk(rel: string, settle = false): Promise<DiskRead> {
-    const disk = await readDisk(this.store, rel, { settleMs: settle ? SETTLE_MS : 0 });
-    if (disk.kind === 'file') this.#stats.set(rel, disk.info);
-    else if (disk.kind === 'missing') this.#stats.delete(rel);
-    return disk;
-  }
-
-  #recordStatSync(rel: string): void {
-    try {
-      const stat = fs.statSync(path.join(this.root, ...rel.split('/')));
-      this.#stats.set(rel, { path: rel, size: stat.size, mtimeMs: stat.mtimeMs });
-    } catch {
-      this.#stats.delete(rel);
-    }
-  }
-
   // ── journal entries, batches and versions ──────────────────────────
+
+  // What the external change left out or replaced, by its id (a project in the cloud tells the others).
+  externalNotes(change: string): ExternalNotes | undefined { return this.#folder.externalNotes(change); }
+
+  // Journal entries the folder took in, in order: recorded, given to the copy in the cloud, told.
+  #taken(entries: readonly JournalEntry[], source: (entry: JournalEntry) => ChangeSource): void {
+    this.#record(entries);
+    if (this.#cloud) for (const entry of entries) if (entry.type !== 'mark') this.#cloud.take(entry);
+    for (const entry of entries) if (entry.type !== 'mark') this.#emit({ type: 'changed', source: source(entry), change: changeView(entry) });
+  }
 
   #record(entries: readonly JournalEntry[]): void {
     for (const entry of entries) {
       this.#entries.push(entry);
-      this.#noteBatch(entry);
+      this.#batches.note(entry);
     }
     if (entries.some((entry) => entry.type !== 'mark')) this.#noteActivity();
-  }
-
-  #noteBatch(entry: JournalEntry): void {
-    if (entry.type === 'mark') {
-      this.#closeOpenBatch('mark');
-      if (entry.chat) this.#turns.set(entry.chat, entry.id);
-      return;
-    }
-    if (!isAiAuthor(entry.author)) {
-      this.#closeOpenBatch('human');
-      return;
-    }
-    if (this.#openBatch && this.#openBatch.id !== entry.batch) {
-      // Another AI's work during a turn (a file no Elabora tool wrote, an agent outside the chat) is
-      // left out of the open batch: the turn stays open until its end.
-      if (this.#isTurn(this.#openBatch.id)) return;
-      this.#closeOpenBatch('idle');
-    }
-    this.#openBatch = { id: entry.batch, at: Date.now() };
-    if (this.#isTurn(entry.batch)) {
-      if (this.#batchTimer) clearTimeout(this.#batchTimer);
-      this.#batchTimer = null;
-    } else this.#armBatchTimer(this.#options.batchIdleMs ?? FIVE_MINUTES);
-  }
-
-  #isTurn(batch: string | undefined): boolean {
-    return batch !== undefined && [...this.#turns.values()].includes(batch);
-  }
-
-  // An AI batch still open when the session starts (an agent worked moments ago).
-  // A turn of the chat begun before the session opened (the window reloaded while the agent worked)
-  // is open again when its transcript has no turn-end since and it began less than a day ago.
-  #resumeBatch(): void {
-    const since = Date.now() - TURN_RESUME_MS;
-    for (const entry of [...this.#entries].reverse()) {
-      if (Date.parse(entry.at) < since) break;
-      if (entry.type !== 'mark' || !entry.chat || this.#turns.has(entry.chat)) continue;
-      // The host writes turn-end in the transcript once a turn is over: one after the mark ended it.
-      const ended = readChat(this.root, entry.chat).some((line) => line.type === 'turn-end' && line.at >= entry.at);
-      this.#turns.set(entry.chat, ended ? '' : entry.id);
-    }
-    for (const [chat, turn] of this.#turns) if (!turn) this.#turns.delete(chat);
-    const last = this.#entries[this.#entries.length - 1];
-    if (last && last.type !== 'mark' && this.#isTurn(last.batch)) {
-      this.#openBatch = { id: last.batch, at: Date.parse(last.at) };
-      return;
-    }
-    if (!last || last.type === 'mark' || !isAiAuthor(last.author)) return;
-    const idle = this.#options.batchIdleMs ?? FIVE_MINUTES;
-    const age = Date.now() - Date.parse(last.at);
-    if (!(age < idle)) return;
-    this.#openBatch = { id: last.batch, at: Date.now() - age };
-    this.#armBatchTimer(idle - age);
-  }
-
-  #armBatchTimer(delay: number): void {
-    if (this.#batchTimer) clearTimeout(this.#batchTimer);
-    const batch = this.#openBatch?.id;
-    this.#batchTimer = setTimeout(() => {
-      this.#batchTimer = null;
-      void this.#queue.run(async () => {
-        if (!this.#openBatch || this.#openBatch.id !== batch) return;
-        this.#closeOpenBatch('idle');
-        await this.#flushClosures();
-      }).catch((error) => this.#emitError(error, 'closing the AI batch'));
-    }, Math.max(0, delay));
-    this.#batchTimer.unref();
-  }
-
-  // A turn of the chat stays open while the author works (human) and the agent thinks (idle): only
-  // its end, the next mark or the session closing close it.
-  #closeOpenBatch(reason: BatchCloseReason): void {
-    if (!this.#openBatch) return;
-    if ((reason === 'human' || reason === 'idle') && this.#isTurn(this.#openBatch.id)) return;
-    this.#closures.push({ id: this.#openBatch.id, reason });
-    this.#openBatch = null;
-    if (this.#batchTimer) clearTimeout(this.#batchTimer);
-    this.#batchTimer = null;
-  }
-
-  // The after-ai versions of the batches that ended (outside the project lock: other writers go on).
-  async #flushClosures(): Promise<void> {
-    while (this.#closures.length) {
-      const { id, reason } = this.#closures.shift() as { id: string; reason: BatchCloseReason };
-      const version = this.#options.backups?.enabled === false ? null : await this.#takeVersion('after-ai', { batch: id, author: SYSTEM });
-      this.#emit({ type: 'batchClosed', batch: id, reason, version });
-    }
   }
 
   // An auto version every intervalMs of activity: after a change, once the newest version is that old.
@@ -1825,12 +1231,11 @@ export class Session {
   async #prune(): Promise<void> {
     if (this.#pruned || !fs.existsSync(this.root)) return;
     this.#pruned = true;
-    await this.#queue.run(() => this.#locked(async () => {
-      await this.#syncWithDisk();
+    await this.#queue.run(() => this.#folder.locked(async () => {
+      await this.#folder.sync();
       await pruneProjectData(this.root);
       // The journal as it is kept now (everything was read: the lock is held).
-      this.#tail.reset();
-      this.#entries = await this.#tail.read();
+      this.#entries = await this.#folder.reread();
     }));
   }
 
@@ -1843,12 +1248,12 @@ export class Session {
     void this.#queue.run(async () => {
       try {
         if (job.status === 'done' && !this.#closed) {
-          await this.#locked(async () => {
-            await this.#syncWithDisk();
+          await this.#folder.locked(async () => {
+            await this.#folder.sync();
             try {
               await this.#journalMediaResult(job);
             } finally {
-              await this.#recordOwn();
+              await this.#folder.takeNew();
             }
           });
         }
@@ -1865,7 +1270,7 @@ export class Session {
   async #journalMediaResult(job: MediaJob): Promise<void> {
     const paths = [job.output, ...(job.replaces && job.replaces !== job.output ? [job.replaces] : [])];
     const updates = new Map<string, SourceFile | null>();
-    for (const rel of paths) updates.set(rel, fileOf(await this.#readDisk(rel)));
+    for (const rel of paths) updates.set(rel, fileOf(await this.#folder.readDisk(rel)));
     const write = new Map<string, SourceFile>();
     if (job.type === 'optimize' && job.replaces && job.replaces !== job.output) {
       // References rewritten as `elabora media optimize` does (never in the plan or its versions).
@@ -1881,8 +1286,8 @@ export class Session {
     const command = job.type === 'import'
       ? { name: 'import_media', args: { file: job.output } }
       : { name: 'optimize_media', args: { from: job.replaces ?? job.input, to: job.output } };
-    if (!isAiAuthor(author) && author.kind !== 'external') this.#closeOpenBatch('human');
-    await this.#journalChange({ updates, author, command, source: 'media', write });
+    if (!isAiAuthor(author) && author.kind !== 'external') this.#batches.close('human');
+    await this.#folder.journal({ updates, author, command, source: 'media', write });
   }
 
   // ── events ─────────────────────────────────────────────────────────
@@ -1913,26 +1318,8 @@ export class Session {
   }
 }
 
-// How far back an open turn of the chat is looked for when a session opens: no turn lasts a day.
-const TURN_RESUME_MS = 24 * 60 * 60 * 1000;
 
 // ── helpers ──────────────────────────────────────────────────────────
-
-// Every request of the protocol, checked complete by the compiler (a request missing here would be
-// refused as bad-request).
-const REQUEST_TYPES: Record<RequestType, true> = {
-  summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
-  translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, redo: true, undoBatch: true, history: true, mark: true, endTurn: true,
-  diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
-  renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, packageWeights: true, close: true, narration: true, voices: true,
-  installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
-  setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true, courseSounds: true, soundEstimate: true, generateSound: true,
-  alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true
-};
-
-const isRequestType = (type: string): type is RequestType => Object.hasOwn(REQUEST_TYPES, type);
-
-const fileOf = (disk: DiskRead): SourceFile | null => (disk.kind === 'file' ? disk.file : null);
 
 // What the build request asks of @elabora/node build; the session's validation options by default,
 // so the package is checked as the app's findings are.
@@ -1988,29 +1375,6 @@ function publishName(language: string | undefined, date = new Date()): string {
   return french ? `Publié le ${day}` : `Published on ${day}`;
 }
 
-export function changeView(entry: ChangeLike): ChangeView {
-  return {
-    type: entry.type, id: entry.id, seq: entry.seq, at: entry.at, author: entry.author, batch: entry.batch,
-    ...(entry.command ? { command: entry.command } : {}),
-    files: entry.files.map((file) => file.path), ops: entry.ops as Op[],
-    ...(entry.unavailable?.length ? { unavailable: entry.inverse.flatMap((op) => (op.op === 'write' && 'blob' in op && entry.unavailable?.includes(op.blob) ? [op.file] : [])) } : {}),
-    ...(entry.type === 'undo' ? { undoes: entry.undoes, skipped: entry.skipped } : {})
-  };
-}
-
-function diagnosticsEvent(delta: DiagnosticsDelta): EngineEvent {
-  return {
-    type: 'diagnostics', screens: Object.fromEntries(delta.screens), removed: delta.removed, summary: delta.summary,
-    ...(delta.project ? { project: delta.project } : {})
-  };
-}
-
 function backupSummary(version: VersionSummary): BackupSummary {
   return { ...version };
-}
-
-// Its blocks placed by hand (D72), when it has some: « Mettre au propre » names the other screens.
-function placedOn(screen: { blocks?: unknown } | undefined): { placed?: number } {
-  const count = Array.isArray(screen?.blocks) ? screen.blocks.filter((block) => !!block && typeof block === 'object' && 'place' in block && !!(block as { place?: unknown }).place).length : 0;
-  return count ? { placed: count } : {};
 }

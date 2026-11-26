@@ -1,7 +1,7 @@
 import { createRenderContext, renderChrome, renderScreen as renderCoreScreen } from '@elabora/core/render/screen';
 import type { RenderChrome, RenderContext, RenderedScreen } from '@elabora/core/render/screen';
 import type { Project } from '@elabora/core/project/model';
-import type { RenderScreenParams, CanvasMoment, CanvasPreview } from './protocol.ts';
+import type { RenderScreenParams, CanvasMoment, CanvasPreview } from '../protocol.ts';
 import { screenTimeline, anchorTime } from '@elabora/core/narration/timeline';
 import type { Anchor } from '@elabora/format';
 import { EngineError } from './errors.ts';

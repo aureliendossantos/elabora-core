@@ -173,6 +173,14 @@ export function conflict(paths: readonly string[]): CommandError {
   return new CommandError(message, paths.map((file) => ({ code: 'E_CONFLICT', severity: 'error', file, message })), 'E_CONFLICT');
 }
 
+// Fields of an edit result that are not what the command itself reports.
+const EDIT_FIELDS = new Set(['ok', 'op', 'undo', 'change', 'files', 'diagnostics', 'summary', 'backup', 'written', 'undone', 'skipped', 'batch']);
+
+// What a command reports, without the fields of its change (an engine's run result).
+export function commandResult(result: object): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(result).filter(([key]) => !EDIT_FIELDS.has(key)));
+}
+
 // Errors of operations, of the lock and of the journal reach the CLI and the MCP server as edit
 // errors with their catalogue code.
 export function translateErrors<T>(run: () => T): T {

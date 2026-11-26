@@ -153,7 +153,7 @@ test('sound checks: a missing sound, an unknown or refused licence, a CC BY cred
   assert.deepEqual(of('E_SOUND_MISSING'), ['nowhere']);
   assert.deepEqual(of('E_SOUND_LICENSE'), ['bare', 'nc']);
   assert.deepEqual(of('W_SOUND_CREDITS_HIDDEN'), []);
-  edit.updatePlayer(dir, { disable: ['credits'] });
+  edit.run(dir, 'update_player', { disable: ['credits'] });
   found = validateDir(dir).diagnostics;
   assert.deepEqual(of('W_SOUND_CREDITS_HIDDEN'), [undefined]);
 });

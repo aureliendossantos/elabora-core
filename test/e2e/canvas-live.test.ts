@@ -63,7 +63,7 @@ async function withLive(dir: string, run: (live: { page: Frame; host: Page; show
 
 test('the live bars: panels, the outline, Previous and Next said to the host, the item clicked, highlight, open and close', { timeout: 180000 }, async () => {
   const dir = copyExample(NETWORK_SAMPLE);
-  edit.updatePlayer(dir, { enable: ['display'] });
+  edit.run(dir, 'update_player', { enable: ['display'] });
   await withLive(dir, async ({ page, show, send, post, sent }) => {
     await show('chemin', 1);
     assert.deepEqual((await sent()).find((message) => message.type === 'elabora/ready'), { type: 'elabora/ready', chrome: 'live', protocol });
@@ -142,7 +142,7 @@ test('the live bars: a change of the player reaches the open canvas without a re
     assert.equal(await page.locator('.t-resource').count(), 2);
     // The author adds a link and moves Glossaire to the bottom bar: the engine pushes the render.
     const course = loadProjectFromDir(dir).course!;
-    edit.updatePlayer(dir, { resources: [...course.resources!, { id: 'charte', title: 'Charte informatique', url: 'https://intranet.example.com/charte' }], move: [{ item: 'glossary', bar: 'bottom', index: 0 }] });
+    edit.run(dir, 'update_player', { resources: [...course.resources!, { id: 'charte', title: 'Charte informatique', url: 'https://intranet.example.com/charte' }], move: [{ item: 'glossary', bar: 'bottom', index: 0 }] });
     await show('accueil', 2);
     assert.equal(await page.evaluate(() => (window as unknown as { kept?: boolean }).kept), true, 'no reload');
     assert.equal(await page.locator('.t-sheet[data-sheet="resources"]').isVisible(), true, 'the panel stays open');
@@ -164,7 +164,7 @@ test('the canvas never takes focus from the host: not on an open, a push that mo
     assert.equal(await typing(host), 'column');
     // The author renames the resource in the column: the course is mounted again, the preview with it.
     const course = loadProjectFromDir(dir).course!;
-    edit.updatePlayer(dir, { resources: course.resources!.map((resource) => (resource.id === 'fiche-reflexe' ? { ...resource, title: 'Fiche réflexe (v2)' } : resource)) });
+    edit.run(dir, 'update_player', { resources: course.resources!.map((resource) => (resource.id === 'fiche-reflexe' ? { ...resource, title: 'Fiche réflexe (v2)' } : resource)) });
     await show('accueil', 2);
     await page.waitForSelector('dialog.t-viewer[open]');
     assert.match(await page.locator('dialog.t-viewer[open] .t-viewer-title').textContent() ?? '', /v2/);
@@ -186,9 +186,9 @@ test('the canvas never takes focus from the host: not on an open, a push that mo
 
 test('the live bars: « Langue » lists the languages of the package, and a choice goes to the host', { timeout: 180000 }, async () => {
   const dir = copyExample(BILINGUAL);
-  edit.updatePlayer(dir, { enable: ['language'] });
+  edit.run(dir, 'update_player', { enable: ['language'] });
   // The package's languages, as Publier checks them (D71).
-  edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'] } });
+  edit.run(dir, 'update_course', { delivery: { languages: ['en', 'fr'] } });
   await withLive(dir, async ({ page, show, sent }) => {
     await show('intro', 1);
     await page.click('.t-language-btn');

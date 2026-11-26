@@ -31,7 +31,7 @@ const copy = () => { const dir = copyExample(); temporary.push(dir); return dir;
 // Every unit translated as its source prefixed (maths, links and placeholders kept); units the prefix
 // would make too long keep their source.
 function translateAll(dir: string, language: string): void {
-  edit.exportTranslationChange(dir, { to: language });
+  edit.run(dir, 'export_translation', { to: language });
   const units = [...readXliff(fs.readFileSync(translationFile(dir, language), 'utf8')).units.values()];
   const write = (bad: Set<string>) => fs.writeFileSync(translationFile(dir, language), toXliff({ srcLang: 'fr', trgLang: language, original: 'x', units: units.map((unit) => ({ id: unit.id, source: unit.source, target: bad.has(unit.id) ? unit.source : `EN ${unit.source}`.slice(0, 190), state: 'translated' })) }));
   write(new Set());
@@ -42,7 +42,7 @@ function translateAll(dir: string, language: string): void {
 test('a language starts with its first texts, translated in one change; a refused text refuses the batch', () => {
   const dir = copy();
   assert.equal(fs.existsSync(translationFile(dir, 'en')), false);
-  const result = edit.translateText(dir, { language: 'en', texts: [{ unit: 'screen.chemin.title', target: 'The path of a print job' }, { unit: 'course.title', target: 'Diagnosing a network fault' }] });
+  const result = edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit: 'screen.chemin.title', target: 'The path of a print job' }, { unit: 'course.title', target: 'Diagnosing a network fault' }] });
   assert.deepEqual(result.units, ['screen.chemin.title', 'course.title']);
   const units = readXliff(fs.readFileSync(translationFile(dir, 'en'), 'utf8')).units;
   assert.equal(units.get('screen.chemin.title')?.target, 'The path of a print job');
@@ -51,14 +51,14 @@ test('a language starts with its first texts, translated in one change; a refuse
   assert.equal(readJournal(dir).filter((entry) => entry.type === 'change').length, 1);
   // A unit the course does not have, or a translation that loses the source's bold… is not checked;
   // an unknown unit refuses everything.
-  assert.throws(() => edit.translateText(dir, { language: 'en', texts: [{ unit: 'course.title', target: 'Other' }, { unit: 'nothing.here', target: 'x' }] }), /No unit "nothing\.here"/);
+  assert.throws(() => edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit: 'course.title', target: 'Other' }, { unit: 'nothing.here', target: 'x' }] }), /No unit "nothing\.here"/);
   assert.equal(readXliff(fs.readFileSync(translationFile(dir, 'en'), 'utf8')).units.get('course.title')?.target, 'Diagnosing a network fault');
-  assert.throws(() => edit.translateText(dir, { language: 'en' }), /a unit and its target, or texts/);
+  assert.throws(() => edit.run(dir, 'translate_text', { language: 'en' }), /a unit and its target, or texts/);
 });
 
 test('a screen in a language: its texts with the block and the field that show them, the plan\'s included', () => {
   const dir = copy();
-  edit.translateText(dir, { language: 'en', texts: [{ unit: 'screen.chemin.title', target: 'The path of a print job' }, { unit: 'plan.text.TXT-2', target: 'Always follow the path in order: **workstation → switch → router → firewall → print server**. Skip no step.' }] });
+  edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit: 'screen.chemin.title', target: 'The path of a print job' }, { unit: 'plan.text.TXT-2', target: 'Always follow the path in order: **workstation → switch → router → firewall → print server**. Skip no step.' }] });
   const project = loadProjectFromDir(dir);
   const chemin = screenTranslation(project, { screen: 'chemin', language: 'en' });
   assert.equal(chemin.source, 'fr');
@@ -88,7 +88,7 @@ test('a screen renders in a language while a translation breaks the text: that o
   screen.blocks.find((block: Block) => block.id === 'chemin-regle').step = 2;
   screen.steps = { 2: { label: 'Voir la règle' } };
   writeJSON(dir, 'screens/chemin.json', screen);
-  edit.translateText(dir, { language: 'en', texts: [{ unit: 'screen.chemin.title', target: 'The path of a print job' }] });
+  edit.run(dir, 'translate_text', { language: 'en', texts: [{ unit: 'screen.chemin.title', target: 'The path of a print job' }] });
   // A translator's file with a button text longer than its 40 characters.
   const file = translationFile(dir, 'en');
   const xliff = readXliff(fs.readFileSync(file, 'utf8'));
@@ -107,15 +107,15 @@ test('the translated plan approved as a change, undone like any other', () => {
   translateAll(dir, 'en');
   const before = translationStatus(loadProjectFromDir(dir), { to: 'en' })[0];
   assert.equal(before?.exists && before.plan, 'not approved');
-  assert.throws(() => edit.approveTranslation(dir, { to: 'en', by: 'Agent' }, { author: { kind: 'agent' } }), (error: Error & { code?: string }) => error.code === 'E_TRANSLATION_ASK_AUTHOR' && /Ask the author first.*Nothing was written/s.test(error.message));
-  const approved = edit.approveTranslation(dir, { to: 'en', by: 'Emma Collins, Hélios', date: '2026-10-08' }, { author: { kind: 'human' } });
+  assert.throws(() => edit.run(dir, 'approve_translation', { to: 'en', by: 'Agent' }, { author: { kind: 'agent' } }), (error: Error & { code?: string }) => error.code === 'E_TRANSLATION_ASK_AUTHOR' && /Ask the author first.*Nothing was written/s.test(error.message));
+  const approved = edit.run(dir, 'approve_translation', { to: 'en', by: 'Emma Collins, Hélios', date: '2026-10-08' }, { author: { kind: 'human' } });
   assert.equal(approved.op, 'approve_translation');
   assert.equal(readJSON(dir, 'translations/en.approval.json').by, 'Emma Collins, Hélios');
   const status = translationStatus(loadProjectFromDir(dir), { to: 'en' })[0];
   assert.equal(status?.exists && status.plan, 'approved');
   edit.undo(dir, undefined, { author: { kind: 'human' } });
   assert.equal(fs.existsSync(path.join(dir, 'translations/en.approval.json')), false);
-  assert.throws(() => edit.approveTranslation(dir, { to: 'en', by: '' }, { author: { kind: 'human' } }), /--by/);
+  assert.throws(() => edit.run(dir, 'approve_translation', { to: 'en', by: '' }, { author: { kind: 'human' } }), /--by/);
 });
 
 // D70: an agent asks the author, then records their approval on their yes, with its name beside theirs.

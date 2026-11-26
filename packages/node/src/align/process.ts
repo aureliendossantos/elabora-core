@@ -1,6 +1,6 @@
 import { ModelProcess } from '../models/process.ts';
-import { AlignmentError } from './ctc.ts';
-import type { Alignment } from './align.ts';
+import { AlignmentError } from '@elabora/core/align/ctc';
+import type { Alignment } from '@elabora/core/align/align';
 import type { AlignJob } from './worker.ts';
 
 // The word aligner in a process of its own (worker.ts serves it; models/process.ts says why): the

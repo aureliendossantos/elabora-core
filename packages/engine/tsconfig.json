@@ -1,5 +1,19 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "types": ["node"] },
-  "include": ["src", "bench"]
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "es2023",
+      "dom"
+    ]
+  },
+  "include": [
+    "src",
+    "bench"
+  ],
+  "exclude": [
+    "src/browser"
+  ]
 }

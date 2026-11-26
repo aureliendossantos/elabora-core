@@ -52,7 +52,7 @@ async function player(dir: string, run: (page: Page, reload: () => Promise<void>
 
 test('interface sounds: no context before a gesture; a question answered sounds good or bad; « Sons de l\'interface » switches them off, kept for the course', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyExample('diagnostic-reseau');
-  edit.updatePlayer(dir, { enable: ['display'] });
+  edit.run(dir, 'update_player', { enable: ['display'] });
   await player(dir, async (page, reload) => {
     let state = await soundsState(page);
     assert.equal(state.context, 'none', 'nothing sounds, nothing is made, before the learner does something');
@@ -93,7 +93,7 @@ test('interface sounds: no context before a gesture; a question answered sounds 
 
 test('a module without sound makes none, and « Affichage » has no switch for them', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyExample('coffee-in-brief');
-  edit.updatePlayer(dir, { enable: ['display'] });
+  edit.run(dir, 'update_player', { enable: ['display'] });
   await player(dir, async (page) => {
     assert.equal((await soundsState(page)).interface, false);
     await page.click('.t-display-btn');
@@ -126,7 +126,7 @@ test('sounds of the story, ambiences and music: played after the first gesture, 
   const screen = JSON.parse(fs.readFileSync(path.join(dir, 'screens/green-coffee.json'), 'utf8'));
   screen.events = [...(screen.events ?? []), { id: 'ambience', on: { type: 'screen.enter' }, do: [{ type: 'play-sound', sound: 'cafe', loop: true, fade: 0.3 }, { type: 'play-sound', sound: 'ring', caption: 'The phone rings.' }] }];
   fs.writeFileSync(path.join(dir, 'screens/green-coffee.json'), `${JSON.stringify(screen, null, 2)}\n`);
-  edit.updatePlayer(dir, { enable: ['display'] });
+  edit.run(dir, 'update_player', { enable: ['display'] });
   await player(dir, async (page) => {
     let state = await fullState(page);
     assert.equal(state.context, 'none');
@@ -182,7 +182,7 @@ test('a sound of the story: its part of the file, louder than recorded up to −
   const screen = JSON.parse(fs.readFileSync(path.join(dir, 'screens/green-coffee.json'), 'utf8'));
   screen.events = [...(screen.events ?? []), { id: 'sounds', on: { type: 'screen.enter' }, do: [{ type: 'play-sound', sound: 'ring', start: 0.5, end: 2, volume: 2, fadeOut: 0.4, duck: 12 }, { type: 'play-sound', sound: 'cafe', loop: true, start: 1, end: 4, fadeOut: 1.5 }] }];
   fs.writeFileSync(path.join(dir, 'screens/green-coffee.json'), `${JSON.stringify(screen, null, 2)}\n`);
-  edit.updatePlayer(dir, { enable: ['display'] });
+  edit.run(dir, 'update_player', { enable: ['display'] });
   await player(dir, async (page) => {
     await page.mouse.click(5, 450);
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('green-coffee'));

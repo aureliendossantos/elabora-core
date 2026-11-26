@@ -12,8 +12,8 @@ import type { CheckContext, CourseCheckContext, ScreenFile } from './context.ts'
 import { list, fieldsOf, byId, hasId } from './guards.ts';
 import { checkAsset } from './blocks.ts';
 import { objectAssets } from '../components/props.ts';
+import { ALLOWED_THREE_ADDONS } from '../objects/bundle.ts';
 
-export const ALLOWED_THREE_ADDONS = ['loaders/GLTFLoader.js', 'controls/OrbitControls.js'];
 // Charts (D60): D3, bundled into the object, and the kit Elabora's charts are built with.
 export const CHART_IMPORTS = ['d3', '@elabora/charts'];
 

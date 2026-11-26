@@ -113,6 +113,13 @@ export function animatedImageSource(project: Project, blockId: string): Animated
   return { screen: place.screenId, asset: `assets/${props.asset}`, base: slugify(name, 'animation', 60) };
 }
 
+// What the app, the CLI and agents ask (image_to_video): its host makes the MP4 and its poster from
+// the image's file, and gives them to the command.
+export interface ImageToVideoRequest {
+  block: string;
+  blocks?: string[]; // other image blocks showing the same file (the app's « Transformer en vidéo » of a media)
+}
+
 export interface ImageToVideoArgs {
   block: string;
   blocks?: readonly string[];   // other image blocks showing the same file, made videos with it

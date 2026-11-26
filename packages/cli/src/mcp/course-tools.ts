@@ -101,7 +101,7 @@ export const ignoreFinding = defineTool({
   name: 'elabora_ignore_finding',
   description: 'Ignore a warning that has a key (Diagnostic.key), as the author\'s « Ignorer » in the editor does (course.json ignored, docs D31), or bring it back (ignored: false). Only when the author asked for it or agreed, after you told them what the warning says and why it may not apply (a quoted maxim whose negation is the author\'s, a dense screen that is a primary text to read): never to silence a finding yourself. It stays ignored until what it found changes (the text, the take), then comes back. Errors are never ignored; a client\'s exception to a pedagogical rule is a plan waiver, which the author decides with the client. Undo with elabora_undo.',
   inputSchema: objectSchema({ code: { type: 'string', pattern: '^[WI]_[A-Z0-9_]+$' }, key: { type: 'string', minLength: 1, maxLength: 300 }, ignored: { type: 'boolean', default: true } }, ['code', 'key']),
-  handler: (args, { root, author }) => editResult(edit.ignoreFindings(root, { findings: [{ code: args.code, key: args.key }], ignored: args.ignored !== false }, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'ignore_findings', { findings: [{ code: args.code, key: args.key }], ignored: args.ignored !== false }, { author }))
 });
 
 export const history = defineTool({
@@ -115,14 +115,13 @@ export const history = defineTool({
 export const writePlan = defineTool({
   name: 'elabora_write_plan',
   ...fromCommand('write_plan'),
-  handler: (args, { root, author }) => editResult(edit.writePlan(root, { ...(args.plan ? { plan: args.plan } : {}), ...(args.patch ? { patch: args.patch } : {}) }, { author }))
+  handler: (args, { root, author }) => editResult(edit.run(root, 'write_plan', { ...(args.plan ? { plan: args.plan } : {}), ...(args.patch ? { patch: args.patch } : {}) }, { author }))
 });
 
 export const setPlanVoiceover = defineTool({
   name: 'elabora_set_plan_voiceover',
-  description: 'The voice-over of a plan item (a storyboard\'s voice-over column), line by line, written in the plan. A screen that covers the item then takes it as its narration script (elabora narration from-plan). lines: [{ speaker, text }], speaker a course.json speaker id (default: the first); null removes the voice-over. It is translated with the plan, and not kept word for word in the module (the script can be reworded).',
-  inputSchema: objectSchema({ item: { type: 'string', minLength: 1, description: 'A plan item id (ITEM-3).' }, lines: { type: ['array', 'null'], minItems: 1, maxItems: 60, items: { type: 'object', properties: { speaker: SLUG, text: { type: 'string', minLength: 1, maxLength: 2000 } }, required: ['text'], additionalProperties: false } } }, ['item', 'lines']),
-  handler: (args, { root, author }) => editResult(edit.setPlanVoiceover(root, { item: args.item, lines: args.lines }, { author }))
+  ...fromCommand('set_plan_voiceover'),
+  handler: (args, { root, author }) => editResult(edit.run(root, 'set_plan_voiceover', { item: args.item, lines: args.lines }, { author }))
 });
 
 export const exportPlanDocumentTool = defineTool({

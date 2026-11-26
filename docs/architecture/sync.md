@@ -58,7 +58,9 @@ An agent may read a file, think, and write it long after: what it writes is the 
 
 ## A folder linked to a project
 
-`@elabora/node` `cloud/projects.ts` and `cloud/link.ts`, `@elabora/engine` `session-cloud.ts`; the command line's `elabora cloud teams` and `elabora cloud project create|push|clone|sync` (D83).
+`@elabora/node` `cloud/projects.ts` and `cloud/link.ts`, `@elabora/engine` `base/session-cloud.ts`; the command line's `elabora cloud teams` and `elabora cloud project create|push|clone|sync` (D83).
+
+- **The copy and its store** (D100): the copy's machine (`base/session-cloud.ts`: the connection, reconnections, close codes, epoch, presence, what goes and what comes) has no Node in it. What it keeps and the team's media are its host's, a `CopyStore` (`@elabora/core/sync/copy`): the files the room confirmed, saving the copy, unlinking it, sending, committing and fetching media by hash, the person's membership. A folder's store is `folderCopy` (`cloud/projects.ts`), which `cloudSessionOptions(dir)` gives.
 
 - **The link** (`cloud-project.json` in the project's data folder): the server, team and project, this copy's id, its person, the room's number it has, what the room confirmed (by hash in the folder's blob store), the changes waiting, the journal's last entry taken in. It is all a copy needs to go on after a restart, offline or not.
 - **The engine's session syncs it.** Every journal entry, in order, goes into the copy's `SyncClient`: the session's own changes, other processes' (the CLI, the MCP server), file edits no Elabora tool made (computed as in D75). The room's changes are written in the folder and journaled as the change of their author, with the command `sync`, which is never sent back. The folder is always the client's view: a change the room refused leaves it, and the refusal is told (`cloudOutcome`). Another's change that replaced a value a change of this copy wrote, unseen, is told to this copy only (`cloudReplaced`, D90).
@@ -76,7 +78,7 @@ An undo is a change that names what it undoes (`undoes`: the changes, the batch)
 
 ## Commands by name
 
-A room runs commands as well as changes: a tool of the cloud sends a command's name and arguments, the room runs it on its head (`executeCommand`, D76) and places the result as a change of the tool's author. `@elabora/core` `commands/table.ts` is the list (D84): the commands that need nothing but the project's files, each with the JSON Schema of its arguments, what a tool says of it, whether it removes content or is a person's only, and the function that runs it. `namedCommand(name)` finds one by its own name only. The schema is what a tool may send; the command checks its arguments itself and refuses with `CommandError`.
+A room runs commands as well as changes: a tool of the cloud sends a command's name and arguments, the room runs it on its head (`executeCommand`, D76) and places the result as a change of the tool's author. `@elabora/core` `commands/table.ts` is the list (D84, D110): every command, each with the JSON Schema of its arguments, what a tool says of it, whether it removes content or is a person's only, what it needs of its host, and the function that runs it. `namedCommand(name)` finds one by its own name only. A room gives a command nothing but the files: it refuses one that needs its host (a font's files, a line's audio made from a file). The schema is what a tool may send; the command checks its arguments itself and refuses with `CommandError`.
 
 ## Messages
 
@@ -88,18 +90,22 @@ A room runs commands as well as changes: a tool of the cloud sends a command's n
 | `submit { change }` | a submission |
 | `catchup { since }` | what came after a number |
 | `presence { screen?, selection?, view? }` | where its author is (`view`: D91) |
+| `media { media }` | the facts of media the project holds, that the room lacks or holds at a lower version (D125, D126); only to a room whose welcome says `media` |
 
 | From the server | |
 |---|---|
-| `welcome { protocol, head, peers, role? }` | `role`: the person's role at the connection (D94), taken before anything waiting is sent |
-| `ack { change }`, `change { change }` | a placed change, to its copy and to the others |
+| `welcome { protocol, head, peers, role?, media? }` | `role`: the person's role at the connection (D94), taken before anything waiting is sent; `media`: the room keeps media's facts (D125) |
+| `ack { change, media?, mediaDropped? }`, `change { change, media? }` | a placed change, to its copy and to the others; `media`: what the room knows of the media its operations write |
 | `refused { refusal, head }` | |
-| `catchup { changes, head }`, `snapshot { head, files }` | what a copy missed |
+| `catchup { changes, head, media? }`, `snapshot { head, files }` | what a copy missed; a snapshot's binary file carries its `size` and `facts` |
+| `media { media }` | facts a copy gave since; to the copy that gave them, what the room holds now for those media |
 | `presence { peers }` | who is there: an `Actor` (a person, or an agent with the person who launched it) per copy |
 | `role { role }` | the person's role changed while connected (D93): a viewer's changes wait in the copy |
+
+**A medium's facts** (D125, D126). What a copy needs to know of a medium without its bytes goes by its hash, beside the reference, never in an operation or the journal: its size, which the room measures, and its facts (`MediaFacts`, `sync/media.ts`: `MediaInfo` without its size, with a version), which a copy that holds the file gives with the change that writes it (`Submission.media`) or in passing (`media`). The conformance verdict is not part of them: a copy computes it with `fileMedia({ ...facts, size }, path)`. Facts that do not hold are left out (`ack.mediaDropped`), never the change. A room keeps the first facts of each version and a higher version replaces a lower; a reader drops a key it does not know (a copy) or the facts that carry one (a room). A copy keeps what the room told it in its link (`CopyLink.media`).
 
 **Authors.** A change's author is the `Author` of [operations](operations.md), with, in a project in the cloud, `id` (a person's stable id, their account) and, for an agent, `by` (the person who launched it). The rule of rebase depends on the author's kind, so the server sets the author from the connection, never from what a copy says.
 
 ## The convergence bench
 
-`test/unit/sync-convergence.test.ts` draws, from a seed, two copies of a small course, a server in memory, people and agents running the core's commands, agents writing files with their own tools (from what they read earlier), undos (with `agentUndos`, agents undoing their batch from the server's log: `test/unit/sync-undo.test.ts`), and one copy going offline and back. Each draw affirms that every copy and the server end with the same files, that the project validates, that no text a person wrote is lost unless the one who replaced it had seen it or someone was told, and that an agent never replaces a person's text it had not seen; and, for each undo placed, that what it left out is an inverse of one of its targets and that nothing in force before it vanishes without being applied. Seeds that once failed are kept as fixed cases; `ELABORA_SYNC_DRAWS=5000` runs more draws.
+`test/unit/sync-convergence.test.ts` draws, from a seed, two copies of a small course, a server in memory, people and agents running the core's commands, agents writing files with their own tools (from what they read earlier), undos (with `agentUndos`, agents undoing their batch from the server's log: `test/unit/sync-undo.test.ts`), and one copy going offline and back. Each draw affirms that every copy and the server end with the same files, that the project validates, that no text a person wrote is lost unless the one who replaced it had seen it or someone was told, and that an agent never replaces a person's text it had not seen; and, for each undo placed, that what it left out is an inverse of one of its targets and that nothing in force before it vanishes without being applied. Seeds that once failed are kept as fixed cases; `ELABORA_SYNC_DRAWS=5000` runs more draws. The same runs (`test/sync/convergence.ts`) play in a Worker of Chromium (`test/e2e/sync-convergence-browser.test.ts`, 300 draws; `ELABORA_SYNC_BROWSER_DRAWS` for more), bundled for a browser without Node as a browser engine will be (`test/browser-bundle.ts`).

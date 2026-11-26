@@ -4,7 +4,7 @@ import type { BatchSummary } from '@elabora/core/ops/batch';
 import type { Overwrite, Presence } from '@elabora/core/sync/protocol';
 import type { Outcome } from '@elabora/core/sync/client';
 import type { DeliveryFormat } from '@elabora/core/lms/formats';
-import type { Screen, Variable } from '@elabora/core/project/model';
+import type { Screen } from '@elabora/core/project/model';
 import type { Anchor } from '@elabora/format';
 import type { PlanApprovalState, PlanDiffView, PlanVersionsView } from '@elabora/core/project/plan-versions';
 import type { PlanDocument } from '@elabora/core/plan-document/model';
@@ -13,30 +13,24 @@ import type { ExportedDialogue, DialogueExportFormat } from '@elabora/node/dialo
 import type { DialogueView } from '@elabora/core/dialogue/view';
 import type { PlayReport } from '@elabora/core/dialogue/play';
 import type { RenderedScreen } from '@elabora/core/render/screen';
+import type { RenderView, ScreenRender } from '@elabora/player/canvas-protocol';
 import type { MigrationNote } from '@elabora/core/format/migrations/types';
 import type { PresetName } from '@elabora/core/media/presets';
 import type { PackageWeights } from '@elabora/core/media/weights';
 import type { WebBuildOptions } from '@elabora/node/build-types';
 import type { ActivityEntry } from '@elabora/node/activity-types';
 import type { VoiceInfo, VoiceStatus, GenerateResult, TakeInfo, VoiceProgress, VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate } from '@elabora/node/voice/types';
-import type { AlignerView, AlignProgress, AlignResult } from '@elabora/node/align/types';
+import type { AlignerView, AlignProgress, AlignResult } from '@elabora/core/align/types';
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/types';
-import type { NarrationPeaks, ImportedFile, LineFromAudioFileArgs, TextFromAudioFileArgs } from '@elabora/node/narration/types';
-import type { AddSoundArgs, GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
+import type { NarrationPeaks, ImportedFile } from '@elabora/node/narration/types';
+import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
 import type { CourseSound } from '@elabora/core/sounds/sounds';
-import type {
-  Expectation, CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, PlaceBlockArgs, ArrangeScreenArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
-  CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
-  WriteComponentFileArgs, MigrateComponentsArgs, AddLibraryComponentArgs, CommandDiagnostic, AddFontArgs, FontRequest, SettleImportReportArgs, AddResourceRequest,
-  SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, RenameArgs, DuplicateScreenArgs,
-  UpdateNarrationArgs, AddNarrationLineArgs, UpdateNarrationLineArgs, MoveNarrationLineArgs, NarrationAudioFileArgs, RemoveSpeakerArgs, SetBlockTimingArgs, SetContinuityArgs, SetDialogueNodeArgs, RemoveDialogueNodeArgs, SetNarrationWordsArgs, SplitStepArgs, NarrationFromPlanArgs, KeepNarrationAudioArgs, SetPlanVoiceoverArgs,
-  WritePlanArgs, SetPlanTextArgs, RevertPlanChangeArgs, CreatePlanVersionArgs, ApprovePlanArgs, RecordPlanSendArgs, SetPlanNoteArgs
-} from '@elabora/core/commands/index';
+import type { Expectation, ConvertTarget, CommandDiagnostic } from '@elabora/core/commands/index';
 import type { ScreenParts } from '@elabora/core/project/parts';
+import type { ThumbRequests } from '@elabora/player/thumbs-protocol';
 import type { NarrationView, TimelineView, ScreenAt, TimelineMark } from '@elabora/core/narration/view';
 import type { EffectInfo } from '@elabora/core/narration/timeline';
-import type { ReplaceTextArgs, TextMatch } from '@elabora/core/commands/text';
-import type { ApproveTranslationArgs, ExportTranslationArgs, TranslateUnitArgs } from '@elabora/core/commands/translation';
+import type { TextMatch } from '@elabora/core/commands/text';
 import type { ScreenTranslation, TranslationStatus, TranslationTable } from '@elabora/core/i18n/translate';
 
 // The engine's message protocol: what the desktop app sends over an Electron message port, and a
@@ -51,117 +45,9 @@ export type { Diagnostic, Summary, Author, Op, SkippedOp, BatchSummary, CommandD
 // ── commands ─────────────────────────────────────────────────────────
 
 // The commands the engine runs as changes, by their journaled names (the vocabulary of the CLI
-// and the MCP server), with their arguments.
-export interface CommandArgs {
-  create_screen: CreateScreenArgs;
-  update_screen: UpdateScreenArgs;
-  delete_screen: { id: string };
-  move_screen: MoveScreenArgs;
-  duplicate_screen: DuplicateScreenArgs;
-  add_block: AddBlockArgs;
-  update_block: UpdateBlockArgs;
-  remove_block: { block: string };
-  move_block: MoveBlockArgs;
-  // Placed by hand (D72): where it sits and its anchor, in one change; arrange_screen (« Ranger »)
-  // puts a screen's placed blocks back in the flow, each at its anchor.
-  place_block: PlaceBlockArgs;
-  arrange_screen: ArrangeScreenArgs;
-  duplicate_block: DuplicateBlockArgs;
-  detach_block: { block: string };
-  // « Transformer en… » (D63): the block becomes another type or presentation, its id and its items'
-  // ids kept, its translations following; one undoable change. The conversions request lists the targets.
-  convert_block: ConvertBlockArgs;
-  upsert_layer: UpsertLayerArgs;
-  remove_layer: { screen: string; id: string };
-  upsert_event: UpsertEventArgs;
-  remove_event: { screen: string; id: string };
-  upsert_variable: { variable: Variable };
-  remove_variable: { id: string };
-  rename_variable: RenameArgs;
-  update_course: UpdateCourseArgs;
-  // The player's configuration, its tokens, resources, glossary and credits (D58).
-  update_player: UpdatePlayerArgs;
-  // « Ajouter une ressource »: any file copied into assets/resources/ and added to the resources, titled
-  // as asked, else by the PDF's own title, else by its name (D58); undone, the copy goes.
-  add_resource: AddResourceRequest;
-  ignore_findings: IgnoreFindingsArgs;
-  replace_text: ReplaceTextArgs;
-  export_translation: ExportTranslationArgs;
-  translate_text: TranslateUnitArgs;
-  approve_translation: ApproveTranslationArgs;
-  create_object: CreateObjectArgs;
-  write_object_file: WriteObjectFileArgs;
-  write_design_file: { file: string; content: string };
-  // The plan and its versions (docs/decisions.md D52). The plan is written at any time, by the
-  // author and by agents (an agent's write that changes a text kept « à l'identique » is refused,
-  // E_PLAN_VERBATIM_LOCKED); items moved take their screens along (result.moved).
-  write_plan: WritePlanArgs;
-  // A validated text reworded on the canvas (by the block that shows it, or its id): the plan's text.
-  set_plan_text: SetPlanTextArgs;
-  // « Revenir à la V2 »: one change of planDiff undone (key: item:ITEM-3), back to the latest
-  // validated version or the one given.
-  revert_plan_change: RevertPlanChangeArgs;
-  // A note for the client on a change in no version yet (target: its key); text null removes it.
-  set_plan_note: SetPlanNoteArgs;
-  // A person's (refused to an agent, E_PLAN_PERSON_ONLY): « Créer la V3 », the working copy frozen as
-  // the next version; « Valider… », the client's validation of a version (the latest by default).
-  create_plan_version: CreatePlanVersionArgs;
-  approve_plan: ApprovePlanArgs;
-  // A version exported for the client by the app itself (a PDF it printed): its day and format.
-  // exportPlanDocument records it by itself.
-  record_plan_send: RecordPlanSendArgs;
-  set_captions: SetCaptionsArgs;
-  // An animated image block made a video that loops like it (its MP4 and poster made first).
-  image_to_video: { block: string; blocks?: string[] };
-  update_narration: UpdateNarrationArgs;
-  add_narration_line: AddNarrationLineArgs;
-  update_narration_line: UpdateNarrationLineArgs;
-  move_narration_line: MoveNarrationLineArgs;
-  remove_narration_line: { screen: string; line: string };
-  // A speaker leaves the course; its lines go to another speaker (to), or to none.
-  remove_speaker: RemoveSpeakerArgs;
-  // The audio of a line from a file (a voice tool's M4A, or a recording: provider "recording").
-  set_narration_audio: NarrationAudioFileArgs;
-  // « Couper à une réplique »: the line and those after it in its step start the next step; later
-  // steps, their blocks, settings, anchors and reveal-step actions move one on.
-  split_step: SplitStepArgs;
-  // « La voix dit bien ce texte »: a line out of date because its text was corrected (a checked
-  // transcription, a typo) keeps its audio; its words follow the corrected text.
-  keep_narration_audio: KeepNarrationAudioArgs;
-  // « Nouvelle réplique depuis un fichier audio… » (D46): a line made from a recording (file: an
-  // absolute path), its text given or transcribed, its words timed, in one change.
-  add_narration_line_with_audio: LineFromAudioFileArgs;
-  // « Régénérer le texte d'après l'audio » (D46): the line's text becomes what its recording says
-  // (text: as the author checked it; else transcribed now); the recording stays, its words timed again.
-  set_narration_text_from_audio: TextFromAudioFileArgs;
-  // A plan item's voice-over, line by line (null removes it), written in the plan.
-  set_plan_voiceover: SetPlanVoiceoverArgs;
-  // « Reprendre la voix off du plan »: the screen's script from its plan items' voice-over (replace:
-  // a screen that has a narration loses it, and its audio).
-  narration_from_plan: NarrationFromPlanArgs;
-  // The word times of a line's audio (forced alignment), into its sidecar.
-  set_narration_words: SetNarrationWordsArgs;
-  // When a block comes and goes on its screen's timeline (in, out: patches; null removes).
-  set_block_timing: SetBlockTimingArgs;
-  set_continuity: SetContinuityArgs;
-  // A node of a dialogue written whole (added after a node or first, or replaced in place), or removed (D61).
-  set_dialogue_node: SetDialogueNodeArgs;
-  remove_dialogue_node: RemoveDialogueNodeArgs;
-  create_component: CreateComponentArgs;
-  fork_component: ForkComponentArgs;
-  write_component_file: WriteComponentFileArgs;
-  migrate_components: MigrateComponentsArgs;
-  add_component: AddLibraryComponentArgs & { library: string };
-  publish_component: { library: string; component: string };
-  add_font: FontRequest & AddFontArgs;
-  // The import report (D47): decisions accepted as the import made them, or the report closed.
-  settle_import_report: SettleImportReportArgs;
-  // « Ajouter un son » (D67): a sound of the library, Openverse's or a file into assets/sounds/ with
-  // its sidecar (where it comes from, its licence), cut and faded as asked, in one change.
-  add_sound: AddSoundArgs;
-}
-
-export type CommandName = keyof CommandArgs;
+// and the MCP server), and what each takes: read from the core's table (D110).
+import type { CommandArgs, CommandName } from '@elabora/core/commands/table';
+export type { CommandArgs, CommandName };
 
 // ── views ────────────────────────────────────────────────────────────
 
@@ -226,7 +112,16 @@ export interface ProjectSummary {
   diagnostics: Summary;
   journal: { seq: number; openBatch: string | null };
   media: { queued: number; running: number };
+  // The services this session has (D102): a request of another one answers not-available, E_NOT_HERE.
+  services: Service[];
 }
+
+// What a session may have besides the project, as its host gives it (D102; base/services.ts says
+// which requests each holds): media jobs and the tools that read media, local and paid voices, word
+// times, transcription, sounds, packages, the canvas, versions, documents printed and written, the
+// agents' activity on this computer, and the computer's libraries (fonts, components, object templates:
+// commands that need them, D104).
+export type Service = 'media' | 'voices' | 'align' | 'transcribe' | 'sounds' | 'build' | 'canvas' | 'backups' | 'documents' | 'activity' | 'library';
 
 export interface FileEntry {
   path: string;
@@ -344,6 +239,10 @@ export interface MediaJobInfo {
   replaces: string | null;
   progress: number;
   error: string | null;
+  // Why it failed, when the reason has a code: in a browser, E_MEDIA_ENCODER_MISSING (what it must
+  // encode, this browser cannot), E_MEDIA_NOT_DECODABLE_HERE (what it must read, it cannot decode),
+  // E_MEDIA_UNREADABLE (not a medium it reads).
+  code?: string;
   warnings: string[];
   createdAt: string;
   finishedAt: string | null;
@@ -622,6 +521,12 @@ export interface Requests {
   // or layer of the screen shown (null: none). id: the render or view id the page reports back.
   canvasView: { params: Partial<CanvasView>; result: { id: string; pages: number; view: CanvasView } };
   closeCanvas: { params: NoParams; result: { closed: boolean } };
+  // The editor's miniatures (D130, D133): a screen's render given back frozen at its view, the files it
+  // names declared to the canvas host first; the canvas service's (an unknown screen: not-found).
+  thumbRender: ThumbRequests['thumbRender'];
+  momentRender: ThumbRequests['momentRender'];
+  blockPreviewRender: ThumbRequests['blockPreviewRender'];
+  measureRender: ThumbRequests['measureRender'];
   migrate: { params: NoParams; result: FormatMigrationView | null };
   // Generated narration (docs/decisions.md D25). The voices of a language and whether their model is
   // on this computer (else its size); its download (voiceProgress events, phase install); a
@@ -672,6 +577,10 @@ export interface Requests {
   // nothing encoded or written.
   packageWeights: { params: NoParams; result: PackageWeights };
   close: { params: NoParams; result: { version: string | null } };
+  // The relay's port of a route (D118, D105): the module's files served to a relay host, the canvas's
+  // or the free objects' frames', through the MessagePort transferred with this message. A session
+  // that serves them from elsewhere (the desktop's local server) answers not-available, E_NOT_HERE.
+  relayPort: { params: { host: 'canvas' | 'frames' }; result: Record<string, never> };
 }
 
 export type RequestType = keyof Requests;
@@ -685,7 +594,8 @@ export type RequestMessage = { [Type in RequestType]: { kind: 'request'; id: str
 //                  E_CONFLICT, E_SCHEMA…; diagnostics say why)
 //   not-found      no such file, screen, change, batch, version or media job
 //   bad-request    the message is not a request the engine knows
-//   not-available  not possible in this session (media off, no canvas open)
+//   not-available  not possible in this session (media off, no canvas open); code E_NOT_HERE: the
+//                  session has no such service (D102), whatever the parameters
 //   closed         the session is closed
 //   internal       a bug or an I/O failure (message says which)
 export type ErrorKind = 'refused' | 'not-found' | 'bad-request' | 'not-available' | 'closed' | 'internal';
@@ -735,6 +645,11 @@ export type EngineEvent =
   // findings when they changed, and the summary over everything.
   | { type: 'diagnostics'; screens: Record<string, Diagnostic[]>; removed: string[]; project?: Diagnostic[]; summary: Summary }
   | { type: 'mediaJob'; job: MediaJobInfo }
+  // The canvas of a browser's session (D105): a render of the screen shown, as its page takes it
+  // (elabora/render), and a change of what the page shows of it (elabora/view). The window gives
+  // them to the canvas's page; the desktop's sessions push them to their local host instead.
+  | { type: 'canvasRender'; id: string | number; render: ScreenRender }
+  | { type: 'canvasView'; id: string | number; view: Partial<RenderView> }
   // A voice model downloading (phase install) or a line being said (phase line: its fraction).
   | { type: 'voiceProgress'; screen?: string; progress: VoiceProgress }
   // The word aligner downloading (phase install) or timing a line.

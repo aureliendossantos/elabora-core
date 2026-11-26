@@ -69,6 +69,21 @@ export interface RenderChrome {
 // canvas loads again what changed at the same path (an image replaced, object.js edited).
 export type RenderedFileKind = 'asset' | 'style' | 'font' | 'object' | 'object-code' | 'object-frame';
 
+// A narration line's audio (docs/decisions.md D24), which no render lists: the editor plays it.
+const NARRATION_AUDIO = /^assets\/narration\/[^/]+\/[^/]+\/[^/]+\.m4a$/;
+// A sound of the course (D67): the editor's sound browser and inspector play it on any screen, and a
+// sound just added or made is in no render yet.
+const COURSE_SOUND = /^assets\/sounds\/[^/]+\.(?:flac|m4a|mp3|ogg|oga|opus|wav)$/;
+
+// What a host of the canvas serves its pages as a file (both hosts: the desktop's local server, a
+// browser's relay): the files the renders sent so far named, a narration line's audio and a sound of the
+// course, and nothing else of the project. A frame's page and an object's code are made, never read
+// as files. undefined: not served (the page is answered not found).
+export function servedFileKind(named: ReadonlyMap<string, RenderedFileKind>, rel: string): RenderedFileKind | undefined {
+  const kind = named.get(rel) ?? (NARRATION_AUDIO.test(rel) || COURSE_SOUND.test(rel) ? 'asset' : undefined);
+  return kind === 'object-frame' || kind === 'object-code' ? undefined : kind;
+}
+
 export interface RenderedFile extends RenderFile {
   kind: RenderedFileKind;
 }
@@ -76,6 +91,12 @@ export interface RenderedFile extends RenderFile {
 export interface RenderedScreen extends ScreenRender {
   styles: RenderStyles;
   files: RenderedFile[];
+}
+
+// A render as the canvas's page takes it (elabora/render): its files by path, kind and hash alone.
+export function screenRenderOf(render: RenderedScreen): ScreenRender {
+  const { screen, course, view, styles, files, outline } = render;
+  return { screen, course, view, styles, files: files.map(({ path, kind, hash }) => ({ path, kind, hash })), ...(outline ? { outline } : {}) };
 }
 
 export interface RenderContext {

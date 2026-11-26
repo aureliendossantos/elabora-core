@@ -87,7 +87,7 @@ const write = defineCommand({
     if (!flags.from === !flags.patch) { console.error(WRITE_USAGE); return 2; }
     const read = (file: string): unknown => JSON.parse(fs.readFileSync(file, 'utf8'));
     const args = flags.from ? { plan: read(flags.from) as Record<string, unknown> } : { patch: read(flags.patch!) as PatchOperation[] };
-    const result = edit.writePlan(dir, args);
+    const result = edit.run(dir, 'write_plan', args);
     const errors = summaryErrors(result.summary);
     console.log(`✔ Plan ${result.plan}: ${result.objectives} objective(s), ${result.items} item(s).${movedLine(result.moved)}${errors ? ` The course has ${errors} error(s): elabora validate .` : ''} ${versionsLine(dir)}.`);
     return 0;
@@ -101,7 +101,7 @@ const text = defineCommand({
     const { dir, id } = folderAndId(positionals);
     if (!id || flags.text === undefined) { console.error('Usage: elabora plan text [dir] <TXT-1|block> --text <wording>'); return 2; }
     const isPlanId = /^[A-Z][A-Z0-9_-]*$/.test(id);
-    const result = edit.setPlanText(dir, { ...(isPlanId ? { text: id } : { block: id }), markdown: flags.text });
+    const result = edit.run(dir, 'set_plan_text', { ...(isPlanId ? { text: id } : { block: id }), markdown: flags.text });
     console.log(result.change ? `✔ ${result.text} reworded in the plan: every block that shows it shows the new wording.` : `${result.text} already says that.`);
     return 0;
   }
@@ -117,7 +117,7 @@ const voiceover = defineCommand({
       const speaker = /^([a-z][a-z0-9-]{0,47})\s*:\s+(.+)$/.exec(line);
       return speaker ? { speaker: speaker[1]!, text: speaker[2]! } : { text: line };
     });
-    edit.setPlanVoiceover(dir, { item: id, lines });
+    edit.run(dir, 'set_plan_voiceover', { item: id, lines });
     console.log(`✔ ${id} ${lines ? `has a voice-over of ${lines.length} line(s)` : 'has no voice-over any more'}. Screens covering it: elabora narration from-plan . <screen>.`);
     return 0;
   }
@@ -167,7 +167,7 @@ const revert = defineCommand({
   run({ positionals, flags }) {
     const { dir, id } = folderAndId(positionals);
     if (!id) { console.error('Usage: elabora plan revert [dir] <key> [--version <Vn>]'); return 2; }
-    const result = edit.revertPlanChange(dir, { key: id, ...(flags.version ? { version: flags.version } : {}) });
+    const result = edit.run(dir, 'revert_plan_change', { key: id, ...(flags.version ? { version: flags.version } : {}) });
     console.log(`✔ ${id} is as in ${result.version} again.${movedLine(result.moved)}`);
     return 0;
   }
@@ -179,7 +179,7 @@ const note = defineCommand({
   run({ positionals, flags }) {
     const { dir, id } = folderAndId(positionals);
     if (!id || (flags.text === undefined) === !flags.clear) { console.error('Usage: elabora plan note [dir] <key> (--text <note> | --clear)'); return 2; }
-    const result = edit.setPlanNote(dir, { target: id, text: flags.clear ? null : flags.text! });
+    const result = edit.run(dir, 'set_plan_note', { target: id, text: flags.clear ? null : flags.text! });
     console.log(flags.clear ? `✔ No note on ${id} any more.` : `✔ Note for the client on ${id}: the next version takes it (${result.notes} note(s) waiting).`);
     return 0;
   }
@@ -190,7 +190,7 @@ const version = defineCommand({
   flags: { note: 'string', date: 'string' },
   run({ positionals: [dir = '.'], flags }) {
     if (flags.date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(flags.date)) { console.error('Usage: elabora plan version [dir] [--note <text>]'); return 2; }
-    const result = edit.createPlanVersion(dir, { ...(flags.note ? { note: flags.note } : {}), ...(flags.date ? { date: flags.date } : {}) });
+    const result = edit.run(dir, 'create_plan_version', { ...(flags.note ? { note: flags.note } : {}), ...(flags.date ? { date: flags.date } : {}) });
     const dropped = result.droppedNotes.length ? ` Note(s) on changes undone since were dropped: ${result.droppedNotes.join(', ')}.` : '';
     console.log(`✔ ${result.version} made (hash ${result.contentHash}${result.notes ? `, ${result.notes} note(s) for the client` : ''}).${dropped} Send it: elabora plan export . --version ${result.version}; once the client validated it: elabora plan approve . --version ${result.version} --by "<name>".`);
     return 0;
@@ -204,7 +204,7 @@ const approve = defineCommand({
   flags: { version: 'string', by: 'string', reference: 'string', date: 'string' },
   run({ positionals: [dir = '.'], flags }) {
     if (!flags.by || (flags.date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(flags.date))) { console.error(APPROVE_USAGE); return 2; }
-    const result = edit.approvePlan(dir, { by: flags.by, ...(flags.version ? { version: flags.version } : {}), ...(flags.reference ? { reference: flags.reference } : {}), ...(flags.date ? { date: flags.date } : {}) });
+    const result = edit.run(dir, 'approve_plan', { by: flags.by, ...(flags.version ? { version: flags.version } : {}), ...(flags.reference ? { reference: flags.reference } : {}), ...(flags.date ? { date: flags.date } : {}) });
     const errors = summaryErrors(result.summary);
     console.log(`✔ ${result.version} validated by ${flags.by}. ${versionsLine(dir)}.${errors ? ` The course still has ${errors} error(s).` : ''}`);
     return 0;

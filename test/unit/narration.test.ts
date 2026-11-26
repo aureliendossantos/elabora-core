@@ -193,16 +193,16 @@ test('elabora timeline: steps, lines, audio and the events on the timeline, as t
 
 test('narration edits: lines added, changed, moved and removed (with their audio), as undoable changes', { skip: NO_FFMPEG }, () => {
   const dir = narrated();
-  const added = edit.addNarrationLine(dir, { screen: 'accueil', line: { text: 'Une dernière chose.', step: 2 } });
+  const added = edit.run(dir, 'add_narration_line', { screen: 'accueil', line: { text: 'Une dernière chose.', step: 2 } });
   // Its id: its rank, then a random suffix (D77).
   assert.match(added.line, /^l4-[a-z0-9]{4}$/);
-  edit.updateNarrationLine(dir, { screen: 'accueil', line: added.line, speaker: 'marc', pauseBefore: 1 });
-  edit.moveNarrationLine(dir, { screen: 'accueil', line: added.line, after: 'l2' });
-  edit.updateNarration(dir, { screen: 'accueil', seek: 'free' });
+  edit.run(dir, 'update_narration_line', { screen: 'accueil', line: added.line, speaker: 'marc', pauseBefore: 1 });
+  edit.run(dir, 'move_narration_line', { screen: 'accueil', line: added.line, after: 'l2' });
+  edit.run(dir, 'update_narration', { screen: 'accueil', seek: 'free' });
   let screen = readJSON(dir, 'screens/accueil.json');
   assert.deepEqual(screen.narration.lines.map((line: { id: string }) => line.id), ['l1', 'l2', added.line, 'l3']);
   assert.equal(screen.narration.seek, 'free');
-  const removed = edit.removeNarrationLine(dir, { screen: 'accueil', line: 'l2' });
+  const removed = edit.run(dir, 'remove_narration_line', { screen: 'accueil', line: 'l2' });
   assert.ok(!fs.existsSync(path.join(dir, 'assets/narration/fr/accueil/l2.m4a')) && !fs.existsSync(path.join(dir, 'assets/narration/fr/accueil/l2.json')), 'its audio goes with it');
   undo(dir, removed.change!.seq);
   assert.ok(fs.existsSync(path.join(dir, 'assets/narration/fr/accueil/l2.m4a')), 'and comes back with undo');
@@ -215,9 +215,9 @@ test('a speaker removed: its lines go to another speaker, or to none, in one und
   const course = readJSON(dir, 'course.json');
   course.speakers[1].voices = { fr: { provider: 'pocket-tts', voice: 'jean' } };
   writeJSON(dir, 'course.json', course);
-  assert.throws(() => edit.removeSpeaker(dir, { speaker: 'personne' }), /No speaker "personne"/);
-  assert.throws(() => edit.removeSpeaker(dir, { speaker: 'marc', to: 'marc' }), /another speaker/);
-  const given = edit.removeSpeaker(dir, { speaker: 'marc', to: 'narratrice' });
+  assert.throws(() => edit.run(dir, 'remove_speaker', { speaker: 'personne' }), /No speaker "personne"/);
+  assert.throws(() => edit.run(dir, 'remove_speaker', { speaker: 'marc', to: 'marc' }), /another speaker/);
+  const given = edit.run(dir, 'remove_speaker', { speaker: 'marc', to: 'narratrice' });
   assert.deepEqual([given.lines, given.screens], [1, ['accueil']]);
   assert.deepEqual(readJSON(dir, 'course.json').speakers.map((speaker: { id: string }) => speaker.id), ['narratrice'], 'its voices go with it');
   assert.equal(readJSON(dir, 'screens/accueil.json').narration.lines[2].speaker, 'narratrice');
@@ -226,8 +226,8 @@ test('a speaker removed: its lines go to another speaker, or to none, in one und
   assert.equal(readJSON(dir, 'screens/accueil.json').narration.lines[2].speaker, 'marc', 'undone in one change');
   assert.deepEqual(readJSON(dir, 'course.json').speakers[1].voices, { fr: { provider: 'pocket-tts', voice: 'jean' } });
   // The last speaker: its lines are left without one.
-  edit.removeSpeaker(dir, { speaker: 'marc', to: 'narratrice' });
-  const left = edit.removeSpeaker(dir, { speaker: 'narratrice' });
+  edit.run(dir, 'remove_speaker', { speaker: 'marc', to: 'narratrice' });
+  const left = edit.run(dir, 'remove_speaker', { speaker: 'narratrice' });
   assert.equal(left.lines, 1, 'l1 and l2 had no speaker');
   assert.equal(readJSON(dir, 'course.json').speakers, undefined);
   assert.ok(readJSON(dir, 'screens/accueil.json').narration.lines.every((line: { speaker?: string }) => line.speaker === undefined));
@@ -235,7 +235,7 @@ test('a speaker removed: its lines go to another speaker, or to none, in one und
 
 test('a renamed screen takes the audio of its lines along, their sidecars naming it', { skip: NO_FFMPEG }, () => {
   const dir = narrated();
-  edit.rename(dir, { from: 'accueil', to: 'bienvenue' });
+  edit.run(dir, 'rename', { from: 'accueil', to: 'bienvenue' });
   assert.ok(fs.existsSync(path.join(dir, 'assets/narration/fr/bienvenue/l1.m4a')));
   assert.ok(!fs.existsSync(path.join(dir, 'assets/narration/fr/accueil')) || !fs.readdirSync(path.join(dir, 'assets/narration/fr/accueil')).length);
   assert.equal(readJSON(dir, 'assets/narration/fr/bienvenue/l1.json').screen, 'bienvenue');
@@ -323,10 +323,10 @@ test('a generated voice remembers what it was told to say and how: another pronu
   delete course.pronunciations;
   writeJSON(dir, 'course.json', course);
   // The line said faster: out of date.
-  edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l1', delivery: { fr: { speed: 1.1 } } });
+  edit.run(dir, 'update_narration_line', { screen: 'accueil', line: 'l1', delivery: { fr: { speed: 1.1 } } });
   assert.match(status().reasons.join(), /delivery/);
   // The credits of the voices reach the build report and the proof dossier.
-  edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l1', delivery: null });
+  edit.run(dir, 'update_narration_line', { screen: 'accueil', line: 'l1', delivery: null });
   for (const line of ['l2', 'l3']) await setNarrationAudio(dir, { screen: 'accueil', line, file: tone, provider: 'recording', voice: '', generated: false });
   const built = await build(dir, { out: path.join(dir, 'dist'), writeLock: false });
   assert.ok(built.ok);

@@ -6,10 +6,10 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { forcedAlign, STAR, AlignmentError } from '@elabora/node/align/ctc';
-import { spokenWords, targetsOf, vocabularyTokens } from '@elabora/node/align/spoken';
-import { alignEmissions } from '@elabora/node/align/align';
-import { frenchCardinal, englishCardinal } from '@elabora/node/align/numbers';
+import { forcedAlign, STAR, AlignmentError } from '@elabora/core/align/ctc';
+import { spokenWords, targetsOf, vocabularyTokens } from '@elabora/core/align/spoken';
+import { alignEmissions } from '@elabora/core/align/align';
+import { frenchCardinal, englishCardinal } from '@elabora/core/align/numbers';
 import { ALIGNER_MODELS, alignerFor, alignerInstalled } from '@elabora/node/align/models';
 import { aligners, alignNarration, alignsAtOnce, disposeAligner } from '@elabora/node/align/index';
 import { narrationWords, doubtfulWords, swallowedKey } from '@elabora/core/narration/words';
@@ -146,14 +146,14 @@ function voiced() {
 
 test('set_narration_words: the words, their aligner and the text they time go into the sidecar; anchors take their times; swallowed words are a finding', { skip: NO_FFMPEG }, async () => {
   const dir = voiced();
-  await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
+  await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
   assert.ok(codes(validateDir(dir).diagnostics).includes('I_TIMELINE_WORDS_ESTIMATED'));
   const text = "Ni l'imprimante, ni le partage de fichiers ne marchent.";
   const words = narrationWords(text, 'fr').map((word, index) => ({ text: word.text, start: index * 0.3, end: index * 0.3 + 0.25, score: word.text === 'le' ? 0.08 : 0.97 }));
   const sidecarPath = narrationSidecarPath('fr', 'accueil', 'l2');
   const before = readJSON(dir, sidecarPath);
-  assert.throws(() => edit.setNarrationWords(dir, { screen: 'accueil', line: 'l2', words, aligner: 'test', audioHash: `sha256:${'0'.repeat(64)}` }), /changed while its words were timed/);
-  const result = await edit.setNarrationWords(dir, { screen: 'accueil', line: 'l2', words, aligner: 'test-aligner', audioHash: before.audioHash });
+  assert.throws(() => edit.run(dir, 'set_narration_words', { screen: 'accueil', line: 'l2', words, aligner: 'test', audioHash: `sha256:${'0'.repeat(64)}` }), /changed while its words were timed/);
+  const result = await edit.run(dir, 'set_narration_words', { screen: 'accueil', line: 'l2', words, aligner: 'test-aligner', audioHash: before.audioHash });
   assert.equal(result.words, words.length);
   const sidecar = readJSON(dir, sidecarPath);
   assert.equal(sidecar.text, text);
@@ -174,7 +174,7 @@ test('set_narration_words: the words, their aligner and the text they time go in
   assert.equal(swallowed[0].ignored, undefined);
   assert.equal(narrationLines(loadProjectFromDir(dir), 'accueil')![1].aligner, 'test-aligner');
   // A line without audio has no words to time.
-  assert.throws(() => edit.setNarrationWords(dir, { screen: 'accueil', line: 'l3', words, aligner: 'test' }), /has no audio in fr to time/);
+  assert.throws(() => edit.run(dir, 'set_narration_words', { screen: 'accueil', line: 'l3', words, aligner: 'test' }), /has no audio in fr to time/);
 });
 
 test('a swallowed word the author ignores (D31): kept in course.json for this word of this take, it counts no more; another take brings it back', { skip: NO_FFMPEG }, async () => {
@@ -182,13 +182,13 @@ test('a swallowed word the author ignores (D31): kept in course.json for this wo
   const text = "Ni l'imprimante, ni le partage de fichiers ne marchent.";
   const timed = (scores: Record<string, number>) => narrationWords(text, 'fr').map((word, index) => ({ text: word.text, start: index * 0.3, end: index * 0.3 + 0.25, score: scores[word.text] ?? 0.97 }));
   const audioHash = () => readJSON(dir, narrationSidecarPath('fr', 'accueil', 'l2')).audioHash;
-  await edit.setNarrationWords(dir, { screen: 'accueil', line: 'l2', words: timed({ le: 0.08, fichiers: 0.03 }), aligner: 'test', audioHash: audioHash() });
+  await edit.run(dir, 'set_narration_words', { screen: 'accueil', line: 'l2', words: timed({ le: 0.08, fichiers: 0.03 }), aligner: 'test', audioHash: audioHash() });
   const swallowed = () => validateDir(dir).diagnostics.filter((d) => d.code === 'W_NARRATION_WORD_SWALLOWED');
   assert.deepEqual(swallowed().map((d) => (d.details as { words: { word: string }[] }).words[0].word), ['le', 'fichiers'], 'one finding per word');
   const warnings = validateDir(dir).summary.warnings;
   const le = swallowed()[0];
   // « Ignorer »: one change, the finding marked and no longer counted, the other word still one.
-  const result = edit.ignoreFindings(dir, { findings: [{ code: le.code, key: le.key! }] });
+  const result = edit.run(dir, 'ignore_findings', { findings: [{ code: le.code, key: le.key! }] });
   assert.ok(result.change, 'an undoable change');
   assert.deepEqual(readJSON(dir, 'course.json').ignored, [{ code: 'W_NARRATION_WORD_SWALLOWED', key: le.key }]);
   const after = validateDir(dir);
@@ -199,30 +199,30 @@ test('a swallowed word the author ignores (D31): kept in course.json for this wo
   // A hand-written entry without a key does not stop the next choice: it goes.
   const course = readJSON(dir, 'course.json');
   writeJSON(dir, 'course.json', { ...course, ignored: [...course.ignored, { code: 'W_NARRATION_WORD_SWALLOWED' }] });
-  assert.ok(edit.ignoreFindings(dir, { findings: [{ code: le.code, key: le.key! }] }).change);
+  assert.ok(edit.run(dir, 'ignore_findings', { findings: [{ code: le.code, key: le.key! }] }).change);
   writeJSON(dir, 'course.json', { ...course });
   // Timed again (the same audio): still ignored.
-  await edit.setNarrationWords(dir, { screen: 'accueil', line: 'l2', words: timed({ le: 0.05, fichiers: 0.03 }), aligner: 'test', audioHash: audioHash() });
+  await edit.run(dir, 'set_narration_words', { screen: 'accueil', line: 'l2', words: timed({ le: 0.05, fichiers: 0.03 }), aligner: 'test', audioHash: audioHash() });
   assert.equal(swallowed()[0].ignored, true, 'the same take: the choice holds');
   // Another take of the line: its audio differs, the word may be swallowed for real, the alert is back.
   voice(dir, 'accueil', { id: 'l2', text, seconds: 3 }, { language: 'fr', frequency: 990 });
-  await edit.setNarrationWords(dir, { screen: 'accueil', line: 'l2', words: timed({ le: 0.08 }), aligner: 'test', audioHash: audioHash() });
+  await edit.run(dir, 'set_narration_words', { screen: 'accueil', line: 'l2', words: timed({ le: 0.08 }), aligner: 'test', audioHash: audioHash() });
   const again = swallowed();
   assert.equal(again.length, 1);
   assert.equal(again[0].ignored, undefined, 'a new take: the alert comes back');
   assert.notEqual(again[0].key, le.key);
   // Ignoring it in the new take replaces the old choice about the same word; « Rétablir » takes it back.
-  edit.ignoreFindings(dir, { findings: [{ code: again[0].code, key: again[0].key! }] });
+  edit.run(dir, 'ignore_findings', { findings: [{ code: again[0].code, key: again[0].key! }] });
   assert.deepEqual(readJSON(dir, 'course.json').ignored, [{ code: 'W_NARRATION_WORD_SWALLOWED', key: again[0].key }], 'one entry per word');
-  edit.ignoreFindings(dir, { findings: [{ code: again[0].code, key: again[0].key! }], ignored: false });
+  edit.run(dir, 'ignore_findings', { findings: [{ code: again[0].code, key: again[0].key! }], ignored: false });
   assert.equal(readJSON(dir, 'course.json').ignored, undefined);
   assert.equal(swallowed()[0].ignored, undefined);
   // Errors are never ignored, and a key is needed.
-  assert.throws(() => edit.ignoreFindings(dir, { findings: [{ code: 'E_NARRATION_SPEAKER', key: 'accueil@x' }] }), /Only a warning or an information may be ignored/);
-  assert.throws(() => edit.ignoreFindings(dir, { findings: [{ code: 'W_NARRATION_WORD_SWALLOWED', key: ' ' }] }), /by its key/);
+  assert.throws(() => edit.run(dir, 'ignore_findings', { findings: [{ code: 'E_NARRATION_SPEAKER', key: 'accueil@x' }] }), /Only a warning or an information may be ignored/);
+  assert.throws(() => edit.run(dir, 'ignore_findings', { findings: [{ code: 'W_NARRATION_WORD_SWALLOWED', key: ' ' }] }), /by its key/);
   // Both words in one change.
   const both = swallowed();
-  edit.ignoreFindings(dir, { findings: both.map((d) => ({ code: d.code, key: d.key! })) });
+  edit.run(dir, 'ignore_findings', { findings: both.map((d) => ({ code: d.code, key: d.key! })) });
   assert.ok(swallowed().every((d) => d.ignored));
 });
 
@@ -237,7 +237,7 @@ test('elabora narration align: lines without audio or already timed are skipped,
   try {
     await assert.rejects(alignNarration(dir, { screen: 'accueil' }), (error: Error & { code?: string }) => error.code === 'E_ALIGN_DOWNLOAD' && /word aligner model could not be downloaded: 404/.test(error.message));
     const words = narrationWords('Bonjour, voici le ticket de Marc.', 'fr').map((word, index) => ({ text: word.text, start: index * 0.3, end: index * 0.3 + 0.2 }));
-    await edit.setNarrationWords(dir, { screen: 'accueil', line: 'l1', words, aligner: ALIGNER_MODELS[0].model });
+    await edit.run(dir, 'set_narration_words', { screen: 'accueil', line: 'l1', words, aligner: ALIGNER_MODELS[0].model });
     const result = await alignNarration(dir, { screen: 'accueil', lines: ['l1', 'l3'] });
     assert.deepEqual(result.lines.map((line) => [line.line, line.status, line.reason]), [['l1', 'skipped', 'already timed'], ['l3', 'skipped', 'no audio']]);
     assert.deepEqual(result.changes, []);
@@ -267,7 +267,7 @@ test('a real voice is timed as it is made: words in its sidecar, anchors on them
     for (let i = 1; i < sidecar.words.length; i++) assert.ok(sidecar.words[i].start >= sidecar.words[i - 1].start, 'in order');
     assert.ok(sidecar.words.at(-1).end <= sidecar.duration + 0.001);
     assert.ok(sidecar.words.filter((word: { score?: number }) => (word.score ?? 0) > 0.5).length >= sidecar.words.length - 2, 'the voice says its words');
-    await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l1', word: 'impression' } } });
+    await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l1', word: 'impression' } } });
     const moment = screenTimeline(loadProjectFromDir(dir), 'accueil')!.moments[0];
     assert.equal(moment.estimated, false);
     // Again with --force: the same words, from the same audio.
@@ -286,7 +286,7 @@ test('the sidecar keeps the text its audio says', { skip: NO_FFMPEG }, async () 
   const file = path.join(dir, 'assets/narration/fr/accueil/l1.m4a');
   const copy = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-line-')), 'l1.m4a');
   fs.copyFileSync(file, copy);
-  await edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l1', text: 'Bonjour, voici le ticket de Leïla.' });
+  await edit.run(dir, 'update_narration_line', { screen: 'accueil', line: 'l1', text: 'Bonjour, voici le ticket de Leïla.' });
   const { importNarration } = await import('@elabora/node/narration/audio');
   await importNarration(dir, { screen: 'accueil', line: 'l1', file: copy, trim: false });
   const sidecar = readJSON(dir, narrationSidecarPath('fr', 'accueil', 'l1'));
@@ -310,14 +310,9 @@ test('engine: the app asks which aligners are here, writes words and times lines
     const result = await session.alignNarration({ screen: 'accueil', lines: ['l1', 'l3'] });
     assert.deepEqual(result.lines.map((line) => line.status), ['skipped', 'skipped']);
     assert.ok(events.some((event) => event.type === 'changed' && event.source === 'engine'));
-    // Through the protocol, as the app asks.
-    for (const [type, params] of [['aligners', {}], ['timeline', { screen: 'accueil' }], ['timelineAt', { screen: 'accueil', time: 1 }], ['timelineMarks', { screen: 'accueil' }]] as const) {
-      const response = await session.handle({ kind: 'request', id: type, type, params });
-      assert.ok(response.ok, `${type}: ${JSON.stringify(response)}`);
-    }
+    // A recording the desktop's engine hears is an absolute path.
     const relative = await session.handle({ kind: 'request', id: 'tr', type: 'transcribeRecording', params: { file: 'l1.m4a' } });
     assert.ok(!relative.ok && relative.error.kind === 'bad-request', 'a recording is an absolute path');
-    assert.equal(session.effects()[0].name, 'none');
     await assert.rejects(session.alignNarration({ screen: 'accueil', lines: ['l9'] }), (error: Error & { kind?: string; code?: string }) => error.kind === 'not-found' && error.code === 'E_ALIGN_LINE');
   } finally {
     await session.close();
@@ -382,30 +377,30 @@ test('keep_narration_audio (« La voix dit bien ce texte »): a corrected text k
   const dir = voiced();
   const text = "Ni l'imprimante, ni le partage de fichiers ne marchent.";
   const words = narrationWords(text, 'fr').map((word, index) => ({ text: word.text, start: index * 0.3, end: index * 0.3 + 0.25, score: 0.9 }));
-  await edit.setNarrationWords(dir, { screen: 'accueil', line: 'l2', words, aligner: 'test' });
-  assert.throws(() => edit.keepNarrationAudio(dir, { screen: 'accueil', line: 'l2' }), /is up to date: nothing to keep/);
-  await edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l2', text: "Ni l'imprimante ni le partage des fichiers ne marchent." });
+  await edit.run(dir, 'set_narration_words', { screen: 'accueil', line: 'l2', words, aligner: 'test' });
+  assert.throws(() => edit.run(dir, 'keep_narration_audio', { screen: 'accueil', line: 'l2' }), /is up to date: nothing to keep/);
+  await edit.run(dir, 'update_narration_line', { screen: 'accueil', line: 'l2', text: "Ni l'imprimante ni le partage des fichiers ne marchent." });
   assert.equal(narrationLines(loadProjectFromDir(dir), 'accueil')![1].status, 'stale');
-  await edit.keepNarrationAudio(dir, { screen: 'accueil', line: 'l2' });
+  await edit.run(dir, 'keep_narration_audio', { screen: 'accueil', line: 'l2' });
   const line = narrationLines(loadProjectFromDir(dir), 'accueil')![1];
   assert.equal(line.status, 'ok');
   const sidecar = readJSON(dir, narrationSidecarPath('fr', 'accueil', 'l2'));
   assert.equal(sidecar.text, "Ni l'imprimante ni le partage des fichiers ne marchent.");
   assert.ok(!sidecar.words.some((word: { text: string }) => word.text === 'des'), 'a new word is not given a time it was never measured at');
   assert.equal(sidecar.words.find((word: { text: string }) => word.text === 'fichiers').start, 2.1, 'the words that stayed keep theirs');
-  assert.throws(() => edit.keepNarrationAudio(dir, { screen: 'accueil', line: 'l3' }), /missing: nothing to keep/);
+  assert.throws(() => edit.run(dir, 'keep_narration_audio', { screen: 'accueil', line: 'l3' }), /missing: nothing to keep/);
 });
 
 test('set_plan_voiceover: written in the plan, whether a version of it was validated or not (D52)', async () => {
   const dir = copyExample();
   const item = readJSON(dir, 'screens/accueil.json').covers[0];
-  await edit.setPlanVoiceover(dir, { item, lines: [{ speaker: 'marc', text: ' Bonjour,   c\'est Marc. ' }] }, { author: { kind: 'agent', name: 'claude-code' } });
+  await edit.run(dir, 'set_plan_voiceover', { item, lines: [{ speaker: 'marc', text: ' Bonjour,   c\'est Marc. ' }] }, { author: { kind: 'agent', name: 'claude-code' } });
   assert.deepEqual(readJSON(dir, 'plan.json').items.find((candidate: { id: string }) => candidate.id === item).voiceover, [{ speaker: 'marc', text: "Bonjour, c'est Marc." }]);
-  await edit.setPlanVoiceover(dir, { item, lines: null });
+  await edit.run(dir, 'set_plan_voiceover', { item, lines: null });
   assert.equal(readJSON(dir, 'plan.json').items.find((candidate: { id: string }) => candidate.id === item).voiceover, undefined);
-  assert.throws(() => edit.setPlanVoiceover(dir, { item, lines: null }), /has no voice-over to remove/);
-  assert.throws(() => edit.setPlanVoiceover(dir, { item: 'ITEM-404', lines: [{ text: 'x' }] }), /No item "ITEM-404"/);
-  assert.throws(() => edit.setPlanVoiceover(dir, { item, lines: [{ text: '  ' }] }), /has its words/);
+  assert.throws(() => edit.run(dir, 'set_plan_voiceover', { item, lines: null }), /has no voice-over to remove/);
+  assert.throws(() => edit.run(dir, 'set_plan_voiceover', { item: 'ITEM-404', lines: [{ text: 'x' }] }), /No item "ITEM-404"/);
+  assert.throws(() => edit.run(dir, 'set_plan_voiceover', { item, lines: [{ text: '  ' }] }), /has its words/);
 });
 
 test('effects a timing can take: the presets, then the theme\'s, with their durations and directions; diagnostics carry structured details', { skip: NO_FFMPEG }, async () => {
@@ -418,7 +413,7 @@ test('effects a timing can take: the presets, then the theme\'s, with their dura
   assert.deepEqual(effects.map((effect) => [effect.name, effect.builtin, effect.duration]), [['none', true, 0], ['fade', true, 0.4], ['rise', true, 0.5], ['slide', true, 0.5], ['zoom', true, 0.4], ['wipe', true, 0.6], ['draw', true, 1.2], ['tampon', false, 0.4]]);
   assert.deepEqual(effects.find((effect) => effect.name === 'slide')!.directions, ['left', 'right', 'up', 'down']);
   assert.equal(effects.at(-1)!.description, 'Comes in like a rubber stamp');
-  await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'copieur' } } });
+  await edit.run(dir, 'set_block_timing', { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'copieur' } } });
   const lost = validateDir(dir).diagnostics.find((d) => d.code === 'E_TIMELINE_ANCHOR_MISSING')!;
   assert.deepEqual(lost.details, { screen: 'accueil', block: 'accueil-illustration', kind: 'in', anchor: { line: 'l2', word: 'copieur' }, lost: 'word' });
 });

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { openProject } from '@elabora/engine';
-import type { BuildView, EngineEvent, OpenOptions, Session, ResponseMessage } from '@elabora/engine';
+import type { BuildView, EngineEvent, OpenOptions, Session } from '@elabora/engine';
 import { readJournal } from '@elabora/node/journal/index';
 import type { Author, ChangeEntry } from '@elabora/core/ops/types';
 import { copyExample, readJSON } from '../helpers.ts';
@@ -109,21 +109,6 @@ test('build: a build that stops gives its errors and takes no publish version', 
   assert.ok(session.backups().length >= versions);
   await settle(session);
   assert.equal(changes(dir).filter((entry) => entry.author.kind === 'external').length, 0);
-});
-
-test('build over the protocol: typed result, bad parameters refused', async () => {
-  const { session } = await open();
-  const response = await session.handle({ kind: 'request', id: 'b1', type: 'build', params: { profiles: ['moodle'] } }) as ResponseMessage;
-  assert.equal(response.ok, true, JSON.stringify(response));
-  if (response.ok && response.type === 'build') assert.equal((response.result as BuildView).ok, true);
-  const bare = await session.handle({ kind: 'request', id: 'b0', type: 'build', params: null }) as ResponseMessage;
-  assert.equal(bare.ok, true, JSON.stringify(bare));
-
-  for (const params of [{ mediaQuality: 'ultra' }, { profiles: 'moodle' }, { release: 'yes' }, { name: 3 }]) {
-    const refused = await session.handle({ kind: 'request', id: 'b2', type: 'build', params }) as ResponseMessage;
-    assert.equal(refused.ok, false, JSON.stringify(params));
-    if (!refused.ok) assert.equal(refused.error.kind, 'bad-request');
-  }
 });
 
 test('packageWeights: what the package would weigh at each media quality, and each media, with nothing written', async () => {

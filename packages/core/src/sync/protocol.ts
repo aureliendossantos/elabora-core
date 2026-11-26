@@ -3,6 +3,7 @@
 // (elabora-cloud) and the clients (desktop, CLI) import these types and the functions of this folder.
 import type { Author, Op, SkippedOp } from '../ops/types.ts';
 import type { Json } from '../ops/types.ts';
+import type { KnownMedium, MediaFacts, MediaMap } from './media.ts';
 
 export const SYNC_PROTOCOL = 'elabora-sync/1';
 
@@ -23,6 +24,9 @@ export interface Submission {
   // What the copy's own rebase of the change overwrote (it was made before the copy got changes of
   // others): passed on with the change, so that whoever wrote those values is told.
   overwrote?: Overwrite[];
+  // The facts of media its operations write, as the copy that holds them probed them (D125): beside the
+  // change, never in it. A room keeps them by hash; facts that do not hold are left out, never the change.
+  media?: MediaMap<MediaFacts>;
 }
 
 // An operation that rebase applied over a value written by a change its author had not seen (a
@@ -130,11 +134,14 @@ export interface Presence {
 // the server answers with what came after (catchup), or with the whole project when it no longer
 // keeps that far back (snapshot). epoch: which history since belongs to, as the room last said it
 // (elabora-cloud C84); a room restored to an earlier time since answers with the whole project.
+// media: the facts of media the project holds that the room has not, or at a lower version (D125, D126);
+// sent only to a room whose welcome says media.
 export type ClientMessage =
   | { type: 'hello'; protocol: typeof SYNC_PROTOCOL; client: string; actor: Actor; since: number; epoch?: string }
   | { type: 'submit'; change: Submission }
   | { type: 'catchup'; since: number }
-  | { type: 'presence'; presence: Omit<Presence, 'actor' | 'client' | 'at'> };
+  | { type: 'presence'; presence: Omit<Presence, 'actor' | 'client' | 'at'> }
+  | { type: 'media'; media: MediaMap<MediaFacts> };
 
 // A member's role in the project's team (elabora-cloud C36): an owner, an editor writes, a viewer reads.
 export type RoomRole = 'owner' | 'editor' | 'viewer';
@@ -144,16 +151,21 @@ export type RoomRole = 'owner' | 'editor' | 'viewer';
 // does not know a type ignores it. welcome's role: the person's role at the connection (D94), taken
 // before anything waiting is sent; a room before it leaves it out. welcome's epoch: which history the
 // room's numbers belong to, "0" until the room is restored to an earlier time (elabora-cloud C84).
+// welcome's media: the room keeps media's facts (D125). ack, change and catchup carry beside their
+// changes what the room knows of the media their operations write (media, by hash); ack also the hashes
+// whose facts it left out (mediaDropped). media: facts a copy gave since, for the others.
 export type ServerMessage =
-  | { type: 'welcome'; protocol: typeof SYNC_PROTOCOL; head: number; peers: Presence[]; role?: RoomRole; epoch?: string }
-  | { type: 'ack'; change: Committed }
+  | { type: 'welcome'; protocol: typeof SYNC_PROTOCOL; head: number; peers: Presence[]; role?: RoomRole; epoch?: string; media?: true }
+  | { type: 'ack'; change: Committed; media?: MediaMap<KnownMedium>; mediaDropped?: string[] }
   | { type: 'refused'; refusal: Refusal; head: number }
-  | { type: 'change'; change: Committed }
-  | { type: 'catchup'; changes: Committed[]; head: number }
+  | { type: 'change'; change: Committed; media?: MediaMap<KnownMedium> }
+  | { type: 'catchup'; changes: Committed[]; head: number; media?: MediaMap<KnownMedium> }
   | { type: 'snapshot'; head: number; files: SnapshotFile[] }
+  | { type: 'media'; media: MediaMap<KnownMedium> }
   | { type: 'presence'; peers: Presence[] }
   | { type: 'role'; role: RoomRole }
   | { type: 'error'; code: string; message: string };
 
-// A file of a snapshot: text whole, binary by the hash of its content (sent apart, as a blob).
-export type SnapshotFile = { path: string; text: string } | { path: string; blob: string; size?: number };
+// A file of a snapshot: text whole, binary by the hash of its content (sent apart, as a blob), with its
+// size and the facts the room holds for it (D125).
+export type SnapshotFile = { path: string; text: string } | { path: string; blob: string; size?: number; facts?: MediaFacts };

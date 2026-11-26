@@ -23,7 +23,7 @@ import type { Sheet } from './sheet.ts';
 import { createResources } from './resources.ts';
 import { createGlossary } from './glossary.ts';
 import { createAbout } from './about.ts';
-import { pageFramesPort } from './frames.ts';
+import { pageFrames } from './frames.ts';
 import { loadTimelinePrefs } from './timeline.ts';
 import type { TimelinePrefs } from './timeline.ts';
 import { createSounds } from './sounds.ts';
@@ -560,7 +560,7 @@ function mountView() {
   timelinePrefs = loadTimelinePrefs({ keep, captions: controls?.captionsByDefault ?? false, speeds: controls?.speeds, course: packageId });
   sounds.setData(course.sounds);
   view = createScreenView({
-    app, main, course, courseState, labels, formatLabel: format, announce, recordInteraction, syncSoon, framesPort: pageFramesPort('meta'), tooltip,
+    app, main, course, courseState, labels, formatLabel: format, announce, recordInteraction, syncSoon, frames: pageFrames('meta'), tooltip,
     holdPictures: true,
     timeline: {
       host: chrome.controls, autoplay: true, virtual: window.ELABORA_TEST?.virtualTime === true, tooltip, sheetHost: app,
