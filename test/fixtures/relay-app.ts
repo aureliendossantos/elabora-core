@@ -21,6 +21,8 @@ const FRAMES = oneOf(params.get('frames'), ['https://frames.elabora.page']);
 const PARTS = params.get('parts') === '1';
 // The engine's own Worker answers the ports (the test starts it with a project's files: app.startEngine), not the stand-in below.
 const ENGINE = params.get('engine') === '1';
+// The Lecteur's preview (chrome=live) in place of the editor's canvas.
+const LIVE = params.get('chrome') === 'live';
 let engineSeed!: (worker: Worker) => void;
 const engineStarted = new Promise<Worker>((resolve) => { engineSeed = resolve; });
 let engineRequests = 0;
@@ -71,6 +73,7 @@ function startView(): void {
     canvasOrigin: CANVAS,
     framesOrigin: FRAMES,
     mount: document.body,
+    ...(LIVE ? { chrome: 'live' as const } : {}),
     relayPort: async (relayHost, port) => {
       if (!ENGINE) { ends.push(serveRelayPort(port, source, relayHost)); return; }
       const worker = await engineStarted;

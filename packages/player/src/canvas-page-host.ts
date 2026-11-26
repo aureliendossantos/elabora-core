@@ -34,6 +34,9 @@ export interface PageCanvasOptions {
   mount: HTMLElement;
   // How long a question waits for its answer, in ms (30 s: the page's own waits are timers a busy page delays).
   askTimeoutMs?: number;
+  // 'live': the Lecteur's preview, the player's bars working (chrome=live, elabora-player-preview/1), in a frame that may open a link of
+  // the course in a tab of its own and download a file (PREVIEW_FRAME_SANDBOX). The editor's canvas and a thumbnail never are.
+  chrome?: 'live';
 }
 
 // What a relay page of a host last said of itself.
@@ -82,10 +85,13 @@ const ASK_TIMEOUT_MS = 30000;
 // runs and reaches it (D119): without a sandbox it would do what the object's own frame cannot (an alert, a download, windows opened). It
 // needs its script and its origin (the service worker is the origin's), nothing else. The canvas's frame, which only the player's code
 // fills (D119, D121), needs the same, and the pointer lock that the frames of objects inside it may ask for (a sandboxed frame's children
-// can have no flag it has not): no popup, download, modal, form or navigation of the window. The Lecteur's preview (chrome=live), when it
-// is shown here, will need `allow-popups allow-popups-to-escape-sandbox` for a link of the course and `allow-downloads` for a file.
+// can have no flag it has not): no popup, download, modal, form or navigation of the window. The Lecteur's preview (chrome=live) adds a
+// link of the course opened in a tab of its own, out of the sandbox (the course's link, not the player's code, chooses its address, as in
+// a published package), and a file downloaded; still no modal, form or navigation of the window, and an object inside it keeps its own
+// list (pointer-lock).
 export const RELAY_FRAME_SANDBOX = 'allow-scripts allow-same-origin';
 export const CANVAS_FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-pointer-lock';
+export const PREVIEW_FRAME_SANDBOX = `${CANVAS_FRAME_SANDBOX} allow-popups allow-popups-to-escape-sandbox allow-downloads`;
 
 type WithoutToken<T> = T extends unknown ? Omit<T, 'token'> : never;
 
@@ -102,7 +108,7 @@ interface Entry {
   state: RelayState;
 }
 
-export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withFrames = true, relayPort, mount, askTimeoutMs = ASK_TIMEOUT_MS }: PageCanvasOptions): PageCanvasHost {
+export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withFrames = true, relayPort, mount, askTimeoutMs = ASK_TIMEOUT_MS, chrome }: PageCanvasOptions): PageCanvasHost {
   const canvasBase = originOf(canvasOrigin);
   const framesBase = withFrames ? originOf(framesOrigin ?? '') : canvasBase;
   if (!canvasBase || !framesBase || (withFrames && canvasBase === framesBase)) throw new Error('The canvas and the frames are two origins, each https (or http on this computer)');
@@ -118,7 +124,8 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withF
       url.searchParams.set('framesRoute', routes.frames);
       url.searchParams.set('frames', framesBase);
     }
-    return { url: url.href, base: canvasBase, token, sandbox: CANVAS_FRAME_SANDBOX };
+    if (chrome === 'live') url.searchParams.set('chrome', 'live');
+    return { url: url.href, base: canvasBase, token, sandbox: chrome === 'live' ? PREVIEW_FRAME_SANDBOX : CANVAS_FRAME_SANDBOX };
   })();
 
   const fresh = (): RelayState => ({ ready: false, opened: false, version: null, error: null });
