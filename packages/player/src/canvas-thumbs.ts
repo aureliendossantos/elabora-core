@@ -99,6 +99,8 @@ function requestOf(scene: Scene): { name: ThumbRequestName; params: ThumbRequest
   }
 }
 const screenOf = (scene: Scene): string | null => (scene.kind === 'block' || scene.kind === 'charter' ? scene.args.screen : scene.screen);
+// A preview the author is choosing from (« Ajouter un bloc », the Charte): it opens over the miniatures of the window, which the view still counts.
+const previewing = (scene: Scene): boolean => scene.kind === 'block' || scene.kind === 'charter';
 
 // « Ajouter un bloc » (Lin 34), as the desktop's capture frames it: the block with a narrow margin around it, at the window's
 // proportions, centred on it (its top when even the whole window is shorter), as large as it can be read; a small block keeps some of
@@ -144,6 +146,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   const firstOf = (waiting: Entry[]): Entry => {
     const now = current?.() ?? null;
     return waiting.reduce((best, entry) => {
+      if (previewing(entry.scene) !== previewing(best.scene)) return previewing(entry.scene) ? entry : best;
       const mine = now !== null && screenOf(entry.scene) === now;
       const theirs = now !== null && screenOf(best.scene) === now;
       if (mine !== theirs) return mine ? entry : best;
@@ -159,7 +162,8 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   }
 
   // The frames wanted, in the order they are asked for, while a place is free; when none is, a frame out of the view gives its place,
-  // the farthest from the view first.
+  // the farthest from the view first. A preview the author chooses from comes before the miniatures under it: when every place is
+  // held in the view, the miniature farthest from the middle of the view gives it its place, and takes it back once the preview goes.
   function pump(): void {
     if (closed) return;
     for (;;) {
@@ -167,9 +171,11 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       if (!waiting.length) return;
       if (slots >= limit) {
         const kept = [...entries].filter((entry) => entry.slot && (!entry.visible || !entry.element.isConnected));
-        if (!kept.length) return;
+        const under = waiting.some((entry) => previewing(entry.scene)) ? [...entries].filter((entry) => entry.slot && !previewing(entry.scene)) : [];
+        const given = kept.length ? kept : under;
+        if (!given.length) return;
         const away = (entry: Entry): number => (entry.element.isConnected ? distance(entry) : Infinity);
-        drop(kept.reduce((far, entry) => (away(entry) > away(far) ? entry : far)));
+        drop(given.reduce((far, entry) => (away(entry) > away(far) ? entry : far)));
         continue;
       }
       void start(firstOf(waiting));

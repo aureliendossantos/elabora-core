@@ -34,6 +34,7 @@ interface ThumbsApp {
   measure(screen: string, language: string | null): Promise<{ overflow: number; fields: unknown[] } | null>;
   startEngine(seed: unknown, screens: string[]): Promise<number>;
   showBlock(screen: string, mini: boolean, width: number, height: number): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null }>;
+  releaseBlocks(): void;
 }
 type Win = Window & { thumbsApp: ThumbsApp };
 
@@ -286,6 +287,20 @@ for (const name of wanted) {
         }
       });
     }
+  });
+
+  test(`thumbnails (${name}): a block's preview opened over a view whose every place is held takes the place of the miniature farthest from its middle, which is drawn again once the preview goes`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=8&height=800&limit=8', async (page) => {
+      await untilDrawn(page, 8);
+      const rowsFramed = () => page.evaluate(() => (window as unknown as Win).thumbsApp.frames().filter((frame) => frame.parent !== null).length);
+      assert.equal(await rowsFramed(), 8);
+      const preview = await page.evaluate(() => (window as unknown as Win).thumbsApp.showBlock('accueil', false, 320, 180));
+      assert.equal(preview.drawn, true, 'the preview is drawn');
+      assert.ok(await page.evaluate(() => (window as unknown as Win).thumbsApp.live) <= 8, 'never more than the limit');
+      assert.equal(await rowsFramed(), 7, 'one miniature gave its place');
+      await page.evaluate(() => (window as unknown as Win).thumbsApp.releaseBlocks());
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.frames().filter((frame) => frame.parent !== null).length === 8, null, { timeout: 30000 });
+    });
   });
 
   test(`thumbnails (${name}): with the engine's renders, each screen of a module is drawn with its files, and measured with its fields`, { timeout: 300000 }, async (t) => {

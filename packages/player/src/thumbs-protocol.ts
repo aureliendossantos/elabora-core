@@ -29,7 +29,8 @@ import type { ScreenMeasurement, ScreenRender } from './canvas-protocol.ts';
 // WebKit (sixteen: +441, +238 and +561 MB, measured on a quiet Mac). Frames out of the view are kept while fewer are live; beyond
 // it the frame farthest from the view gives its place to an element in the view, and an element in the view keeps its skeleton
 // until a frame is free (the ones nearest to the view, and the screen of the canvas, first): a view of more than eight rows (the
-// Planche shows 9 to 12) draws the eight nearest its middle (D130).
+// Planche shows 9 to 12) draws the eight nearest its middle (D130). A block's or the Charte's preview comes first: when every place
+// is held in the view, the miniature farthest from its middle gives it its place, and takes it back once the preview goes.
 export const THUMB_LIMIT = 8;
 // A live thumbnail is shown again at most this often, in ms, however often the window says its screen may have changed: a
 // retouch in the canvas (a keystroke) does not draw sixteen frames each time. A refresh waits for the rest of this time,

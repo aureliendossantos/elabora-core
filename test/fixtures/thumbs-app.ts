@@ -122,6 +122,7 @@ function build(screens: string[]): void {
 }
 if (!ENGINE) build(Array.from({ length: ROWS }, (_, index) => SCREENS[index % SCREENS.length]!));
 
+const blocks: Array<{ element: HTMLElement; one: ThumbShown }> = [];
 const api = {
   calls, versions, drawn, rows, seen, drawnAt,
   get ports() { return ports; },
@@ -142,12 +143,15 @@ const api = {
     element.style.cssText = `width:${width}px;height:${height}px;overflow:hidden;background:#ddd;position:relative`;
     document.body.prepend(element);
     const one = thumbs.show(element, { kind: 'block', args: { screen }, mini });
+    blocks.push({ element, one });
     const ok = await one.drawn;
     const overflow = one.overflow ? await one.overflow : null;
     return { drawn: ok, overflow, transform: element.querySelector('iframe')?.style.transform ?? null };
   },
   // More rows, one for each screen given.
   build,
+  // The previews closed (the picker gone).
+  releaseBlocks() { for (const { element, one } of blocks.splice(0)) { one.release(); element.remove(); } },
   // A render as createThumbs asks for it.
   render: (name: ThumbRequestName, request: unknown) => source.render(name, request as never),
   // The engine's Worker opened on a project's files (the seed), offline, with the canvas service; then a row for each screen given.
