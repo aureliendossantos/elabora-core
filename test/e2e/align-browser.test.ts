@@ -4,21 +4,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import type { Browser, Page } from 'playwright-core';
-import { launchBrowser } from '@elabora/node/emulator/browser';
+import type { Page } from 'playwright-core';
 import { findMediaTools } from '@elabora/node/media/index';
-import { loadOrt } from '@elabora/node/voice/pocket/runtime';
-import { loadWav2Vec2 } from '@elabora/node/align/wav2vec2';
-import { wav2vec2Emissions } from '@elabora/core/align/wav2vec2';
-import { alignEmissions } from '@elabora/core/align/align';
 import type { Alignment } from '@elabora/core/align/align';
 import { ALIGNER_MODELS } from '@elabora/core/align/models';
 import { narrationLines } from '@elabora/core/narration/narration';
 import { loadProjectFromDir, readProjectFiles } from '@elabora/node/project-reader';
 import { bundleForBrowser } from '../browser-bundle.ts';
+import { emptyStorage, ISOLATED, pageWithStorage } from '../browser-page.ts';
+import { desktopAlignment } from '../native-models.ts';
 import { ROOT } from '../helpers.ts';
 
-// The word aligner in a Worker of Chromium (D114): its model downloaded from the models' origin into
+// The word aligner in a browser's Worker (D114, ELABORA_BROWSER: chromium, firefox or webkit), the page isolated as the app's host serves it (C105): its model downloaded from the models' origin into
 // the origin's private file system (store.ts) and timing an English line with onnxruntime-web, against
 // the desktop's (onnxruntime-node, the same core code): every word's start and end within a frame
 // (20 ms). ELABORA_ALIGNER_TEST_MODELS names a folder holding the English model's files (95 MB,
@@ -38,7 +35,8 @@ const FRAME = 0.02 + 0.001;
 const exampleFiles = readProjectFiles(EXAMPLE).files;
 const exampleMedia = new Map([...exampleFiles].flatMap(([rel, file]) => (file.kind === 'binary' && file.hash ? [[file.hash, fs.readFileSync(path.join(EXAMPLE, rel))] as [string, Buffer]] : [])));
 
-let browser: Browser;
+const BROWSER = process.env.ELABORA_BROWSER ?? 'chromium';
+let browser: Awaited<ReturnType<typeof pageWithStorage>> | undefined;
 let page: Page;
 const asked: string[] = [];
 
@@ -60,8 +58,8 @@ self.onmessage = async ({ data }) => {
   const engine = await bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
 provideMedia(async (hash) => { const response = await fetch('/example-media/' + hash); return response.ok ? response.blob() : null; });` });
   assert.deepEqual(models.inputs.filter((input) => input.includes('onnxruntime')), [], 'onnxruntime-web is loaded by address, never bundled');
-  browser = await launchBrowser('chromium');
-  page = await browser.newPage();
+  browser = await pageWithStorage(BROWSER);
+  ({ page } = browser);
   await page.route(`${MODELS_ORIGIN}/**`, (route) => {
     const url = new URL(route.request().url());
     const file = english.files.find((each) => url.pathname === `/${each.url}`);
@@ -81,19 +79,20 @@ provideMedia(async (hash) => { const response = await fetch('/example-media/' + 
   });
   await page.route(`${ORIGIN}/**`, (route) => {
     const name = new URL(route.request().url()).pathname;
-    if (name === '/installer.js') return route.fulfill({ contentType: 'text/javascript', body: installer.code });
-    if (name === '/models.js') return route.fulfill({ contentType: 'text/javascript', body: models.code });
-    if (name === '/media.js') return route.fulfill({ contentType: 'text/javascript', body: media.code });
-    if (name === '/engine.js') return route.fulfill({ contentType: 'text/javascript', body: engine.code });
+    if (name === '/installer.js') return route.fulfill({ headers: ISOLATED, contentType: 'text/javascript', body: installer.code });
+    if (name === '/models.js') return route.fulfill({ headers: ISOLATED, contentType: 'text/javascript', body: models.code });
+    if (name === '/media.js') return route.fulfill({ headers: ISOLATED, contentType: 'text/javascript', body: media.code });
+    if (name === '/engine.js') return route.fulfill({ headers: ISOLATED, contentType: 'text/javascript', body: engine.code });
     if (name.startsWith('/example-media/')) {
       const bytes = exampleMedia.get(name.slice('/example-media/'.length));
-      return bytes ? route.fulfill({ contentType: 'application/octet-stream', body: bytes }) : route.fulfill({ status: 404, body: '' });
+      return bytes ? route.fulfill({ headers: ISOLATED, contentType: 'application/octet-stream', body: bytes }) : route.fulfill({ status: 404, body: '' });
     }
-    if (name.startsWith('/ort/')) return route.fulfill({ contentType: name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript', body: fs.readFileSync(path.join(ORT, path.basename(name))) });
-    return route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>align</title>' });
+    if (name.startsWith('/ort/')) return route.fulfill({ headers: ISOLATED, contentType: name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript', body: fs.readFileSync(path.join(ORT, path.basename(name))) });
+    return route.fulfill({ headers: ISOLATED, contentType: 'text/html', body: '<!doctype html><title>align</title>' });
   });
   page.on('pageerror', (error) => console.error('page:', error.message));
   await page.goto(`${ORIGIN}/`);
+  await emptyStorage(page);
 });
 
 after(async () => { await browser?.close(); });
@@ -107,19 +106,30 @@ const inWorker = (script: string, message: unknown) => page.evaluate(([url, m]) 
 
 // The models Worker, as the engine's Worker speaks to it.
 const align = (samples: Float32Array, text: string) => page.evaluate(async ([values, words]) => {
+  // The runtime's threads are Workers its Worker starts, which do not go through the test's routes: blob addresses.
+  const blob = async (url: string, type = 'text/javascript') => URL.createObjectURL(new Blob([await (await fetch(url)).arrayBuffer()], { type }));
+  const wasm = { mjs: await blob('/ort/ort-wasm-simd-threaded.mjs'), wasm: await blob('/ort/ort-wasm-simd-threaded.wasm', 'application/wasm') };
   const worker = new Worker('/models.js', { type: 'module' });
-  worker.postMessage({ kind: 'init', init: { ort: '/ort/ort.wasm.min.mjs', wasm: '/ort/' } });
-  const started = performance.now();
-  const answer = await new Promise<{ alignment?: Alignment; error?: string }>((resolve) => {
+  worker.postMessage({ kind: 'init', init: { ort: '/ort/ort.wasm.min.mjs', wasm } });
+  const ask = (id: number) => new Promise<{ alignment?: Alignment; error?: string }>((resolve) => {
     worker.onmessage = ({ data }) => resolve(data.answer);
     worker.onerror = (event) => resolve({ error: event.message || 'the Worker did not load' });
-    worker.postMessage({ kind: 'ask', id: 1, ask: { op: 'align', model: (window as unknown as { model: unknown }).model, samples: new Float32Array(values as number[]), text: words, language: 'en' } });
+    worker.postMessage({ kind: 'ask', id, ask: { op: 'align', model: (window as unknown as { model: unknown }).model, samples: new Float32Array(values as number[]), text: words, language: 'en' } });
   });
+  // Timed twice: the first with the runtime and the model loaded, the second the alignment alone.
+  const started = performance.now();
+  const answer = await ask(1);
+  const ms = Math.round(performance.now() - started);
+  const again = performance.now();
+  await ask(2);
+  const warm = Math.round(performance.now() - again);
   worker.terminate();
-  return { ...answer, ms: Math.round(performance.now() - started) };
+  // The threads the models Worker takes (threadsHere).
+  const threads = crossOriginIsolated ? Math.max(1, Math.min(4, Math.floor((navigator.hardwareConcurrency || 2) / 2))) : 1;
+  return { ...answer, ms, warm, threads };
 }, [Array.from(samples), text] as unknown as [number[], string]);
 
-test('the word aligner in a Worker of Chromium: downloaded, kept, then the desktop\'s words within a frame', { timeout: 600_000 }, async (t) => {
+test(`the word aligner in a Worker of ${BROWSER}: downloaded, kept, then the desktop's words within a frame`, { timeout: 600_000 }, async (t) => {
   if (!MODELS) return t.skip('ELABORA_ALIGNER_TEST_MODELS names no folder of the English aligner\'s files');
   const tools = await findMediaTools();
   await page.evaluate((model) => { (window as unknown as { model: unknown }).model = model; }, english as unknown as object);
@@ -133,19 +143,17 @@ test('the word aligner in a Worker of Chromium: downloaded, kept, then the deskt
   const project = loadProjectFromDir(EXAMPLE);
   const screen = [...project.screens.keys()].find((id) => narrationLines(project, id, 'en')?.some((line) => line.audio && line.text))!;
   const lines = narrationLines(project, screen, 'en')!.filter((line) => line.audio && line.text).slice(0, 2);
-  const ort = await loadOrt();
-  const native = await loadWav2Vec2(ort, path.join(MODELS, 'model.onnx'), path.join(MODELS, 'vocab.json'));
   for (const line of lines) {
     const { stdout } = await run(tools.ffmpeg, ['-v', 'error', '-i', path.join(EXAMPLE, line.audio), '-ac', '1', '-ar', '16000', '-f', 'f32le', '-'], { encoding: 'buffer', maxBuffer: 1 << 28 });
     const samples = new Float32Array(stdout.buffer, stdout.byteOffset, stdout.length / 4).slice();
-    const desktop = alignEmissions(await wav2vec2Emissions(native, samples), line.text!, 'en', native, { startShift: english.startShift, endShift: english.endShift });
+    const { alignment: desktop, ms: desktopMs } = await desktopAlignment(MODELS, samples, line.text!, 'en', english);
     const here = await align(samples, line.text!);
     assert.ok(here.alignment, here.error);
     assert.equal(here.alignment.words.length, desktop.words.length, line.id);
     const gaps = here.alignment.words.flatMap((word, i) => [Math.abs(word.start - desktop.words[i]!.start), Math.abs(word.end - desktop.words[i]!.end)]);
     const worst = Math.max(...gaps);
     assert.ok(worst <= FRAME + 1e-9, `${line.id}: ${worst * 1000} ms at worst`);
-    t.diagnostic(`${line.id}: ${desktop.words.length} words, ${(gaps.reduce((s, g) => s + g, 0) / gaps.length * 1000).toFixed(1)} ms apart on average, ${Math.round(worst * 1000)} ms at worst; ${here.ms} ms for ${desktop.duration} s of audio, one thread`);
+    t.diagnostic(`${line.id}: ${desktop.words.length} words, ${(gaps.reduce((s, g) => s + g, 0) / gaps.length * 1000).toFixed(1)} ms apart on average, ${Math.round(worst * 1000)} ms at worst; ${here.warm} ms for ${desktop.duration} s of audio on ${here.threads} thread(s) (${here.ms} ms with the runtime and the model loaded), the desktop's ${desktopMs} ms`);
   }
 
   // Erased by the browser: missing, then downloaded again without an error.
@@ -190,18 +198,19 @@ test('the align service of a browser\'s session: a screen\'s lines timed, the de
   const aligned = result.aligned.result as { lines: { line: string; status: string }[]; changes: number[] };
   assert.deepEqual(aligned.lines.map((line) => line.status), lines.map(() => 'aligned'), JSON.stringify(aligned.lines));
   assert.equal(aligned.changes.length, lines.length, 'one change a line');
-  const ort = await loadOrt();
-  const native = await loadWav2Vec2(ort, path.join(MODELS, 'model.onnx'), path.join(MODELS, 'vocab.json'));
   for (const [i, line] of lines.entries()) {
     const { stdout } = await run(tools.ffmpeg, ['-v', 'error', '-i', path.join(EXAMPLE, line.audio), '-ac', '1', '-ar', '16000', '-f', 'f32le', '-'], { encoding: 'buffer', maxBuffer: 1 << 28 });
-    const desktop = alignEmissions(await wav2vec2Emissions(native, new Float32Array(stdout.buffer, stdout.byteOffset, stdout.length / 4).slice()), line.text!, 'en', native, { startShift: english.startShift, endShift: english.endShift });
+    const { alignment: desktop } = await desktopAlignment(MODELS, new Float32Array(stdout.buffer, stdout.byteOffset, stdout.length / 4).slice(), line.text!, 'en', english);
     const read = (result.sidecars as { result?: { text?: string } }[])[i]?.result;
     const sidecar = JSON.parse(read?.text ?? '{}') as { words?: { start: number; end: number }[]; aligner?: string };
     assert.equal(sidecar.aligner, english.model, `${line.id}: its aligner`);
     const words = sidecar.words ?? [];
     assert.equal(words.length, desktop.words.length, line.id);
     const worst = Math.max(...words.flatMap((word, i) => [Math.abs(word.start - desktop.words[i]!.start), Math.abs(word.end - desktop.words[i]!.end)]));
-    assert.ok(worst <= FRAME + 1e-9, `${line.id}: ${worst * 1000} ms at worst`);
+    // The session reads its samples with its own resampler, the desktop with ffmpeg's: a word's edge lies
+    // on the model's frames, and the desktop's aligner itself moves an edge by a frame between the two
+    // (nell2: « heaving » and « inch », 20 ms). Within two frames.
+    assert.ok(worst <= 2 * FRAME + 1e-9, `${line.id}: ${worst * 1000} ms at worst`);
     t.diagnostic(`${line.id}: ${words.length} words written, ${Math.round(worst * 1000)} ms from the desktop's at worst`);
   }
   t.diagnostic(`progress: ${[...new Set(result.progress)].join(', ')}`);
