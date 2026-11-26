@@ -12,6 +12,7 @@ import { fileTarget, videoMaster } from './video.ts';
 import { lineAudio, linePeaks, monoSamples, soundMaster } from './audio.ts';
 import { provideAac } from './encoders.ts';
 import type { WorkerMessage } from '../worker-client.ts';
+import type { StreamTargetChunk } from 'mediabunny';
 
 export type MediaAsk =
   | { op: 'probe'; file: Blob; name: string }
@@ -63,10 +64,7 @@ async function answer(id: number, ask: MediaAsk, signal: AbortSignal): Promise<M
     return { master: { file: made.blob, extension: made.extension, action: made.action, info: made.action === 'copy' ? info : await probeFile(made.blob, `master${made.extension ?? ''}`) } };
   }
   if (info.kind === 'vector') return { master: { file: ask.file, extension: null, action: 'copy', info } };
-  const root = await navigator.storage.getDirectory();
-  const folder = await root.getDirectoryHandle('media-work', { create: true });
-  const handle = await folder.getFileHandle(`job-${id}`, { create: true });
-  const target = await fileTarget(handle);
+  const { target, file: written } = await jobFile(id);
   const made = ask.kind === 'line' ? { ...(await lineAudio(ask.file, ask.name, info, { trim: !!ask.trim, target, aac, signal })), extension: '.m4a' }
     : ask.kind === 'sound' ? await soundMaster(ask.file, ask.name, info, { loops: ask.loops, target, aac, signal })
     : await videoMaster(ask.file, ask.name, info, { target, aac, signal });
@@ -75,6 +73,33 @@ async function answer(id: number, ask: MediaAsk, signal: AbortSignal): Promise<M
     // Kept as it came: a line or a video keeps the input's extension, a sound the plan's (the same).
     return { master: { file: ask.file, extension: null, action: 'copy', info } };
   }
-  const file = await handle.getFile();
+  const file = await written();
   return { master: { file, extension: made.extension, action: made.action, info: await probeFile(file, `master${made.extension ?? ''}`) } };
+}
+
+// Where a master is written as it is made: a file of the origin's private file system (forgotten once
+// the engine has kept it), else memory, the master held whole while it is made (Safari's private
+// windows have no private file system).
+async function jobFile(id: number): Promise<{ target: WritableStream<StreamTargetChunk>; file(): Promise<Blob> }> {
+  const root = await navigator.storage.getDirectory().catch(() => null);
+  if (root) {
+    const handle = await (await root.getDirectoryHandle('media-work', { create: true })).getFileHandle(`job-${id}`, { create: true });
+    return { target: await fileTarget(handle), file: () => handle.getFile() };
+  }
+  let bytes = new Uint8Array(1 << 20);
+  let length = 0;
+  const target = new WritableStream<StreamTargetChunk>({
+    write(chunk) {
+      if (chunk.type !== 'write') return;
+      const end = chunk.position + chunk.data.length;
+      if (end > bytes.length) {
+        const grown = new Uint8Array(Math.max(end, bytes.length * 2));
+        grown.set(bytes.subarray(0, length));
+        bytes = grown;
+      }
+      bytes.set(chunk.data, chunk.position);
+      length = Math.max(length, end);
+    }
+  });
+  return { target, file: async () => new Blob([bytes.slice(0, length)]) };
 }

@@ -6,7 +6,8 @@ import type { BrowserStore } from './store.ts';
 
 // A browser's copy kept for good (D103, D104): in IndexedDB its link, the files the room confirmed and
 // its journal, one database a copy; in the origin's private file system (OPFS) the team's media by their
-// hash, each taken when something needs it (medium). What it holds is read whole before the session opens (D100: the copy reads what was confirmed
+// hash, each taken when something needs it (medium), or in IndexedDB where the origin has no such file
+// system (a private window of Safari). What it holds is read whole before the session opens (D100: the copy reads what was confirmed
 // once, as it starts); an entry of the journal is written before anything shows it; the copy's state
 // is saved in the order the copy saves it (IndexedDB runs transactions on the same stores in order).
 
@@ -27,6 +28,7 @@ export interface IdbCopy extends BrowserStore {
 }
 
 const DB_PREFIX = 'elabora-copy-';
+const MEDIA_PREFIX = 'elabora-copy-media-';
 const STORES = ['meta', 'confirmed', 'journal'] as const;
 
 const done = (request: IDBRequest | IDBTransaction): Promise<void> => new Promise((resolve, reject) => {
@@ -65,7 +67,7 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
   let confirmed: Files = new Map(paths.map((rel, i) => [String(rel), files[i] as FileContent]));
   const journal = (entries as JournalEntry[]).sort((a, b) => a.seq - b.seq);
   const failed = (error: unknown) => (onError ?? ((reason) => { throw reason; }))(error);
-  const media = await mediaFolder(key);
+  const media = await keptMedia(key);
   const facts = madeFacts();
   const sizes = new Map<string, number>();
 
@@ -120,7 +122,7 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
       if (!remote?.fetchPart) return null;
       return new Blob([await remote.fetchPart(hash, start, end) as Uint8Array<ArrayBuffer>]);
     },
-    // Kept in the origin's private file system, else the host's (source), else the team's; what is
+    // Kept here, else the host's (source), else the team's; what is
     // taken is checked against its hash as it is written, then kept.
     async medium(hash) {
       const kept = await media.file(hash);
@@ -145,38 +147,63 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
   return copy;
 }
 
-// Removes what a copy kept (its database and its media).
+// Removes what a copy kept (its database and its media, wherever they are).
 export async function forgetIdbCopy(key: string): Promise<void> {
   await done(indexedDB.deleteDatabase(DB_PREFIX + key));
-  const root = await navigator.storage.getDirectory();
-  await root.removeEntry(`${DB_PREFIX}${key}`, { recursive: true }).catch(() => {});
+  await done(indexedDB.deleteDatabase(MEDIA_PREFIX + key));
+  const root = await navigator.storage.getDirectory().catch(() => null);
+  await root?.removeEntry(`${DB_PREFIX}${key}`, { recursive: true }).catch(() => {});
 }
 
 export { sha256 };
 
-// The media of a copy, one file a hash, in OPFS. A medium is written as it is read, slice by slice,
-// its hash computed on the way (the core's Sha256): never held whole, whatever its size. Writes of
-// the same hash wait for one another.
+// The media of a copy by hash: in the origin's private file system, else in IndexedDB. Safari's private
+// windows have no private file system (getDirectory() throws an UnknownError) and an IndexedDB that
+// lasts as long as the window. Either way, writes of the same hash wait for one another, and a medium
+// is checked against its hash before it is kept.
 const SLICE = 4 * 1024 * 1024;
 let parts = 0;
 
-async function mediaFolder(key: string) {
-  const root = await navigator.storage.getDirectory();
-  const dir = await root.getDirectoryHandle(`${DB_PREFIX}${key}`, { create: true });
+interface KeptMedia {
+  // A write that failed leaves nothing under the hash: read as not kept.
+  file(hash: string): Promise<File | null>;
+  // Writes a medium under its hash; expected: the hash it must have (refused, and nothing kept, if not).
+  put(data: Blob | Uint8Array, expected?: string): Promise<string>;
+}
+
+async function keptMedia(key: string): Promise<KeptMedia> {
+  const root = await navigator.storage.getDirectory().catch(() => null);
+  return root ? mediaFolder(root, key) : mediaDatabase(key);
+}
+
+// Writes of the same hash one after the other; what write does once the one before it has ended.
+function inTurn(): (expected: string | undefined, write: () => Promise<string>) => Promise<string> {
   const writing = new Map<string, Promise<unknown>>();
+  return async (expected, run) => {
+    const before = (expected && writing.get(expected)) || Promise.resolve();
+    const write = before.catch(() => {}).then(run);
+    if (expected) writing.set(expected, write);
+    try { return await write; } finally { if (expected && writing.get(expected) === write) writing.delete(expected); }
+  };
+}
+
+const mismatch = (expected: string) => new Error(`The medium ${expected.slice(7, 19)}… does not match its hash.`);
+
+// One file a hash, in OPFS. A medium is written as it is read, slice by slice, its hash computed on the
+// way (the core's Sha256): never held whole, whatever its size.
+async function mediaFolder(root: FileSystemDirectoryHandle, key: string): Promise<KeptMedia> {
+  const dir = await root.getDirectoryHandle(`${DB_PREFIX}${key}`, { create: true });
+  const turn = inTurn();
   const name = (hash: string) => hash.replace(/^sha256:/, '');
   const exists = (hash: string) => dir.getFileHandle(name(hash)).then(() => true, () => false);
   return {
-    // A write that failed leaves nothing under the hash: read as not kept.
-    async file(hash: string): Promise<File | null> {
-      await writing.get(hash)?.catch(() => {});
+    async file(hash) {
+      await turn(hash, async () => hash).catch(() => {});
       try { return await (await dir.getFileHandle(name(hash))).getFile(); } catch { return null; }
     },
-    // Writes a medium under its hash; expected: the hash it must have (refused, and nothing kept, if not).
-    async put(data: Blob | Uint8Array, expected?: string): Promise<string> {
+    put(data, expected) {
       const blob = data instanceof Blob ? data : new Blob([data as Uint8Array<ArrayBuffer>]);
-      const before = (expected && writing.get(expected)) || Promise.resolve();
-      const write = before.catch(() => {}).then(async () => {
+      return turn(expected, async () => {
         if (expected && await exists(expected)) return expected;
         // Written under a temporary name, then moved: a file under its hash is whole.
         const partName = `part-${Date.now().toString(36)}-${++parts}`;
@@ -193,15 +220,43 @@ async function mediaFolder(key: string) {
         }
         if ((expected && hash !== expected) || await exists(hash)) {
           await dir.removeEntry(partName).catch(() => {});
-          if (expected && hash !== expected) throw new Error(`The medium ${expected.slice(7, 19)}… does not match its hash.`);
+          if (expected && hash !== expected) throw mismatch(expected);
           return hash;
         }
         // move(folder, name): WebKit takes no other form (Chromium and Firefox take this one too).
         await (temporary as FileSystemFileHandle & { move(folder: FileSystemDirectoryHandle, name: string): Promise<void> }).move(dir, name(hash));
         return hash;
       });
-      if (expected) writing.set(expected, write);
-      try { return await write; } finally { if (expected && writing.get(expected) === write) writing.delete(expected); }
+    }
+  };
+}
+
+// A Blob a hash, in a database of its own. Its hash is read slice by slice before it is kept.
+async function mediaDatabase(key: string): Promise<KeptMedia> {
+  const open = indexedDB.open(MEDIA_PREFIX + key, 1);
+  open.onupgradeneeded = () => { open.result.createObjectStore('media'); };
+  const db = await result(open);
+  const turn = inTurn();
+  const get = (hash: string) => result(db.transaction('media').objectStore('media').get(hash)) as Promise<Blob | undefined>;
+  return {
+    async file(hash) {
+      await turn(hash, async () => hash).catch(() => {});
+      const blob = await get(hash);
+      return blob ? new File([blob], hash.replace(/^sha256:/, '')) : null;
+    },
+    put(data, expected) {
+      const blob = data instanceof Blob ? data : new Blob([data as Uint8Array<ArrayBuffer>]);
+      return turn(expected, async () => {
+        if (expected && await get(expected)) return expected;
+        const hash = `sha256:${await sha256OfBlob(blob, SLICE)}`;
+        if (expected && hash !== expected) throw mismatch(expected);
+        if (!(await get(hash))) {
+          const tx = db.transaction('media', 'readwrite');
+          tx.objectStore('media').put(blob, hash);
+          await done(tx);
+        }
+        return hash;
+      });
     }
   };
 }

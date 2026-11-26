@@ -29,8 +29,9 @@ export const ISOLATED = { 'cross-origin-opener-policy': 'same-origin', 'cross-or
 // file system outside the profile it is given, so a new profile still finds it.
 export async function emptyStorage(page: Page): Promise<void> {
   await page.evaluate(async () => {
-    const root = await navigator.storage.getDirectory();
-    for await (const name of (root as FileSystemDirectoryHandle & { keys(): AsyncIterable<string> }).keys()) await root.removeEntry(name, { recursive: true });
+    // A private window has no private file system: nothing kept there.
+    const root = await navigator.storage.getDirectory().catch(() => null);
+    if (root) for await (const name of (root as FileSystemDirectoryHandle & { keys(): AsyncIterable<string> }).keys()) await root.removeEntry(name, { recursive: true });
     for (const { name } of await indexedDB.databases()) if (name) indexedDB.deleteDatabase(name);
   });
 }
