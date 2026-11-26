@@ -43,8 +43,9 @@ export type StartFile = { kind: 'text'; text: string } | { kind: 'binary'; hash:
 //   made the author's (@elabora/node templateCopy: without its licence, history, builds and translations,
 //   its translation built when the language is not its own); the copy takes the author's id, title,
 //   language and brief (templateTexts), as createFromTemplate makes it on a computer.
-// - charter: the charter of a course in another language (D69): a blank module (newCourseFiles), the files
-//   the charter takes (@elabora/node copyCharter) and its course's theme, presentation and player.
+// - charter: the charter of a course (D69), a template's in another language or another module's (D137): a
+//   blank module (newCourseFiles), the files the charter takes (charterOf, @elabora/core/project/charter) and
+//   its course's theme, presentation and player.
 export type CourseStart =
   | { kind: 'template'; template: string; files: Record<string, StartFile> }
   | { kind: 'charter'; title: string; courseId: string | null; files: Record<string, StartFile>; course: CharterCourse };
