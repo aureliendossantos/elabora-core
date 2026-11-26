@@ -31,7 +31,9 @@ const browser: ConformanceTarget = {
   services: ['canvas'],
   async open(sample, { services } = {}) {
     const { files } = readProjectFiles(SAMPLES[sample]);
-    const store = memoryCopy({ link: { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 }, confirmed: files });
+    // The sample's media kept, as a copy that took them from its room.
+    const media = new Map([...files].flatMap(([rel, file]) => (file.kind === 'binary' && file.hash ? [[file.hash, new Uint8Array(fs.readFileSync(path.join(SAMPLES[sample], rel)))] as [string, Uint8Array]] : [])));
+    const store = memoryCopy({ link: { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 }, confirmed: files, media });
     const session = await openCopy({ id: `cloud:tm_test/prj_test`, store, api: 'http://localhost:1', connect: offline, services: services ?? ['canvas'] });
     const listeners: ((message: ResponseMessage | EventMessage) => void)[] = [];
     session.subscribe((message) => { for (const listener of listeners) listener(structuredClone(message)); });

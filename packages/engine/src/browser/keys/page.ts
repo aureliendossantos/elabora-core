@@ -10,8 +10,9 @@ import type { KeyAnswer, KeyState, KeyStore } from './keeper.ts';
 const VERSION = 1;
 const DB = 'elabora-key';
 
+// HTTPS, or this computer in HTTP (a local mirror of the app), the secure contexts the hosting takes.
 const origins = (document.querySelector('meta[name="elabora-app-origins"]')?.getAttribute('content') ?? '')
-  .split(/\s+/).filter((origin) => /^https:\/\/[a-z0-9.-]+(:\d+)?$/.test(origin));
+  .split(/\s+/).filter((origin) => /^(https:\/\/[a-z0-9.-]+|http:\/\/(localhost|127\.0\.0\.1))(:\d+)?$/.test(origin));
 const query = new URLSearchParams(location.search);
 const french = query.get('lang') !== 'en';
 document.documentElement.lang = french ? 'fr' : 'en';

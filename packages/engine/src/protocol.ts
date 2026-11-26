@@ -409,6 +409,10 @@ export type RunParams = { [Name in CommandName]: { command: Name; args: CommandA
 export interface Requests {
   summary: { params: NoParams; result: ProjectSummary };
   readFile: { params: { path: string }; result: FileView };
+  // The bytes of a binary file of the project (a line's audio, an image), with its media type: a
+  // window draws a waveform or plays it from them. A text file is read by readFile; a medium no longer
+  // kept anywhere (a browser's copy, offline) is not-found.
+  readMedium: { params: { path: string }; result: { path: string; bytes: Uint8Array; type: string } };
   // The files of the project under a folder (all of them without one), sorted: the plan's versions
   // (plan-versions/), the media (assets/)…
   listFiles: { params: { dir?: string }; result: FileEntry[] };

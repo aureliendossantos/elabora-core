@@ -63,7 +63,7 @@ const REQUESTS: Record<RequestType, true> = {
   backups: true, createBackup: true, restoreBackup: true, renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, thumbRender: true, momentRender: true, blockPreviewRender: true, measureRender: true, migrate: true, voices: true,
   installVoices: true, setSpeakerVoice: true, setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true,
   courseSounds: true, soundEstimate: true, generateSound: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
-  alignNarration: true, build: true, packageWeights: true, close: true, relayPort: true, voiceKeyPort: true
+  alignNarration: true, build: true, packageWeights: true, close: true, relayPort: true, voiceKeyPort: true, readMedium: true
 };
 
 // A wait in a test is bounded for failures only.
@@ -156,6 +156,11 @@ export function engineConformance(target: ConformanceTarget): void {
     assert.ok(recording.kind === 'binary' && recording.size > 0 && /^sha256:/.test(recording.hash ?? ''));
     await assert.rejects(client.request('readFile', { path: 'absent.json' }), refused('not-found'));
     await assert.rejects(client.request('readFile', { path: '../course.json' }), refused('not-found'));
+    // Its bytes, as a window draws its waveform from them.
+    const heard = await client.request('readMedium', { path: 'assets/narration/fr/chemin/chemin-depart.m4a' });
+    assert.deepEqual([heard.path, heard.bytes.byteLength, heard.type, String.fromCharCode(...heard.bytes.subarray(4, 8))], ['assets/narration/fr/chemin/chemin-depart.m4a', recording.kind === 'binary' ? recording.size : -1, 'audio/mp4', 'ftyp']);
+    await assert.rejects(client.request('readMedium', { path: 'course.json' }), refused('bad-request'));
+    await assert.rejects(client.request('readMedium', { path: 'absent.m4a' }), refused('not-found'));
 
     const all = await client.request('listFiles', {});
     assert.ok(all.some((file) => file.path === 'course.json' && file.kind === 'text' && file.size === new TextEncoder().encode(course.kind === 'text' ? course.text : '').length));

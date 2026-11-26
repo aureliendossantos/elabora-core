@@ -81,6 +81,7 @@ import type { BuildOptions, BuildResult } from '@elabora/node/build';
 import { LOCK_FILE } from '@elabora/core/compile/state-model';
 import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
+import { mediaTypeOf } from '@elabora/core/util/media-types';
 import { SessionCloud, type CloudHeld, type CloudOptions, type Where } from './base/session-cloud.ts';
 import { folderSnapshot, type PushSource } from '@elabora/node/cloud/projects';
 import type { Presence } from '@elabora/core/sync/protocol';
@@ -488,6 +489,12 @@ export class Session {
     switch (request.type) {
       case 'summary': return this.summary();
       case 'readFile': return this.readFile(request.params.path);
+      case 'readMedium': {
+        const { path: rel } = this.#reads.mediumOf(request.params.path);
+        const bytes = await fs.promises.readFile(path.join(this.root, rel)).catch(() => null);
+        if (!bytes) throw new EngineError('not-found', `${rel} is not on the disk`);
+        return { path: rel, bytes: new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength), type: mediaTypeOf(rel) };
+      }
       case 'listFiles': return this.listFiles(request.params.dir);
       case 'readScreen': return this.readScreen(request.params.screen);
       case 'screenParts': return this.screenParts(request.params.screen);

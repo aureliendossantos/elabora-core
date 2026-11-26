@@ -53,7 +53,12 @@ export type WorkerAnswer =
   | { kind: 'missing' }
   | { kind: 'failed'; message: string; code?: string };
 
-const scope = self as unknown as { onmessage: ((event: MessageEvent) => void) | null; postMessage(message: WorkerAnswer | ResponseMessage | EventMessage): void };
+const scope = self as unknown as { onmessage: ((event: MessageEvent) => void) | null; postMessage(message: WorkerAnswer | ResponseMessage | EventMessage, transfer?: Transferable[]): void };
+// A response whose result is a medium's bytes (readMedium) gives them, not a copy.
+const answer = (response: ResponseMessage) => {
+  const bytes = (response as { result?: { bytes?: unknown } }).result?.bytes;
+  scope.postMessage(response, bytes instanceof Uint8Array && bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength ? [bytes.buffer as ArrayBuffer] : []);
+};
 const never = (): RoomSocket => ({ readyState: 0, send() {}, close() {}, addEventListener() {} });
 
 let session: BrowserSession | null = null;
@@ -85,7 +90,7 @@ scope.onmessage = ({ data, ports }: MessageEvent<WorkerOpen | Envelope>) => {
   }
   const { attachments: given, ...message } = data;
   const attachments = new Map(Object.entries(given ?? {}).filter((entry): entry is [string, Blob] => entry[1] instanceof Blob));
-  if (session) void session.handle(message, ports, attachments).then((response) => scope.postMessage(response));
+  if (session) void session.handle(message, ports, attachments).then(answer);
   else waiting.push({ message: message as RequestMessage, ports, attachments });
 };
 
@@ -125,7 +130,7 @@ async function open(request: WorkerOpen): Promise<void> {
     opened.subscribe((message) => scope.postMessage(message));
     if (request.newCourse) await opened.run('create_course', request.newCourse);
     scope.postMessage({ kind: 'opened', taken });
-    for (const { message, ports, attachments } of waiting.splice(0)) void opened.handle(message, ports, attachments).then((response) => scope.postMessage(response));
+    for (const { message, ports, attachments } of waiting.splice(0)) void opened.handle(message, ports, attachments).then(answer);
     // Held until the session closes.
     await new Promise<void>((resolve) => opened.subscribe(({ event }) => { if (event.type === 'closed') resolve(); }));
     store.close();

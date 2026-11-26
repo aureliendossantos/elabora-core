@@ -133,6 +133,16 @@ export class SessionReads {
     return error === undefined ? { path: key, kind: 'text', text: file.text } : { path: key, kind: 'text', text: file.text, error };
   }
 
+  // A binary file of the project, for readMedium: its path and its hash.
+  mediumOf(rel: string): { path: string; hash: string | null } {
+    this.#host.assertOpen();
+    const key = projectPath(String(rel));
+    const file = key === null ? undefined : this.#state.files.get(key);
+    if (!file || key === null) throw new EngineError('not-found', `No file ${rel} in the project`);
+    if (file.kind !== 'binary') throw new EngineError('bad-request', `${key} is a text file: readFile reads it`);
+    return { path: key, hash: file.hash ?? null };
+  }
+
   readScreen(id: string): ScreenView {
     this.#host.assertOpen();
     const entry = this.#state.project.screens.get(id);

@@ -45,7 +45,7 @@ export const NEED_SERVICES: Record<HostNeed, Service> = {
 // Every request of the protocol, checked complete by the compiler (a request missing here would be
 // refused as bad-request).
 const REQUEST_TYPES: Record<RequestType, true> = {
-  summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
+  summary: true, readFile: true, readMedium: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
   translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, redo: true, undoBatch: true, history: true, mark: true, endTurn: true,
   diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
   renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, thumbRender: true, momentRender: true, blockPreviewRender: true, measureRender: true, migrate: true, build: true, packageWeights: true, close: true, relayPort: true, narration: true, voices: true,

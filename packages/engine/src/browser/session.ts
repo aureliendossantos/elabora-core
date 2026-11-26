@@ -29,6 +29,7 @@ import { WriteQueue } from '../base/queue.ts';
 import { Batches } from '../base/batches.ts';
 import { changeView, diagnosticsEvent } from '../base/events.ts';
 import { EngineError, protocolError } from '../base/errors.ts';
+import { mediaTypeOf } from '@elabora/core/util/media-types';
 import { NEED_SERVICES, isRequestType, notHere, serviceOf } from '../base/services.ts';
 import { SessionCloud, type RoomSocket } from '../base/session-cloud.ts';
 import { CopyChanges, newId, touched } from './copy-changes.ts';
@@ -245,6 +246,12 @@ export class BrowserSession {
     switch (request.type) {
       case 'summary': return reads.summary();
       case 'readFile': return reads.readFile(request.params.path);
+      case 'readMedium': {
+        const { path, hash } = reads.mediumOf(request.params.path);
+        const medium = hash ? await this.#store.medium(hash) : null;
+        if (!medium) throw new EngineError('not-found', `${path} is not kept in this browser, and the project cannot be reached`);
+        return { path, bytes: new Uint8Array(await medium.arrayBuffer()), type: mediaTypeOf(path) };
+      }
       case 'listFiles': return reads.listFiles(request.params.dir);
       case 'readScreen': return reads.readScreen(request.params.screen);
       case 'screenParts': return reads.screenParts(request.params.screen);
