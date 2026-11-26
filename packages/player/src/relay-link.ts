@@ -40,6 +40,15 @@ export interface RelayHostPolicy {
   frameAncestors: string;
   // The app's origin, when the host names it (the frames host's ancestors are the canvas and the app).
   appOrigin?: string;
+  // The policy the host serves the relay's script under, when it is not `policy` (D131): one that lets the relay fetch its own
+  // origin's files (`connect-src 'self'`) where the host's pages may not (the frames host's `connect-src 'none'`).
+  workerPolicy?: string;
+}
+
+// Whether a policy lets its holder fetch its own origin: `connect-src`, else `default-src`, names 'self' (D131).
+export function mayConnectToSelf(policy: string): boolean {
+  const directives = new Map(policy.split(';').map((part) => part.trim().split(/\s+/)).filter((words) => words[0]).map((words) => [words[0]!.toLowerCase(), words.slice(1)]));
+  return (directives.get('connect-src') ?? directives.get('default-src') ?? []).includes("'self'");
 }
 
 // The pages that may hold a route: the relay page of the frames host and the canvas page.

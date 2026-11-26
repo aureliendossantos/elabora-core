@@ -8,7 +8,7 @@ import os from 'node:os';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import * as esbuild from 'esbuild';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
-import { compileObjectCode, canvasPageHtml, relayFiles, runtimeBundle, runtimeFiles, vendorThree } from '@elabora/node/bundles';
+import { compileObjectCode, relayFiles } from '@elabora/node/bundles';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { Handler } from './relay-hosts.ts';
 import { EXAMPLE, ROOT } from './helpers.ts';
@@ -25,6 +25,9 @@ export const POLICY = {
   canvas: `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'self'; frame-src 'self' ${FRAMES}; worker-src 'self'; ${COMMON}; frame-ancestors ${APP}`,
   frames: `default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'none'; worker-src 'self'; ${COMMON}; frame-ancestors ${CANVAS} ${APP}`
 };
+
+// The relay's own policy, the same on both hosts.
+export const WORKER_POLICY = "default-src 'none'; connect-src 'self'";
 
 export const MODULES: Record<string, { root: string; object: string; screen: string; more?: string[] }> = {
   // more: other screens the tests show (this one has pictures: a first draw asks for files the first screen does not).
@@ -50,21 +53,12 @@ const video = path.join(scratch, 'essai.webm');
 execFileSync('ffmpeg', ['-y', '-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x180:rate=15', '-f', 'lavfi', '-i', 'sine=frequency=330', '-t', '20', '-c:v', 'libvpx', '-b:v', '300k', '-g', '15', '-c:a', 'libopus', video]);
 const appScript = (await esbuild.build({ entryPoints: [path.join(ROOT, 'test/fixtures/relay-app.ts')], bundle: true, format: 'iife', platform: 'browser', target: 'es2020', write: false, logLevel: 'error' })).outputFiles[0].text;
 const thumbsScript = (await esbuild.build({ entryPoints: [path.join(ROOT, 'test/fixtures/thumbs-app.ts')], bundle: true, format: 'iife', platform: 'browser', target: 'es2020', write: false, logLevel: 'error' })).outputFiles[0].text;
-const runtime = await runtimeFiles();
 const relayBuilt = await relayFiles();
-const three = vendorThree();
-const player = new Map<string, { body: string | Buffer; type: string }>([
-  ['/canvas/index.html', { body: canvasPageHtml('relay'), type: 'text/html; charset=utf-8' }],
-  ['/canvas/elabora/canvas.js', { body: await runtimeBundle('canvas.ts'), type: 'text/javascript' }],
-  ['/canvas/elabora/player.css', { body: runtime['elabora/player.css']!, type: 'text/css' }],
-  ['/canvas/elabora/object-frame.js', { body: runtime['elabora/object-frame.js']!, type: 'text/javascript' }],
-  ['/canvas/elabora/vendor/three-r186.js', { body: three['elabora/vendor/three-r186.js']!, type: 'text/javascript' }],
-  ['/relay-page.js', { body: relayBuilt['relay-page.js']!, type: 'text/javascript' }],
-  ['/relay.html', { body: relayBuilt['relay.html']!, type: 'text/html; charset=utf-8' }]
-]);
-
+const typeOf = (file: string) => (file.endsWith('.html') ? 'text/html; charset=utf-8' : file.endsWith('.css') ? 'text/css' : 'text/javascript');
+// The hosts' own files, the relay's script aside (served after its host's line, below).
+const player = new Map<string, { body: string | Buffer; type: string }>(Object.entries(relayBuilt).filter(([file]) => file !== 'relay.js').map(([file, body]) => [`/${file}`, { body, type: typeOf(file) }]));
 export const relay = relayBuilt;
-let relayScript = relayBuilt['relay.js']!;
+let relayScript = relayBuilt['relay.js'] as string;
 // The relay's script as the canvas and frames hosts serve it now (a test replaces it).
 export const setRelayScript = (script: string): void => { relayScript = script; };
 export const reached: string[] = [];
@@ -83,6 +77,10 @@ provideMedia(async (hash) => { const response = await fetch('/media/' + encodeUR
 // The engine's media Worker (D106), which the engine starts from its own Worker when it is given the media service.
 let mediaCode: Promise<string> | null = null;
 const mediaWorkerCode = (): Promise<string> => (mediaCode ??= bundleForBrowser({ file: 'packages/engine/src/browser/media/worker.ts' }).then((bundle) => bundle.code));
+// The canvas host and the frames host unreachable (a test of the canvas without the network: the app's page and the engine's
+// stand-in still answer, as the app's own service worker and the engine would).
+let hostsDown = false;
+export const setHostsDown = (down: boolean): void => { hostsDown = down; };
 // How long the hosts take to give the relay's script (a slow network on a first visit: the pages load before the relay controls them).
 let relayDelay = 0;
 export const setRelayDelay = (ms: number): void => { relayDelay = ms; };
@@ -100,11 +98,13 @@ const serveBytes = (request: import('node:http').IncomingMessage, response: impo
 export const handlers = (): Record<string, Handler> => {
   const relayHost = (host: 'canvas' | 'frames'): Handler => (request, response) => {
     const url = new URL(request.url ?? '/', 'https://x');
+    if (hostsDown) { response.writeHead(503, { 'content-type': 'text/plain' }).end('the host is unreachable'); return; }
     const base = { 'cross-origin-embedder-policy': 'require-corp', 'cross-origin-resource-policy': 'cross-origin', 'content-security-policy': POLICY[host], 'cache-control': 'no-cache' };
     // The host's Worker: the relay's script after one line that says its policy, no other script of a worker.
+    // The script runs under a policy of its own, which lets it fetch its host's own files to keep them (D131).
     if (url.pathname === '/relay.js') {
-      const line = `self.ELABORA_HOST = Object.freeze(${JSON.stringify({ policy: POLICY[host], frameAncestors: POLICY[host].split('; ').find((part) => part.startsWith('frame-ancestors')), ...(host === 'frames' ? { appOrigin: APP } : {}) })});\n`;
-      setTimeout(() => response.writeHead(200, { ...base, 'content-type': 'text/javascript', 'service-worker-allowed': '/' }).end(line + relayScript), relayDelay);
+      const line = `self.ELABORA_HOST = Object.freeze(${JSON.stringify({ policy: POLICY[host], frameAncestors: POLICY[host].split('; ').find((part) => part.startsWith('frame-ancestors')), ...(host === 'frames' ? { appOrigin: APP } : {}), workerPolicy: WORKER_POLICY })});\n`;
+      setTimeout(() => response.writeHead(200, { ...base, 'content-security-policy': WORKER_POLICY, 'content-type': 'text/javascript', 'service-worker-allowed': '/' }).end(line + relayScript), relayDelay);
       return;
     }
     const file = player.get(url.pathname);

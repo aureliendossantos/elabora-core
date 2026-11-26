@@ -1,16 +1,18 @@
 // The relay: the service worker of the web app's canvas host and frames host (/relay.js, one script for
 // both; D118, D119). It answers what a page of the host asks for under /canvas/ (the open module's
 // files, an object's frame page and code) by asking the app's engine, through the one relay page that
-// holds the request's route, and puts the host's policy on every answer it makes. It keeps nothing: no
-// file, no cookie, no storage; what it knows (which page holds which route) is in memory, and the pages
-// say it again when it wakes.
+// holds the request's route, and puts the host's policy on every answer it makes. It keeps nothing of a
+// module or a person: no module's file, no cookie; what it knows (which page holds which route) is in
+// memory, and the pages say it again when it wakes. It keeps the host's own files (the canvas page, the
+// player's, the relay page's), public and named in it by their SHA-256, so that the canvas opens without
+// the network after a first visit (D131).
 //
 // The host's Worker writes `self.ELABORA_HOST = Object.freeze({ policy, frameAncestors, appOrigin? })`
 // before this script. Without it the relay answers nothing.
 
 import { RELAY_ANSWER_MS, isRoute, isStaticPath, parseRange, parseRelayAnswer, relayMayServe, relayPathOf, relayRequestOf, relayResponse } from '../relay-protocol.ts';
 import type { RelayAnswer, RelayFaultStage, RelayRange } from '../relay-protocol.ts';
-import { RELAY_PAGES } from '../relay-link.ts';
+import { RELAY_PAGES, mayConnectToSelf } from '../relay-link.ts';
 import type { RelayHostPolicy, WorkerHello, WorkerToPage } from '../relay-link.ts';
 import { isRecord } from '../json.ts';
 
@@ -18,6 +20,11 @@ declare const self: ServiceWorkerGlobalScope & { ELABORA_HOST?: RelayHostPolicy 
 // Written by the build: the script's version, which changes with it.
 declare const __RELAY_VERSION__: string | undefined;
 const VERSION = typeof __RELAY_VERSION__ === 'string' ? __RELAY_VERSION__ : 'development';
+// Written by the build: the host's own files, by their path on the host, and the SHA-256 of each (D131).
+declare const __RELAY_FILES__: Record<string, string> | undefined;
+const HOST_FILES: Readonly<Record<string, string>> = typeof __RELAY_FILES__ === 'object' && __RELAY_FILES__ !== null ? __RELAY_FILES__ : {};
+const CACHE_PREFIX = 'elabora-relay-';
+const CACHE = `${CACHE_PREFIX}${VERSION}`;
 
 // Route → the client (a page) that holds it, in memory. Claims are made by the relay pages, which are
 // asked nothing a route could be read from; a route is a secret of the tab that made it.
@@ -33,8 +40,11 @@ function appOriginOf(host: RelayHostPolicy): string | null {
   return tokens.length === 1 && /^https?:\/\/[^/*'\s]+$/.test(tokens[0]!) ? tokens[0]! : null;
 }
 
-self.addEventListener('install', () => { void self.skipWaiting(); });
-self.addEventListener('activate', (event) => { event.waitUntil(self.clients.claim().then(awake)); });
+self.addEventListener('install', (event) => {
+  void self.skipWaiting();
+  if (keeps()) event.waitUntil(keepHostFiles());
+});
+self.addEventListener('activate', (event) => { event.waitUntil(Promise.all([self.clients.claim().then(awake), dropOtherVersions()])); });
 void awake();
 
 // The relay pages hold what the worker lost: they say it again.
@@ -74,8 +84,9 @@ self.addEventListener('fetch', (event) => {
   if (!host) return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+  // The host's own files, kept (D131); those it does not name are the host's to serve.
+  if (Object.hasOwn(HOST_FILES, url.pathname) && (event.request.method === 'GET' || event.request.method === 'HEAD') && keeps()) { event.respondWith(hostFile(url.pathname)); return; }
   const path = relayPathOf(url.pathname);
-  // The host's own files (the canvas page, the player's) are the host's to serve.
   if (path === null || isStaticPath(path)) return;
   event.respondWith(serve(event, path, host));
 });
@@ -184,4 +195,61 @@ function respond(answer: RelayAnswer, range: RelayRange | null, head: boolean, h
   const http = relayResponse(answer, range, head);
   if (http.status >= 400 && http.status !== 416) return refusal(host, http.status);
   return new Response(http.body, { status: http.status, headers: headers(host, http.status === 416 ? { ...http.headers, 'content-type': 'text/plain; charset=utf-8' } : http.headers, inert) });
+}
+
+// ── The host's own files (D131) ───────────────────────────────────────────────────────────────
+// Kept as the script installs, in a cache of its version, and served from it with the headers the host gave them. Any script of
+// the host's origin can write in its cache (an object's code runs on the frames host, S5): a file is served from the cache only
+// once its bytes are the ones the script names, and is then held in memory until the worker sleeps. One that does not match, or
+// that is not kept, is asked of the network, and kept if its bytes match.
+// It keeps them only when the policy it runs under lets it fetch its own origin; otherwise they are the host's to serve, as before.
+const keeps = (): boolean => { const host = self.ELABORA_HOST; return !!host && mayConnectToSelf(host.workerPolicy ?? host.policy); };
+interface HeldFile { body: ArrayBuffer; status: number; headers: [string, string][] }
+const held = new Map<string, Promise<HeldFile | null>>();
+
+const hex = (digest: ArrayBuffer): string => [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+async function fileOf(response: Response | undefined, path: string): Promise<HeldFile | null> {
+  if (!response || response.status !== 200) return null;
+  const body = await response.arrayBuffer();
+  if (hex(await crypto.subtle.digest('SHA-256', body)) !== HOST_FILES[path]) return null;
+  return { body, status: response.status, headers: [...response.headers] };
+}
+const fromNetwork = (path: string): Promise<Response> => fetch(path, { cache: 'no-cache', credentials: 'omit' });
+
+async function keepHostFiles(): Promise<void> {
+  try {
+    const cache = await caches.open(CACHE);
+    await Promise.all(Object.keys(HOST_FILES).map(async (path) => {
+      if (await fileOf(await cache.match(path), path)) return;
+      const response = await fromNetwork(path);
+      if (await fileOf(response.clone(), path)) await cache.put(path, response);
+    }));
+  } catch { /* what is not kept now is kept when it is first served */ }
+}
+
+async function dropOtherVersions(): Promise<void> {
+  for (const name of await caches.keys()) if (name.startsWith(CACHE_PREFIX) && name !== CACHE) await caches.delete(name);
+}
+
+function keptFile(path: string): Promise<HeldFile | null> {
+  let file = held.get(path);
+  if (!file) {
+    file = caches.open(CACHE).then((cache) => cache.match(path)).then((response) => fileOf(response, path)).catch(() => null);
+    held.set(path, file);
+  }
+  return file;
+}
+
+async function hostFile(path: string): Promise<Response> {
+  const kept = await keptFile(path);
+  if (kept) return new Response(kept.body, { status: kept.status, headers: kept.headers });
+  held.delete(path);
+  // Not kept, or not the bytes it names: the network's, kept if they are the ones.
+  const response = await fromNetwork(path);
+  const file = await fileOf(response.clone(), path);
+  if (file) {
+    held.set(path, Promise.resolve(file));
+    try { await (await caches.open(CACHE)).put(path, response.clone()); } catch { /* kept in memory still */ }
+  }
+  return response;
 }

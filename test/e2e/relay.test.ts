@@ -182,7 +182,7 @@ for (const name of wanted) {
       await page.evaluate(() => { (window as unknown as { marker?: string }).marker = 'kept'; });
       const before = await page.evaluate(() => (window as unknown as { app: { versions(): { canvas?: string; frames?: string } } }).app.versions());
       assert.ok(before.canvas && before.frames);
-      const next = relay['relay.js']!.replaceAll(before.canvas!, `${before.canvas}-next`);
+      const next = (relay['relay.js'] as string).replaceAll(before.canvas!, `${before.canvas}-next`);
       assert.notEqual(next, relay['relay.js']);
       setRelayScript(next);
       // Events keep coming to the script being replaced, from a frame of the frames host and from the canvas page, as pages load
@@ -196,7 +196,7 @@ for (const name of wanted) {
       assert.equal(await page.evaluate(() => (window as unknown as { marker?: string }).marker), 'kept');
       const after = await canvasFrame(page).evaluate(async () => { const response = await fetch('/canvas/course.json'); return { status: response.status, text: (await response.text()).slice(0, 1) }; });
       assert.deepEqual(after, { status: 200, text: '{' });
-      setRelayScript(relay['relay.js']!);
+      setRelayScript(relay['relay.js'] as string);
     } finally {
       await context.close();
       await browser.close();

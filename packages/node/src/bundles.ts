@@ -137,18 +137,25 @@ ${script}
 `;
 }
 
-// The web app's relay (D118, D119): its service worker (/relay.js, one script for the canvas host and the
-// frames host, whose Worker writes its policy before it), the script of the relay pages (/relay-page.js),
-// the frames host's page (/relay.html) and the canvas page for the relay. The script's version changes
-// with it.
-export async function relayFiles({ debug = false }: { debug?: boolean } = {}): Promise<Record<string, string>> {
+// The web app's canvas host and frames host, as both serve them (D118, D119): the relay's service worker (/relay.js, one script
+// for both hosts, whose Worker writes its policy before it), the script of the relay pages (/relay-page.js), the frames host's
+// page (/relay.html), the canvas page for the relay and the player's files it loads, with three.js. The relay names the other
+// files by their SHA-256 and keeps them, so that the canvas opens without the network after a first visit (D131); its version
+// changes with it and with them.
+export async function relayFiles({ debug = false }: { debug?: boolean } = {}): Promise<Record<string, string | Buffer>> {
   const build = async (entry: string, define: Record<string, string> = {}) => (await esbuild.build({ entryPoints: [path.join(RUNTIME, entry)], bundle: true, format: 'iife', target: 'es2020', minify: !debug, write: false, legalComments: 'none', logLevel: 'error', charset: 'utf8', define })).outputFiles[0].text;
-  const unversioned = await build('worker/relay.ts');
-  const version = `${ELABORA_VERSION}-${crypto.createHash('sha256').update(unversioned).digest('hex').slice(0, 12)}`;
-  return {
-    'relay.js': await build('worker/relay.ts', { __RELAY_VERSION__: JSON.stringify(version) }),
+  const runtime = await runtimeFiles({ debug });
+  const kept: Record<string, string | Buffer> = {
     'relay-page.js': await build('relay-page.ts'),
     'relay.html': '<!doctype html>\n<meta charset="utf-8">\n<title>Elabora relay</title>\n<script src="/relay-page.js" data-relay-role="frames"></script>\n',
-    'canvas/index.html': canvasPageHtml('relay')
+    'canvas/index.html': canvasPageHtml('relay'),
+    'canvas/elabora/canvas.js': await runtimeBundle('canvas.ts', { minify: !debug }),
+    'canvas/elabora/player.css': runtime['elabora/player.css']!,
+    'canvas/elabora/object-frame.js': runtime['elabora/object-frame.js']!,
+    'canvas/elabora/vendor/three-r186.js': vendorThree()['elabora/vendor/three-r186.js']!
   };
+  const hashes = Object.fromEntries(Object.entries(kept).map(([file, body]) => [`/${file}`, crypto.createHash('sha256').update(body).digest('hex')]));
+  const unversioned = await build('worker/relay.ts', { __RELAY_FILES__: JSON.stringify(hashes) });
+  const version = `${ELABORA_VERSION}-${crypto.createHash('sha256').update(unversioned).digest('hex').slice(0, 12)}`;
+  return { 'relay.js': await build('worker/relay.ts', { __RELAY_VERSION__: JSON.stringify(version), __RELAY_FILES__: JSON.stringify(hashes) }), ...kept };
 }
