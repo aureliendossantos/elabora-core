@@ -24,9 +24,9 @@ async function follow(page: Page): Promise<{ opened: boolean; origin: string | n
   const opened = await popup;
   if (!opened) return { opened: false, origin: null };
   await opened.waitForLoadState('load').catch(() => undefined);
-  const origin = await opened.evaluate(() => origin).catch(() => null);
+  const seen = await opened.evaluate(() => window.origin).catch(() => null);
   await opened.close();
-  return { opened: true, origin };
+  return { opened: true, origin: seen };
 }
 
 for (const name of wanted) {
