@@ -628,23 +628,27 @@ for (const name of wanted) {
             const rows = page.locator('.row');
             const taken = await Promise.all(screens.map((_, index) => rows.nth(index).screenshot()));
             if (!images) { shots = taken; continue; }
-            // The share of pixels more than 48/255 apart on a channel, both drawn at 320 × 180 (the canvas compares them).
-            const shares: number[] = [];
+            // The share of pixels more than 48/255 apart on a channel, both drawn at 320 × 180 (the canvas compares them), and the
+            // edges of each (a pixel whose brightness steps by more than 48/255 to its right and below it).
+            const edges = { live: 0, image: 0 };
             for (const [index, screen] of screens.entries()) {
-              const share = await page.evaluate(async ([a, b]) => {
+              const seen = await page.evaluate(async ([a, b]) => {
                 const pixels = async (data: string) => { const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob(), { resizeWidth: 320, resizeHeight: 180 }); const canvas = new OffscreenCanvas(320, 180); const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0); return context.getImageData(0, 0, 320, 180).data; };
                 const [x, y] = [await pixels(a!), await pixels(b!)];
                 let apart = 0;
                 for (let i = 0; i < x.length; i += 4) if (Math.max(Math.abs(x[i]! - y[i]!), Math.abs(x[i + 1]! - y[i + 1]!), Math.abs(x[i + 2]! - y[i + 2]!)) > 48) apart++;
-                return apart / (x.length / 4);
+                const brightness = (p: Uint8ClampedArray, i: number) => 0.299 * p[i]! + 0.587 * p[i + 1]! + 0.114 * p[i + 2]!;
+                const edgesOf = (p: Uint8ClampedArray) => { let count = 0; for (let row = 0; row < 179; row++) for (let column = 0; column < 319; column++) { const i = (row * 320 + column) * 4; if (Math.abs(brightness(p, i + 4) - brightness(p, i)) + Math.abs(brightness(p, i + 1280) - brightness(p, i)) > 48) count++; } return count; };
+                return { share: apart / (x.length / 4), live: edgesOf(x), image: edgesOf(y) };
               }, [shots[index]!.toString('base64'), taken[index]!.toString('base64')]);
-              assert.ok(share < 0.06, `${path.basename(module)} ${screen}: ${(share * 100).toFixed(1)} % of the pixels apart`);
-              shares.push(share);
+              assert.ok(seen.share < 0.06, `${path.basename(module)} ${screen}: ${(seen.share * 100).toFixed(1)} % of the pixels apart`);
+              edges.live += seen.live;
+              edges.image += seen.image;
             }
-            // Over a module, text lost on a plain page shows (a charter's statements without their words: 2.4 % on average, against
-            // 1 % at most between engines).
-            const mean = shares.reduce((sum, share) => sum + share, 0) / shares.length;
-            assert.ok(mean < 0.015, `${path.basename(module)}: ${(mean * 100).toFixed(2)} % of the pixels apart on average`);
+            // Over a module, what the image draws of the screen's edges: text lost leaves its edges out (a charter's statements without
+            // their words had none: 0), where another way of drawing type only moves them (0.97 to 1.09 in the four browsers). The share
+            // of pixels apart says that less well: it is the system's type as much (diagnostic-reseau, 0.7 % on macOS, 1.8 % on Linux).
+            assert.ok(edges.image > edges.live * 0.8, `${path.basename(module)}: the images draw ${edges.image} of the live frames' ${edges.live} edges`);
           } finally {
             await context.close();
             fs.rmSync(profile, { recursive: true, force: true });
