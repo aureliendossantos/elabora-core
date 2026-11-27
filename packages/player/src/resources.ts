@@ -54,7 +54,10 @@ export function createResources(options: ResourcesOptions) {
   const info = (resource: ResourceData) => (resource.kind === 'link'
     ? `${labels.link} · ${hostOf(resource.url)}`
     : options.format(labels.fileInfo, { type: resource.type.toUpperCase() || '—', size: fileSize(resource.bytes, options.language) }));
-  const list = element('ul', { class: 't-resource-list' }, options.resources.map((resource) => {
+  // A link only to the web, over HTTPS, as the build writes it (course-data isHttpsUrl): read again here,
+  // since a course's data may come from elsewhere than a build.
+  const shownResources = options.resources.filter((resource) => resource.kind !== 'link' || /^https:\/\/[^\s/]/i.test(resource.url));
+  const list = element('ul', { class: 't-resource-list' }, shownResources.map((resource) => {
     const shown = previewed(resource);
     const infoId = uniqueId('t-resource-info');
     const content = [

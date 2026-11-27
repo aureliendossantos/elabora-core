@@ -18,7 +18,7 @@ Template `packages/core/src/components/builtin/heading.html`: fork it to change 
 
 ## `text` (content)
 
-Rich text in the Elabora Markdown subset, with an optional note in the margin (aside): beside the text on wide windows, after it, indented, on narrow ones.
+Rich text in the Elabora Markdown subset, with an optional note in the margin (aside): beside the text on wide windows, after it, indented, on narrow ones. A link of the subset goes to the web (`https:`, `http:`, opened in a new tab), an e-mail (`mailto:`), a phone (`tel:`), a glossary entry (`glossary:<id>`), a place of the page (`#…`) or a file of the package; a link of another scheme renders as its words.
 
 > Short paragraphs, conversational 'you' (E6), no decorative anecdotes (E1). Keep a screen under about 250 words (E3). When the plan has a locked text, use textRef instead of copying it. aside: a margin note of one or two sentences (a word explained, a source, a nuance); the text must read without it.
 

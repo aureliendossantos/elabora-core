@@ -18,19 +18,47 @@ md.renderer.rules.math_inline = (tokens, index) => {
 };
 md.renderer.rules.math_block = (tokens, index) => `<div class="t-math-display">${renderTex(tokens[index].content, true)}</div>\n`;
 
+md.core.ruler.push('link_schemes', linkSchemes);
+
+// The links a text may hold (a teammate's text, a package's learner): the web's, an e-mail, a phone, a
+// glossary entry, a place of the page, a path of the package. Any other scheme (elabora:, intent:, an
+// application's own) would launch what holds it from the frame: the link is left out, its words kept.
+// Its scheme is read as a browser reads it, without the tabs, line breaks and spaces or controls around it.
+const LINK_SCHEMES = new Set(['http', 'https', 'mailto', 'tel']);
+const GLOSSARY_LINK = /^glossary:([a-z][a-z0-9-]{0,47})$/;
+export function linkAllowed(href: string): boolean {
+  const read = href.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/g, '').replace(/[\t\n\r]/g, '');
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(read)?.[1]?.toLowerCase();
+  return scheme === undefined || LINK_SCHEMES.has(scheme) || GLOSSARY_LINK.test(read);
+}
+function linkSchemes(state: StateCore): void {
+  for (const block of state.tokens) {
+    const children = block.type === 'inline' ? block.children : null;
+    if (!children) continue;
+    for (let i = 0; i < children.length; i++) {
+      if (children[i]!.type !== 'link_open' || linkAllowed(String(children[i]!.attrGet('href') ?? ''))) continue;
+      // Links do not nest: its close is the next one.
+      const close = children.findIndex((token, at) => at > i && token.type === 'link_close');
+      if (close >= 0) children.splice(close, 1);
+      children.splice(i--, 1);
+    }
+  }
+}
+
 const defaultLink = md.renderer.rules.link_open || ((tokens, index, options, env, self) => self.renderToken(tokens, index, options));
 md.renderer.rules.link_open = (tokens, index, options, env, self) => {
   const href = String(tokens[index].attrGet('href') || '');
   // A link to a glossary entry (glossary:<id>, D58): the player shows its definition and opens the
   // Glossary there; without the player's script it still leads to the entry's place.
-  const term = /^glossary:([a-z][a-z0-9-]{0,47})$/.exec(href);
+  const term = GLOSSARY_LINK.exec(href);
   if (term) {
     tokens[index].attrSet('href', `#t-glossary-${term[1]}`);
     tokens[index].attrSet('class', 't-term');
     tokens[index].attrSet('data-term', term[1]);
     return defaultLink(tokens, index, options, env, self);
   }
-  if (/^https?:\/\//i.test(href)) {
+  // The web's, written with or without its scheme (//host/…), opens in a tab of its own.
+  if (/^(https?:)?\/\//i.test(href)) {
     tokens[index].attrSet('target', '_blank');
     tokens[index].attrSet('rel', 'noopener noreferrer');
   }

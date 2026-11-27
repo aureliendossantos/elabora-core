@@ -247,6 +247,25 @@ test('elabora_player reads the bars with what shows and why not, the tokens with
   assert.ok(Object.values(report.tokens).every((token) => token.value !== '' && token.set === false), 'defaults come from the charter');
 });
 
+// A text's links: the web's, an e-mail, a phone, a glossary entry, a place of the page, a path of the package. Any other
+// scheme would launch what holds it from the frame: the link is left out, its words kept.
+test('a Markdown link of another scheme than the web\'s, an e-mail\'s, a phone\'s or the glossary\'s is left out, its words kept', () => {
+  const kept: [string, string][] = [
+    ['[a](https://example.org)', '<p><a href="https://example.org" target="_blank" rel="noopener noreferrer">a</a></p>'],
+    ['[a](http://example.org)', '<p><a href="http://example.org" target="_blank" rel="noopener noreferrer">a</a></p>'],
+    ['[a](//example.org/x)', '<p><a href="//example.org/x" target="_blank" rel="noopener noreferrer">a</a></p>'],
+    ['[a](mailto:a@example.org)', '<p><a href="mailto:a@example.org">a</a></p>'],
+    ['[a](tel:+33123456789)', '<p><a href="tel:+33123456789">a</a></p>'],
+    ['[a](#t-part)', '<p><a href="#t-part">a</a></p>'],
+    ['[a](assets/fiche.pdf)', '<p><a href="assets/fiche.pdf">a</a></p>']
+  ];
+  for (const [text, html] of kept) assert.equal(renderMarkdown(text), html, text);
+  for (const href of ['elabora://open/x', 'intent://x#Intent;end', 'ms-msdt:/id', 'blob:https://example.org/1', 'x-app:go', '<  ELABORA:x>', 'glossary:Not-an-id', 'HTTPS-like:x']) {
+    assert.equal(renderMarkdown(`Avant [le lien](${href}) **après**.`), '<p>Avant le lien <strong>après</strong>.</p>', href);
+  }
+  assert.equal(renderMarkdown('[le lien][r]\n\n[r]: elabora://open/x'), '<p>le lien</p>', 'by reference too');
+});
+
 test('glossary links compile to the entry, and the player\'s content is translated', () => {
   assert.equal(renderMarkdown('Le [switch](glossary:commutateur) relie les postes.'), '<p>Le <a href="#t-glossary-commutateur" class="t-term" data-term="commutateur">switch</a> relie les postes.</p>');
   const units = extractUnits(loadProjectFromDir(copyExample()));
