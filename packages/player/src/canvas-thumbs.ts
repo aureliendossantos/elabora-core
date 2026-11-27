@@ -335,9 +335,11 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     entry.refreshTimer = null;
     entry.resize?.disconnect();
     entry.resize = null;
-    entry.host?.close();
+    // The frame goes once its route is closed (the engine lets the route's port go), hidden meanwhile.
+    const { host, wrapper } = entry;
+    if (wrapper) wrapper.style.visibility = 'hidden';
+    if (host) void host.close().then(() => wrapper?.remove()); else wrapper?.remove();
     entry.host = null;
-    entry.wrapper?.remove();
     entry.wrapper = null;
     entry.frame = null;
     if (entry.slot) { entry.slot = false; slots--; }
@@ -402,8 +404,9 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   let measureIds = 0;
   function dropMeasurer(): void {
     if (!measurer) return;
-    measurer.host.close();
-    measurer.holder.remove();
+    const { holder } = measurer;
+    holder.style.visibility = 'hidden';
+    void measurer.host.close().then(() => holder.remove());
     measurer = null;
   }
   function measurerFor(size: { width: number; height: number }): PageCanvasHost {

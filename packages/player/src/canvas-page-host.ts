@@ -75,11 +75,14 @@ export interface PageCanvasHost {
   update(): void;
   // Both relay pages hold their port: files may be asked.
   readonly opened: Promise<void>;
-  // Closes the routes and removes the frames host's page; nothing is answered after.
-  close(): void;
+  // Closes the routes and removes the frames host's page; nothing is answered after. Settles once each relay page has said its route
+  // closed (it then tells the engine to let its port go), or after CLOSE_WAIT_MS: a frame of the caller is removed after that, not
+  // before, or it never reads the close and the engine keeps its port until the session ends.
+  close(): Promise<void>;
 }
 
 const ASK_TIMEOUT_MS = 30000;
+const CLOSE_WAIT_MS = 500;
 
 // What the frames the host puts in the window may do. The hidden page of the relay holds the frames host's origin, where an object's code
 // runs and reaches it (D119): without a sandbox it would do what the object's own frame cannot (an alert, a download, windows opened). It
@@ -138,6 +141,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withF
   const asked = new Map<number, { name: AskName; resolve: (result: never) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout>; sent: boolean }>();
   let requests = 0;
   let closed = false;
+  let closedAll: Promise<void> = Promise.resolve();
   // What the page shows: the last render with the view as it is now, and what the current page holds.
   let last: { id?: string | number; render: ScreenRender } | null = null;
   let pageReady = false;
@@ -210,12 +214,18 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withF
   }
   const pendingParams = new Map<number, unknown>();
 
+  // The relay pages still to say their route is closed, once the host is.
+  const closing = new Set<RelayHost>();
+  let closingDone: () => void = () => {};
   function onWindowMessage(event: MessageEvent): void {
-    if (closed) return;
     const entry = (['canvas', 'frames'] as const).map((host) => entries[host]).find((candidate) => candidate.origin === event.origin && candidate.frame?.contentWindow !== null && candidate.frame?.contentWindow === event.source);
     if (!entry) return;
     const data: unknown = event.data;
     const relayMessage = parseRelayToApp(data);
+    if (closed) {
+      if (relayMessage?.type === 'relay/closed' && closing.delete(entry.host) && !closing.size) closingDone();
+      return;
+    }
     if (relayMessage) {
       const state = entry.state;
       if (relayMessage.type === 'relay/ready') {
@@ -301,16 +311,23 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withF
     },
     opened,
     close() {
-      if (closed) return;
-      for (const entry of hosts.map((host) => entries[host])) toRelay(entry, { type: 'relay/close', protocol: RELAY_PROTOCOL, route: routes[entry.host] });
+      if (closed) return closedAll;
       closed = true;
-      window.removeEventListener('message', onWindowMessage);
+      for (const entry of hosts.map((host) => entries[host])) {
+        if (!entry.frame?.contentWindow || !entry.state.opened) continue;
+        closing.add(entry.host);
+        toRelay(entry, { type: 'relay/close', protocol: RELAY_PROTOCOL, route: routes[entry.host] });
+      }
       for (const [request, waiting] of asked) { clearTimeout(waiting.timer); waiting.reject(new Error('The canvas host is closed')); asked.delete(request); }
       pendingParams.clear();
       messageListeners.clear();
       relayListeners.clear();
-      hidden.remove();
-      entries.canvas.frame = null;
+      closedAll = new Promise<void>((resolve) => {
+        const timer = setTimeout(() => closingDone(), CLOSE_WAIT_MS);
+        closingDone = () => { clearTimeout(timer); window.removeEventListener('message', onWindowMessage); hidden.remove(); entries.canvas.frame = null; resolve(); };
+        if (!closing.size) closingDone();
+      });
+      return closedAll;
     }
   };
 }
