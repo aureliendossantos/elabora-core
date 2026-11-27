@@ -239,6 +239,8 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withF
       else if (relayMessage.type === 'relay/closed') state.opened = false;
       else if (relayMessage.type === 'relay/updated') state.version = relayMessage.version;
       else if (relayMessage.type === 'relay/error') { state.error = relayMessage.message; checkOpened(); }
+      // A request the relay answered 500 or 503, and why (an object that did not compile, a route no page holds): said, not only its status.
+      else if (relayMessage.type === 'relay/fault') console.warn(`[elabora] The ${entry.host} host's relay could not serve ${relayMessage.path} (${relayMessage.stage}): ${relayMessage.message}`);
       for (const listener of [...relayListeners]) listener(entry.host, relayMessage);
       return;
     }
