@@ -156,7 +156,9 @@ export function searchDocs(query: string, root = DOCS_ROOT, limit = 8): DocHit[]
   // A plural finds its singular (persists, persist).
   const words = query.toLowerCase().split(/[^\p{L}\p{N}_.-]+/u).filter((word) => word.length > 1 && !STOP_WORDS.has(word)).map((word) => (word.length > 4 ? word.replace(/(?<!s)s$/, '') : word));
   if (!words.length) return [];
-  const sources: { page: string; markdown: string }[] = allPages(root).map((entry) => ({ page: entry.id, markdown: fs.readFileSync(path.join(root, entry.file), 'utf8') }));
+  // The changelog is left out: a version's list of changes holds nearly every word, and would come
+  // before the page that explains each (elabora docs changelog still reads it).
+  const sources: { page: string; markdown: string }[] = allPages(root).filter((entry) => !/(^|\/)CHANGELOG\.md$/.test(entry.file)).map((entry) => ({ page: entry.id, markdown: fs.readFileSync(path.join(root, entry.file), 'utf8') }));
   for (const skill of listSkills()) for (const reference of [undefined, ...skill.references]) {
     const markdown = readSkill(skill.name, reference);
     if (markdown) sources.push({ page: `skills/${skill.name}${reference ? `/${reference}` : ''}`, markdown });
