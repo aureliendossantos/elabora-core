@@ -6,13 +6,17 @@ import { canvasPageHtml, relayFiles } from '@elabora/node/bundles';
 test('relay files: one script for both hosts that says its version and leaves its policy to the host\'s Worker, a page script, the frames host\'s page, the canvas page and the player\'s files, each named in the script by its SHA-256', async () => {
   const built = await relayFiles();
   const files = Object.fromEntries(Object.entries(built).map(([file, body]) => [file, body.toString()]));
-  assert.deepEqual(Object.keys(files).sort(), ['canvas/elabora/canvas.js', 'canvas/elabora/object-frame.js', 'canvas/elabora/player.css', 'canvas/elabora/vendor/three-r186.js', 'canvas/index.html', 'relay-page.js', 'relay.html', 'relay.js']);
+  assert.deepEqual(Object.keys(files).sort(), ['canvas/elabora/canvas.js', 'canvas/elabora/object-frame.js', 'canvas/elabora/player.css', 'canvas/elabora/vendor/snapdom-LICENSE.txt', 'canvas/elabora/vendor/snapdom.js', 'canvas/elabora/vendor/three-r186.js', 'canvas/index.html', 'relay-page.js', 'relay.html', 'relay.js']);
+  // The miniatures' painter's snapdom (D139): served with its licence, loaded by a painter's page only, never by the page itself.
+  assert.match(files['canvas/elabora/vendor/snapdom.js']!, /SnapDOM\n\* v3\.8\.3\n\* License: MIT/);
+  assert.match(files['canvas/elabora/vendor/snapdom-LICENSE.txt']!, /MIT License/);
+  assert.doesNotMatch(files['canvas/index.html']!, /snapdom/);
   // The relay keeps the others (D131): it names each by its path on the host and the SHA-256 of its bytes, and nothing else.
   for (const [file, body] of Object.entries(built)) {
     if (file === 'relay.js') continue;
     assert.ok(files['relay.js']!.includes(`"/${file}":"${crypto.createHash('sha256').update(body).digest('hex')}"`), `the relay names /${file} by its hash`);
   }
-  assert.equal((files['relay.js']!.match(/"\/[^"]+":"[0-9a-f]{64}"/g) ?? []).length, 7);
+  assert.equal((files['relay.js']!.match(/"\/[^"]+":"[0-9a-f]{64}"/g) ?? []).length, 9);
   // The version changes with the script and is the same for the same script.
   const version = /\d+\.\d+\.\d+-[0-9a-f]{12}/.exec(files['relay.js']!)?.[0];
   assert.ok(version, 'a version');

@@ -2,9 +2,12 @@
 // CanvasAsks): the measures a host used to inject into the page as scripts, now messages, so that a host
 // in another origin asks them the same way. canvas.ts hands each ask to answerAsk and posts the answer.
 
+import { drawPicture, painterScroller, windowScroller } from './canvas-picture.ts';
+import type { Scroller } from './canvas-picture.ts';
+import { blockMiniFrame, blockPreviewFrame } from './block-frame.ts';
 import { holdStill } from './canvas-still.ts';
 import { isRecord } from './json.ts';
-import type { AnswerMessage, AskMessage, AskName, BlockPreviewMeasure, CanvasAsks, ScreenMeasurement } from './canvas-protocol.ts';
+import type { AnswerMessage, AskMessage, AskName, BlockPreviewMeasure, CanvasAsks, LayoutRect, PictureResult, ScreenMeasurement } from './canvas-protocol.ts';
 import type { LayoutMessage } from './canvas-protocol.ts';
 
 // What an ask needs of the canvas.
@@ -35,6 +38,10 @@ export function askOf(data: Record<string, unknown>): AskMessage | null {
   if (ask === 'measure' && id) return { type: 'elabora/ask', request, ask, params: { id: params.id as string | number } };
   if (ask === 'block-preview-clear' && id) return { type: 'elabora/ask', request, ask, params: { id: params.id as string | number } };
   if (ask === 'block-preview' && id && typeof params.block === 'string' && typeof params.slides === 'boolean') return { type: 'elabora/ask', request, ask, params: { id: params.id as string | number, block: params.block, slides: params.slides } };
+  if (ask === 'picture' && id && Number.isInteger(params.width) && (params.width as number) >= 16 && (params.width as number) <= 4096
+    && (params.block === undefined || typeof params.block === 'string') && (params.mini === undefined || typeof params.mini === 'boolean') && (params.slides === undefined || typeof params.slides === 'boolean')) {
+    return { type: 'elabora/ask', request, ask, params: { id: params.id as string | number, width: params.width as number, ...(typeof params.block === 'string' ? { block: params.block } : {}), ...(params.mini ? { mini: true } : {}), ...(params.slides ? { slides: true } : {}) } };
+  }
   if (ask === 'mark') {
     const rgb = params.rgb;
     if (rgb === null) return { type: 'elabora/ask', request, ask, params: { rgb: null } };
@@ -58,6 +65,12 @@ async function shown(canvas: AskedCanvas, id: string | number): Promise<boolean>
 
 async function blockPreview(canvas: AskedCanvas, { id, block, slides }: CanvasAsks['block-preview']['params']): Promise<BlockPreviewMeasure | null> {
   if (!await shown(canvas, id)) return null;
+  return around(block, slides, windowScroller);
+}
+
+// The block's neighbours faded and the page scrolled to it (a scrolling course: around it; a slide it runs past: down to it): where it
+// is, and whether a slide runs past its window.
+async function around(block: string, slides: boolean, scroller: Scroller): Promise<BlockPreviewMeasure> {
   const own = `[data-block="${CSS.escape(block)}"]`;
   let style = document.getElementById(PREVIEW_STYLE);
   if (!style) { style = document.createElement('style'); style.id = PREVIEW_STYLE; document.head.append(style); }
@@ -67,18 +80,41 @@ async function blockPreview(canvas: AskedCanvas, { id, block, slides }: CanvasAs
   // A scrolling course around the block; a slide it runs past, down to it.
   if (node) {
     const box = node.getBoundingClientRect();
-    if (!slides) window.scrollTo(0, Math.max(0, box.height < innerHeight * 0.7 ? box.top + scrollY - (innerHeight - box.height) / 2 : box.top + scrollY - 32));
-    else window.scrollTo(0, Math.max(0, box.bottom + scrollY + 24 - innerHeight));
+    const top = scroller.top();
+    if (!slides) scroller.to(Math.max(0, box.height < innerHeight * 0.7 ? box.top + top - (innerHeight - box.height) / 2 : box.top + top - 32));
+    else scroller.to(Math.max(0, box.bottom + top + 24 - innerHeight));
   }
   await frames(2);
   const box = node ? node.getBoundingClientRect() : null;
-  return { overflow: slides && document.documentElement.scrollHeight - innerHeight > 4, block: box && box.width > 0 ? { x: box.x, y: box.y, width: box.width, height: box.height } : null };
+  return { overflow: slides && scroller.overflow() > 4, block: box && box.width > 0 ? { x: box.x, y: box.y, width: box.width, height: box.height } : null };
+}
+function cleared(scroller: Scroller): void {
+  document.getElementById(PREVIEW_STYLE)?.remove();
+  scroller.to(0);
+}
+
+// The painter's image of the screen shown (D139): the whole window, or the part around a block; the page left as a thumbnail shows it.
+async function picture(canvas: AskedCanvas, { id, width, block, mini, slides }: CanvasAsks['picture']['params']): Promise<PictureResult | null> {
+  if (!await shown(canvas, id)) return null;
+  const scroller = painterScroller();
+  const page = { width: innerWidth, height: innerHeight };
+  let region: LayoutRect = { x: 0, y: 0, ...page };
+  let overflow = false;
+  try {
+    if (block !== undefined) {
+      const seen = await around(block, slides ?? false, scroller);
+      overflow = seen.overflow;
+      if (seen.block) region = (mini ? blockMiniFrame(seen.block, page) : null) ?? blockPreviewFrame(seen.block, page);
+    }
+    return { image: await drawPicture(region, width), overflow };
+  } finally {
+    if (block !== undefined) cleared(scroller);
+  }
 }
 
 async function blockPreviewClear(canvas: AskedCanvas, id: string | number): Promise<boolean> {
   if (!await shown(canvas, id)) return false;
-  document.getElementById(PREVIEW_STYLE)?.remove();
-  window.scrollTo(0, 0);
+  cleared(windowScroller);
   await frames(2);
   return true;
 }
@@ -111,6 +147,7 @@ export async function answerAsk(canvas: AskedCanvas, message: AskMessage): Promi
       case 'block-preview': result = await blockPreview(canvas, message.params); break;
       case 'block-preview-clear': result = await blockPreviewClear(canvas, message.params.id); break;
       case 'measure': result = await measure(canvas, message.params.id); break;
+      case 'picture': result = await picture(canvas, message.params); break;
     }
     return { type: 'elabora/answer', request, result };
   } catch (error) {

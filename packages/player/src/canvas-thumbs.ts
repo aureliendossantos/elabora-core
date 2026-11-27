@@ -16,10 +16,13 @@
 
 import { createPageCanvasHost } from './canvas-page-host.ts';
 import type { PageCanvasHost } from './canvas-page-host.ts';
+import { blockMiniFrame, blockPreviewFrame } from './block-frame.ts';
 import type { BlockPreviewMeasure, LayoutRect, ScreenMeasurement } from './canvas-protocol.ts';
 import type { RelayHost } from './relay-protocol.ts';
 import { THUMB_LIMIT, THUMB_REFRESH_MS, THUMB_REFRESH_PARALLEL, THUMB_SETTLE_MS } from './thumbs-protocol.ts';
-import type { Scene, SceneRender, ThumbRequestName, ThumbRequests, ThumbShown, ThumbSource } from './thumbs-protocol.ts';
+import type { Scene, SceneRender, ThumbShown, ThumbSource } from './thumbs-protocol.ts';
+import { distance, firstOf, previewing, requestOf } from './thumbs-order.ts';
+import { createImageThumbs, imagesHere } from './canvas-images.ts';
 
 export interface ThumbsOptions {
   canvasOrigin: string;
@@ -37,6 +40,13 @@ export interface ThumbsOptions {
   mount?: HTMLElement;
   // How long a frame's `shown` is waited for, in ms (a frame the browser does not draw never answers).
   drawTimeoutMs?: number;
+  // Images by a painter (D139, the default where the browser makes them), or live frames only (false).
+  images?: boolean;
+  // The painter kept for the module's life (default: in WebKit), or gone after `painterIdleMs` at rest (PAINTER_IDLE_MS).
+  keepPainter?: boolean;
+  painterIdleMs?: number;
+  // Where a failure of the painter is said (default: the console's warnings).
+  log?: (message: string) => void;
 }
 
 export interface Thumbs {
@@ -93,45 +103,16 @@ interface Entry {
   release(): void;
 }
 
-function requestOf(scene: Scene): { name: ThumbRequestName; params: ThumbRequests[ThumbRequestName]['params'] } {
-  switch (scene.kind) {
-    case 'screen': return { name: 'thumbRender', params: { screen: scene.screen, ...(scene.language !== undefined ? { language: scene.language } : {}) } };
-    case 'moment': return { name: 'momentRender', params: { screen: scene.screen, at: scene.at } };
-    case 'block': return { name: 'blockPreviewRender', params: { args: scene.args } };
-    case 'charter': {
-      const args = scene.args;
-      return { name: 'blockPreviewRender', params: { args: 'layout' in args ? { screen: args.screen, layout: { layout: args.layout } } : 'style' in args ? { screen: args.screen, screenStyle: args.style } : { screen: args.screen, backdrop: args.backdrop } } };
-    }
-  }
-}
-const screenOf = (scene: Scene): string | null => (scene.kind === 'block' || scene.kind === 'charter' ? scene.args.screen : scene.screen);
-// A preview the author is choosing from (« Ajouter un bloc », the Charte): it opens over the miniatures of the window, which the view still counts.
-const previewing = (scene: Scene): boolean => scene.kind === 'block' || scene.kind === 'charter';
 
-// « Ajouter un bloc » (Lin 34), as the desktop's capture frames it: the block with a narrow margin around it, at the window's
-// proportions, centred on it (its top when even the whole window is shorter), as large as it can be read; a small block keeps some of
-// what surrounds it (`PREVIEW_LEAST` of the window's width). `mini`: the block alone, a very long block its start (three times as wide
-// as it is tall at most); null when it is too small to show, and the preview is shown instead.
-const PREVIEW_MARGIN = 0.035;
-const PREVIEW_LEAST = 0.42;
-const within = (start: number, size: number, room: number): number => Math.round(Math.max(0, Math.min(start, room - size)));
-export function blockPreviewFrame(block: LayoutRect, page: { width: number; height: number }): LayoutRect {
-  const ratio = page.height / page.width;
-  const margin = page.width * PREVIEW_MARGIN;
-  const width = Math.round(Math.min(page.width, Math.max(page.width * PREVIEW_LEAST, block.width + margin * 2, (block.height + margin * 2) / ratio)));
-  const height = Math.round(width * ratio);
-  const top = block.height + margin * 2 <= height ? block.y + block.height / 2 - height / 2 : block.y - margin;
-  return { x: within(block.x + block.width / 2 - width / 2, width, page.width), y: within(top, height, page.height), width, height };
-}
-export function blockMiniFrame(block: LayoutRect, page: { width: number; height: number }): LayoutRect | null {
-  const x = Math.max(0, Math.round(block.x));
-  const y = Math.max(0, Math.round(block.y));
-  const height = Math.min(Math.round(block.height), page.height - y);
-  const width = Math.min(Math.round(block.width), page.width - x, height * 3);
-  return width > 4 && height > 4 ? { x, y, width, height } : null;
+
+// The miniatures of a window: images by a painter where the browser makes them (D139), live frames otherwise (D130), the live frames
+// staying the painter's fallback. The painter is made now: made as the module opens, it is ready before the list shows.
+export function createThumbs(options: ThumbsOptions): Thumbs {
+  return options.images !== false && imagesHere() ? createImageThumbs(options, createLiveThumbs({ ...options, images: false })) : createLiveThumbs(options);
 }
 
-export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LIMIT, settleMs = THUMB_SETTLE_MS, refreshMs = THUMB_REFRESH_MS, refreshParallel = THUMB_REFRESH_PARALLEL, current, mount, drawTimeoutMs = 20000 }: ThumbsOptions): Thumbs {
+// The live frames of D130.
+export function createLiveThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LIMIT, settleMs = THUMB_SETTLE_MS, refreshMs = THUMB_REFRESH_MS, refreshParallel = THUMB_REFRESH_PARALLEL, current, mount, drawTimeoutMs = 20000 }: ThumbsOptions): Thumbs {
   const entries = new Set<Entry>();
   const byElement = new Map<Element, Entry>();
   let slots = 0;
@@ -145,22 +126,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   };
   // How far from the view an element is, and among those in it, its place in reading order (a line, then the left first): a view of more
   // miniatures than places draws them as the eye reads them, the top line of a Planche first, and a place freed goes to the next one.
-  const distance = (entry: Entry): number => {
-    const box = entry.element.getBoundingClientRect();
-    const dy = Math.max(0, box.top - innerHeight, -box.bottom);
-    const dx = Math.max(0, box.left - innerWidth, -box.right);
-    return Math.hypot(dx, dy) * 1e9 + Math.round(Math.max(0, box.top)) * 1e4 + Math.max(0, box.left);
-  };
-  const firstOf = (waiting: Entry[]): Entry => {
-    const now = current?.() ?? null;
-    return waiting.reduce((best, entry) => {
-      if (previewing(entry.scene) !== previewing(best.scene)) return previewing(entry.scene) ? entry : best;
-      const mine = now !== null && screenOf(entry.scene) === now;
-      const theirs = now !== null && screenOf(best.scene) === now;
-      if (mine !== theirs) return mine ? entry : best;
-      return distance(entry) < distance(best) ? entry : best;
-    });
-  };
+  const pick = (waiting: Entry[]): Entry => firstOf(waiting, current?.() ?? null);
 
   // Rows that ask together are chosen among together: places are given a moment after the first row settles, not to the first alone.
   let pumpTimer: ReturnType<typeof setTimeout> | null = null;
@@ -183,11 +149,11 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
         const under = waiting.some((entry) => previewing(entry.scene)) ? [...entries].filter((entry) => entry.slot && !previewing(entry.scene)) : [];
         const given = kept.length ? kept : under;
         if (!given.length) return;
-        const away = (entry: Entry): number => (entry.element.isConnected ? distance(entry) : Infinity);
+        const away = (entry: Entry): number => (entry.element.isConnected ? distance(entry.element) : Infinity);
         drop(given.reduce((far, entry) => (away(entry) > away(far) ? entry : far)));
         continue;
       }
-      void start(firstOf(waiting));
+      void start(pick(waiting));
     }
   }
 
@@ -361,7 +327,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   }
   function drain(): void {
     while (refreshing < refreshParallel && refreshQueue.length) {
-      const entry = firstOf(refreshQueue);
+      const entry = pick(refreshQueue);
       refreshQueue.splice(refreshQueue.indexOf(entry), 1);
       if (!entry.visible || hidden()) { entry.stale = true; continue; }
       void redraw(entry);

@@ -39,6 +39,7 @@ import { GLIDE } from './screen-objects.ts';
 import type { CourseData, ObjectDefinition, PlaceData, ScreenData } from './course-data.ts';
 import { PLAYER_PREVIEW_PROTOCOL } from './canvas-protocol.ts';
 import { answerAsk, askOf } from './canvas-asks.ts';
+import { preparePainter } from './canvas-picture.ts';
 import type { BlockLayout, CanvasMessage, HostMessage, LayoutMessage, LayoutRect, PreviewHostMessage, PreviewPanel, RenderFile, RenderOutline, RenderSheet, RenderView, ScreenRender } from './canvas-protocol.ts';
 import type { PlayerItemId } from './course-data.ts';
 
@@ -111,6 +112,9 @@ const placingOption = new URLSearchParams(location.search).get('placing') === 'e
 // scales. Nothing moves (no transition, no animation), no free object is mounted (its block is its box with its name: a browser's
 // miniature does not run objects), a video shows its poster and loads nothing, a sound is not loaded, no scrollbar.
 const thumb = new URLSearchParams(location.search).get('mode') === 'thumb';
+// painter=1 (D139): a miniature's page that answers `picture`, kept for many renders; its root drawn by the browser where it can.
+const painter = thumb && new URLSearchParams(location.search).get('painter') === '1';
+if (painter) preparePainter(app);
 if (thumb) {
   document.documentElement.dataset.thumb = '';
   document.documentElement.style.scrollbarWidth = 'none';

@@ -132,12 +132,21 @@ export interface CanvasAsks {
   'block-preview-clear': { params: { id: string | number }; result: boolean };
   // How far the page runs past the window, and the size of each text the canvas marks.
   measure: { params: { id: string | number }; result: ScreenMeasurement | null };
+  // The miniatures' painter (D139, `painter=1`): the screen of that render as an image `width` px wide (WebP, or PNG where the browser
+  // writes no WebP). With `block`, the part around that block as « Ajouter un bloc » shows it (`mini`: the block alone), and whether
+  // the slide runs past its window (`slides`). Pixels only: the host shows them as an image.
+  picture: { params: { id: string | number; width: number; block?: string; mini?: boolean; slides?: boolean }; result: PictureResult | null };
 }
 export type AskName = keyof CanvasAsks;
 export interface BlockPreviewMeasure {
   overflow: boolean;
   // The block's box in CSS px of the window (null: it is not visible).
   block: LayoutRect | null;
+}
+// A Blob in a browser: typed by what the host reads of it (this file is read where there is no DOM too).
+export interface PictureResult {
+  image: { readonly type: string; readonly size: number };
+  overflow: boolean;
 }
 export interface ScreenMeasurement {
   // px the page runs past the window (0: it fits).

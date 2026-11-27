@@ -82,6 +82,14 @@ export function vendorThree(): Record<string, Buffer> {
   return { 'elabora/vendor/three-r186.js': fs.readFileSync(file), 'elabora/vendor/three-LICENSE.txt': fs.readFileSync(path.join(PACKAGE_ROOT, 'vendor/three-LICENSE.txt')) };
 }
 
+// snapdom (MIT), the miniatures' painter's way of drawing a page in a browser that cannot (D139): the canvas host serves it, and
+// only a painter's page loads it.
+export function vendorSnapdom(): Record<string, Buffer> {
+  const file = path.join(PACKAGE_ROOT, 'vendor/snapdom-3.8.3.js');
+  if (!fs.existsSync(file)) throw new Error('vendor/snapdom-3.8.3.js missing: run `pnpm run vendor` in the Elabora package.');
+  return { 'elabora/vendor/snapdom.js': fs.readFileSync(file), 'elabora/vendor/snapdom-LICENSE.txt': fs.readFileSync(path.join(PACKAGE_ROOT, 'vendor/snapdom-LICENSE.txt')) };
+}
+
 // The native bundler's libraries: D3 (ISC; its notice goes with the code) from its package, and the chart
 // kit from the player's sources, both found on this disk.
 const D3_ENTRY = fileURLToPath(import.meta.resolve('d3'));
@@ -152,7 +160,8 @@ export async function relayFiles({ debug = false }: { debug?: boolean } = {}): P
     'canvas/elabora/canvas.js': await runtimeBundle('canvas.ts', { minify: !debug }),
     'canvas/elabora/player.css': runtime['elabora/player.css']!,
     'canvas/elabora/object-frame.js': runtime['elabora/object-frame.js']!,
-    'canvas/elabora/vendor/three-r186.js': vendorThree()['elabora/vendor/three-r186.js']!
+    'canvas/elabora/vendor/three-r186.js': vendorThree()['elabora/vendor/three-r186.js']!,
+    ...Object.fromEntries(Object.entries(vendorSnapdom()).map(([file, body]) => [`canvas/${file}`, body]))
   };
   const hashes = Object.fromEntries(Object.entries(kept).map(([file, body]) => [`/${file}`, crypto.createHash('sha256').update(body).digest('hex')]));
   const unversioned = await build('worker/relay.ts', { __RELAY_FILES__: JSON.stringify(hashes) });

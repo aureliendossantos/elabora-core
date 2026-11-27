@@ -37,6 +37,9 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.19.1
+      '@zumer/snapdom':
+        specifier: 3.8.3
+        version: 3.8.3
       ajv:
         specifier: 8.20.0
         version: 8.20.0
@@ -572,6 +575,9 @@ packages:
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
+
+  '@zumer/snapdom@3.8.3':
+    resolution: {integrity: sha512-WW/T0i3S2pYqjzLOsBrOO/lTaHGS/EEu1DQyC+XCWpR+N7sBxlOmWLwy35GAuH29UA37GC1nv7kOgvrKLe8bJg==}
 
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
@@ -1471,6 +1477,8 @@ snapshots:
 
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
+
+  '@zumer/snapdom@3.8.3': {}
 
   accepts@2.0.0:
     dependencies:

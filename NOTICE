@@ -12,6 +12,11 @@ Copyright © 2010-2026 three.js authors.
 Licence: packages/node/vendor/three-LICENSE.txt. Course packages that use it ship it as
 elabora/vendor/three-LICENSE.txt.
 
+snapdom 3.8.3 (https://github.com/zumerlab/snapdom), MIT License,
+Copyright (c) 2025 ZumerLab.
+Licence: packages/node/vendor/snapdom-LICENSE.txt. The web app's canvas host serves it as
+canvas/elabora/vendor/snapdom.js, with canvas/elabora/vendor/snapdom-LICENSE.txt; course packages do not ship it.
+
 Fonts under the SIL Open Font License 1.1, taken from the Fontsource npm packages.
 Each font's copyright and licence: packages/fonts/files/<id>/OFL.txt. List: packages/fonts/README.md.
 The module templates in templates/ embed some of these fonts, with their OFL.txt beside them.

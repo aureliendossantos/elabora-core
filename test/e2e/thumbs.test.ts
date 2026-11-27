@@ -34,7 +34,11 @@ interface ThumbsApp {
   setCurrent(screen: string | null): void;
   measure(screen: string, language: string | null): Promise<{ overflow: number; fields: unknown[] } | null>;
   startEngine(seed: unknown, screens: string[]): Promise<number>;
-  showBlock(screen: string, mini: boolean, width: number, height: number): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null }>;
+  showBlock(screen: string, mini: boolean, width: number, height: number): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null; picture: { width: number; height: number } | null }>;
+  logs: string[];
+  pageLoads: number;
+  pictures(): Array<string | null>;
+  frameCount(): number;
   releaseBlocks(): void;
 }
 type Win = Window & { thumbsApp: ThumbsApp };
@@ -384,6 +388,78 @@ for (const name of wanted) {
     });
   });
 
+  // ── Images by a painter (D139) ──────────────────────────────────────────────────────────────────
+  const pictures = (page: Page) => page.evaluate(() => (window as unknown as Win).thumbsApp.pictures());
+
+  test(`thumbnails (${name}): with the painter, the rows in view are images drawn by one frame that loads its page once, rows of one scene share one image, and no row has a frame`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=8&height=800&images=1', async (page) => {
+      await untilDrawn(page, 8);
+      const shown = await pictures(page);
+      assert.ok(shown.every((source) => source?.startsWith('blob:')), JSON.stringify(shown));
+      // The stand-in's rows show two screens in turn: one image each.
+      assert.equal(new Set(shown).size, 2);
+      assert.equal((await page.evaluate(() => (window as unknown as Win).thumbsApp.frames())).length, 0, 'no frame in a row');
+      assert.deepEqual(await page.evaluate(() => [(window as unknown as Win).thumbsApp.frameCount(), (window as unknown as Win).thumbsApp.pageLoads]), [1, 1], 'one painter, its page loaded once');
+      assert.deepEqual(await page.evaluate(() => (window as unknown as Win).thumbsApp.logs), []);
+    });
+  });
+
+  test(`thumbnails (${name}): with the painter, a retouch draws again only its screen's image, and the painter never loads its page again`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=8&height=800&images=1', async (page) => {
+      await untilDrawn(page, 8);
+      const before = await pictures(page);
+      await page.evaluate(() => { const app = (window as unknown as Win).thumbsApp; app.bump('simulation'); for (let index = 0; index < 8; index++) app.refresh(index); });
+      await page.waitForFunction((first) => (window as unknown as Win).thumbsApp.pictures()[0] !== first, before[0], { timeout: 30000 });
+      await page.waitForTimeout(500);
+      const after = await pictures(page);
+      for (let index = 0; index < 8; index++) {
+        if (index % 2 === 0) assert.notEqual(after[index], before[index], `row ${index} (simulation) drawn again`);
+        else assert.equal(after[index], before[index], `row ${index} (accueil) kept`);
+      }
+      assert.equal(await page.evaluate(() => (window as unknown as Win).thumbsApp.pageLoads), 1);
+    });
+  });
+
+  test(`thumbnails (${name}): with the painter, a block's preview is an image of the part around the block, the block alone for the list, and says whether the slide runs past the window`, PATIENT, async (t) => {
+    for (const slides of [false, true]) {
+      await withThumbs(name, t, `rows=1&slides=${slides ? 1 : 0}&page=300&images=1`, async (page) => {
+        const preview = await page.evaluate(() => (window as unknown as Win).thumbsApp.showBlock('accueil', false, 320, 75));
+        const mini = await page.evaluate(() => (window as unknown as Win).thumbsApp.showBlock('accueil', true, 48, 32));
+        assert.equal(preview.drawn, true);
+        assert.equal(mini.drawn, true);
+        assert.equal(preview.overflow, slides, 'the slide runs past the window');
+        // The preview at the window's proportions (1280 × 300), 640 px wide; the block alone, 96 px wide.
+        assert.equal(preview.picture?.width, 640);
+        assert.ok(Math.abs(preview.picture!.height - 150) <= 1, JSON.stringify(preview.picture));
+        assert.equal(mini.picture?.width, 96);
+      });
+    }
+  });
+
+  test(`thumbnails (${name}): with the painter, nothing is drawn in a hidden tab, and the tab seen again draws what changed`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=2&height=800&images=1', async (page) => {
+      await untilDrawn(page, 2);
+      const before = await pictures(page);
+      const hide = (state: 'hidden' | 'visible') => page.evaluate((state) => { Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state }); document.dispatchEvent(new Event('visibilitychange')); }, state);
+      await hide('hidden');
+      await page.evaluate(() => { const app = (window as unknown as Win).thumbsApp; app.bump('simulation'); app.refresh(0); });
+      await page.waitForTimeout(1000);
+      assert.deepEqual(await pictures(page), before, 'nothing drawn while hidden');
+      await hide('visible');
+      await page.waitForFunction((first) => (window as unknown as Win).thumbsApp.pictures()[0] !== first, before[0], { timeout: 30000 });
+    });
+  });
+
+  test(`thumbnails (${name}): a painter that fails twice in a row says so in the log and hands the scenes to live frames`, PATIENT, async (t) => {
+    // Every answer waited for 1 ms: the painter never gives an image.
+    await withThumbs(name, t, 'rows=2&height=800&images=1&timeout=1', async (page) => {
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.logs.some((line) => line.includes('live frames')), null, { timeout: 30000 });
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.calls.length > 2, null, { timeout: 30000 });
+      const logs = await page.evaluate(() => (window as unknown as Win).thumbsApp.logs);
+      assert.ok(logs.some((line) => /failed 2 times in a row/.test(line)), JSON.stringify(logs));
+    });
+  });
+
   test(`thumbnails (${name}): with the engine's renders, each screen of a module is drawn with its files, and measured with its fields`, { timeout: 300000 }, async (t) => {
     if (name === 'firefox') return t.skip('a frame of another origin shows as about:blank in Playwright\'s Firefox, and a frame after the first gets no relay: the BiDi script looks inside');
     const hosts = await startHosts(handlers());
@@ -420,6 +496,58 @@ for (const name of wanted) {
       // The measure: the screen's render with its fields (measureRender), measured in a frame of its own.
       const measured = await page.evaluate((screen) => (window as unknown as Win).thumbsApp.measure(screen, null), screens[0]!);
       assert.ok(measured && typeof measured.overflow === 'number' && measured.fields.length > 0, JSON.stringify(measured));
+    } finally {
+      engineMedia.clear();
+      await context.close();
+      hosts.close();
+      fs.rmSync(profile, { recursive: true, force: true });
+    }
+  });
+
+  test(`thumbnails (${name}): fidelity: each screen of a module as the painter's image is the live frame's, but for a few pixels`, { timeout: 300000 }, async (t) => {
+    if (name === 'firefox') return t.skip('a frame of another origin shows as about:blank in Playwright\'s Firefox, and a frame after the first gets no relay: the BiDi script looks inside');
+    const hosts = await startHosts(handlers());
+    // A profile on disk: the engine keeps its copy in the origin's private file system, which a throwaway profile has none of in WebKit.
+    const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-thumbs-engine-'));
+    let context: BrowserContext | null = null;
+    try {
+      context = await ({ chromium, webkit } as Record<string, typeof webkit>)[name]!.launchPersistentContext(profile, { headless: true, proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: name === 'chromium' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 900 }, serviceWorkers: 'allow' });
+    } catch (error) {
+      hosts.close();
+      fs.rmSync(profile, { recursive: true, force: true });
+      return t.skip(`${name} is not here: ${String(error).split('\n')[0]}`);
+    }
+    try {
+      const { files } = readProjectFiles(EXAMPLE);
+      for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) engineMedia.set(file.hash, fs.readFileSync(path.join(EXAMPLE, rel)));
+      const screens = [...files.keys()].map((rel) => /^screens\/([^/]+)\.json$/.exec(rel)?.[1]).filter((screen): screen is string => !!screen).sort();
+      // The same screens in two lists of the same size: images, and live frames.
+      const shots: Buffer[][] = [];
+      for (const images of [1, 0]) {
+        const page = await context.newPage();
+        await page.goto(`${APP}/thumbs?engine=1&height=880&width=1000&row=320&images=${images}`);
+        await page.waitForFunction(() => !!(window as unknown as Win).thumbsApp, null, { timeout: 30000 });
+        const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
+        await page.evaluate(({ seed, screens }) => (window as unknown as Win).thumbsApp.startEngine(seed, screens), { seed: { link, confirmed: [...files] }, screens });
+        await untilDrawn(page, screens.length);
+        await page.waitForTimeout(images ? 300 : 800);
+        const rows = page.locator('.row');
+        shots.push(await Promise.all(screens.map((_, index) => rows.nth(index).screenshot())));
+        await page.close();
+      }
+      // The share of pixels more than 48/255 apart on a channel, both drawn at 320 × 180 (the canvas compares them).
+      const judge = await context.newPage();
+      await judge.goto(`${APP}/thumbs?rows=0`);
+      for (const [index, screen] of screens.entries()) {
+        const share = await judge.evaluate(async ([a, b]) => {
+          const pixels = async (data: string) => { const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob(), { resizeWidth: 320, resizeHeight: 180 }); const canvas = new OffscreenCanvas(320, 180); const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0); return context.getImageData(0, 0, 320, 180).data; };
+          const [x, y] = [await pixels(a!), await pixels(b!)];
+          let apart = 0;
+          for (let i = 0; i < x.length; i += 4) if (Math.max(Math.abs(x[i]! - y[i]!), Math.abs(x[i + 1]! - y[i + 1]!), Math.abs(x[i + 2]! - y[i + 2]!)) > 48) apart++;
+          return apart / (x.length / 4);
+        }, [shots[0]![index]!.toString('base64'), shots[1]![index]!.toString('base64')]);
+        assert.ok(share < 0.06, `${screen}: ${(share * 100).toFixed(1)} % of the pixels apart`);
+      }
     } finally {
       engineMedia.clear();
       await context.close();

@@ -53,6 +53,7 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D136](decisions/D136.md) | ElevenLabs in a browser: the core's provider, the key held by a page of its own | 26 Nov 2026 |
 | [D137](decisions/D137.md) | A module in another module's charter, in a browser: the charter picked by the core | 26 Nov 2026 |
 | [D138](decisions/D138.md) | « Éléments téléchargés » in a browser: the window's, with no session | 26 Nov 2026 |
+| [D139](decisions/D139.md) | A miniature in a browser is an image a painter draws, kept by its version; the live frames are its fallback | 27 Nov 2026 |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
 | [D15](decisions/D15.md) | Files are the source of truth; every change is an operation | 6 Oct 2026 |
 | [D16](decisions/D16.md) | Media inside the package, one master per file at the high preset | 6 Oct 2026 |
