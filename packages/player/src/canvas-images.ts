@@ -188,6 +188,8 @@ export function createImageThumbs(options: ThumbsOptions, live: Thumbs): Thumbs 
     }
   }
   function failed(entry: Entry, error: unknown): void {
+    // A tab hidden meanwhile serves the painter no animation frame: not the painter's failure; drawn again when the tab is seen.
+    if (hidden()) { entry.wanted = true; return; }
     failures++;
     const why = error instanceof Error ? error.message : String(error);
     if (failures < FAILURES && !broken) {

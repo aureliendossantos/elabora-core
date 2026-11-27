@@ -119,9 +119,12 @@ export async function drawPicture(region: LayoutRect, width: number): Promise<Bl
     crop = { x: region.x * k, y: region.y * k, width: region.width * k, height: region.height * k };
     source = shot;
   }
-  const bitmap = await createImageBitmap(source, Math.round(crop.x), Math.round(crop.y), Math.max(1, Math.round(crop.width)), Math.max(1, Math.round(crop.height)), { resizeWidth: out.width, resizeHeight: out.height, resizeQuality: 'high' });
-  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  canvas.getContext('2d')!.drawImage(bitmap, 0, 0);
+  // Drawn at the size asked by the canvas itself, whatever createImageBitmap's resize does in this browser.
+  const bitmap = await createImageBitmap(source, Math.round(crop.x), Math.round(crop.y), Math.max(1, Math.round(crop.width)), Math.max(1, Math.round(crop.height)));
+  const canvas = new OffscreenCanvas(out.width, out.height);
+  const context = canvas.getContext('2d')!;
+  context.imageSmoothingQuality = 'high';
+  context.drawImage(bitmap, 0, 0, out.width, out.height);
   bitmap.close();
   return canvas.convertToBlob({ type: 'image/webp', quality: QUALITY });
 }
