@@ -40,6 +40,36 @@ const DIRECTIVES = new Set(['data-if', 'data-each', 'data-t-heading']);
 const KEEP_EMPTY = new Set(['alt', 'value']);
 const HTML_NS = 'http://www.w3.org/1999/xhtml';
 
+// What a template may not hold: the validator reports it (E_COMPONENT_TEMPLATE), and the renderer leaves
+// it out, so that a template placed with its errors (a teammate's change the room kept, a waiver) renders
+// without it. The same lists for both.
+export const TEMPLATE_FORBIDDEN_TAGS: ReadonlySet<string> = new Set(['script', 'style', 'iframe', 'frame', 'frameset', 'object', 'embed', 'link', 'meta', 'base', 'form', 'select', 'textarea', 'option', 'canvas', 'dialog', 'template', 'slot', 'video', 'audio', 'source', 'track', 'a', 'area', 'map', 'noscript', 'portal', 'math']);
+// In an SVG: what runs, styles or leaves the SVG, and an animation that would set where a link points.
+const SVG_FORBIDDEN = new Set(['foreignObject', 'script', 'style']);
+const URL_ATTRIBUTE = /^(href|xlink:href|src|srcset|action|formaction|poster|data|background|ping)$/i;
+const SCRIPT_URL = /javascript:|url\(\s*['"]?(https?:)?\/\//i;
+// A template's style only sets custom properties to props (style="--accent: {{accent}}").
+export const TEMPLATE_STYLE = /^\s*(--[a-z0-9-]+\s*:\s*\{\{[^{}]+\}\}\s*;?\s*)*$/i;
+
+// Whether a template's element is one it may not hold (with what is inside it).
+export function templateElementRefused(tag: string, namespace: string, attrs: Readonly<Record<string, string>>): boolean {
+  if (namespace === HTML_NS) return TEMPLATE_FORBIDDEN_TAGS.has(tag);
+  if (SVG_FORBIDDEN.has(tag)) return true;
+  return (tag === 'set' || tag.startsWith('animate')) && URL_ATTRIBUTE.test(attrs.attributeName ?? '');
+}
+
+// Why a template's attribute, as written, is one it may not hold, or null: an event handler, an address
+// (a template points only to fragments of its own SVG, an image only to its asset prop), a style that
+// is more than custom properties, a script or external URL.
+export type AttributeRefusal = 'handler' | 'address' | 'url' | 'style';
+export function templateAttributeRefused(tag: string, name: string, value: string): AttributeRefusal | null {
+  if (/^on/i.test(name)) return 'handler';
+  if (URL_ATTRIBUTE.test(name) && !(tag === 'img' && name === 'src') && !value.startsWith('#')) return 'address';
+  if (name === 'style' && !TEMPLATE_STYLE.test(value)) return 'style';
+  if (SCRIPT_URL.test(value)) return 'url';
+  return null;
+}
+
 const isText = (n: ChildNode): n is TextNode => n.nodeName === '#text';
 const isElement = (n: ChildNode): n is Element => 'tagName' in n;
 // A <template> element holds its children in content.
@@ -253,6 +283,7 @@ export function renderTemplate(tpl: ParsedTemplate, { props = {}, schema = null,
     renderElement(node, scope);
   }
   function renderElement(node: Element, scope: Scope): void {
+    if (templateElementRefused(node.tagName, node.namespaceURI as string, attributes(node))) return;
     const html = (node.namespaceURI as string) === HTML_NS;
     const m = /^h([1-6])$/.exec(node.tagName);
     const follows = !!m && html && (node.attrs || []).some((attribute) => attribute.name === 'data-t-heading');
@@ -261,7 +292,14 @@ export function renderTemplate(tpl: ParsedTemplate, { props = {}, schema = null,
     let s = `<${tag}`;
     for (const a of node.attrs || []) {
       if (DIRECTIVES.has(a.name)) continue;
+      const name = a.prefix ? `${a.prefix}:${a.name}` : a.name;
+      if (templateAttributeRefused(node.tagName, name, a.value)) continue;
       const only = /^\s*\{\{[^{}]+\}\}\s*$/.test(a.value);
+      // An image's source is its asset prop, bound alone, and nothing else.
+      if (html && node.tagName === 'img' && name === 'src') {
+        const bound = only ? lookup(scope, a.value.trim().slice(2, -2).split('|')[0]!.trim()) : null;
+        if (!bound?.found || kindOf(bound.schema) !== 'asset') continue;
+      }
       let v = a.value.replace(INTERP, (_, p: string) => { const r = lookup(scope, p.trim()); return r.found ? attrValue(r.value, r.schema, assetPath) : ''; });
       if (a.name === 'class') v = v.replace(/\s+/g, ' ').trim();
       // A custom property bound to a prop without value is left out (an image without focus), so
@@ -271,7 +309,6 @@ export function renderTemplate(tpl: ParsedTemplate, { props = {}, schema = null,
         if (v === '') continue;
       }
       if (only && v === '' && !KEEP_EMPTY.has(a.name)) continue;
-      const name = a.prefix ? `${a.prefix}:${a.name}` : a.name;
       s += v === '' && !KEEP_EMPTY.has(a.name) && !a.value ? ` ${name}` : ` ${name}="${escAttr(v)}"`;
     }
     const field = fields && html ? textField(node, scope) : null;

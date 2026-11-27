@@ -64,8 +64,8 @@ function pick<T extends object, K extends keyof T>(obj: T, keys: readonly K[]): 
 }
 
 // Plan waivers turn a pedagogical finding into an approved exception (listed in the proof report).
-// Contract-layer and delivery errors cannot be waived.
-const NOT_WAIVABLE = /^E_(PLAN_|SCHEMA|JSON|FILE|FORMAT|DUPLICATE|SUSPEND|PACKAGE|MANIFEST|OBJECT_FORBIDDEN|OBJECT_NONDETERMINISM|LOCKED|UNKNOWN|ASSET|LMS_)/;
+// Contract-layer and delivery errors cannot be waived, nor what a component template may not hold.
+const NOT_WAIVABLE = /^E_(PLAN_|SCHEMA|COMPONENT_TEMPLATE|JSON|FILE|FORMAT|DUPLICATE|SUSPEND|PACKAGE|MANIFEST|OBJECT_FORBIDDEN|OBJECT_NONDETERMINISM|LOCKED|UNKNOWN|ASSET|LMS_)/;
 
 export function applyWaivers(items: Diagnostic[], waivers: readonly PlanWaiver[] = []): Diagnostic[] {
   for (const d of items) {

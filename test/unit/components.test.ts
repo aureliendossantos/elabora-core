@@ -9,7 +9,7 @@ import { parseTemplate, renderTemplate, analyzeTemplate } from '@elabora/core/co
 import { getRegistry, BUILTINS } from '@elabora/core/components/registry';
 import { fallbackBlocks } from '@elabora/core/components/fallback';
 import { checkTemplate } from '@elabora/core/validate/components';
-import { createReporter } from '@elabora/core/diagnostics/index';
+import { applyWaivers, createReporter } from '@elabora/core/diagnostics/index';
 import { exportLessonMd } from '@elabora/node/lesson-md';
 import type { Block, PlanItem, PlanQuestion, PlanQuestionOption } from '@elabora/format';
 import { ROOT, GEARSET, copyExample, readJSON, writeJSON, writeFixture as write, codes } from '../helpers.ts';
@@ -48,6 +48,43 @@ test('templates: bindings, lists, conditions, Markdown, tokens and escaping', ()
   assert.deepEqual([...a.usedProps].sort(), ['accent', 'body', 'items', 'label', 'level', 'photo', 'size']);
   assert.equal(a.unknown.length, 0);
   assert.equal(analyzeTemplate(parseTemplate('<p>{{nope}}</p><i data-each="label"></i>'), schema).unknown.length + analyzeTemplate(parseTemplate('<i data-each="label"></i>'), schema).badEach.length, 2);
+});
+
+// The validation is no frontier: a template placed with its errors (a teammate's change the room kept, a waiver)
+// renders without what the validator refuses, from the same lists.
+test('templates: what the validator refuses is left out of the render, with what is inside it; the rest renders as written', () => {
+  // One element a line: the validator says one finding of a code a line.
+  const html = ['<div class="k" style="--a: {{accent}}">',
+    '<a href="https://example.org/sign-in" target="_top">{{title}}</a>',
+    '<script>alert(1)</script>', '<style>p{color:red}</style>', '<iframe src="https://example.org"></iframe>', '<form action="https://example.org"><button data-t-check>{{title}}</button></form>', '<meta http-equiv="refresh" content="0;url=https://example.org">',
+    '<p onclick="alert(1)" data-href="https://example.org">{{title}}</p>', '<p style="color: red; background: url(//example.org/x.png)">{{title}}</p>', '<span title="javascript:alert(1)">{{title}}</span>',
+    '<img src="https://example.org/pixel.png" alt="">', '<img src="{{label}}" alt="">', '<img src="{{photo}}" alt="">',
+    '<svg aria-hidden="true"><a href="#part"><use href="#part"></use></a>', '<a xlink:href="https://example.org"><text>x</text></a>', '<set attributeName="href" to="https://example.org"></set>', '<animate attributeName="xlink:href" values="https://example.org"></animate>', '<animate attributeName="opacity" values="0;1"></animate>', '<script>alert(1)</script>', '<foreignObject><p>out</p></foreignObject></svg>',
+    '</div>'].join('\n');
+  const schema = { type: 'object', properties: { title: { type: 'string' }, label: { type: 'string' }, accent: { type: 'string', 'x-kind': 'token' }, photo: { type: 'string', 'x-kind': 'asset' } } };
+  const rendered = renderTemplate(parseTemplate(html), { props: { title: 'Titre', label: 'https://example.org/pixel.png', accent: 'color.primary', photo: 'images/a.png' }, schema, id: 'b1' }).html;
+  assert.equal(rendered, '<div class="k" style="--a: var(--t-color-primary)">'
+    + '<p data-href="https://example.org">Titre</p><p>Titre</p><span>Titre</span>'
+    + '<img alt=""><img alt=""><img src="assets/images/a.png" alt="">'
+    + '<svg aria-hidden="true"><a href="#part"><use href="#part"></use></a><a><text>x</text></a><animate attributeName="opacity" values="0;1"></animate></svg>'
+    + '</div>');
+
+  // The validator says each of them, from the same lists.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-template-'));
+  fs.cpSync(GEARSET, dir, { recursive: true });
+  write(dir, 'components/piege/component.json', { id: 'piege', title: 'Piège', version: '1.0.0', category: 'content', props: schema });
+  write(dir, 'components/piege/template.html', html);
+  const project = loadProjectFromDir(dir);
+  const reporter = createReporter();
+  checkTemplate({ project, reporter }, getRegistry(project).get('piege')!);
+  const refused = reporter.items.filter((d) => d.code === 'E_COMPONENT_TEMPLATE').map((d) => d.message);
+  for (const said of ['<a> is not allowed', '<script> is not allowed', '<style> is not allowed', '<iframe> is not allowed', '<form> is not allowed', '<meta> is not allowed', 'Event handler attribute onclick', 'External or script URL', 'style="color: red', '<img src> must be a single binding', '<set attributeName="href">', '<animate attributeName="xlink:href">', '<foreignObject> is not allowed']) {
+    assert.ok(refused.some((message) => message.includes(said)), `${said}\n${refused.join('\n')}`);
+  }
+  assert.ok(!refused.some((message) => message.includes('opacity')), 'an animation of anything but an address is allowed');
+  // Nor is it waived by the plan: a build stops on it.
+  const [finding] = applyWaivers(reporter.items.filter((d) => d.code === 'E_COMPONENT_TEMPLATE').slice(0, 1), [{ code: 'E_COMPONENT_TEMPLATE', reason: 'On purpose', approvedBy: 'Client' }]);
+  assert.equal(finding?.waived, undefined);
 });
 
 test('built-in templates follow the rules agents follow', () => {

@@ -4,7 +4,7 @@ import { getRegistry, analysisOf, stylesOf, componentHash, slotAccepts, BEHAVIOR
 import type { ComponentDescriptor } from '../components/registry.ts';
 import type { TemplateHook } from '../components/template.ts';
 import { CONTROL_NAME, NAMED_CONTROL_HOOKS } from '../components/controls.ts';
-import { kindOf, renderTemplate } from '../components/template.ts';
+import { kindOf, renderTemplate, TEMPLATE_FORBIDDEN_TAGS, templateAttributeRefused, templateElementRefused } from '../components/template.ts';
 import { walkHeadings } from '../components/headings.ts';
 import type { SchemaNode } from '../components/template.ts';
 import { applyDefaults, valuesOfKind } from '../components/props.ts';
@@ -25,10 +25,8 @@ import { isRecord, list, hasId, entriesOf } from './guards.ts';
 // Components: definitions (manifest, props schema, template, CSS, fallback, examples, lineage,
 // library origin, migrations), screen layouts, and every instance (props, slots, fallback).
 
-const FORBIDDEN_TAGS = new Set(['script', 'style', 'iframe', 'frame', 'frameset', 'object', 'embed', 'link', 'meta', 'base', 'form', 'select', 'textarea', 'option', 'canvas', 'dialog', 'template', 'slot', 'video', 'audio', 'source', 'track', 'a', 'area', 'map', 'noscript', 'portal', 'math']);
 const KINDS = new Set(['text', 'markdown', 'tex', 'asset', 'token']);
 const TEXT_ATTRS = ['aria-label', 'title', 'alt', 'placeholder', 'aria-description', 'aria-roledescription'];
-const STYLE_DECL = /^\s*(--[a-z0-9-]+\s*:\s*\{\{[^{}]+\}\}\s*;?\s*)*$/i;
 const XHTML = 'http://www.w3.org/1999/xhtml';
 const LABEL_KEYS = new Set(labelKeys());
 
@@ -175,9 +173,9 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
     const { tag, attrs, line } = element;
     if (element.ns !== XHTML) {
       if (tag === 'svg' && !element.inSvg && attrs['aria-hidden'] !== 'true' && !(attrs.role === 'img' && /\{\{/.test(attrs['aria-label'] || ''))) report('W_COMPONENT_DECORATION', line, 'An <svg> without aria-hidden="true" (decoration) or role="img" with a bound aria-label.');
-      if (tag === 'foreignObject') report('E_COMPONENT_TEMPLATE', line, '<foreignObject> is not allowed in templates.');
+      if (templateElementRefused(tag, element.ns, attrs)) report('E_COMPONENT_TEMPLATE', line, tag === 'set' || tag.startsWith('animate') ? `<${tag} attributeName="${attrs.attributeName}"> would set where a link points: not allowed in templates.` : `<${tag}> is not allowed in templates.`);
     }
-    if (FORBIDDEN_TAGS.has(tag) && element.ns === XHTML) report('E_COMPONENT_TEMPLATE', line, `<${tag}> is not allowed in a component template${tag === 'a' ? ': links belong in Markdown props' : tag === 'video' || tag === 'audio' ? ': place a video or audio block in a slot' : ''}.`);
+    if (TEMPLATE_FORBIDDEN_TAGS.has(tag) && element.ns === XHTML) report('E_COMPONENT_TEMPLATE', line, `<${tag}> is not allowed in a component template${tag === 'a' ? ': links belong in Markdown props' : tag === 'video' || tag === 'audio' ? ': place a video or audio block in a slot' : ''}.`);
     if (tag === 'h1') report('E_COMPONENT_TEMPLATE', line, '<h1> is the screen title: use h2–h4 in components.');
     const hooks = Object.keys(attrs).filter((name) => name.startsWith('data-t-')).map((name) => name.slice(7));
     if (tag === 'button' && !hooks.some((hook) => BUTTON_HOOKS.includes(hook))) report('E_COMPONENT_TEMPLATE', line, `<button> needs a behaviour hook (${BUTTON_HOOKS.map((hook) => `data-t-${hook}`).join(', ')}).`);
@@ -191,10 +189,11 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
       if (attrs.alt === undefined) report('E_COMPONENT_TEMPLATE', line, '<img> needs alt: bound to a text prop, or alt="" when the image is decorative.');
     }
     for (const [name, value] of Object.entries(attrs)) {
-      if (/^on/i.test(name)) report('E_COMPONENT_TEMPLATE', line, `Event handler attribute ${name} is not allowed.`);
-      if (/^(href|xlink:href|src|srcset|action|formaction|poster|data|background|ping)$/i.test(name) && !(tag === 'img' && name === 'src') && !String(value).startsWith('#')) report('E_COMPONENT_TEMPLATE', line, `${name}="${String(value).slice(0, 40)}": templates only point to fragments (#id) of their own SVG.`);
-      if (/javascript:|url\(\s*['"]?(https?:)?\/\//i.test(value)) report('E_COMPONENT_TEMPLATE', line, 'External or script URL in the template.');
-      if (name === 'style' && !STYLE_DECL.test(value)) report('E_COMPONENT_TEMPLATE', line, `style="${value.slice(0, 50)}": only custom properties bound to props (style="--accent: {{accent}}") are allowed; write the rest in component.css.`);
+      const refusal = templateAttributeRefused(tag, name, String(value));
+      if (refusal === 'handler') report('E_COMPONENT_TEMPLATE', line, `Event handler attribute ${name} is not allowed.`);
+      if (refusal === 'address') report('E_COMPONENT_TEMPLATE', line, `${name}="${String(value).slice(0, 40)}": templates only point to fragments (#id) of their own SVG.`);
+      if (refusal === 'url') report('E_COMPONENT_TEMPLATE', line, 'External or script URL in the template.');
+      if (refusal === 'style') report('E_COMPONENT_TEMPLATE', line, `style="${value.slice(0, 50)}": only custom properties bound to props (style="--accent: {{accent}}") are allowed; write the rest in component.css.`);
       if (name === 'id' && !/\{\{\s*@id\s*\}\}/.test(value)) report('W_COMPONENT_ID_ATTR', line, `id="${value}" repeats when ${id} is used twice: write id="${value}-{{@id}}".`);
       if (TEXT_ATTRS.includes(name) && /\p{L}{2,}/u.test(String(value).replace(/\{\{[^}]+\}\}/g, ''))) report('W_COMPONENT_TEXT', line, `${name}="${value.slice(0, 40)}": bind it to a prop.`);
     }
