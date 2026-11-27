@@ -469,8 +469,12 @@ export function createSounds(options: SoundsOptions) {
     get hasInterface() { return !!data?.interface; },
     get hasMusic() { return !!data?.music; },
     state(): SoundsState {
+      // The clock read once: the audio thread moves it on by a render quantum (128 frames, under 3 ms)
+      // whenever it likes, between two reads of a same task too, so a level read on one and a clock on
+      // the next would not match (in a duck's 0.1 s attack, a third of a dB: Ubuntu in CI, 27 Nov 2026).
+      const clock = context ? context.currentTime : 0;
       return {
-        context: context ? context.state : 'none', interface: interfaceOn(), music: prefs.music, ducked: voices.size > 0, musicLevel: context && ducks.length ? duckGainAt(ducks, context.currentTime) : 1, ducks: ducks.map((duck) => ({ ...duck })), clock: context ? context.currentTime : 0,
+        context: context ? context.state : 'none', interface: interfaceOn(), music: prefs.music, ducked: voices.size > 0, musicLevel: context && ducks.length ? duckGainAt(ducks, clock) : 1, ducks: ducks.map((duck) => ({ ...duck })), clock,
         playing: [...[...shots].map((shot) => ({ sound: shot.sound, kind: 'story' as const })), ...[...loops.values()].map((loop) => ({ sound: loop.sound, kind: loop.kind }))],
         played: played.map((entry) => ({ ...entry }))
       };
