@@ -58,15 +58,16 @@ export function createPainter({ canvasOrigin, relayPort, mount, keep, idleMs, ti
     frame.title = '';
     frame.referrerPolicy = 'no-referrer';
     frame.style.cssText = 'border:0;width:1280px;height:720px';
-    holder.append(frame);
-    (mount ?? document.body).append(holder);
-    host.attach(frame);
     const address = new URL(host.info.url);
     address.searchParams.set('mode', 'thumb');
     address.searchParams.set('painter', '1');
     address.searchParams.set('placing', 'editor');
     address.searchParams.set('scrollbars', 'none');
+    // Its address before it is in the page: a frame put in without one loads a blank document first.
     frame.src = address.href;
+    host.attach(frame);
+    holder.append(frame);
+    (mount ?? document.body).append(holder);
     held = { host, holder, frame };
     return held;
   }

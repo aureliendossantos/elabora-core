@@ -6,7 +6,7 @@
 
 import { isRecord } from './json.ts';
 import { PLAYER_PREVIEW_PROTOCOL } from './canvas-protocol.ts';
-import type { AnswerMessage, AskName, BlockLayout, BlockPreviewMeasure, CanvasAsks, CanvasMessage, FieldLayout, FlowLayout, LayoutMessage, LayoutRect, PlacingLayout, ScreenMeasurement, TermLayout, TextLayout } from './canvas-protocol.ts';
+import type { AnswerMessage, AskName, BlockLayout, BlockPreviewMeasure, CanvasAsks, CanvasMessage, FieldLayout, FlowLayout, LayoutMessage, LayoutRect, PictureResult, PlacingLayout, ScreenMeasurement, TermLayout, TextLayout } from './canvas-protocol.ts';
 import type { PlayerItemId } from './course-data.ts';
 
 // How many entries of a list a message may carry: the blocks of a screen are tens, its texts hundreds.
@@ -141,6 +141,14 @@ export function askResultOf<Name extends AskName>(name: Name, value: unknown): {
       if (!isRecord(value) || !finite(value.overflow)) return { ok: false };
       const fields = listOf(value.fields, (entry) => (isRecord(entry) && text(entry.block, 200) && text(entry.path, 500) && finite(entry.width) && finite(entry.height) ? { block: entry.block, path: entry.path, width: entry.width, height: entry.height } : null));
       return fields ? ok({ overflow: value.overflow, fields } satisfies ScreenMeasurement) : { ok: false };
+    }
+    case 'picture': {
+      // Pixels only: a WebP or a PNG, never a type a browser would run as a document.
+      if (value === null) return ok(null);
+      if (!isRecord(value) || typeof value.overflow !== 'boolean') return { ok: false };
+      const image = value.image;
+      if (typeof Blob !== 'function' || !(image instanceof Blob) || (image.type !== 'image/webp' && image.type !== 'image/png') || image.size === 0) return { ok: false };
+      return ok({ image, overflow: value.overflow } satisfies PictureResult);
     }
     default:
       return { ok: false };
