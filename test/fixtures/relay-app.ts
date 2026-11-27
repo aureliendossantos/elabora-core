@@ -28,6 +28,8 @@ const engineStarted = new Promise<Worker>((resolve) => { engineSeed = resolve; }
 let engineRequests = 0;
 
 const log: unknown[] = [];
+// How many times the late page's port was said done (relay/done).
+let lateDone = 0;
 const requests: RelayRequest[] = [];
 const url = (path: string) => `/module/${MODULE}/${path.split('/').map(encodeURIComponent).join('/')}`;
 
@@ -135,9 +137,15 @@ const api = {
   openLate(route: string) {
     const late = document.getElementById('late') as HTMLIFrameElement;
     const channel = new MessageChannel();
-    ends.push(serveRelayPort(channel.port1, source, 'canvas'));
+    ends.push(serveRelayPort(channel.port1, source, 'canvas', () => { lateDone++; }));
     late.contentWindow!.postMessage({ type: 'relay/open', protocol: RELAY_PROTOCOL, route }, CANVAS, [channel.port2]);
   },
+  // The late page's route closed by the window: its page says relay/done on the port, which the engine's end reads.
+  closeLate(route: string) {
+    const late = document.getElementById('late') as HTMLIFrameElement;
+    late.contentWindow!.postMessage({ type: 'relay/close', protocol: RELAY_PROTOCOL, route }, CANVAS);
+  },
+  lateDone: () => lateDone,
   // The engine's Worker, opened on a project's files (the seed), offline; services: those it is given (the canvas: its renders
   // go to the view's host as the window gives them).
   async startEngine(seed: unknown, services?: string[], mediaWorker?: string) {

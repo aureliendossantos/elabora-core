@@ -51,11 +51,14 @@ function declare(): void {
   worker()?.postMessage({ type: 'relay/hold', routes: [...routes.keys()] } satisfies PageToWorker);
 }
 
-function close(route: string): void {
+// The route closed here (relay/close, or another port for it) says relay/done to the engine, which forgets its
+// port; one the engine ended (relay/bye) says nothing back.
+function close(route: string, said = true): void {
   const held = routes.get(route);
   if (!held) return;
   routes.delete(route);
   held.port.onmessage = null;
+  if (said) held.port.postMessage({ type: 'relay/done' } satisfies RelayPortMessage);
   held.port.close();
   for (const resolve of held.waiting.values()) resolve({ status: 'unavailable', message: 'the route was closed' });
 }
@@ -67,7 +70,7 @@ function open(route: string, port: MessagePort): void {
   port.onmessage = (event: MessageEvent<unknown>) => {
     const message = event.data as Partial<EnginePortMessage> | null;
     if (!isRecord(message)) return;
-    if (message.type === 'relay/bye') { if (routes.get(route) === held) close(route); return; }
+    if (message.type === 'relay/bye') { if (routes.get(route) === held) close(route, false); return; }
     if (message.type !== 'relay/answer' || typeof message.id !== 'number') return;
     const answer = parseRelayAnswer(message.answer);
     held.waiting.get(message.id)?.(answer ?? { status: 'failed', message: 'the engine\'s answer is not one' });

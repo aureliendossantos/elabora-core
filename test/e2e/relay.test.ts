@@ -100,6 +100,9 @@ for (const name of wanted) {
       assert.equal(unanswered, 'waiting', 'a request whose route is not open waits');
       await page.evaluate((route) => (window as unknown as { app: { openLate(route: string): void } }).app.openLate(route), lateRoute);
       assert.deepEqual(await asking, { status: 200, start: '{' });
+      // The window closes that route: its page says relay/done, and the engine's end of the port is ended, with no bye.
+      await page.evaluate((route) => (window as unknown as { app: { closeLate(route: string): void } }).app.closeLate(route), lateRoute);
+      await page.waitForFunction(() => (window as unknown as { app: { lateDone(): number } }).app.lateDone() === 1, null, { timeout: 5000 });
 
       // 3. A free object: its frame page by the relay, with the route in its address, its code bundled by the engine.
       await page.waitForFunction(() => document.querySelectorAll('iframe').length >= 2);
