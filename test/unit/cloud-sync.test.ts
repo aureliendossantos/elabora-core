@@ -556,6 +556,13 @@ test('a folder linked for another account sends nothing under the session signed
   assert.ok(fs.existsSync(linkFile(A)), 'still linked');
   assert.equal(screen(A, 'chemin').title, 'Écrit sous un autre compte');
 
+  // The right account signs in again: the copy synced again with the new session's options sends what it kept.
+  const link = readLink(A)!;
+  await bea.cloudRestart({ api: link.api, token: 't2', link, store: { ...folderCopy(A, new CloudClient(link.api, 't2'), link), membership: async () => 'member' }, connect: room.connect, backoff: [20], later: 300, account: async () => 'acc_ada' });
+  await until(() => bea.cloud?.online === true && bea.cloud.pending === 0, 'synced under the right account');
+  assert.equal(room.log.length, 1, 'its change sent once');
+  assert.equal(bea.cloud?.held, null);
+
   // The account the folder was linked for: it connects.
   const B = copyExample();
   const own = new Room(readProjectFiles(B).files);

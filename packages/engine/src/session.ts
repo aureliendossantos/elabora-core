@@ -325,6 +325,17 @@ export class Session {
     await this.#startCloud(options);
   }
 
+  // The copy synced again with the session signed in now (the options read again: cloudSessionOptions): after
+  // a sign-in, a copy held signed-out or other-account goes on, or stays held if the account is still not
+  // its link's. What the copy had not sent is taken again from its link and its journal.
+  async cloudRestart(options: CloudOptions): Promise<void> {
+    this.#assertOpen();
+    const previous = this.#cloud;
+    this.#cloud = null;
+    previous?.stop();
+    await this.#startCloud(options);
+  }
+
   // What a first upload of the open module sends (pushFolder's source): its files and the journal's
   // last entry, read together in the session's queue and under the project's lock. Whatever is done
   // in the module during the upload comes after that entry, and goes to the room as the changes of
