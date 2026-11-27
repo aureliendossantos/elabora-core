@@ -11,6 +11,7 @@ import type { Presence } from '@elabora/core/sync/protocol';
 import { CloudClient, CloudError } from '@elabora/node/cloud/client';
 import { accountForTeams, cloudOffers, createTeam, folderCopy, folderSnapshot, keepConfirmed, linkFile, listOrgs, projectsApi, readLink, teamsOffered, writeLink, type ProjectLink } from '@elabora/node/cloud/projects';
 import { readProjectFiles } from '@elabora/node/project-reader';
+import { readJournal } from '@elabora/node/journal/journal';
 import { listVersions, readVersion } from '@elabora/node/backups/index';
 import { putBytes, readBlob } from '@elabora/node/blobs';
 import { copyExample, readJSON } from '../helpers.ts';
@@ -519,6 +520,21 @@ test('a room that does not say the role in welcome: the copy writes as before, a
   await a.run('update_screen', { id: 'chemin', title: 'Refusé' }, { kind: 'agent', name: 'claude-code' });
   await until(() => outcomes.some((event) => (event.outcome as { refused?: { code: string } }).refused?.code === 'E_SYNC_READ_ONLY'), 'refused, as before D94');
   await until(() => screen(A, 'chemin').title === before, 'the refused change left the module');
+});
+
+test('a change from the room, journaled, is taken in the link the copy keeps: nothing it holds reads as not sent', async () => {
+  const A = copyExample();
+  const B = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  const b = await linked(room, B);
+  await settled(room, a, b);
+  await a.run('update_screen', { id: 'chemin', title: 'Écrit dans A' }, { kind: 'human' });
+  await settled(room, a, b);
+  assert.equal(screen(B, 'chemin').title, 'Écrit dans A');
+  // B's last journal entry is A's change as the room gave it: the link B keeps has taken it in.
+  await until(() => (readLink(B)?.journal ?? 0) >= (readJournal(B).filter((entry) => entry.type !== 'mark').at(-1)?.seq ?? 0), 'the kept link names the last entry');
+  assert.deepEqual(readLink(B)?.waiting, []);
 });
 
 test('a session that ended (4009: signed out, the device revoked) keeps its changes and its link, and does not try again, even when asked (C121)', async () => {

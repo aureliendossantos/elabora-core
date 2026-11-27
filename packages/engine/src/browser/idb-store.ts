@@ -1,5 +1,5 @@
 import type { FileContent, Files, JournalEntry } from '@elabora/core/ops/types';
-import type { CopyLink } from '@elabora/core/sync/copy';
+import { isFromRoom, type CopyLink } from '@elabora/core/sync/copy';
 import { sha256OfBlob } from '@elabora/core/util/sha256';
 import { madeFacts, sha256 } from './store.ts';
 import type { BrowserStore } from './store.ts';
@@ -182,7 +182,8 @@ export async function forgetIdbCopy(key: string): Promise<void> {
 
 // A copy this browser keeps, as read without opening it: its team and project, the account it was made
 // for (« local » for an example kept on this device), and its changes the room has not placed yet (those
-// waiting in its link, and those its journal holds that the link has not taken in yet). account and
+// waiting in its link, and those of its own its journal holds that the link has not taken in yet: not one
+// it wrote from the room, nor one that changed nothing). account and
 // unsent are null for a copy whose link is gone (one the room unlinked: a project left or deleted).
 export interface KeptCopy { key: string; team: string; project: string; account: string | null; unsent: number | null }
 
@@ -217,7 +218,7 @@ export async function keptCopies(): Promise<KeptCopy[]> {
       // An empty database (an opening that found nothing kept, offline): no copy.
       if (!link && !files && !entries.length) continue;
       const [team = key, project = ''] = link ? [link.team, link.project] : key.split(/\.(.*)/s);
-      kept.push({ key, team, project, account: link?.person.id ?? null, unsent: link ? link.waiting.length + entries.filter((entry) => entry.type !== 'mark' && entry.seq > link.journal).length : null });
+      kept.push({ key, team, project, account: link?.person.id ?? null, unsent: link ? link.waiting.length + entries.filter((entry) => entry.type !== 'mark' && entry.seq > link.journal && entry.ops.length > 0 && !isFromRoom(entry)).length : null });
     } finally {
       db.close();
     }

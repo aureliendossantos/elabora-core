@@ -1,4 +1,4 @@
-import type { Author, Files, Op } from '../ops/types.ts';
+import type { Author, ChangeLike, Files, Op } from '../ops/types.ts';
 import type { LocalChange } from './client.ts';
 import type { KnownMedium, MediaFacts, MediaMap } from './media.ts';
 
@@ -12,6 +12,11 @@ import type { KnownMedium, MediaFacts, MediaMap } from './media.ts';
 export interface Person { id: string; name: string | null }
 
 // What the copy remembers of itself, besides what the room confirmed.
+// The command of a journal entry a copy writes from the room (a change of another copy, or its own as the
+// room placed it): never sent back, so never waiting.
+export const SYNC_COMMAND = 'sync';
+export const isFromRoom = (entry: Pick<ChangeLike, 'command'>): boolean => entry.command?.name === SYNC_COMMAND;
+
 export interface CopyLink {
   team: string;
   project: string;

@@ -9,7 +9,7 @@ import { executeCommand } from '@elabora/core/commands/execute';
 import { namedCommand } from '@elabora/core/commands/table';
 import { unmetExpectation, type Expectation } from '@elabora/core/commands/index';
 import { sortDiagnostics, type Diagnostic } from '@elabora/core/diagnostics/index';
-import { stampAuthor } from '@elabora/core/sync/copy';
+import { isFromRoom, stampAuthor } from '@elabora/core/sync/copy';
 import type { ValidationOptions } from '@elabora/core/validate/index';
 import { isRecord } from '@elabora/core/util/values';
 import { ProjectState } from '../base/project-state.ts';
@@ -173,7 +173,8 @@ export class BrowserSession {
     }, { api: options.api, token: options.token ?? '', link: options.store.link, store: options.store, ...(options.connect ? { connect: options.connect } : {}), ...(options.backoff ? { backoff: options.backoff } : {}) });
     // What the journal kept that the copy had not taken in yet: shown at once, taken in as the copy starts.
     this.#pending = entries.filter((entry): entry is ChangeLike => entry.type !== 'mark' && entry.seq > options.store.link.journal);
-    const view = this.#pending.reduce((files, entry) => applyOps(files, entry.ops), this.#cloud.view);
+    // One written from the room is in what the room confirmed already: taken in, not applied again.
+    const view = this.#pending.filter((entry) => !isFromRoom(entry)).reduce((files, entry) => applyOps(files, entry.ops), this.#cloud.view);
     this.#state = new ProjectState(this.id, new Map([...view].map(([rel, file]) => [rel, this.#sourceOf(rel, file) as SourceFile])), [], options.validation);
     this.#changes = new CopyChanges({ state: this.#state, store: this.#store, host: { taken: (taken, source) => this.#taken(taken, source), afterChange: () => this.#afterChange(), emit: (event) => this.#emit(event) } });
     this.#batches = new Batches({ idleMs: 5 * 60_000, run: (work) => this.#queue.run(work), version: async () => null, emit: (event) => this.#emit(event), reportError: (error, context) => this.#emitError(error, context) });

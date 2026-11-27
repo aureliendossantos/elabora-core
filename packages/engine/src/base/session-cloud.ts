@@ -4,7 +4,7 @@ import { sameContent } from '@elabora/core/ops/json';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { SyncClient, type LocalChange, type Outcome } from '@elabora/core/sync/client';
 import { SYNC_PROTOCOL, type ClientMessage, type Committed, type Presence, type RoomRole, type ServerMessage } from '@elabora/core/sync/protocol';
-import { blobsOf, roomUrl, type CopyLink, type CopyStore, type MediumRef } from '@elabora/core/sync/copy';
+import { blobsOf, isFromRoom, roomUrl, type CopyLink, type CopyStore, type MediumRef } from '@elabora/core/sync/copy';
 import { MEDIA_FACTS_VERSION, readKnownMedia, readMediaFacts, type KnownMedium, type MediaFacts, type MediaMap } from '@elabora/core/sync/media';
 import type { Op } from '@elabora/core/ops/types';
 import type { EngineEvent, ExternalNotes } from '../protocol.ts';
@@ -92,13 +92,12 @@ const unref = (timer: Timer): Timer => { (timer as { unref?: () => void }).unref
 const webSocket = (url: string, token: string): RoomSocket =>
   new (WebSocket as unknown as new (url: string, init: { headers: Record<string, string> }) => RoomSocket)(url, { headers: { Authorization: `Bearer ${token}` } });
 
-const SYNC_COMMAND = 'sync';
 // Media whose facts one message gives (elabora-cloud C106: a room takes 1,000).
 const MEDIA_PER_MESSAGE = 500;
 // The media a change's operations write, with the path each is written at.
 const mediaRefs = (ops: readonly Op[]): MediumRef[] => ops.flatMap((op) => (op.op === 'write' && 'blob' in op ? [{ hash: op.blob, path: op.file }] : []));
-// A journal entry the copy wrote from the room: never sent back.
-export const isFromRoom = (entry: ChangeLike): boolean => entry.command?.name === SYNC_COMMAND;
+// A journal entry the copy wrote from the room: never sent back (@elabora/core sync/copy).
+export { isFromRoom };
 
 export class SessionCloud {
   readonly #host: CloudHost;
@@ -184,7 +183,9 @@ export class SessionCloud {
   take(entry: ChangeLike): void {
     if (entry.seq <= this.#link.journal) return;
     this.#link.journal = entry.seq;
-    if (isFromRoom(entry) || !entry.ops.length) return;
+    // Nothing to send: the link is kept as it is now, its journal included, so that what the copy keeps
+    // never names this entry as one not taken in yet (a browser's keptCopies would count it unsent).
+    if (isFromRoom(entry) || !entry.ops.length) { this.#save(); return; }
     const notes = this.#host.notes(entry.id);
     const unsure = notes?.overwrote.filter((overwrite) => overwrite.unsure) ?? [];
     const change: LocalChange = {
