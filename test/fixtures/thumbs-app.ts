@@ -41,6 +41,8 @@ const files: RelaySource = {
 
 // ── The engine's Worker (engine=1) ──────────────────────────────────────────────────────────────
 let worker: Worker | null = null;
+let engineOpen!: () => void;
+const engineStarted = new Promise<void>((resolve) => { engineOpen = resolve; });
 let requests = 0;
 const engine = <T>(type: string, request: unknown, transfer: Transferable[] = []): Promise<T> => {
   const id = `thumbs-${type}-${++requests}`;
@@ -73,9 +75,13 @@ const source: ThumbSource = {
     return { ...made, ...preview } as unknown as ThumbRequests[Name]['result'];
   }
 };
+// noport=1: the engine refuses every route's port.
+const NO_PORT = params.get('noport') === '1';
 const relayPort = async (host: RelayHost, port: MessagePort): Promise<void> => {
   ports++;
-  if (ENGINE) { await engine('relayPort', { host }, [port]); return; }
+  if (NO_PORT) throw new Error('no route');
+  // As in the app, whose engine is there before the miniatures: a port given sooner (the painter, made at once) waits for it.
+  if (ENGINE) { await engineStarted; await engine('relayPort', { host }, [port]); return; }
   ends.push(serveRelayPort(port, files, host, () => { portsDone++; }));
 };
 
@@ -87,7 +93,10 @@ const logs: string[] = [];
 // Every frame's load in the page, the painter's included (the list's own count is `loads`).
 let pageLoads = 0;
 document.addEventListener('load', (event) => { if (event.target instanceof HTMLIFrameElement) pageLoads++; }, true);
-const thumbs = createThumbs({ canvasOrigin: CANVAS, relayPort, source, limit: LIMIT, refreshMs: REFRESH, current: () => current, drawTimeoutMs: DRAW_TIMEOUT, images: IMAGES, log: (message) => { logs.push(message); } });
+// defer=1: the miniatures (and the painter) made when first asked for, as a module opens: a measure reads the browser without them first.
+let made: ReturnType<typeof createThumbs> | null = null;
+const thumbs = () => (made ??= createThumbs({ canvasOrigin: CANVAS, relayPort, source, limit: LIMIT, refreshMs: REFRESH, current: () => current, drawTimeoutMs: DRAW_TIMEOUT, images: IMAGES, log: (message) => { logs.push(message); } }));
+if (params.get('defer') !== '1') thumbs();
 
 document.body.style.cssText = 'margin:0;font:12px sans-serif';
 const list = document.createElement('div');
@@ -104,7 +113,7 @@ const drawn = new Map<number, boolean>();
 const seen = new Map<number, number>();
 const drawnAt = new Map<number, number>();
 function showRow(index: number): void {
-  const one = thumbs.show(rows[index]!, { kind: 'screen', screen: screensOf[index]! });
+  const one = thumbs().show(rows[index]!, { kind: 'screen', screen: screensOf[index]! });
   shown.set(index, one);
   void one.drawn.then((ok) => { if (shown.get(index) !== one) return; drawn.set(index, ok); if (ok) drawnAt.set(index, performance.now()); });
 }
@@ -144,14 +153,14 @@ const api = {
   frameCount: () => document.querySelectorAll('iframe').length,
   get portsDone() { return portsDone; },
   get loads() { return loads; },
-  get live() { return thumbs.live; },
+  get live() { return thumbs().live; },
   frames: () => [...list.querySelectorAll('iframe')].map((frame) => ({ src: frame.src, sandbox: frame.getAttribute('sandbox'), inert: frame.hasAttribute('inert'), ariaHidden: frame.getAttribute('aria-hidden'), parent: (frame.parentElement?.parentElement as HTMLElement | null)?.dataset.index ?? null })),
   setCurrent(screen: string | null) { current = screen; },
   bump(screen: string) { versions.set(screen, (versions.get(screen) ?? 0) + 1); },
   refresh(index: number) { shown.get(index)?.refresh(); },
   release(index: number) { shown.get(index)?.release(); shown.delete(index); drawn.delete(index); },
   scrollTo(top: number) { list.scrollTop = top; },
-  measure: (screen: string, language: string | null) => thumbs.measure(screen, language),
+  measure: (screen: string, language: string | null) => thumbs().measure(screen, language),
   // A block's preview (« Ajouter un bloc ») in an element of its own above the list, of the size given: whether it was drawn, whether the
   // slide runs past the window, and the element's box (the frame's own box is the test's to read inside it).
   async showBlock(screen: string, mini: boolean, width: number, height: number): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null; picture: { width: number; height: number } | null }> {
@@ -159,7 +168,7 @@ const api = {
     element.className = 'block-preview';
     element.style.cssText = `width:${width}px;height:${height}px;overflow:hidden;background:#ddd;position:relative`;
     document.body.prepend(element);
-    const one = thumbs.show(element, { kind: 'block', args: { screen }, mini });
+    const one = thumbs().show(element, { kind: 'block', args: { screen }, mini });
     blocks.push({ element, one });
     const ok = await one.drawn;
     const overflow = one.overflow ? await one.overflow : null;
@@ -167,6 +176,8 @@ const api = {
     if (image) await image.decode().catch(() => {});
     return { drawn: ok, overflow, transform: element.querySelector('iframe')?.style.transform ?? null, picture: image ? { width: image.naturalWidth, height: image.naturalHeight } : null };
   },
+  // The miniatures made now (defer=1), before any row.
+  prepare() { thumbs(); },
   // More rows, one for each screen given.
   build,
   // The previews closed (the picker gone).
@@ -179,10 +190,11 @@ const api = {
     worker = new Worker('/engine-worker.js', { type: 'module' });
     await new Promise((resolve) => { worker!.onmessage = ({ data }) => resolve(data); worker!.postMessage({ kind: 'open', team: 'tm_test', project: 'thumbs-engine', seed, api: 'http://localhost:1', offline: true, services: ['canvas'] }); });
     worker.onmessage = null;
+    engineOpen();
     const opened = performance.now() - started;
     build(screens);
     return opened;
   },
-  close() { thumbs.close(); for (const end of ends.splice(0)) end(); worker?.terminate(); }
+  close() { made?.close(); for (const end of ends.splice(0)) end(); worker?.terminate(); }
 };
 (window as unknown as { thumbsApp: typeof api }).thumbsApp = api;

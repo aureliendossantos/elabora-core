@@ -98,6 +98,9 @@ export function createPainter({ canvasOrigin, relayPort, mount, keep, idleMs, ti
           host.push(made.render, { id });
           const answer = await host.ask('picture', { id, ...ask });
           if (!answer) throw new Error('The painter did not draw the screen in time');
+          // A page whose route did not open drew the screen without the module's files: such an image is not kept for its version.
+          const relay = host.relays().canvas;
+          if (!relay.opened) throw new Error(`The painter's page could not have the module's files${relay.error ? ` (${relay.error})` : ''}`);
           if (!isPicture(answer.image)) throw new Error('The painter gave something that is not a WebP or a PNG');
           return { image: answer.image, overflow: answer.overflow === true };
         } catch (error) {

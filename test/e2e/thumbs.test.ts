@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { chromium, webkit } from 'playwright-core';
+import { chromium, firefox, webkit } from 'playwright-core';
 import type { BrowserContext, Frame, Page } from 'playwright-core';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { startHosts } from '../relay-hosts.ts';
 import { launch } from '../relay-browsers.ts';
 import { APP, CANVAS, FRAMES, authorFiles, engineMedia, handlers } from '../relay-site.ts';
-import { EXAMPLE } from '../helpers.ts';
+import { EXAMPLE, ROOT } from '../helpers.ts';
 
 // The editor's miniatures in a browser (D130): a list of rows that shows each in view as a live frame of the canvas page, through createThumbs,
 // the engine's requests faked (test/fixtures/thumbs-app.ts). ELABORA_RELAY_BROWSERS picks the browsers (Chromium by default). In Playwright's
@@ -460,6 +460,16 @@ for (const name of wanted) {
     });
   });
 
+  test(`thumbnails (${name}): a painter whose route does not open keeps no image drawn without the module's files`, PATIENT, async (t) => {
+    // The relay's port is refused: the page would draw its screens without their files.
+    await withThumbs(name, t, 'rows=2&height=800&images=1&noport=1', async (page) => {
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.logs.some((line) => line.includes('live frames')), null, { timeout: 60000 });
+      const logs = await page.evaluate(() => (window as unknown as Win).thumbsApp.logs);
+      assert.ok(logs.some((line) => /could not have the module's files/.test(line)), JSON.stringify(logs));
+      assert.ok((await pictures(page)).every((source) => source === null), 'no image kept');
+    });
+  });
+
   test(`thumbnails (${name}): with the engine's renders, each screen of a module is drawn with its files, and measured with its fields`, { timeout: 300000 }, async (t) => {
     if (name === 'firefox') return t.skip('a frame of another origin shows as about:blank in Playwright\'s Firefox, and a frame after the first gets no relay: the BiDi script looks inside');
     const hosts = await startHosts(handlers());
@@ -504,55 +514,61 @@ for (const name of wanted) {
     }
   });
 
-  test(`thumbnails (${name}): fidelity: each screen of a module as the painter's image is the live frame's, but for a few pixels`, { timeout: 300000 }, async (t) => {
-    if (name === 'firefox') return t.skip('a frame of another origin shows as about:blank in Playwright\'s Firefox, and a frame after the first gets no relay: the BiDi script looks inside');
+  test(`thumbnails (${name}): fidelity: each screen of two modules (one of photos, veils and masks) as the painter's image is the live frame's, but for a few pixels`, { timeout: 400000 }, async (t) => {
+    // Firefox's live frames show nothing in Playwright (a frame of another origin is about:blank): its images are held to Chromium's.
+    const live = name === 'firefox' ? 'chromium' : name;
+    const engines = { chromium, webkit, firefox } as Record<string, typeof webkit>;
     const hosts = await startHosts(handlers());
-    // A profile on disk: the engine keeps its copy in the origin's private file system, which a throwaway profile has none of in WebKit.
-    const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-thumbs-engine-'));
-    let context: BrowserContext | null = null;
     try {
-      context = await ({ chromium, webkit } as Record<string, typeof webkit>)[name]!.launchPersistentContext(profile, { headless: true, proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: name === 'chromium' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 900 }, serviceWorkers: 'allow' });
-    } catch (error) {
-      hosts.close();
-      fs.rmSync(profile, { recursive: true, force: true });
-      return t.skip(`${name} is not here: ${String(error).split('\n')[0]}`);
-    }
-    try {
-      const { files } = readProjectFiles(EXAMPLE);
-      for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) engineMedia.set(file.hash, fs.readFileSync(path.join(EXAMPLE, rel)));
-      const screens = [...files.keys()].map((rel) => /^screens\/([^/]+)\.json$/.exec(rel)?.[1]).filter((screen): screen is string => !!screen).sort();
-      // The same screens in two lists of the same size: images, and live frames.
-      const shots: Buffer[][] = [];
-      for (const images of [1, 0]) {
-        const page = await context.newPage();
-        await page.goto(`${APP}/thumbs?engine=1&height=880&width=1000&row=320&images=${images}`);
-        await page.waitForFunction(() => !!(window as unknown as Win).thumbsApp, null, { timeout: 30000 });
-        const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
-        await page.evaluate(({ seed, screens }) => (window as unknown as Win).thumbsApp.startEngine(seed, screens), { seed: { link, confirmed: [...files] }, screens });
-        await untilDrawn(page, screens.length);
-        await page.waitForTimeout(images ? 300 : 800);
-        const rows = page.locator('.row');
-        shots.push(await Promise.all(screens.map((_, index) => rows.nth(index).screenshot())));
-        await page.close();
-      }
-      // The share of pixels more than 48/255 apart on a channel, both drawn at 320 × 180 (the canvas compares them).
-      const judge = await context.newPage();
-      await judge.goto(`${APP}/thumbs?rows=0`);
-      for (const [index, screen] of screens.entries()) {
-        const share = await judge.evaluate(async ([a, b]) => {
-          const pixels = async (data: string) => { const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob(), { resizeWidth: 320, resizeHeight: 180 }); const canvas = new OffscreenCanvas(320, 180); const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0); return context.getImageData(0, 0, 320, 180).data; };
-          const [x, y] = [await pixels(a!), await pixels(b!)];
-          let apart = 0;
-          for (let i = 0; i < x.length; i += 4) if (Math.max(Math.abs(x[i]! - y[i]!), Math.abs(x[i + 1]! - y[i + 1]!), Math.abs(x[i + 2]! - y[i + 2]!)) > 48) apart++;
-          return apart / (x.length / 4);
-        }, [shots[0]![index]!.toString('base64'), shots[1]![index]!.toString('base64')]);
-        assert.ok(share < 0.06, `${screen}: ${(share * 100).toFixed(1)} % of the pixels apart`);
+      for (const module of [EXAMPLE, path.join(ROOT, 'examples/coffee-in-brief')]) {
+        engineMedia.clear();
+        const { files } = readProjectFiles(module);
+        for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) engineMedia.set(file.hash, fs.readFileSync(path.join(module, rel)));
+        const screens = [...files.keys()].map((rel) => /^screens\/([^/]+)\.json$/.exec(rel)?.[1]).filter((screen): screen is string => !!screen).sort();
+        // The same screens in two lists of the same size, all in view: live frames, then images; the images' browser compares them.
+        let shots: Buffer[] = [];
+        for (const [browser, images] of [[live, 0], [name, 1]] as const) {
+          // A profile on disk for each list: the engine keeps its copy in the origin's private file system (which a throwaway profile has
+          // none of in WebKit), and a module opened again there would find the copy of the one before.
+          const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-thumbs-engine-'));
+          let context: BrowserContext;
+          try {
+            context = await engines[browser]!.launchPersistentContext(profile, { headless: true, proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: browser === 'chromium' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 1400 }, serviceWorkers: 'allow' });
+          } catch (error) {
+            fs.rmSync(profile, { recursive: true, force: true });
+            return t.skip(`${browser} is not here: ${String(error).split('\n')[0]}`);
+          }
+          try {
+            const page = await context.newPage();
+            await page.goto(`${APP}/thumbs?engine=1&height=1380&width=1000&row=320&images=${images}`);
+            await page.waitForFunction(() => !!(window as unknown as Win).thumbsApp, null, { timeout: 30000 });
+            const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
+            await page.evaluate(({ seed, screens }) => (window as unknown as Win).thumbsApp.startEngine(seed, screens), { seed: { link, confirmed: [...files] }, screens });
+            await untilDrawn(page, screens.length);
+            await page.waitForTimeout(images ? 300 : 800);
+            const rows = page.locator('.row');
+            const taken = await Promise.all(screens.map((_, index) => rows.nth(index).screenshot()));
+            if (!images) { shots = taken; continue; }
+            // The share of pixels more than 48/255 apart on a channel, both drawn at 320 × 180 (the canvas compares them).
+            for (const [index, screen] of screens.entries()) {
+              const share = await page.evaluate(async ([a, b]) => {
+                const pixels = async (data: string) => { const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob(), { resizeWidth: 320, resizeHeight: 180 }); const canvas = new OffscreenCanvas(320, 180); const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0); return context.getImageData(0, 0, 320, 180).data; };
+                const [x, y] = [await pixels(a!), await pixels(b!)];
+                let apart = 0;
+                for (let i = 0; i < x.length; i += 4) if (Math.max(Math.abs(x[i]! - y[i]!), Math.abs(x[i + 1]! - y[i + 1]!), Math.abs(x[i + 2]! - y[i + 2]!)) > 48) apart++;
+                return apart / (x.length / 4);
+              }, [shots[index]!.toString('base64'), taken[index]!.toString('base64')]);
+              assert.ok(share < 0.06, `${path.basename(module)} ${screen}: ${(share * 100).toFixed(1)} % of the pixels apart`);
+            }
+          } finally {
+            await context.close();
+            fs.rmSync(profile, { recursive: true, force: true });
+          }
+        }
       }
     } finally {
       engineMedia.clear();
-      await context.close();
       hosts.close();
-      fs.rmSync(profile, { recursive: true, force: true });
     }
   });
 }

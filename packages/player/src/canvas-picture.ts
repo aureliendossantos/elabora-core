@@ -36,8 +36,13 @@ interface DrawingContext extends CanvasRenderingContext2D {
 }
 type Snapdom = { toCanvas(element: Element, options: Record<string, unknown>): Promise<HTMLCanvasElement> };
 
-let drawer: { kind: 'element'; canvas: ElementCanvas; root: HTMLElement } | { kind: 'snapdom' } | null = null;
+let drawer: { kind: 'element'; canvas: ElementCanvas; root: HTMLElement } | { kind: 'snapdom'; loads: PerformanceObserver | null } | null = null;
 let snapdomLoaded: Promise<Snapdom> | null = null;
+// Whether the page has loaded an image or a font since its last picture (its first: yes).
+let freshFiles = true;
+// What the page itself loads: not snapdom's own fetches, nor its script.
+const PAGE_LOADS = new Set(['img', 'image', 'css', 'link', 'other', 'video']);
+const loadedFiles = (entries: PerformanceEntryList): boolean => entries.some((entry) => PAGE_LOADS.has((entry as PerformanceResourceTiming).initiatorType));
 
 // Made once, as the painter's page starts: where the browser draws HTML in a canvas, the page's root goes inside one.
 export function preparePainter(root: HTMLElement): 'element' | 'snapdom' {
@@ -46,7 +51,12 @@ export function preparePainter(root: HTMLElement): 'element' | 'snapdom' {
   canvas.setAttribute('content', 'drawable');
   const context = canvas.getContext('2d') as DrawingContext | null;
   if (!context || typeof context.drawElementImage !== 'function') {
-    drawer = { kind: 'snapdom' };
+    let loads: PerformanceObserver | null = null;
+    try {
+      loads = new PerformanceObserver((list) => { if (loadedFiles(list.getEntries())) freshFiles = true; });
+      loads.observe({ type: 'resource' });
+    } catch { loads = null; }
+    drawer = { kind: 'snapdom', loads };
     return 'snapdom';
   }
   canvas.id = 'elabora-painter';
@@ -114,7 +124,13 @@ export async function drawPicture(region: LayoutRect, width: number): Promise<Bl
     const snapdom = await loadSnapdom();
     // Drawn at the size the part needs, never larger than the window.
     const scale = Math.min(1, out.width / region.width);
-    const shot = await snapdom.toCanvas(document.documentElement, { width: Math.round(innerWidth * scale), embedFonts: true, clip: 'viewport' });
+    const options = { width: Math.round(innerWidth * scale), embedFonts: true, clip: 'viewport' };
+    // An image the copy holds is drawn only once the browser has decoded it, after the copy is drawn in Firefox (its text in
+    // its place): when the page has loaded files since its last picture, a first copy is made for them and set aside.
+    if (drawer.loads && loadedFiles(drawer.loads.takeRecords())) freshFiles = true;
+    if (freshFiles || !drawer.loads) await snapdom.toCanvas(document.documentElement, options);
+    freshFiles = false;
+    const shot = await snapdom.toCanvas(document.documentElement, options);
     const k = shot.width / innerWidth;
     crop = { x: region.x * k, y: region.y * k, width: region.width * k, height: region.height * k };
     source = shot;

@@ -234,7 +234,7 @@ export function createPageCanvasHost({ canvasOrigin, framesOrigin, frames: withF
         state.opened = false;
         state.version = relayMessage.version;
         // A script that took the page over, or a page loaded again, says ready again: the route is opened again.
-        void open(entry).catch((error: unknown) => { state.error = error instanceof Error ? error.message : String(error); });
+        void open(entry).catch((error: unknown) => { state.error = error instanceof Error ? error.message : String(error); checkOpened(); });
       } else if (relayMessage.type === 'relay/opened') { state.opened = true; checkOpened(); }
       else if (relayMessage.type === 'relay/closed') state.opened = false;
       else if (relayMessage.type === 'relay/updated') state.version = relayMessage.version;
