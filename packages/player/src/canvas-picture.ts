@@ -105,21 +105,25 @@ function loadSnapdom(): Promise<Snapdom> {
 // The page's background, under what is transparent in it.
 const background = (): string => [document.body, document.documentElement].map((node) => getComputedStyle(node).backgroundColor).find((colour) => colour && colour !== 'rgba(0, 0, 0, 0)' && colour !== 'transparent') ?? '#fff';
 
-// The window copied by snapdom at the size a part of it needs (never larger than the window), and that part in the copy.
+// The page copied by snapdom at the size a part of the window needs (never larger than the page), and that part in the copy. The
+// whole page, not the window: snapdom's clip to the window (`clip`) leaves out blocks that are in it in some layouts (a charter's
+// statement screen drew its paper alone); a slide is the window's size anyway, and a scrolling page is cropped at its scroll.
 async function snapshot(region: LayoutRect, width: number, loads: PerformanceObserver | null): Promise<{ source: CanvasImageSource; crop: LayoutRect }> {
   const snapdom = await loadSnapdom();
+  const page = document.documentElement;
   const scale = Math.min(1, width / region.width);
-  const options = { width: Math.round(innerWidth * scale), embedFonts: true, clip: 'viewport' };
+  const options = { width: Math.round(page.scrollWidth * scale), embedFonts: true };
   // In Firefox, when the page has loaded files since its last picture, a first copy is made and set aside: its images are decoded
   // for the second (7 to 30 ms each there).
   if (loads) {
     if (loadedFiles(loads.takeRecords())) freshFiles = true;
-    if (freshFiles) await snapdom.toCanvas(document.documentElement, options);
+    if (freshFiles) await snapdom.toCanvas(page, options);
     freshFiles = false;
   }
-  const shot = await snapdom.toCanvas(document.documentElement, options);
-  const k = shot.width / innerWidth;
-  return { source: shot, crop: { x: region.x * k, y: region.y * k, width: region.width * k, height: region.height * k } };
+  const shot = await snapdom.toCanvas(page, options);
+  const kx = shot.width / page.scrollWidth;
+  const ky = shot.height / page.scrollHeight;
+  return { source: shot, crop: { x: (region.x + scrollX) * kx, y: (region.y + scrollY) * ky, width: region.width * kx, height: region.height * ky } };
 }
 
 // A part of the window (CSS px), drawn `width` px wide: a WebP (a PNG where the browser writes no WebP).

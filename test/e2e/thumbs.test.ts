@@ -587,13 +587,13 @@ for (const name of wanted) {
     }
   });
 
-  test(`thumbnails (${name}): fidelity: each screen of two modules (one of photos, veils and masks) as the painter's image is the live frame's, but for a few pixels`, { timeout: 400000 }, async (t) => {
+  test(`thumbnails (${name}): fidelity: each screen of three modules (photos, veils and masks; a charter's statement screens) as the painter's image is the live frame's, but for a few pixels`, { timeout: 400000 }, async (t) => {
     // Firefox's live frames show nothing in Playwright (a frame of another origin is about:blank): its images are held to Chromium's.
     const live = name === 'firefox' ? 'chromium' : name;
     const engines = { chromium, chrome: chromium, webkit, firefox } as Record<string, typeof webkit>;
     const hosts = await startHosts(handlers());
     try {
-      for (const module of [EXAMPLE, path.join(ROOT, 'examples/coffee-in-brief')]) {
+      for (const module of [EXAMPLE, path.join(ROOT, 'examples/coffee-in-brief'), path.join(ROOT, 'templates/watercolor')]) {
         engineMedia.clear();
         const { files } = readProjectFiles(module);
         for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) engineMedia.set(file.hash, fs.readFileSync(path.join(module, rel)));
@@ -613,7 +613,8 @@ for (const name of wanted) {
           }
           try {
             const page = await context.newPage();
-            await page.goto(`${APP}/thumbs?engine=1&height=1380&width=1000&row=320&images=${images}`);
+            // As many live frames as screens (a template has 14), so that the reference draws them all at once.
+            await page.goto(`${APP}/thumbs?engine=1&height=1380&width=1000&row=320&limit=16&images=${images}`);
             await page.waitForFunction(() => !!(window as unknown as Win).thumbsApp, null, { timeout: 30000 });
             const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
             await page.evaluate(({ seed, screens }) => (window as unknown as Win).thumbsApp.startEngine(seed, screens), { seed: { link, confirmed: [...files] }, screens });
@@ -623,6 +624,7 @@ for (const name of wanted) {
             const taken = await Promise.all(screens.map((_, index) => rows.nth(index).screenshot()));
             if (!images) { shots = taken; continue; }
             // The share of pixels more than 48/255 apart on a channel, both drawn at 320 × 180 (the canvas compares them).
+            const shares: number[] = [];
             for (const [index, screen] of screens.entries()) {
               const share = await page.evaluate(async ([a, b]) => {
                 const pixels = async (data: string) => { const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob(), { resizeWidth: 320, resizeHeight: 180 }); const canvas = new OffscreenCanvas(320, 180); const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0); return context.getImageData(0, 0, 320, 180).data; };
@@ -632,7 +634,12 @@ for (const name of wanted) {
                 return apart / (x.length / 4);
               }, [shots[index]!.toString('base64'), taken[index]!.toString('base64')]);
               assert.ok(share < 0.06, `${path.basename(module)} ${screen}: ${(share * 100).toFixed(1)} % of the pixels apart`);
+              shares.push(share);
             }
+            // Over a module, text lost on a plain page shows (a charter's statements without their words: 2.4 % on average, against
+            // 1 % at most between engines).
+            const mean = shares.reduce((sum, share) => sum + share, 0) / shares.length;
+            assert.ok(mean < 0.015, `${path.basename(module)}: ${(mean * 100).toFixed(2)} % of the pixels apart on average`);
           } finally {
             await context.close();
             fs.rmSync(profile, { recursive: true, force: true });
