@@ -58,9 +58,9 @@ interface Entry {
 // browser Elabora runs in has them); a test or a host may also ask for the live frames.
 export const imagesHere = (): boolean => typeof OffscreenCanvas === 'function' && typeof createImageBitmap === 'function' && typeof IntersectionObserver === 'function';
 
-// WebKit keeps memory for each document a frame loads: its painter lives as long as the miniatures. Read from the user agent, as no
-// feature tells it.
-export const keepsPainter = (): boolean => typeof navigator !== 'undefined' && /AppleWebKit/.test(navigator.userAgent) && !/(Chrome|Chromium|CriOS|Edg|Firefox|FxiOS)\//.test(navigator.userAgent);
+// WebKit keeps memory for each document a frame loads: its painter lives as long as the miniatures (Safari, and every browser of iOS).
+// Read from the user agent, as no feature tells it.
+export const keepsPainter = (): boolean => typeof navigator !== 'undefined' && /AppleWebKit/.test(navigator.userAgent) && (/(CriOS|FxiOS|EdgiOS)\//.test(navigator.userAgent) || !/(Chrome|Chromium|Edg|Firefox)\//.test(navigator.userAgent));
 
 export function createImageThumbs(options: ThumbsOptions, live: Thumbs): Thumbs {
   const { canvasOrigin, relayPort, source, current, mount, settleMs = THUMB_SETTLE_MS, drawTimeoutMs = 20000 } = options;
@@ -147,6 +147,8 @@ export function createImageThumbs(options: ThumbsOptions, live: Thumbs): Thumbs 
     holder.append(image);
     const previous = entry.holder;
     image.decode().then(() => {
+      // A failure is one in a row until an image shows, not until one is painted: a page that cannot show them fails after painting.
+      failures = 0;
       if (entry.released || entry.key !== key) { holder.remove(); return; }
       if (getComputedStyle(entry.element).position === 'static') entry.element.style.position = 'relative';
       entry.element.append(holder);
@@ -187,7 +189,6 @@ export function createImageThumbs(options: ThumbsOptions, live: Thumbs): Thumbs 
       let held = kept.get(key);
       if (!held && !entry.released) {
         const painted = await painter.paint(made, ask);
-        failures = 0;
         held = keep(key, painted.image, painted.overflow);
       }
       if (held && !entry.released && !closed) show(entry, key, held);

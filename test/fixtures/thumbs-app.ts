@@ -153,7 +153,7 @@ const api = {
   frameCount: () => document.querySelectorAll('iframe').length,
   get portsDone() { return portsDone; },
   get loads() { return loads; },
-  get live() { return thumbs().live; },
+  get live() { return made?.live ?? 0; },
   frames: () => [...list.querySelectorAll('iframe')].map((frame) => ({ src: frame.src, sandbox: frame.getAttribute('sandbox'), inert: frame.hasAttribute('inert'), ariaHidden: frame.getAttribute('aria-hidden'), parent: (frame.parentElement?.parentElement as HTMLElement | null)?.dataset.index ?? null })),
   setCurrent(screen: string | null) { current = screen; },
   bump(screen: string) { versions.set(screen, (versions.get(screen) ?? 0) + 1); },
