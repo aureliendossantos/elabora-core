@@ -1,7 +1,7 @@
 {
   "name": "@elabora/node",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Elabora services for Node: file store, build and packaging, media, backups, LMS emulator, free-object gates, preview and captures.",
   "type": "module",
   "license": "Apache-2.0",

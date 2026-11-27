@@ -1,7 +1,7 @@
 {
   "name": "@elabora/core",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Elabora core logic without I/O: project model, validation, components, compilation plan, edit operations.",
   "type": "module",
   "license": "Apache-2.0",

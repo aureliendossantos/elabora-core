@@ -1,7 +1,7 @@
 {
   "name": "@elabora/player",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The Elabora player: the browser runtime shipped inside every package (no dependencies, no Node APIs).",
   "type": "module",
   "license": "Apache-2.0",
