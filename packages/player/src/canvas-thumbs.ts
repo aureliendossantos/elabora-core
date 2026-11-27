@@ -382,7 +382,8 @@ export function createLiveThumbs({ canvasOrigin, relayPort, source, limit = THUM
       // In the view and clipped to a pixel: a browser does not draw a frame of another site that is out of the view (Chromium and WebKit never answer).
       const holder = document.createElement('div');
       holder.setAttribute('aria-hidden', 'true');
-      holder.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;pointer-events:none;';
+      // Above the page, as the painter's (canvas-painter.ts): a covered frame of another origin gets about one animation frame a second in Chrome.
+      holder.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;pointer-events:none;z-index:2147483647;';
       const frame = document.createElement('iframe');
       frame.setAttribute('sandbox', host.info.sandbox);
       frame.setAttribute('aria-hidden', 'true');

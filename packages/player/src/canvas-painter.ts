@@ -52,7 +52,9 @@ export function createPainter({ canvasOrigin, relayPort, mount, keep, idleMs, re
     const host = createPageCanvasHost({ canvasOrigin, frames: false, relayPort, mount: mount ?? document.body, askTimeoutMs: timeoutMs });
     const holder = document.createElement('div');
     holder.setAttribute('aria-hidden', 'true');
-    holder.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;pointer-events:none;';
+    // Above the page: Chrome gives a frame of another origin that the page covers about one animation frame a second (a picture
+    // waited 3 s under the window's bar).
+    holder.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;pointer-events:none;z-index:2147483647;';
     const frame = document.createElement('iframe');
     frame.setAttribute('sandbox', host.info.sandbox);
     frame.setAttribute('aria-hidden', 'true');
