@@ -7,18 +7,28 @@ import path from 'node:path';
 
 const module = new URL('../../scripts/heavy-slots.ts', import.meta.url).href;
 
-// A process that takes a slot, says so, holds it ms milliseconds, then ends (killed with SIGKILL
-// when kill is set: it gives nothing back).
+// A process that takes a slot, says so with the time it got it, holds it ms milliseconds, then ends
+// (killed with SIGKILL when kill is set: it gives nothing back). given is the time it gave its slot
+// back: a test of waiting compares a waiter's time with it, not a number of milliseconds waited,
+// which leaves out how long the waiter took to start (a Node and a TypeScript script: over half a
+// second on CI's macOS, 27 Nov 2026).
 function holder(env: NodeJS.ProcessEnv, ms: number, kill = false) {
   const code = `const { acquire } = await import(${JSON.stringify(module)});
     const slot = await acquire('holder');
-    console.log(JSON.stringify({ waited: slot.waited, env: slot.env }));
+    console.log(JSON.stringify({ waited: slot.waited, env: slot.env, at: Date.now() }));
     await new Promise((resolve) => setTimeout(resolve, ${ms}));
-    ${kill ? "process.kill(process.pid, 'SIGKILL');" : 'slot.release();'}`;
+    ${kill ? "process.kill(process.pid, 'SIGKILL');" : 'console.log(JSON.stringify({ given: Date.now() })); slot.release();'}`;
   const child = spawn(process.execPath, ['--input-type=module', '-e', code], { env, stdio: ['ignore', 'pipe', 'inherit'] });
-  const said = new Promise<{ waited: number; env: Record<string, string> }>((resolve) => child.stdout.once('data', (data: Buffer) => resolve(JSON.parse(data.toString()))));
+  let out = '';
+  child.stdout.on('data', (data: Buffer) => { out += data.toString(); });
+  const lines = () => out.split('\n').filter(Boolean).map((line) => JSON.parse(line) as Record<string, unknown>);
+  const said = new Promise<{ waited: number; env: Record<string, string>; at: number }>((resolve) => {
+    const look = () => { const first = out.includes('\n') && lines()[0]; if (first) { child.stdout.off('data', look); resolve(first as { waited: number; env: Record<string, string>; at: number }); } };
+    child.stdout.on('data', look);
+  });
   const ended = new Promise<void>((resolve) => child.once('close', () => resolve()));
-  return { said, ended };
+  const given = ended.then(() => lines().find((line) => typeof line.given === 'number')?.given as number | undefined);
+  return { said, ended, given };
 }
 
 const fresh = (slots: number): NodeJS.ProcessEnv => ({ ...process.env, ELABORA_HEAVY_SLOTS: String(slots), ELABORA_HEAVY_SLOTS_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-slots-test-')), ELABORA_HEAVY_SLOT: '', NODE_TEST_CONTEXT: undefined });
@@ -28,9 +38,11 @@ test('heavy slots: a process waits while every slot is taken, then takes the one
   const first = holder(env, 1500);
   assert.ok((await first.said).waited < 1000);
   const second = holder(env, 0);
-  const { waited } = await second.said;
-  assert.ok(waited >= 1000, `the second waited for the first (${waited} ms)`);
-  await Promise.all([first.ended, second.ended]);
+  const { waited, at } = await second.said;
+  const given = await first.given;
+  assert.ok(given !== undefined && at >= given, `the second took the slot once the first gave it back (${at - given!} ms after, ${waited} ms waited)`);
+  assert.ok(waited > 0, 'the second waited');
+  await second.ended;
 });
 
 test('heavy slots: two slots run two at once', { timeout: 30_000 }, async () => {
@@ -62,8 +74,10 @@ test('heavy slots: a child of the holder takes its slot at once, a stranger wait
   await child.ended;
   assert.ok(fs.existsSync(path.join(env.ELABORA_HEAVY_SLOTS_DIR!, 'slot-0')), 'the child gives back nothing of its parent\'s');
   const stranger = holder(env, 0);
-  assert.ok((await stranger.said).waited >= 1000, 'a process the slot was not handed to waits');
-  await Promise.all([parent.ended, stranger.ended]);
+  const { at } = await stranger.said;
+  const given = await parent.given;
+  assert.ok(given !== undefined && at >= given, `a process the slot was not handed to waits for it to be given back (${at - given!} ms after)`);
+  await stranger.ended;
 });
 
 test('heavy slots: as node --import, a slot for the script\'s life; under node --test, one for each e2e file, none for the runner or a unit file', () => {
