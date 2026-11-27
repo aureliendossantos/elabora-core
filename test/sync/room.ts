@@ -25,7 +25,7 @@ export class Room {
   sayRole = true;
   // Every hello closed with this code (elabora-cloud C80, C83: another protocol, a newer storage, every
   // connection taken), and how many hellos came.
-  refuseHello: { code: 4005 | 4006 | 4007; reason?: string } | null = null;
+  refuseHello: { code: 4005 | 4006 | 4007 | 4009; reason?: string } | null = null;
   hellos = 0;
   // The project whole of a copy of another history, held until let go (what comes between the welcome
   // and it), and the bases of the changes submitted.
@@ -165,7 +165,7 @@ export class Room {
     for (const socket of this.sockets) if (socket.presence?.client === client) socket.deliver({ type: 'role', role });
   }
   // A copy sent away for good: its membership ended (4003), or the project was deleted (4004).
-  end(client: string, code: 4003 | 4004): void { for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(code); }
+  end(client: string, code: 4003 | 4004 | 4009): void { for (const socket of [...this.sockets]) if (socket.presence?.client === client) socket.close(code); }
 }
 
 export class FakeSocket implements RoomSocket {
