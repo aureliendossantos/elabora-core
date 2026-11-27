@@ -43,7 +43,7 @@ test('cloud teams and cloud project before a server without teams: said in words
       const run = await elabora(args);
       assert.equal(run.status, 1, `${args.join(' ')}: an error (${JSON.stringify(answer)})`);
       assert.match(run.stderr, /has no teams yet/, args.join(' '));
-      assert.doesNotMatch(run.stderr, /503|not-configured|Not configured/, args.join(' '));
+      assert.doesNotMatch(run.stderr, /\b503\b|not-configured|Not configured/, args.join(' '));
     }
   }
   said = { teams: true };

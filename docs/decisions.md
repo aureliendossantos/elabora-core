@@ -55,6 +55,8 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D138](decisions/D138.md) | « Éléments téléchargés » in a browser: the window's, with no session | 26 Nov 2026 |
 | [D139](decisions/D139.md) | A miniature in a browser is an image a painter draws, kept by its version; the live frames are its fallback | 27 Nov 2026 |
 | [D14](decisions/D14.md) | One component model, headless behaviours (prototype) |  |
+| [D140](decisions/D140.md) | A browser's copy opens only for its account and as its project's; the window can read and erase them all | 27 Nov 2026 |
+| [D141](decisions/D141.md) | A component template renders without what the validator refuses | 27 Nov 2026 |
 | [D15](decisions/D15.md) | Files are the source of truth; every change is an operation | 6 Oct 2026 |
 | [D16](decisions/D16.md) | Media inside the package, one master per file at the high preset | 6 Oct 2026 |
 | [D17](decisions/D17.md) | Backups in a content-addressed version store, not git | 6 Oct 2026 |
