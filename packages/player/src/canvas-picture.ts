@@ -36,8 +36,11 @@ interface DrawingContext extends CanvasRenderingContext2D {
 }
 type Snapdom = { toCanvas(element: Element, options: Record<string, unknown>): Promise<HTMLCanvasElement> };
 
-let drawer: { kind: 'element'; canvas: ElementCanvas; root: HTMLElement } | { kind: 'snapdom'; loads: PerformanceObserver | null } | null = null;
+let drawer: { kind: 'element'; canvas: ElementCanvas; root: HTMLElement; fit(): void } | { kind: 'snapdom'; loads: PerformanceObserver | null } | null = null;
 let snapdomLoaded: Promise<Snapdom> | null = null;
+// Firefox draws the copy snapdom makes before it has decoded the images inside it (their text shows in their place); Chromium and
+// WebKit do not. Read from the user agent, as no feature tells it.
+const decodesLate = (): boolean => /Firefox\//.test(navigator.userAgent);
 // Whether the page has loaded an image or a font since its last picture (its first: yes).
 let freshFiles = true;
 // What the page itself loads: not snapdom's own fetches, nor its script.
@@ -52,7 +55,7 @@ export function preparePainter(root: HTMLElement): 'element' | 'snapdom' {
   const context = canvas.getContext('2d') as DrawingContext | null;
   if (!context || typeof context.drawElementImage !== 'function') {
     let loads: PerformanceObserver | null = null;
-    try {
+    if (decodesLate()) try {
       loads = new PerformanceObserver((list) => { if (loadedFiles(list.getEntries())) freshFiles = true; });
       loads.observe({ type: 'resource' });
     } catch { loads = null; }
@@ -73,7 +76,7 @@ export function preparePainter(root: HTMLElement): 'element' | 'snapdom' {
   };
   fit();
   addEventListener('resize', fit);
-  drawer = { kind: 'element', canvas, root };
+  drawer = { kind: 'element', canvas, root, fit };
   return 'element';
 }
 
@@ -109,6 +112,9 @@ export async function drawPicture(region: LayoutRect, width: number): Promise<Bl
   let crop = region;
   if (drawer.kind === 'element') {
     const { canvas, root } = drawer;
+    // A page that started before its frame was laid out read a window of no size: the canvas takes the window's size now.
+    if (canvas.width !== innerWidth || canvas.height !== innerHeight) drawer.fit();
+    if (!innerWidth || !innerHeight) throw new Error('The painter\'s page has no size');
     await new Promise<void>((resolve) => {
       const timer = setTimeout(resolve, PAINT_WAIT_MS);
       canvas.onpaint = () => { clearTimeout(timer); resolve(); };
@@ -125,11 +131,13 @@ export async function drawPicture(region: LayoutRect, width: number): Promise<Bl
     // Drawn at the size the part needs, never larger than the window.
     const scale = Math.min(1, out.width / region.width);
     const options = { width: Math.round(innerWidth * scale), embedFonts: true, clip: 'viewport' };
-    // An image the copy holds is drawn only once the browser has decoded it, after the copy is drawn in Firefox (its text in
-    // its place): when the page has loaded files since its last picture, a first copy is made for them and set aside.
-    if (drawer.loads && loadedFiles(drawer.loads.takeRecords())) freshFiles = true;
-    if (freshFiles || !drawer.loads) await snapdom.toCanvas(document.documentElement, options);
-    freshFiles = false;
+    // In Firefox, when the page has loaded files since its last picture, a first copy is made and set aside: its images are decoded
+    // for the second (7 to 30 ms each there).
+    if (drawer.loads) {
+      if (loadedFiles(drawer.loads.takeRecords())) freshFiles = true;
+      if (freshFiles) await snapdom.toCanvas(document.documentElement, options);
+      freshFiles = false;
+    }
     const shot = await snapdom.toCanvas(document.documentElement, options);
     const k = shot.width / innerWidth;
     crop = { x: region.x * k, y: region.y * k, width: region.width * k, height: region.height * k };

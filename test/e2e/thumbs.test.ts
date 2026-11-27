@@ -470,6 +470,16 @@ for (const name of wanted) {
     });
   });
 
+  test(`thumbnails (${name}): a page whose policy refuses the painter's images shows no broken image: it says so and turns to live frames`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=2&height=800&images=1&policy=noblob', async (page) => {
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.logs.some((line) => line.includes('live frames')), null, { timeout: 60000 });
+      const logs = await page.evaluate(() => (window as unknown as Win).thumbsApp.logs);
+      assert.ok(logs.some((line) => /could not show the image/.test(line)), JSON.stringify(logs));
+      await untilDrawn(page, 2);
+      assert.deepEqual(await pictures(page), [null, null], 'no image in a row');
+    });
+  });
+
   test(`thumbnails (${name}): with the engine's renders, each screen of a module is drawn with its files, and measured with its fields`, { timeout: 300000 }, async (t) => {
     if (name === 'firefox') return t.skip('a frame of another origin shows as about:blank in Playwright\'s Firefox, and a frame after the first gets no relay: the BiDi script looks inside');
     const hosts = await startHosts(handlers());

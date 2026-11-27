@@ -17,6 +17,9 @@ import type { BlockRender } from './thumbs-order.ts';
 // How long a painter rests before it goes, where it is not kept (Chromium, Firefox): long enough that the retouches of a working session
 // do not pay a new painter each (0.26 to 0.38 s), short enough that a list at rest gives its memory back.
 export const PAINTER_IDLE_MS = 30000;
+// Pictures after which a painter that is not kept is made again (about 0.1 s): a page that draws grows (about 90 MB for eight pictures in
+// Firefox, never given back while it lives), and a list walked down would keep it all.
+export const PAINTER_PICTURES = 8;
 // The image's width for a scene, in px: a screen as the desktop keeps it (640), a block alone in the list's small box.
 const SCREEN_WIDTH = 640;
 const MINI_WIDTH = 96;
@@ -62,7 +65,7 @@ export const keepsPainter = (): boolean => typeof navigator !== 'undefined' && /
 export function createImageThumbs(options: ThumbsOptions, live: Thumbs): Thumbs {
   const { canvasOrigin, relayPort, source, current, mount, settleMs = THUMB_SETTLE_MS, drawTimeoutMs = 20000 } = options;
   const log = options.log ?? ((message: string) => console.warn(`[elabora] ${message}`));
-  const painter: Painter = createPainter({ canvasOrigin, relayPort, ...(mount ? { mount } : {}), keep: options.keepPainter ?? keepsPainter(), idleMs: options.painterIdleMs ?? PAINTER_IDLE_MS, timeoutMs: drawTimeoutMs });
+  const painter: Painter = createPainter({ canvasOrigin, relayPort, ...(mount ? { mount } : {}), keep: options.keepPainter ?? keepsPainter(), idleMs: options.painterIdleMs ?? PAINTER_IDLE_MS, renewAfter: PAINTER_PICTURES, timeoutMs: drawTimeoutMs });
   const entries = new Set<Entry>();
   const byElement = new Map<Element, Entry>();
   const handles = new Map<Element, ThumbShown>();
@@ -143,7 +146,7 @@ export function createImageThumbs(options: ThumbsOptions, live: Thumbs): Thumbs 
     holder.style.cssText = `position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:${entry.holder ? 1 : 0};transition:opacity ${FADE_MS}ms ease`;
     holder.append(image);
     const previous = entry.holder;
-    void image.decode().catch(() => {}).then(() => {
+    image.decode().then(() => {
       if (entry.released || entry.key !== key) { holder.remove(); return; }
       if (getComputedStyle(entry.element).position === 'static') entry.element.style.position = 'relative';
       entry.element.append(holder);
@@ -152,6 +155,14 @@ export function createImageThumbs(options: ThumbsOptions, live: Thumbs): Thumbs 
       entry.tellOverflow?.(made.overflow);
       entry.tellOverflow = null;
       entry.finish(true);
+    }, () => {
+      // An image the page cannot show (a policy without `img-src blob:`): never a broken image; a failure, said, then live frames.
+      if (entry.released || entry.key !== key) return;
+      made.showing--;
+      entry.key = null;
+      entry.holder = previous;
+      failed(entry, new Error('the page could not show the image (does its policy allow img-src blob:?)'));
+      pumpSoon();
     });
     entry.holder = holder;
   }

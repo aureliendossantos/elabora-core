@@ -1,7 +1,8 @@
 // The miniatures' painter (D139): one frame of the canvas page (`mode=thumb&painter=1`), kept in the view and clipped to a pixel (a browser
 // draws no frame out of the view), that loads its page once and is given each render by message, never loaded again: a browser keeps
 // memory for each document a frame loads (WebKit about 1 to 4 MB, never given back), not for renders pushed into one. It answers one
-// picture at a time. In WebKit it lives as long as the module's miniatures; elsewhere it goes after a rest and is made again when asked.
+// picture at a time. In WebKit it lives as long as the module's miniatures; elsewhere it goes after a rest, or after a few pictures, and is
+// made again when asked.
 
 import { createPageCanvasHost } from './canvas-page-host.ts';
 import type { PageCanvasHost } from './canvas-page-host.ts';
@@ -12,9 +13,11 @@ export interface PainterOptions {
   canvasOrigin: string;
   relayPort(host: RelayHost, port: MessagePort): Promise<void>;
   mount?: HTMLElement;
-  // Kept for the module's life (WebKit), or gone after `idleMs` without a picture.
+  // Kept for the module's life (WebKit), or gone after `idleMs` without a picture, and made again after `renewAfter` pictures (a page
+  // that draws grows: about 90 MB for eight pictures in Firefox).
   keep: boolean;
   idleMs: number;
+  renewAfter: number;
   // How long a picture is waited for, in ms.
   timeoutMs: number;
 }
@@ -37,8 +40,8 @@ export interface Painter {
 export const PICTURE_TYPES = ['image/webp', 'image/png'] as const;
 const isPicture = (value: unknown): value is Blob => typeof Blob === 'function' && value instanceof Blob && (PICTURE_TYPES as readonly string[]).includes(value.type) && value.size > 0;
 
-export function createPainter({ canvasOrigin, relayPort, mount, keep, idleMs, timeoutMs }: PainterOptions): Painter {
-  let held: { host: PageCanvasHost; holder: HTMLElement; frame: HTMLIFrameElement } | null = null;
+export function createPainter({ canvasOrigin, relayPort, mount, keep, idleMs, renewAfter, timeoutMs }: PainterOptions): Painter {
+  let held: { host: PageCanvasHost; holder: HTMLElement; frame: HTMLIFrameElement; pictures: number } | null = null;
   let renders = 0;
   let queue: Promise<unknown> = Promise.resolve();
   let idle: ReturnType<typeof setTimeout> | null = null;
@@ -68,7 +71,7 @@ export function createPainter({ canvasOrigin, relayPort, mount, keep, idleMs, ti
     host.attach(frame);
     holder.append(frame);
     (mount ?? document.body).append(holder);
-    held = { host, holder, frame };
+    held = { host, holder, frame, pictures: 0 };
     return held;
   }
   function drop(): void {
@@ -102,6 +105,7 @@ export function createPainter({ canvasOrigin, relayPort, mount, keep, idleMs, ti
           const relay = host.relays().canvas;
           if (!relay.opened) throw new Error(`The painter's page could not have the module's files${relay.error ? ` (${relay.error})` : ''}`);
           if (!isPicture(answer.image)) throw new Error('The painter gave something that is not a WebP or a PNG');
+          if (!keep && held && ++held.pictures >= renewAfter) drop();
           return { image: answer.image, overflow: answer.overflow === true };
         } catch (error) {
           // A page that does not answer is not kept: the next picture gets a new one.
