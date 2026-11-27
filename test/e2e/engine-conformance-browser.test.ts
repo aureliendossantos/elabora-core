@@ -57,13 +57,15 @@ provideMedia(async (hash) => { const response = await fetch('/media/' + hash); r
   const conformance = await bundleForBrowser({ source: `import { provideMedia } from './packages/engine/src/browser/worker.ts';
 provideMedia(async (hash) => { const response = await fetch('/sample-media/' + hash); return response.ok ? response.blob() : null; });` });
   const media = await bundleForBrowser({ file: 'packages/engine/src/browser/media/worker.ts' });
+  // What the window reads and erases of the copies this browser keeps.
+  const copiesModule = await bundleForBrowser({ source: `export { keptCopies, forgetCopies } from './packages/engine/src/browser/idb-store.ts';` });
   const models = await bundleForBrowser({ file: 'packages/engine/src/browser/models/worker.ts' });
   const aac = await aacEncoderModule();
   browser = await launchBrowser('chromium');
   page = await browser.newPage();
   await page.route(`${ORIGIN}/**`, (route) => {
     const name = new URL(route.request().url()).pathname;
-    const scripts: Record<string, string> = { '/worker.js': worker.code, '/worker-objects.js': withObjects.code, '/worker-media.js': withMedia.code, '/worker-conformance.js': conformance.code, '/media.js': media.code, '/aac.js': aac, '/models.js': models.code };
+    const scripts: Record<string, string> = { '/worker.js': worker.code, '/worker-objects.js': withObjects.code, '/worker-media.js': withMedia.code, '/worker-conformance.js': conformance.code, '/media.js': media.code, '/aac.js': aac, '/models.js': models.code, '/copies.js': copiesModule.code };
     if (scripts[name]) return route.fulfill({ contentType: 'text/javascript', body: scripts[name] });
     // The local voices' catalogue, as the app serves it (said by a stand-in here: voiceStandIn).
     if (name.startsWith('/voices/')) {
@@ -121,7 +123,7 @@ async function worker(open: WorkerOpen, script = '/worker.js'): Promise<{ id: nu
   };
 }
 
-const seedOf = (sample: Sample) => ({ link, confirmed: [...readProjectFiles(SAMPLES[sample]).files] });
+const seedOf = (sample: Sample, project = link.project) => ({ link: { ...link, project }, confirmed: [...readProjectFiles(SAMPLES[sample]).files] });
 let copies = 0;
 
 // A file the person picks: a token the request carries, its bytes kept to go beside the request.
@@ -174,7 +176,7 @@ async function ask<T>(engine: Awaited<ReturnType<typeof worker>>, type: string, 
 }
 
 test('browser storage: a change is kept across a closing; a second tab is told the module is open elsewhere; a copy never kept says so', { timeout: 120_000 }, async () => {
-  const first = await worker({ kind: 'open', team: 'tm_test', project: 'kept', seed: seedOf('basic'), api: 'http://localhost:1', offline: true });
+  const first = await worker({ kind: 'open', team: 'tm_test', project: 'kept', seed: seedOf('basic', 'kept'), api: 'http://localhost:1', offline: true });
   assert.equal(first.first.kind, 'opened');
   const second = await worker({ kind: 'open', team: 'tm_test', project: 'kept', api: 'http://localhost:1', offline: true });
   assert.equal(second.first.kind, 'held');
@@ -322,3 +324,63 @@ function relayAsks(n: number, host: 'canvas' | 'frames', requests: unknown[]) {
     return { ok, answers };
   }, [n, host, requests] as unknown as [number, string, unknown[]]);
 }
+
+type Copies = typeof import('@elabora/engine/browser/idb-store');
+const copiesIn = <T>(read: (copies: Copies) => Promise<T>): Promise<T> => page.evaluate(async (body) => (new Function('copies', `return (${body})(copies)`))(await import('/copies.js' as string)), read.toString()) as Promise<T>;
+const failure = (answer: WorkerAnswer) => (answer.kind === 'failed' ? answer.code : answer.kind);
+
+// Last: it erases every copy of the origin.
+test('a copy this browser keeps opens only as its own project\'s and for its account; the window reads what each holds unsent, and erases them all, a copy open meanwhile closing', { timeout: 120_000 }, async () => {
+  const first = await worker({ kind: 'open', team: 'tm_test', project: 'mine', seed: seedOf('basic', 'mine'), api: 'http://localhost:1', offline: true });
+  assert.equal(first.first.kind, 'opened');
+  await ask(first, 'run', { command: 'update_screen', args: { id: 'chemin', title: 'Pas encore envoyé' } });
+  await ask(first, 'close', {});
+  await first.end();
+
+  // A team's copy, opened by another account, or with no one known to be signed in: refused before anything of it is used.
+  const other = await worker({ kind: 'open', team: 'tm_test', project: 'mine', api: 'http://localhost:1', account: 'acc_bob' });
+  assert.equal(failure(other.first), 'E_COPY_OTHER_ACCOUNT');
+  await other.end();
+  const unknown = await worker({ kind: 'open', team: 'tm_test', project: 'mine', api: 'http://localhost:1' });
+  assert.equal(failure(unknown.first), 'E_COPY_ACCOUNT_UNKNOWN', 'the hosting is not reached');
+  await unknown.end();
+  const own = await worker({ kind: 'open', team: 'tm_test', project: 'mine', api: 'http://localhost:1', account: 'acc_ada' });
+  assert.equal(own.first.kind, 'opened');
+  assert.equal((await ask<{ data: { title: string } }>(own, 'readScreen', { screen: 'chemin' })).data.title, 'Pas encore envoyé');
+  await ask(own, 'close', {});
+  await own.end();
+
+  // A kept link that names another project than the one it is kept under (written by a script of the origin): refused,
+  // offline too; the window's seed is its own, taken as it is the first time.
+  const moved = await worker({ kind: 'open', team: 'tm_test', project: 'elsewhere', seed: seedOf('basic', 'mine'), api: 'http://localhost:1', offline: true });
+  assert.equal(moved.first.kind, 'opened');
+  await ask(moved, 'close', {});
+  await moved.end();
+  const again = await worker({ kind: 'open', team: 'tm_test', project: 'elsewhere', api: 'http://localhost:1', offline: true });
+  assert.equal(failure(again.first), 'E_COPY_NOT_THIS_PROJECT');
+  await again.end();
+
+  const kept = await copiesIn((copies) => copies.keptCopies());
+  assert.deepEqual(kept.find((copy) => copy.key === 'tm_test.mine'), { key: 'tm_test.mine', team: 'tm_test', project: 'mine', account: 'acc_ada', unsent: 1 });
+  assert.deepEqual(kept.find((copy) => copy.key === 'tm_test.elsewhere'), { key: 'tm_test.elsewhere', team: 'tm_test', project: 'mine', account: 'acc_ada', unsent: 0 }, 'read as its link says');
+
+  // Erased while a copy is open: that copy's session ends and lets its database go, then nothing of any copy is left.
+  const open = await worker({ kind: 'open', team: 'tm_test', project: 'mine', api: 'http://localhost:1', offline: true });
+  assert.equal(open.first.kind, 'opened');
+  const heard: string[] = [];
+  const closed = new Promise<void>((resolve) => open.receive((message) => {
+    if (message.kind !== 'event') return;
+    heard.push(message.event.type === 'error' ? `error ${message.event.code}` : message.event.type);
+    if (message.event.type === 'closed') resolve();
+  }));
+  const erasing = await copiesIn((copies) => copies.forgetCopies());
+  assert.deepEqual(erasing.failed, []);
+  assert.ok(erasing.erased.includes('elabora-copy-tm_test.mine') && erasing.erased.includes('elabora-copy-tm_test.kept'), erasing.erased.join(', '));
+  await closed;
+  assert.ok(heard.includes('error E_COPY_ERASED'), heard.join(', '));
+  await open.end();
+  assert.deepEqual(await copiesIn((copies) => copies.keptCopies()), []);
+  const gone = await worker({ kind: 'open', team: 'tm_test', project: 'mine', api: 'http://localhost:1', offline: true });
+  assert.equal(gone.first.kind, 'missing');
+  await gone.end();
+});

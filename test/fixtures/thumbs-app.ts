@@ -188,7 +188,7 @@ const api = {
   async startEngine(seed: unknown, screens: string[]): Promise<number> {
     const started = performance.now();
     worker = new Worker('/engine-worker.js', { type: 'module' });
-    await new Promise((resolve) => { worker!.onmessage = ({ data }) => resolve(data); worker!.postMessage({ kind: 'open', team: 'tm_test', project: 'thumbs-engine', seed, api: 'http://localhost:1', offline: true, services: ['canvas'] }); });
+    await new Promise((resolve) => { worker!.onmessage = ({ data }) => resolve(data); worker!.postMessage({ kind: 'open', team: 'tm_test', project: 'thumbs-engine', seed: { ...(seed as { link: object }), link: { ...(seed as { link: object }).link, project: 'thumbs-engine' } }, api: 'http://localhost:1', offline: true, services: ['canvas'] }); });
     worker.onmessage = null;
     engineOpen();
     const opened = performance.now() - started;

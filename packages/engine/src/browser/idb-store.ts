@@ -46,11 +46,17 @@ const result = <T>(request: IDBRequest<T>): Promise<T> => new Promise((resolve, 
 });
 
 // Opens the copy kept under key; seed: the copy as the room gives it, kept when there is none yet.
-// Null: nothing kept, and no seed.
-export async function openIdbCopy(key: string, { seed, remote, source, membership, onError }: { seed?: { link: CopyLink; confirmed: Files }; remote?: RemoteMedia; source?: MediaSource; membership?: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'>; onError?: (error: unknown) => void } = {}): Promise<IdbCopy | null> {
+// Null: nothing kept, and no seed. erased: what ends the copy's use when another page or Worker of the
+// origin erases it (forgetCopies, as the person signs out); its database is let go once that ends, a
+// few seconds at most, so that the erasing goes on.
+export async function openIdbCopy(key: string, { seed, remote, source, membership, onError, erased }: { seed?: { link: CopyLink; confirmed: Files }; remote?: RemoteMedia; source?: MediaSource; membership?: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'>; onError?: (error: unknown) => void; erased?: () => Promise<unknown> } = {}): Promise<IdbCopy | null> {
   const open = indexedDB.open(DB_PREFIX + key, 1);
   open.onupgradeneeded = () => { for (const store of STORES) open.result.createObjectStore(store); };
   const db = await result(open);
+  let ending: Promise<void> | null = null;
+  db.onversionchange = () => {
+    ending ??= Promise.race([Promise.resolve().then(() => erased?.()), new Promise((resolve) => setTimeout(resolve, ERASED_WAIT_MS))]).catch(() => {}).then(() => { db.close(); });
+  };
   let link = await result(db.transaction('meta').objectStore('meta').get('link')) as CopyLink | undefined;
   if (!link) {
     if (!seed) { db.close(); return null; }
@@ -142,10 +148,17 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
       return given;
     },
     membership: membership ?? (async () => 'unknown'),
-    close: () => db.close()
+    close: () => { db.close(); media.close(); }
   };
   return copy;
 }
+
+// How long a copy in use is given to end when it is erased, before its database is let go all the same.
+const ERASED_WAIT_MS = 3_000;
+// How long an erasing waits for a database another page holds, before it says it was not erased.
+const BLOCKED_WAIT_MS = 8_000;
+// The takes of every copy (voices/takes.ts): the person's own recordings, erased with the copies.
+const TAKES = 'elabora-takes';
 
 // Removes what a copy kept (its database and its media, wherever they are).
 export async function forgetIdbCopy(key: string): Promise<void> {
@@ -153,6 +166,77 @@ export async function forgetIdbCopy(key: string): Promise<void> {
   await done(indexedDB.deleteDatabase(MEDIA_PREFIX + key));
   const root = await navigator.storage.getDirectory().catch(() => null);
   await root?.removeEntry(`${DB_PREFIX}${key}`, { recursive: true }).catch(() => {});
+}
+
+// A copy this browser keeps, as read without opening it: its team and project, the account it was made
+// for (« local » for an example kept on this device), and its changes the room has not placed yet (those
+// waiting in its link, and those its journal holds that the link has not taken in yet). account and
+// unsent are null for a copy whose link is gone (one the room unlinked: a project left or deleted).
+export interface KeptCopy { key: string; team: string; project: string; account: string | null; unsent: number | null }
+
+const names = async (dir: FileSystemDirectoryHandle): Promise<string[]> => {
+  const out: string[] = [];
+  for await (const name of (dir as FileSystemDirectoryHandle & { keys(): AsyncIterable<string> }).keys()) out.push(name);
+  return out;
+};
+const databases = async (): Promise<string[]> => {
+  const listed = await (indexedDB as IDBFactory & { databases?: () => Promise<{ name?: string }[]> }).databases?.() ?? null;
+  if (!listed) throw new Error('This browser does not list what it keeps: its copies cannot be read nor erased one by one.');
+  return listed.map((each) => each.name ?? '').filter((name) => name.startsWith(DB_PREFIX));
+};
+
+// The copies this browser keeps (the window asks it before a sign-out: what would be lost).
+export async function keptCopies(): Promise<KeptCopy[]> {
+  const kept: KeptCopy[] = [];
+  for (const name of (await databases()).filter((each) => !each.startsWith(MEDIA_PREFIX)).sort()) {
+    const key = name.slice(DB_PREFIX.length);
+    const db = await result(indexedDB.open(name));
+    try {
+      if (!STORES.every((store) => db.objectStoreNames.contains(store))) continue;
+      const tx = db.transaction(['meta', 'journal']);
+      const [link, entries] = await Promise.all([result(tx.objectStore('meta').get('link')) as Promise<CopyLink | undefined>, result(tx.objectStore('journal').getAll()) as Promise<JournalEntry[]>]);
+      const [team = key, project = ''] = link ? [link.team, link.project] : key.split(/\.(.*)/s);
+      kept.push({ key, team, project, account: link?.person.id ?? null, unsent: link ? link.waiting.length + entries.filter((entry) => entry.type !== 'mark' && entry.seq > link.journal).length : null });
+    } finally {
+      db.close();
+    }
+  }
+  return kept;
+}
+
+// Erases every copy this browser keeps, of every team and account: their databases, their media and
+// the takes recorded in them (the local models, which are no one's, stay). A copy open in another tab
+// or Worker ends first (openIdbCopy's erased). What could not be erased (a database another page still
+// holds after a few seconds, a file being written) is named in failed; the rest is gone.
+export async function forgetCopies(): Promise<{ erased: string[]; failed: { name: string; message: string }[] }> {
+  const erased: string[] = [];
+  const failed: { name: string; message: string }[] = [];
+  const said = (error: unknown) => (error instanceof Error ? error.message : String(error));
+  for (const name of await databases()) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const request = indexedDB.deleteDatabase(name);
+        const timer = setTimeout(() => reject(new Error('Another page of this site still holds it.')), BLOCKED_WAIT_MS);
+        request.onsuccess = () => { clearTimeout(timer); resolve(); };
+        request.onerror = () => { clearTimeout(timer); reject(request.error ?? new Error('The browser\'s storage refused to erase it.')); };
+      });
+      erased.push(name);
+    } catch (error) {
+      failed.push({ name, message: said(error) });
+    }
+  }
+  const root = await navigator.storage.getDirectory().catch(() => null);
+  if (root) {
+    for (const name of (await names(root)).filter((each) => each.startsWith(DB_PREFIX) || each === TAKES)) {
+      try {
+        await root.removeEntry(name, { recursive: true });
+        erased.push(name);
+      } catch (error) {
+        failed.push({ name, message: said(error) });
+      }
+    }
+  }
+  return { erased, failed };
 }
 
 export { sha256 };
@@ -165,6 +249,7 @@ const SLICE = 4 * 1024 * 1024;
 let parts = 0;
 
 interface KeptMedia {
+  close(): void;
   // A write that failed leaves nothing under the hash: read as not kept.
   file(hash: string): Promise<File | null>;
   // Writes a medium under its hash; expected: the hash it must have (refused, and nothing kept, if not).
@@ -197,6 +282,7 @@ async function mediaFolder(root: FileSystemDirectoryHandle, key: string): Promis
   const name = (hash: string) => hash.replace(/^sha256:/, '');
   const exists = (hash: string) => dir.getFileHandle(name(hash)).then(() => true, () => false);
   return {
+    close() {},
     async file(hash) {
       await turn(hash, async () => hash).catch(() => {});
       try { return await (await dir.getFileHandle(name(hash))).getFile(); } catch { return null; }
@@ -236,6 +322,8 @@ async function mediaDatabase(key: string): Promise<KeptMedia> {
   const open = indexedDB.open(MEDIA_PREFIX + key, 1);
   open.onupgradeneeded = () => { open.result.createObjectStore('media'); };
   const db = await result(open);
+  // Let go as soon as another page erases it (forgetCopies): what it held is gone with it.
+  db.onversionchange = () => db.close();
   const turn = inTurn();
   // A Blob, or its bytes where the browser refuses to keep a Blob (a private window of WebKit: « Error
   // preparing Blob/File data to be stored in object store »).
@@ -249,6 +337,7 @@ async function mediaDatabase(key: string): Promise<KeptMedia> {
     await done(tx);
   };
   return {
+    close: () => db.close(),
     async file(hash) {
       await turn(hash, async () => hash).catch(() => {});
       const blob = await get(hash);

@@ -53,6 +53,11 @@ async function call<T>(api: string, method: string, path: string, body?: unknown
 // The room's WebSocket, opened with the session's cookie (C102).
 export const roomSocket = (url: string): RoomSocket => new WebSocket(url) as unknown as RoomSocket;
 
+// The account the web session's cookie is, by its id (401 signed out).
+export async function roomAccount({ api }: Pick<RoomAccess, 'api'>): Promise<string> {
+  return (await call<{ account: { id: string } }>(api, 'GET', '/v1/account')).account.id;
+}
+
 // The copy as the room gives it, for a copy the browser does not hold (a first opening, or what the
 // browser erased): its files at the room's head, the person, a new copy's id. Media are not taken:
 // each comes when something needs it (fetchMedium).

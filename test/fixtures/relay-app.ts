@@ -150,7 +150,7 @@ const api = {
   // go to the view's host as the window gives them).
   async startEngine(seed: unknown, services?: string[], mediaWorker?: string) {
     const worker = new Worker('/engine-worker.js', { type: 'module' });
-    await new Promise((resolve) => { worker.onmessage = ({ data }) => resolve(data); worker.postMessage({ kind: 'open', team: 'tm_test', project: 'relay-engine', seed, api: 'http://localhost:1', offline: true, services: ['canvas'], ...(services ? { services } : {}), ...(mediaWorker ? { mediaWorker } : {}) }); });
+    await new Promise((resolve) => { worker.onmessage = ({ data }) => resolve(data); worker.postMessage({ kind: 'open', team: 'tm_test', project: 'relay-engine', seed: { ...(seed as { link: object }), link: { ...(seed as { link: object }).link, project: 'relay-engine' } }, api: 'http://localhost:1', offline: true, services: ['canvas'], ...(services ? { services } : {}), ...(mediaWorker ? { mediaWorker } : {}) }); });
     worker.onmessage = null;
     worker.addEventListener('message', ({ data }: MessageEvent<{ kind?: string; event?: { type: string; id: string | number; render?: unknown; view?: unknown } }>) => {
       if (data.kind !== 'event' || !data.event) return;

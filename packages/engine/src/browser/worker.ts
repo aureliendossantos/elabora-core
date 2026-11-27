@@ -4,7 +4,7 @@ import type { RoomSocket } from '../base/session-cloud.ts';
 import type { EventMessage, RequestMessage, ResponseMessage, Service } from '../protocol.ts';
 import { openCopy, type BrowserSession } from './session.ts';
 import { openIdbCopy, type MediaSource } from './idb-store.ts';
-import { roomMedia, roomMembership, roomSeed, roomSocket, type RoomAccess } from './room.ts';
+import { RoomError, roomAccount, roomMedia, roomMembership, roomSeed, roomSocket, type RoomAccess } from './room.ts';
 import type { ObjectCompiler } from './relay.ts';
 import { mediaWorker, workerClient } from './worker-client.ts';
 import type { ModelsWorker } from './models/align.ts';
@@ -38,8 +38,13 @@ export type WorkerOpen = RoomAccess & {
   // had. voiceStandIn: tones in Pocket TTS's place, for routine checks, never a course's voice.
   voices?: string;
   voiceStandIn?: boolean;
-  // No connection to the room: nothing is sent nor taken (a module tried offline, a test).
+  // No connection to the room: nothing is sent nor taken (an example kept on this device, a test).
   offline?: boolean;
+  // The account signed in (its id), as the window last read it: a team's copy this browser keeps opens
+  // only for the account it was made for, and only as this project's copy. Without it, the copy of a
+  // team's project asks the hosting who is signed in first (and does not open when that cannot be
+  // known); an offline copy is not asked.
+  account?: string;
   // A project just made in the window (« Nouveau module »): its first files, written as its first
   // change when it has no course yet (create_course, D112).
   newCourse?: NewCourseOptions;
@@ -51,6 +56,10 @@ export type WorkerAnswer =
   | { kind: 'held' }
   // Nothing kept for this copy, offline, and no seed.
   | { kind: 'missing' }
+  // code E_COPY_OTHER_ACCOUNT: the copy kept here was made for another account (the window may erase it,
+  // forgetCopies, then open again); E_COPY_NOT_THIS_PROJECT: it names another team or project;
+  // E_COPY_ACCOUNT_UNKNOWN: who is signed in could not be known (signed out, or the hosting unreached).
+  // None of them opened it, nor sent anything of it.
   | { kind: 'failed'; message: string; code?: string };
 
 const scope = self as unknown as { onmessage: ((event: MessageEvent) => void) | null; postMessage(message: WorkerAnswer | ResponseMessage | EventMessage, transfer?: Transferable[]): void };
@@ -109,6 +118,24 @@ function modelsOf({ modelsWorker, ort, ortWasm, models }: WorkerOpen): { worker:
 // The copy's key in the browser's storage: its team and project.
 const keyOf = ({ team, project }: RoomAccess): string => `${team}.${project}`;
 
+const refused = (code: string, message: string) => Object.assign(new Error(message), { code });
+// Why a copy this browser kept is not opened for this request, or null (it is). Its link is what the
+// storage says, which any script of the origin may have written: its team and project must be the
+// request's (the room it joins is taken from them), its person the account signed in.
+async function keptRefusal(link: CopyLink, request: WorkerOpen): Promise<Error | null> {
+  if (link.team !== request.team || link.project !== request.project) return refused('E_COPY_NOT_THIS_PROJECT', 'The copy this browser keeps under this project names another one: it is not opened.');
+  if (request.offline) return null;
+  let account = request.account;
+  if (!account) {
+    try {
+      account = await roomAccount(request);
+    } catch (error) {
+      return refused('E_COPY_ACCOUNT_UNKNOWN', error instanceof RoomError && error.status === 401 ? 'No one is signed in: the copy this browser keeps is not opened.' : 'Who is signed in could not be known: the copy this browser keeps is not opened.');
+    }
+  }
+  return link.person.id === account ? null : refused('E_COPY_OTHER_ACCOUNT', 'The copy this browser keeps of this project was made for another account: it is not opened.');
+}
+
 async function open(request: WorkerOpen): Promise<void> {
   const key = keyOf(request);
   await navigator.locks.request(`elabora-copy:${key}`, { ifAvailable: true }, async (lock) => {
@@ -120,9 +147,19 @@ async function open(request: WorkerOpen): Promise<void> {
     const options = {
       ...(online ? { remote: roomMedia(request), membership: roomMembership(request) } : {}),
       ...(source ? { source } : {}),
-      onError: (error: unknown) => scope.postMessage({ kind: 'event', event: { type: 'error', context: 'keeping the copy in the browser', message: error instanceof Error ? error.message : String(error) } })
+      onError: (error: unknown) => scope.postMessage({ kind: 'event', event: { type: 'error', context: 'keeping the copy in the browser', message: error instanceof Error ? error.message : String(error) } }),
+      // Erased by another page (a sign-out): the session ends, nothing more is sent nor kept.
+      erased: async () => {
+        scope.postMessage({ kind: 'event', event: { type: 'error', code: 'E_COPY_ERASED', context: 'keeping the copy in the browser', message: 'This browser erased the module\'s copy: the module closes.' } });
+        await session?.close();
+      }
     };
-    let store = await openIdbCopy(key, { ...options, ...(request.seed ? { seed: { link: request.seed.link, confirmed: new Map(request.seed.confirmed) } } : {}) });
+    // What the browser kept is checked before anything of it is used; a seed is the window's own.
+    let store = await openIdbCopy(key, options);
+    if (store) {
+      const refusal = await keptRefusal(store.link, request);
+      if (refusal) { store.close(); throw refusal; }
+    } else if (request.seed) store = await openIdbCopy(key, { ...options, seed: { link: request.seed.link, confirmed: new Map(request.seed.confirmed) } });
     let taken = false;
     if (!store && online) {
       store = await openIdbCopy(key, { ...options, seed: await roomSeed(request) });
