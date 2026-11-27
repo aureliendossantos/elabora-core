@@ -23,7 +23,7 @@ import { Room } from '../sync/room.ts';
 const sessions: Session[] = [];
 after(async () => { for (const session of sessions) await session.close({ media: 'cancel' }); });
 
-async function linked(room: Room, dir: string, membership: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'> = async () => 'member', later = 300, epoch?: null): Promise<Session> {
+async function linked(room: Room, dir: string, membership: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'> = async () => 'member', later = 300, epoch?: null, account?: () => Promise<string>): Promise<Session> {
   const { files } = readProjectFiles(dir);
   const link: ProjectLink = {
     format: 'elabora-cloud-project/1', api: 'http://localhost:1', team: 'tm_test', project: 'prj_test', client: `c${path.basename(dir)}`,
@@ -31,7 +31,7 @@ async function linked(room: Room, dir: string, membership: () => Promise<'member
   };
   writeLink(dir, link);
   const session = await openProject(dir, {
-    cloud: { api: link.api, token: 't', link, store: { ...folderCopy(dir, new CloudClient(link.api, 't'), link), membership }, connect: room.connect, backoff: [20], later },
+    cloud: { api: link.api, token: 't', link, store: { ...folderCopy(dir, new CloudClient(link.api, 't'), link), membership }, connect: room.connect, backoff: [20], later, ...(account ? { account } : {}) },
     backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, debounceMs: 30
   });
   sessions.push(session);
@@ -535,6 +535,39 @@ test('a change from the room, journaled, is taken in the link the copy keeps: no
   // B's last journal entry is A's change as the room gave it: the link B keeps has taken it in.
   await until(() => (readLink(B)?.journal ?? 0) >= (readJournal(B).filter((entry) => entry.type !== 'mark').at(-1)?.seq ?? 0), 'the kept link names the last entry');
   assert.deepEqual(readLink(B)?.waiting, []);
+});
+
+test('a folder linked for another account sends nothing under the session signed in now: held other-account, its changes kept in the folder, not tried again', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  // Ada linked it (the helper's link names her), and Bea is signed in on the same computer now.
+  let asked = 0;
+  const bea = await linked(room, A, async () => 'member', 300, undefined, async () => { asked++; return 'acc_bea'; });
+  const statuses = eventsOf(bea, 'cloudStatus');
+  await until(() => bea.cloud?.held === 'other-account', 'held: another account');
+  await bea.run('update_screen', { id: 'chemin', title: 'Écrit sous un autre compte' }, { kind: 'human' });
+  bea.cloudRetry();
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.equal(room.hellos, 0, 'never connected');
+  assert.equal(room.log.length, 0, 'nothing sent');
+  assert.equal(asked, 1, 'asked once');
+  assert.equal(bea.cloud?.pending, 1, 'its change kept');
+  assert.ok(statuses.some((status) => status.held === 'other-account'), 'the window is told');
+  assert.ok(fs.existsSync(linkFile(A)), 'still linked');
+  assert.equal(screen(A, 'chemin').title, 'Écrit sous un autre compte');
+
+  // The account the folder was linked for: it connects.
+  const B = copyExample();
+  const own = new Room(readProjectFiles(B).files);
+  const ada = await linked(own, B, async () => 'member', 300, undefined, async () => 'acc_ada');
+  await settled(own, ada);
+  assert.equal(ada.cloud?.online, true);
+  // A session the hosting no longer knows: held signed-out.
+  const C = copyExample();
+  const gone = new Room(readProjectFiles(C).files);
+  const ended = await linked(gone, C, async () => 'member', 300, undefined, async () => { throw Object.assign(new Error('401'), { status: 401 }); });
+  await until(() => ended.cloud?.held === 'signed-out', 'held: signed out');
+  assert.equal(gone.hellos, 0);
 });
 
 test('a session that ended (4009: signed out, the device revoked) keeps its changes and its link, and does not try again, even when asked (C121)', async () => {

@@ -41,8 +41,9 @@ export type CloudEnd = 'removed' | 'deleted';
 // than the room (4005: not tried again, Elabora is to be updated), the room's storage newer than the
 // server's code (4006), or the project's connections all taken (4007): tried again later, or when asked.
 // Or the session ended (4009, elabora-cloud C121: signed out, the device revoked, the session expired): not
-// tried again, its changes kept here and the copy still linked, until the person signs in again.
-export type CloudHeld = 'outdated' | 'storage-newer' | 'full' | 'signed-out';
+// tried again, its changes kept here and the copy still linked, until the person signs in again. Or the
+// copy is linked for another account than the session's (other-account): nothing goes under the session.
+export type CloudHeld = 'outdated' | 'storage-newer' | 'full' | 'signed-out' | 'other-account';
 
 export interface CloudOptions {
   api: string;
@@ -59,6 +60,11 @@ export interface CloudOptions {
   // Opens the room's connection (tests give a room in memory); by default a WebSocket with the
   // session in Authorization, never in the address.
   connect?: (url: string, token: string) => RoomSocket;
+  // Who the session is (its account's id), asked once before the first connection: a copy linked for
+  // another account (link.person) sends nothing under this session, and is held other-account; a session
+  // the hosting no longer knows (401) is held signed-out. Without it, the host answers for it (a browser
+  // checks the account as it opens the copy, D140).
+  account?: () => Promise<string>;
 }
 
 // What the copy needs of a WebSocket.
@@ -77,7 +83,7 @@ const OPEN = 1;
 const CLOSED: Record<number, CloudEnd> = { 4003: 'removed', 4004: 'deleted' };
 const HELD: Record<number, CloudHeld> = { 4005: 'outdated', 4006: 'storage-newer', 4007: 'full', 4009: 'signed-out' };
 // What is not tried again on its own nor when asked: an app to update, a session to open again.
-const FOR_GOOD: ReadonlySet<CloudHeld> = new Set(['outdated', 'signed-out']);
+const FOR_GOOD: ReadonlySet<CloudHeld> = new Set(['outdated', 'signed-out', 'other-account']);
 // About a minute, as the room's Retry-After says for its storage (60 s).
 const LATER = 60_000;
 // How often a copy the room keeps out asks whether its person still reaches the project.
@@ -238,6 +244,7 @@ export class SessionCloud {
 
   #connect(): void {
     if (this.#stopped) return;
+    if (this.#options.account && !this.#accountChecked) { this.#checkAccount(this.#options.account); return; }
     const url = roomUrl(this.#options.api, this.#link.team, this.#link.project);
     const ws = (this.#options.connect ?? webSocket)(url, this.#options.token);
     this.#ws = ws;
@@ -320,6 +327,22 @@ export class SessionCloud {
       lost();
     });
     ws.addEventListener('error', lost);
+  }
+
+  // The session's account against the link's person, once; asked again later if the hosting cannot be reached.
+  #accountChecked = false;
+  #checkAccount(account: () => Promise<string>): void {
+    account().then((id) => {
+      if (this.#stopped) return;
+      if (id !== this.#link.person.id) { this.#held = { reason: 'other-account', protocol: null }; this.#status(); return; }
+      this.#accountChecked = true;
+      this.#connect();
+    }, (error: unknown) => {
+      if (this.#stopped) return;
+      if ((error as { status?: unknown } | null)?.status === 401) { this.#held = { reason: 'signed-out', protocol: null }; this.#status(); return; }
+      const waits = this.#options.backoff ?? [500, 1000, 2000, 5000, 10000];
+      this.#timer = unref(setTimeout(() => this.#connect(), waits[Math.min(this.#attempt++, waits.length - 1)]));
+    });
   }
 
   async #askMembership(): Promise<void> {

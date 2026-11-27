@@ -401,14 +401,16 @@ function newLink(root: string, options: { api: string; team: string; project: st
   return link;
 }
 
-// What a session needs to sync a linked folder (the engine's OpenOptions.cloud).
-export function cloudSessionOptions(dir: string): { api: string; token: string; link: ProjectLink; store: CopyStore } | null {
+// What a session needs to sync a linked folder (the engine's OpenOptions.cloud). account: who the session
+// signed in on this computer is, so that a folder linked for another account sends nothing under it.
+export function cloudSessionOptions(dir: string): { api: string; token: string; link: ProjectLink; store: CopyStore; account: () => Promise<string> } | null {
   const root = path.resolve(dir);
   const link = readLink(root);
   if (!link) return null;
   const api = projectsApi(link.api);
   const token = requireCredential(api).token;
-  return { api, token, link, store: folderCopy(root, new CloudClient(api, token), link) };
+  const client = new CloudClient(api, token);
+  return { api, token, link, store: folderCopy(root, client, link), account: async () => (await accountForTeams(client)).person.id };
 }
 
 // A folder's copy of its project (CopyStore, D100): what the room confirmed by hash in the folder's
