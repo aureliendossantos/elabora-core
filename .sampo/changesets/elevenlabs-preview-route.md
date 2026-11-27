@@ -1,4 +1,5 @@
 ---
+npm/elabora: patch (Changed)
 npm/@elabora/core: patch (Changed)
 ---
 
