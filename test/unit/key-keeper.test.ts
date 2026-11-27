@@ -7,14 +7,16 @@ import type { KeyStore } from '@elabora/engine/browser/keys/keeper';
 // author says; the operations of the list sent with it, nothing else; no answer carrying it.
 
 const KEY = 'sk_' + 'a1b2c3d4'.repeat(5);
-const asked: { url: string; key?: string; body?: string }[] = [];
+const asked: { url: string; key?: string; body?: string; redirect?: string }[] = [];
 // ElevenLabs' imitation: this key alone is accepted; an error quotes the key it was given.
-const fetch = async (url: string, init: { method: string; headers: Record<string, string>; body?: string }) => {
-  asked.push({ url, key: init.headers['xi-api-key'], body: init.body });
+const fetch = async (url: string, init: { method: string; headers: Record<string, string>; body?: string; redirect: string }) => {
+  asked.push({ url, key: init.headers['xi-api-key'], body: init.body, redirect: init.redirect });
   const given = init.headers['xi-api-key'];
   if (url.startsWith('https://storage.googleapis.com/')) return new Response(new Uint8Array([1, 2, 3]), { status: 200 });
   if (given !== KEY) return new Response(JSON.stringify({ detail: { status: 'invalid_api_key', message: `Invalid API key: ${given}` } }), { status: 401 });
-  if (url.endsWith('/v1/user')) return new Response(JSON.stringify({ subscription: { tier: 'starter', character_count: 10, character_limit: 30000 } }), { status: 200 });
+  // The account as ElevenLabs gives it: its ids and its key's preview beside its plan.
+  if (url.endsWith('/v1/user')) return new Response(JSON.stringify({ user_id: 'u_1', xi_api_key_preview: 'sk_a…b2c3', seat_type: 'workspace_admin', subscription: { tier: 'starter', character_count: 10, character_limit: 30000, next_character_count_reset_unix: 1767225600, currency: 'eur', open_invoices: [{ amount: 5 }] } }), { status: 200 });
+  if (url.endsWith('/v1/user/subscription')) return new Response(JSON.stringify({ tier: 'starter', character_count: 10, character_limit: 30000, voice_slots_used: 2, next_invoice: { amount_due_cents: 500 } }), { status: 200 });
   if (url.includes('/v1/voices/')) return new Response(JSON.stringify({ detail: { status: 'voice_not_found', message: `No voice for ${given}` } }), { status: 404 });
   return new Response(JSON.stringify({ voices: [] }), { status: 200 });
 };
@@ -47,7 +49,10 @@ test('the key\'s page: checked, held, kept as asked, the operations of the list 
 
   const voices = await keeper.ask('voices', { page_size: 1 });
   assert.deepEqual(voices, { ok: true, status: 200, body: { voices: [] }, cost: null });
-  assert.deepEqual(asked.at(-1), { url: 'https://api.elevenlabs.io/v2/voices?page_size=1', key: KEY, body: undefined });
+  assert.deepEqual(asked.at(-1), { url: 'https://api.elevenlabs.io/v2/voices?page_size=1', key: KEY, body: undefined, redirect: 'error' }, 'no redirect followed with the key');
+  // Of the account and its subscription, the plan and its count alone.
+  assert.deepEqual(await keeper.ask('account', {}), { ok: true, status: 200, body: { subscription: { tier: 'starter', character_count: 10, character_limit: 30000, next_character_count_reset_unix: 1767225600 } }, cost: null });
+  assert.deepEqual(await keeper.ask('subscription', {}), { ok: true, status: 200, body: { tier: 'starter', character_count: 10, character_limit: 30000 }, cost: null });
   const unknown = await keeper.ask('voice', { id: 'abc' });
   assert.equal((unknown as { status: number }).status, 404);
   assert.ok(!JSON.stringify(unknown).includes(KEY), 'an error quoting the key is given back without it');
@@ -55,6 +60,7 @@ test('the key\'s page: checked, held, kept as asked, the operations of the list 
   const preview = await keeper.ask('preview', { url: 'https://storage.googleapis.com/eleven-public-prod/a.mp3' });
   assert.equal((preview as { bytes: ArrayBuffer }).bytes.byteLength, 3);
   assert.equal(asked.at(-1)!.key, undefined, 'a sample is fetched without the key');
+  assert.ok(asked.every((each) => each.redirect === 'error'), 'no redirect followed, ever');
 
   // Opened again (the next visit): the kept key is there; forgotten, it is gone everywhere.
   const again = new KeyKeeper({ store, fetch });

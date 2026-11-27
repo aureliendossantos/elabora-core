@@ -5,6 +5,7 @@
 
 import { elevenLabsRequest } from '@elabora/core/voice/elevenlabs/requests';
 import { failure, maskKey, scrubKeys } from '@elabora/core/voice/elevenlabs/answers';
+import { SUBSCRIPTION_FIELDS } from '@elabora/core/voice/elevenlabs/quota';
 
 export const API = 'https://api.elevenlabs.io';
 
@@ -23,7 +24,17 @@ export type KeyAnswer =
   | { ok: true; status: number; body?: unknown; bytes?: ArrayBuffer; cost: number | null }
   | { ok: false; code: string; message: string };
 
-type Fetch = (url: string, init: { method: string; headers: Record<string, string>; body?: string }) => Promise<Response>;
+type Fetch = (url: string, init: { method: string; headers: Record<string, string>; body?: string; redirect: 'error' }) => Promise<Response>;
+
+// Of the account (/v1/user) and of its subscription, the plan and its count alone, all Elabora reads: the
+// rest (the account's ids, its key's preview, its workspace) stays in the page. An error is given whole.
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+const planOf = (value: unknown): Record<string, unknown> | undefined => (isRecord(value) ? Object.fromEntries(SUBSCRIPTION_FIELDS.filter((field) => field in value).map((field) => [field, value[field]])) : undefined);
+function shown(op: string, body: unknown): unknown {
+  if (op === 'account') { const plan = isRecord(body) ? planOf(body.subscription) : undefined; return plan ? { subscription: plan } : {}; }
+  if (op === 'subscription') return planOf(body) ?? {};
+  return body;
+}
 
 const KEY_FORMAT = /^[A-Za-z0-9_-]{20,200}$/;
 const refusal = (code: string, message: string): KeyAnswer => ({ ok: false, code, message });
@@ -93,7 +104,8 @@ export class KeyKeeper {
     const headers: Record<string, string> = { accept: request.answer === 'json' ? 'application/json' : 'audio/mpeg', ...(request.keyed ? { 'xi-api-key': key! } : {}), ...(request.body ? { 'content-type': 'application/json' } : {}) };
     let response: Response;
     try {
-      response = await this.#fetch(request.keyed ? `${API}${request.path}` : request.path, { method: request.method, headers, ...(request.body ? { body: JSON.stringify(request.body) } : {}) });
+      // No redirect followed: a fetch keeps xi-api-key on one to another origin.
+      response = await this.#fetch(request.keyed ? `${API}${request.path}` : request.path, { method: request.method, headers, redirect: 'error', ...(request.body ? { body: JSON.stringify(request.body) } : {}) });
     } catch (error) {
       return refusal('E_VOICE_OFFLINE', `ElevenLabs could not be reached (${scrubKeys(error instanceof Error ? error.message : String(error), key ? [key] : [])}): check the connection.`);
     }
@@ -105,6 +117,6 @@ export class KeyKeeper {
     const text = scrubKeys(await response.text(), key ? [key] : []);
     let body: unknown = text;
     try { body = JSON.parse(text); } catch { /* the text as it came */ }
-    return { ok: true, status: response.status, body, cost };
+    return { ok: true, status: response.status, body: response.ok ? shown(op, body) : body, cost };
   }
 }

@@ -20,10 +20,16 @@ export interface ElevenRequest {
 }
 
 // A voice's sample: a file of ElevenLabs' public bucket, or its API's own preview route, which takes no
-// key (api.elevenlabs.io or a region's, as api.us.elevenlabs.io: about one library voice in five).
+// key (about one library voice in five): on the main host, the one seen for the US (api.us, 22 Oct 2026),
+// or a data residency's (EU, India: ElevenLabs' documentation, 27 Nov 2026).
 export const PREVIEWS = 'https://storage.googleapis.com/eleven-public-prod/';
-// The whole address, so no user, port, other query or dot segment can pass.
-const PREVIEW_ROUTE = /^https:\/\/api(?:\.[a-z0-9-]+)*\.elevenlabs\.io\/v1\/voices\/[A-Za-z0-9]{1,64}\/previews\/[a-z]{1,20}(?:\?payload=[A-Za-z0-9%_=-]{1,400})?$/;
+export const PREVIEW_HOSTS = ['api.elevenlabs.io', 'api.us.elevenlabs.io', 'api.eu.residency.elevenlabs.io', 'api.sg.residency.elevenlabs.io'] as const;
+// The whole address, so no user, port, other host, query or dot segment can pass.
+const PREVIEW_ROUTE = new RegExp(`^https://(?:${PREVIEW_HOSTS.map((host) => host.replace(/\./g, '\\.')).join('|')})/v1/voices/[A-Za-z0-9]{1,64}/previews/[a-z]{1,20}(?:\\?payload=[A-Za-z0-9%_=-]{1,400})?$`);
+// A file of the bucket: its path in plain characters, each part starting with no dot (so no dot segment),
+// with no escape, query or fragment.
+const BUCKET_FILE = /^(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*$/;
+const bucketFile = (url: string): boolean => url.startsWith(PREVIEWS) && BUCKET_FILE.test(url.slice(PREVIEWS.length));
 const TEXT_MAX = 10_000;
 const VALUE_MAX = 200;
 
@@ -110,7 +116,7 @@ export function elevenLabsRequest(op: string, params: unknown = {}): ElevenReque
     case 'preview': {
       const { url, ...rest } = p;
       if (Object.keys(rest).length) refuse('preview takes its url only');
-      if (typeof url !== 'string' || url.length > 600 || !((url.startsWith(PREVIEWS) && !url.includes('..')) || PREVIEW_ROUTE.test(url))) refuse('url is not a sample of ElevenLabs\' public bucket or of its preview route');
+      if (typeof url !== 'string' || url.length > 600 || !(bucketFile(url) || PREVIEW_ROUTE.test(url))) refuse('url is not a sample of ElevenLabs\' public bucket or of its preview route');
       return { method: 'GET', path: url as string, answer: 'bytes', keyed: false };
     }
     default: return refuse(`no operation ${op}`);

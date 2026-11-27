@@ -5,6 +5,8 @@ import type { Quota } from '../../ai/quota.ts';
 // the count catches up. Each host keeps one count for all it asks (lines, sounds, transcriptions).
 
 export interface Subscription { tier: string; character_count: number; character_limit: number; next_character_count_reset_unix?: number | null }
+// What Elabora reads of a subscription: all a page that holds the key gives back of the account (D136).
+export const SUBSCRIPTION_FIELDS = ['tier', 'character_count', 'character_limit', 'next_character_count_reset_unix'] as const satisfies readonly (keyof Subscription)[];
 
 const resetOf = (sub: Subscription): string | null => (sub.next_character_count_reset_unix ? new Date(sub.next_character_count_reset_unix * 1000).toISOString().replace(/\.\d+Z$/, 'Z') : null);
 
