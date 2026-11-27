@@ -124,6 +124,9 @@ window.addEventListener('message', (event) => {
     open(message.route, port);
     tell({ type: 'relay/opened', protocol: RELAY_PROTOCOL, route: message.route });
   } else if (message.type === 'relay/close') {
+    // The canvas page gives back the route of its own files as it goes: what it still loads stops now, ended by the browser,
+    // rather than answered by the relay's refusal (a 503 in its console while its frame is still there).
+    if (role === 'canvas') window.stop();
     close(message.route);
     declare();
     tell({ type: 'relay/closed', protocol: RELAY_PROTOCOL, route: message.route });

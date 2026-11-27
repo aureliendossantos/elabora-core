@@ -103,6 +103,18 @@ for (const name of wanted) {
       // The window closes that route: its page says relay/done, and the engine's end of the port is ended, with no bye.
       await page.evaluate((route) => (window as unknown as { app: { closeLate(route: string): void } }).app.closeLate(route), lateRoute);
       await page.waitForFunction(() => (window as unknown as { app: { lateDone(): number } }).app.lateDone() === 1, null, { timeout: 5000 });
+      // Opened again, it asks for a file the engine answers late, and its route closes meanwhile: the page stops what it was
+      // loading as it gives its route back, so that the request ends without the relay's refusal (no 503 in its console).
+      await page.evaluate((route) => (window as unknown as { app: { openLate(route: string): void } }).app.openLate(route), lateRoute);
+      const refusals: string[] = [];
+      page.on('console', (message) => { if (/status of 5\d\d/.test(message.text())) refusals.push(message.text()); });
+      const waiting = late.evaluate(() => fetch('/canvas/slow/late.txt').then((response) => `status ${response.status}`, (error: unknown) => (error instanceof Error ? error.name : 'failed')));
+      await page.waitForTimeout(800);
+      await page.evaluate((route) => (window as unknown as { app: { closeLate(route: string): void } }).app.closeLate(route), lateRoute);
+      // Ended by the browser (a network error), never answered by the relay with a status.
+      assert.doesNotMatch(await waiting, /^status /);
+      await page.waitForTimeout(1000);
+      assert.deepEqual(refusals, []);
 
       // 3. A free object: its frame page by the relay, with the route in its address, its code bundled by the engine.
       await page.waitForFunction(() => document.querySelectorAll('iframe').length >= 2);

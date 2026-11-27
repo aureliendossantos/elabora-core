@@ -422,6 +422,9 @@ for (const name of wanted) {
 
   test(`thumbnails (${name}): with the painter, a painter is made again after eight pictures, but in WebKit, where it lives as long as the miniatures`, PATIENT, async (t) => {
     await withThumbs(name, t, 'rows=2&height=800&images=1', async (page) => {
+      // What the pages say of their files: a painter that goes closes its route once its page has nothing in flight (never a 503).
+      const refused: string[] = [];
+      page.on('console', (message) => { if (/status of 5\d\d/.test(message.text())) refused.push(`${message.text()} @ ${message.location().url}`); });
       await untilDrawn(page, 2);
       // Two pictures, then four retouches of both screens: ten.
       for (let round = 0; round < 4; round++) {
@@ -430,6 +433,8 @@ for (const name of wanted) {
         await page.waitForFunction((was) => { const now = (window as unknown as Win).thumbsApp.pictures(); return now[0] !== was[0] && now[1] !== was[1]; }, before, { timeout: 30000 });
       }
       assert.equal(await page.evaluate(() => (window as unknown as Win).thumbsApp.pageLoads), name === 'webkit' ? 1 : 2);
+      await page.waitForTimeout(4000);
+      assert.deepEqual(refused, []);
       assert.deepEqual(await page.evaluate(() => (window as unknown as Win).thumbsApp.logs), []);
     });
   });

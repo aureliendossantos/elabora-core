@@ -36,6 +36,8 @@ const url = (path: string) => `/module/${MODULE}/${path.split('/').map(encodeURI
 const source: RelaySource = {
   async get(request: RelayRequest): Promise<RelayAnswer> {
     requests.push(request);
+    // A file answered 10 s late: a request still waiting when its route closes.
+    if (request.kind === 'file' && request.path === 'slow/late.txt') { await new Promise((resolve) => setTimeout(resolve, 10000)); return { status: 'not-found' }; }
     if (request.kind === 'object-frame') {
       const manifest = await fetch(url(`objects/${request.object}/object.manifest.json`));
       if (!manifest.ok) return { status: 'not-found' };
