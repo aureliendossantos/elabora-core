@@ -198,13 +198,17 @@ function respond(answer: RelayAnswer, range: RelayRange | null, head: boolean, h
 }
 
 // ── The host's own files (D131) ───────────────────────────────────────────────────────────────
-// Kept as the script installs, in a cache of its version, and served from it with the headers the host gave them. Any script of
-// the host's origin can write in its cache (an object's code runs on the frames host, S5): a file is served from the cache only
-// once its bytes are the ones the script names, and is then held in memory until the worker sleeps. One that does not match, or
-// that is not kept, is asked of the network, and kept if its bytes match.
+// Kept as the script installs, in a cache of its version. Any script of the host's origin can write in its cache (an object's code
+// runs on the frames host, S5): a file is served from the cache only once its bytes are the ones the script names, and is then held
+// in memory until the worker sleeps; its headers are the relay's own (the host's policy and isolation, the type its name says), never
+// those the cache gives, which anyone could have written with the right bytes. One that does not match, or that is not kept, is
+// asked of the network, and kept if its bytes match.
 // It keeps them only when the policy it runs under lets it fetch its own origin; otherwise they are the host's to serve, as before.
 const keeps = (): boolean => { const host = self.ELABORA_HOST; return !!host && mayConnectToSelf(host.workerPolicy ?? host.policy); };
-interface HeldFile { body: ArrayBuffer; status: number; headers: [string, string][] }
+interface HeldFile { body: ArrayBuffer }
+// The type of a host's file, by its name (the files the relay names: pages, scripts, a style sheet, licences).
+const TYPES: Readonly<Record<string, string>> = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', txt: 'text/plain; charset=utf-8' };
+const typeOf = (path: string): string => TYPES[path.slice(path.lastIndexOf('.') + 1)] ?? 'application/octet-stream';
 const held = new Map<string, Promise<HeldFile | null>>();
 
 const hex = (digest: ArrayBuffer): string => [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -212,7 +216,7 @@ async function fileOf(response: Response | undefined, path: string): Promise<Hel
   if (!response || response.status !== 200) return null;
   const body = await response.arrayBuffer();
   if (hex(await crypto.subtle.digest('SHA-256', body)) !== HOST_FILES[path]) return null;
-  return { body, status: response.status, headers: [...response.headers] };
+  return { body };
 }
 const fromNetwork = (path: string): Promise<Response> => fetch(path, { cache: 'no-cache', credentials: 'omit' });
 
@@ -242,7 +246,7 @@ function keptFile(path: string): Promise<HeldFile | null> {
 
 async function hostFile(path: string): Promise<Response> {
   const kept = await keptFile(path);
-  if (kept) return new Response(kept.body, { status: kept.status, headers: kept.headers });
+  if (kept) return new Response(kept.body, { status: 200, headers: headers(self.ELABORA_HOST!, { 'content-type': typeOf(path) }) });
   held.delete(path);
   // Not kept, or not the bytes it names: the network's, kept if they are the ones.
   const response = await fromNetwork(path);

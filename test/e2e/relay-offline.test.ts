@@ -7,7 +7,7 @@ import { chromium, webkit } from 'playwright-core';
 import type { BrowserContext, Frame, Page } from 'playwright-core';
 import { startHosts } from '../relay-hosts.ts';
 import { canvasFrame, objectFrames } from '../relay-browsers.ts';
-import { APP, CANVAS, FRAMES, MODULES, handlers, relay, setHostsDown } from '../relay-site.ts';
+import { APP, CANVAS, FRAMES, MODULES, POLICY, handlers, relay, setHostsDown } from '../relay-site.ts';
 
 // The canvas without the network (D131): after a first visit, the relay keeps its host's own files (the canvas page, the player's,
 // the relay page's), so that the canvas page and an object's frame open when their hosts cannot be reached; a file of its cache that
@@ -22,7 +22,7 @@ const opened = (page: Page) => page.evaluate(() => (window as unknown as { app: 
 const keptIn = (frame: Frame) => frame.evaluate(async () => { const names = (await caches.keys()).filter((name) => name.startsWith('elabora-relay-')); const cache = names.length === 1 ? await caches.open(names[0]!) : null; return { names, paths: cache ? (await cache.keys()).map((request) => new URL(request.url).pathname).sort() : [] }; });
 
 for (const name of wanted) {
-  test(`relay offline (${name}): after a first visit the canvas page and an object's frame open with their hosts unreachable, and a kept file that is not the relay's bytes is never served`, { timeout: 300000 }, async (t) => {
+  test(`relay offline (${name}): after a first visit the canvas page and an object's frame open with their hosts unreachable, and a kept file that is not the relay's bytes is never served, nor with headers but the relay's`, { timeout: 300000 }, async (t) => {
     const hosts = await startHosts(handlers());
     const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-relay-offline-'));
     let context: BrowserContext | null = null;
@@ -93,6 +93,33 @@ for (const name of wanted) {
       setHostsDown(false);
       const up = await asked();
       assert.deepEqual(up.map((answer) => [answer.status, answer.poisoned]), [[200, false], [200, false]], 'with the host back, its own file');
+
+      // 4. The right bytes written again with other headers (S15: an object's code can, on the frames host): the relay serves the
+      // bytes with its own headers, the host unreachable so that the cache is all it has.
+      const rewritten = '/canvas/elabora/object-frame.js';
+      await objectFrames(page).find((frame) => !frame.isDetached())!.evaluate(async (file) => {
+        const names = (await caches.keys()).filter((each) => each.startsWith('elabora-relay-'));
+        const cache = await caches.open(names[0]!);
+        const kept = await cache.match(file);
+        await cache.put(file, new Response(await kept!.arrayBuffer(), { headers: { 'content-type': 'text/plain', 'x-rewritten': 'yes' } }));
+      }, rewritten);
+      await cdp.send('ServiceWorker.stopAllWorkers');
+      setHostsDown(true);
+      const served = new Promise<Record<string, string>>((resolve) => { page.on('response', (response) => { if (response.url().includes('probe=headers')) resolve(response.headers()); }); });
+      const loaded = await relayPage.evaluate((file) => new Promise<boolean>((resolve) => {
+        const script = document.createElement('script');
+        script.src = `${file}?probe=headers`;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.head.append(script);
+      }), rewritten);
+      const answer = await served;
+      assert.equal(loaded, true, 'the kept bytes are served');
+      assert.equal(answer['x-rewritten'], undefined, 'not the headers written with them');
+      assert.equal(answer['content-type'], 'text/javascript; charset=utf-8');
+      assert.equal(answer['content-security-policy'], POLICY.frames);
+      assert.equal(answer['cross-origin-embedder-policy'], 'require-corp');
+      assert.equal(answer['x-content-type-options'], 'nosniff');
     } finally {
       setHostsDown(false);
       await context.close();
