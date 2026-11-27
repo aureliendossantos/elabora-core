@@ -4,7 +4,7 @@ import { getRegistry, analysisOf, stylesOf, componentHash, slotAccepts, BEHAVIOR
 import type { ComponentDescriptor } from '../components/registry.ts';
 import type { TemplateHook } from '../components/template.ts';
 import { CONTROL_NAME, NAMED_CONTROL_HOOKS } from '../components/controls.ts';
-import { kindOf, renderTemplate, TEMPLATE_FORBIDDEN_TAGS, templateAttributeRefused, templateElementRefused } from '../components/template.ts';
+import { kindOf, renderTemplate, styleBindingAllowed, TEMPLATE_FORBIDDEN_TAGS, templateAttributeRefused, templateElementRefused } from '../components/template.ts';
 import { walkHeadings } from '../components/headings.ts';
 import type { SchemaNode } from '../components/template.ts';
 import { applyDefaults, valuesOfKind } from '../components/props.ts';
@@ -167,6 +167,7 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
   for (const each of analysis.badEach) report('E_COMPONENT_TEMPLATE', each.line, `data-each="${each.path}" needs a list prop.`);
   for (const binding of analysis.refs) {
     if (binding.where === 'attr' && binding.attr === 'class' && binding.kind !== null && ['markdown', 'asset', 'tex'].includes(binding.kind)) report('E_COMPONENT_TEMPLATE', binding.line, `class binds {{${binding.path}}} (${binding.kind}): bind enums, numbers or booleans in class.`);
+    if (binding.where === 'attr' && binding.attr === 'style' && binding.kind !== null && !styleBindingAllowed(binding.kind, binding.path)) report('E_COMPONENT_TEMPLATE', binding.line, `style binds {{${binding.path}}} (${binding.kind}): a style takes number and token props, or @index, @number and @count, never a text.`);
     if (binding.kind === 'token' && !(binding.where === 'attr' && binding.attr === 'style')) report('E_COMPONENT_TEMPLATE', binding.line, `Token prop {{${binding.path}}} is a CSS value: use it in style="--name: {{${binding.path}}}".`);
   }
   for (const element of analysis.elements) {

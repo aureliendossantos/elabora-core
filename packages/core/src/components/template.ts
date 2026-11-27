@@ -50,10 +50,25 @@ const URL_ATTRIBUTE = /^(href|xlink:href|src|srcset|action|formaction|poster|dat
 const SCRIPT_URL = /javascript:|url\(\s*['"]?(https?:)?\/\//i;
 // A template's style only sets custom properties to props (style="--accent: {{accent}}").
 export const TEMPLATE_STYLE = /^\s*(--[a-z0-9-]+\s*:\s*\{\{[^{}]+\}\}\s*;?\s*)*$/i;
+const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
 
-// Whether a template's element is one it may not hold (with what is inside it).
+// What a style may take of a prop: a number (a number prop, or a list's @index, @number, @count) or a
+// token (a token prop, whose value is a token's name), never a text, which would add declarations
+// (style="--a: {{t}}" with « red; background:url(…) »). The validator says it of a binding's kind, the
+// renderer of its value: a value of another kind is left out, and its custom property with it.
+const STYLE_COUNTERS = /^@(index|number|count)$/;
+const TOKEN_NAME = /^[A-Za-z][A-Za-z0-9.-]{0,63}$/;
+export const styleBindingAllowed = (kind: string | null, path: string): boolean => kind === 'number' || kind === 'token' || STYLE_COUNTERS.test(path.trim());
+function styleValue(value: unknown, schema: SchemaNode): string {
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '';
+  return kindOf(schema) === 'token' && typeof value === 'string' && TOKEN_NAME.test(value) ? tokenVar(value) : '';
+}
+
+// Whether a template's element is one it may not hold (with what is inside it). MathML is a Markdown
+// prop's (its maths), never a template's.
 export function templateElementRefused(tag: string, namespace: string, attrs: Readonly<Record<string, string>>): boolean {
   if (namespace === HTML_NS) return TEMPLATE_FORBIDDEN_TAGS.has(tag);
+  if (namespace === MATHML_NS) return true;
   if (SVG_FORBIDDEN.has(tag)) return true;
   return (tag === 'set' || tag.startsWith('animate')) && URL_ATTRIBUTE.test(attrs.attributeName ?? '');
 }
@@ -300,7 +315,7 @@ export function renderTemplate(tpl: ParsedTemplate, { props = {}, schema = null,
         const bound = only ? lookup(scope, a.value.trim().slice(2, -2).split('|')[0]!.trim()) : null;
         if (!bound?.found || kindOf(bound.schema) !== 'asset') continue;
       }
-      let v = a.value.replace(INTERP, (_, p: string) => { const r = lookup(scope, p.trim()); return r.found ? attrValue(r.value, r.schema, assetPath) : ''; });
+      let v = a.value.replace(INTERP, (_, p: string) => { const r = lookup(scope, p.trim()); return !r.found ? '' : a.name === 'style' ? styleValue(r.value, r.schema) : attrValue(r.value, r.schema, assetPath); });
       if (a.name === 'class') v = v.replace(/\s+/g, ' ').trim();
       // A custom property bound to a prop without value is left out (an image without focus), so
       // that the stylesheet's var() falls back instead of reading an empty value.

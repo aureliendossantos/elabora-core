@@ -82,6 +82,23 @@ test('templates: what the validator refuses is left out of the render, with what
     assert.ok(refused.some((message) => message.includes(said)), `${said}\n${refused.join('\n')}`);
   }
   assert.ok(!refused.some((message) => message.includes('opacity')), 'an animation of anything but an address is allowed');
+  // A style takes numbers and tokens only: a text bound in it would add declarations (an image of another site, in a
+  // package). Left out at the render, said by the validator, from one rule.
+  const styled = parseTemplate('<div style="--a: {{t}}; --b: {{n}}; --c: {{accent}}; --d: {{bad}}"><p>{{t}}</p><ol><li data-each="items" style="--i: {{@number}}; --j: {{@id}}">{{label}}</li></ol></div>');
+  const styledSchema = { type: 'object', properties: { t: { type: 'string' }, n: { type: 'number' }, accent: { type: 'string', 'x-kind': 'token' }, bad: { type: 'string', 'x-kind': 'token' }, items: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' } } } } } };
+  assert.equal(renderTemplate(styled, { props: { t: 'red; background:url(https://example.org/b)', n: 0.25, accent: 'color.primary', bad: 'a); background:url(https://example.org/b', items: [{ label: 'un' }] }, schema: styledSchema, id: 'b1' }).html,
+    '<div style="--b: 0.25; --c: var(--t-color-primary)"><p>red; background:url(https://example.org/b)</p><ol><li style="--i: 1">un</li></ol></div>');
+  write(dir, 'components/style-texte/component.json', { id: 'style-texte', title: 'Style', version: '1.0.0', category: 'content', props: styledSchema });
+  write(dir, 'components/style-texte/template.html', '<div style="--a: {{t}}; --b: {{n}}; --c: {{accent}}">\n<ol><li data-each="items" style="--i: {{@number}}">{{label}}</li></ol>\n<math><mi>x</mi></math></div>');
+  const styledProject = loadProjectFromDir(dir);
+  const styledReporter = createReporter();
+  checkTemplate({ project: styledProject, reporter: styledReporter }, getRegistry(styledProject).get('style-texte')!);
+  const styleFindings = styledReporter.items.filter((d) => d.code === 'E_COMPONENT_TEMPLATE').map((d) => d.message);
+  assert.deepEqual(styleFindings.filter((message) => message.startsWith('style binds')), ['style binds {{t}} (text): a style takes number and token props, or @index, @number and @count, never a text.']);
+  // MathML is a Markdown prop's maths, never a template's: said and left out.
+  assert.ok(styleFindings.includes('<math> is not allowed in templates.'), styleFindings.join('\n'));
+  assert.equal(renderTemplate(parseTemplate('<p>a<math><mi>x</mi></math></p>'), {}).html, '<p>a</p>');
+
   // Nor is it waived by the plan: a build stops on it.
   const [finding] = applyWaivers(reporter.items.filter((d) => d.code === 'E_COMPONENT_TEMPLATE').slice(0, 1), [{ code: 'E_COMPONENT_TEMPLATE', reason: 'On purpose', approvedBy: 'Client' }]);
   assert.equal(finding?.waived, undefined);
