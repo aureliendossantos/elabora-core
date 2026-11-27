@@ -6,7 +6,8 @@
 // - `drawElementImage` (HTML drawn in a canvas, on by default in Chrome stable): the page's root is moved into a canvas with
 //   `layoutsubtree`, laid out at the window's size there, and drawn as the browser paints it.
 // - snapdom (MIT, vendored, 3.8.3), loaded by this page only when it is needed: it copies the page's computed styles into an SVG
-//   that a canvas draws inside this origin. Firefox and Safari.
+//   that a canvas draws inside this origin. Firefox and Safari; in Chrome too for a screen whose modal layer is open (the browser's
+//   top layer is outside the root the canvas draws).
 
 import type { LayoutRect } from './canvas-protocol.ts';
 
@@ -104,13 +105,45 @@ function loadSnapdom(): Promise<Snapdom> {
 // The page's background, under what is transparent in it.
 const background = (): string => [document.body, document.documentElement].map((node) => getComputedStyle(node).backgroundColor).find((colour) => colour && colour !== 'rgba(0, 0, 0, 0)' && colour !== 'transparent') ?? '#fff';
 
+// The window copied by snapdom at the size a part of it needs (never larger than the window), and that part in the copy.
+async function snapshot(region: LayoutRect, width: number, loads: PerformanceObserver | null): Promise<{ source: CanvasImageSource; crop: LayoutRect }> {
+  const snapdom = await loadSnapdom();
+  const scale = Math.min(1, width / region.width);
+  const options = { width: Math.round(innerWidth * scale), embedFonts: true, clip: 'viewport' };
+  // In Firefox, when the page has loaded files since its last picture, a first copy is made and set aside: its images are decoded
+  // for the second (7 to 30 ms each there).
+  if (loads) {
+    if (loadedFiles(loads.takeRecords())) freshFiles = true;
+    if (freshFiles) await snapdom.toCanvas(document.documentElement, options);
+    freshFiles = false;
+  }
+  const shot = await snapdom.toCanvas(document.documentElement, options);
+  const k = shot.width / innerWidth;
+  return { source: shot, crop: { x: region.x * k, y: region.y * k, width: region.width * k, height: region.height * k } };
+}
+
 // A part of the window (CSS px), drawn `width` px wide: a WebP (a PNG where the browser writes no WebP).
 export async function drawPicture(region: LayoutRect, width: number): Promise<Blob> {
   if (!drawer) throw new Error('This page is not a painter');
   const out = { width: Math.max(1, Math.round(width)), height: Math.max(1, Math.round((width * region.height) / region.width)) };
   let source: CanvasImageSource;
   let crop = region;
-  if (drawer.kind === 'element') {
+  const held = drawer.kind === 'element' ? drawer.root : null;
+  if (drawer.kind === 'element' && [...document.querySelectorAll('dialog')].some((dialog) => dialog.open && !held!.contains(dialog))) {
+    // A modal layer is in the browser's top layer, outside the root the canvas draws: snapdom copies this screen, the root out of the
+    // canvas meanwhile (its scroll kept).
+    const { canvas, root } = drawer;
+    const top = root.scrollTop;
+    canvas.replaceWith(root);
+    root.scrollTop = top;
+    try {
+      ({ source, crop } = await snapshot(region, out.width, null));
+    } finally {
+      root.replaceWith(canvas);
+      canvas.append(root);
+      root.scrollTop = top;
+    }
+  } else if (drawer.kind === 'element') {
     const { canvas, root } = drawer;
     // A page that started before its frame was laid out read a window of no size: the canvas takes the window's size now.
     if (canvas.width !== innerWidth || canvas.height !== innerHeight) drawer.fit();
@@ -127,21 +160,7 @@ export async function drawPicture(region: LayoutRect, width: number): Promise<Bl
     context.drawElementImage(root, 0, 0);
     source = canvas;
   } else {
-    const snapdom = await loadSnapdom();
-    // Drawn at the size the part needs, never larger than the window.
-    const scale = Math.min(1, out.width / region.width);
-    const options = { width: Math.round(innerWidth * scale), embedFonts: true, clip: 'viewport' };
-    // In Firefox, when the page has loaded files since its last picture, a first copy is made and set aside: its images are decoded
-    // for the second (7 to 30 ms each there).
-    if (drawer.loads) {
-      if (loadedFiles(drawer.loads.takeRecords())) freshFiles = true;
-      if (freshFiles) await snapdom.toCanvas(document.documentElement, options);
-      freshFiles = false;
-    }
-    const shot = await snapdom.toCanvas(document.documentElement, options);
-    const k = shot.width / innerWidth;
-    crop = { x: region.x * k, y: region.y * k, width: region.width * k, height: region.height * k };
-    source = shot;
+    ({ source, crop } = await snapshot(region, out.width, drawer.loads));
   }
   // Drawn at the size asked by the canvas itself, whatever createImageBitmap's resize does in this browser.
   const bitmap = await createImageBitmap(source, Math.round(crop.x), Math.round(crop.y), Math.max(1, Math.round(crop.width)), Math.max(1, Math.round(crop.height)));

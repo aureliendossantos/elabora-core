@@ -11,10 +11,11 @@ import { CANVAS, FRAMES } from './relay-site.ts';
 export async function launch(name: string, hosts: Hosts): Promise<Browser | null> {
   const proxy = { server: `http://127.0.0.1:${hosts.proxyPort}` };
   try {
-    if (name === 'chromium') {
+    // chrome: the Chrome installed on this computer (its features on by default, drawElementImage among them), else Playwright's Chromium.
+    if (name === 'chromium' || name === 'chrome') {
       // Playwright turns off Chrome's partitioning of a frame's storage by its top site; its own list again, without it.
       const features = '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints';
-      return await launchChromium(chromium, ['playwright'], { headless: true, proxy, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required', `--ignore-certificate-errors-spki-list=${hosts.spki}`, features] });
+      return await launchChromium(chromium, [name === 'chrome' ? 'chrome' : 'playwright'], { headless: true, proxy, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required', `--ignore-certificate-errors-spki-list=${hosts.spki}`, features] });
     }
     if (name === 'webkit') return await webkit.launch({ headless: true, proxy });
     if (name === 'firefox') return await firefox.launch({ headless: true, proxy });

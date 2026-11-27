@@ -40,7 +40,7 @@ export interface ThumbsOptions {
   mount?: HTMLElement;
   // How long a frame's `shown` is waited for, in ms (a frame the browser does not draw never answers).
   drawTimeoutMs?: number;
-  // Images by a painter (D139, the default where the browser makes them), or live frames only (false).
+  // Images by a painter (D139), where the browser makes them; the window's page must allow `img-src blob:`. Live frames only otherwise.
   images?: boolean;
   // The painter kept for the module's life (default: in WebKit), or gone after `painterIdleMs` at rest (PAINTER_IDLE_MS).
   keepPainter?: boolean;
@@ -105,10 +105,11 @@ interface Entry {
 
 
 
-// The miniatures of a window: images by a painter where the browser makes them (D139), live frames otherwise (D130), the live frames
-// staying the painter's fallback. The painter is made now: made as the module opens, it is ready before the list shows.
+// The miniatures of a window: images by a painter where the window asks for them and the browser makes them (D139), live frames
+// otherwise (D130), the live frames staying the painter's fallback. The painter is made now: made as the module opens (once the
+// engine answers `relayPort`), it is ready before the list shows.
 export function createThumbs(options: ThumbsOptions): Thumbs {
-  return options.images !== false && imagesHere() ? createImageThumbs(options, createLiveThumbs({ ...options, images: false })) : createLiveThumbs(options);
+  return options.images === true && imagesHere() ? createImageThumbs(options, createLiveThumbs({ ...options, images: false })) : createLiveThumbs(options);
 }
 
 // The live frames of D130.

@@ -34,7 +34,7 @@ interface ThumbsApp {
   setCurrent(screen: string | null): void;
   measure(screen: string, language: string | null): Promise<{ overflow: number; fields: unknown[] } | null>;
   startEngine(seed: unknown, screens: string[]): Promise<number>;
-  showBlock(screen: string, mini: boolean, width: number, height: number): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null; picture: { width: number; height: number } | null }>;
+  showBlock(screen: string, mini: boolean, width: number, height: number, args?: Record<string, unknown>): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null; picture: { width: number; height: number } | null }>;
   logs: string[];
   pageLoads: number;
   pictures(): Array<string | null>;
@@ -404,7 +404,7 @@ for (const name of wanted) {
     });
   });
 
-  test(`thumbnails (${name}): with the painter, a retouch draws again only its screen's image, and the painter never loads its page again`, PATIENT, async (t) => {
+  test(`thumbnails (${name}): with the painter, a retouch draws again only its screen's image, in the same painter`, PATIENT, async (t) => {
     await withThumbs(name, t, 'rows=8&height=800&images=1', async (page) => {
       await untilDrawn(page, 8);
       const before = await pictures(page);
@@ -417,6 +417,20 @@ for (const name of wanted) {
         else assert.equal(after[index], before[index], `row ${index} (accueil) kept`);
       }
       assert.equal(await page.evaluate(() => (window as unknown as Win).thumbsApp.pageLoads), 1);
+    });
+  });
+
+  test(`thumbnails (${name}): with the painter, a painter is made again after eight pictures, but in WebKit, where it lives as long as the miniatures`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=2&height=800&images=1', async (page) => {
+      await untilDrawn(page, 2);
+      // Two pictures, then four retouches of both screens: ten.
+      for (let round = 0; round < 4; round++) {
+        const before = await pictures(page);
+        await page.evaluate(() => { const app = (window as unknown as Win).thumbsApp; app.bump('accueil'); app.bump('simulation'); app.refresh(0); app.refresh(1); });
+        await page.waitForFunction((was) => { const now = (window as unknown as Win).thumbsApp.pictures(); return now[0] !== was[0] && now[1] !== was[1]; }, before, { timeout: 30000 });
+      }
+      assert.equal(await page.evaluate(() => (window as unknown as Win).thumbsApp.pageLoads), name === 'webkit' ? 1 : 2);
+      assert.deepEqual(await page.evaluate(() => (window as unknown as Win).thumbsApp.logs), []);
     });
   });
 
@@ -487,7 +501,7 @@ for (const name of wanted) {
     const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-thumbs-engine-'));
     let context: BrowserContext | null = null;
     try {
-      context = await ({ chromium, webkit } as Record<string, typeof webkit>)[name]!.launchPersistentContext(profile, { headless: true, proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: name === 'chromium' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 900 }, serviceWorkers: 'allow' });
+      context = await ({ chromium, chrome: chromium, webkit } as Record<string, typeof webkit>)[name]!.launchPersistentContext(profile, { headless: true, ...(name === 'chrome' ? { channel: 'chrome' } : {}), proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: name === 'chromium' || name === 'chrome' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 900 }, serviceWorkers: 'allow' });
     } catch (error) {
       hosts.close();
       fs.rmSync(profile, { recursive: true, force: true });
@@ -524,10 +538,59 @@ for (const name of wanted) {
     }
   });
 
+  test(`thumbnails (${name}): with the painter, a block's preview in a modal layer shows the layer, which the browser draws outside the page's root`, { timeout: 200000 }, async (t) => {
+    const engines = { chromium, chrome: chromium, webkit, firefox } as Record<string, typeof webkit>;
+    const hosts = await startHosts(handlers());
+    const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-thumbs-engine-'));
+    let context: BrowserContext;
+    try {
+      context = await engines[name]!.launchPersistentContext(profile, { headless: true, ...(name === 'chrome' ? { channel: 'chrome' } : {}), proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: name === 'chromium' || name === 'chrome' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 900 }, serviceWorkers: 'allow' });
+    } catch (error) {
+      hosts.close();
+      fs.rmSync(profile, { recursive: true, force: true });
+      return t.skip(`${name} is not here: ${String(error).split('\n')[0]}`);
+    }
+    try {
+      const { files } = readProjectFiles(EXAMPLE);
+      for (const [rel, file] of files) if (file.kind === 'binary' && file.hash) engineMedia.set(file.hash, fs.readFileSync(path.join(EXAMPLE, rel)));
+      const page = await context.newPage();
+      await page.goto(`${APP}/thumbs?engine=1&height=200&width=1000&row=40&images=1`);
+      await page.waitForFunction(() => !!(window as unknown as Win).thumbsApp, null, { timeout: 30000 });
+      const link = { team: 'tm_test', project: 'prj_test', client: 'cbrowser', person: { id: 'acc_ada', name: 'Ada' }, head: 0, epoch: null, waiting: [], journal: 0 };
+      await page.evaluate(({ seed }) => (window as unknown as Win).thumbsApp.startEngine(seed, []), { seed: { link, confirmed: [...files] } });
+      // The same block added after the screen's first, in the screen, then in its layer (diagnostic-reseau's « rappel-regle », modal).
+      const block = { type: 'text', props: { text: 'Un bloc' } };
+      const shots: Buffer[] = [];
+      for (const args of [{ block }, { block, layer: 'rappel-regle' }]) {
+        await page.evaluate(() => (window as unknown as Win).thumbsApp.releaseBlocks());
+        const shown = await page.evaluate((a) => (window as unknown as Win).thumbsApp.showBlock('premier-reflexe', false, 640, 360, a), args);
+        assert.ok(shown.drawn && shown.picture, JSON.stringify(shown));
+        // Past the image's fade in.
+        await page.waitForTimeout(300);
+        shots.push(await page.locator('.block-preview').first().screenshot());
+      }
+      assert.deepEqual(await page.evaluate(() => (window as unknown as Win).thumbsApp.logs), []);
+      // The share of pixels more than 48/255 apart: the layer and its backdrop cover most of the preview.
+      const share = await page.evaluate(async ([a, b]) => {
+        const pixels = async (data: string) => { const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob(), { resizeWidth: 320, resizeHeight: 180 }); const canvas = new OffscreenCanvas(320, 180); const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0); return context.getImageData(0, 0, 320, 180).data; };
+        const [x, y] = [await pixels(a!), await pixels(b!)];
+        let apart = 0;
+        for (let i = 0; i < x.length; i += 4) if (Math.max(Math.abs(x[i]! - y[i]!), Math.abs(x[i + 1]! - y[i + 1]!), Math.abs(x[i + 2]! - y[i + 2]!)) > 48) apart++;
+        return apart / (x.length / 4);
+      }, [shots[0]!.toString('base64'), shots[1]!.toString('base64')]);
+      assert.ok(share > 0.3, `the preview in the layer is the screen's but for ${(share * 100).toFixed(1)} % of its pixels`);
+    } finally {
+      engineMedia.clear();
+      await context.close();
+      hosts.close();
+      fs.rmSync(profile, { recursive: true, force: true });
+    }
+  });
+
   test(`thumbnails (${name}): fidelity: each screen of two modules (one of photos, veils and masks) as the painter's image is the live frame's, but for a few pixels`, { timeout: 400000 }, async (t) => {
     // Firefox's live frames show nothing in Playwright (a frame of another origin is about:blank): its images are held to Chromium's.
     const live = name === 'firefox' ? 'chromium' : name;
-    const engines = { chromium, webkit, firefox } as Record<string, typeof webkit>;
+    const engines = { chromium, chrome: chromium, webkit, firefox } as Record<string, typeof webkit>;
     const hosts = await startHosts(handlers());
     try {
       for (const module of [EXAMPLE, path.join(ROOT, 'examples/coffee-in-brief')]) {
@@ -543,7 +606,7 @@ for (const name of wanted) {
           const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-thumbs-engine-'));
           let context: BrowserContext;
           try {
-            context = await engines[browser]!.launchPersistentContext(profile, { headless: true, proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: browser === 'chromium' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 1400 }, serviceWorkers: 'allow' });
+            context = await engines[browser]!.launchPersistentContext(profile, { headless: true, ...(browser === 'chrome' ? { channel: 'chrome' } : {}), proxy: { server: `http://127.0.0.1:${hosts.proxyPort}` }, ignoreHTTPSErrors: true, args: browser === 'chromium' || browser === 'chrome' ? ['--ignore-certificate-errors'] : [], viewport: { width: 1000, height: 1400 }, serviceWorkers: 'allow' });
           } catch (error) {
             fs.rmSync(profile, { recursive: true, force: true });
             return t.skip(`${browser} is not here: ${String(error).split('\n')[0]}`);

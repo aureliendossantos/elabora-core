@@ -163,12 +163,12 @@ const api = {
   measure: (screen: string, language: string | null) => thumbs().measure(screen, language),
   // A block's preview (« Ajouter un bloc ») in an element of its own above the list, of the size given: whether it was drawn, whether the
   // slide runs past the window, and the element's box (the frame's own box is the test's to read inside it).
-  async showBlock(screen: string, mini: boolean, width: number, height: number): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null; picture: { width: number; height: number } | null }> {
+  async showBlock(screen: string, mini: boolean, width: number, height: number, args?: Record<string, unknown>): Promise<{ drawn: boolean; overflow: boolean | null; transform: string | null; picture: { width: number; height: number } | null }> {
     const element = document.createElement('div');
     element.className = 'block-preview';
     element.style.cssText = `width:${width}px;height:${height}px;overflow:hidden;background:#ddd;position:relative`;
     document.body.prepend(element);
-    const one = thumbs().show(element, { kind: 'block', args: { screen }, mini });
+    const one = thumbs().show(element, { kind: 'block', args: { screen, ...args }, mini });
     blocks.push({ element, one });
     const ok = await one.drawn;
     const overflow = one.overflow ? await one.overflow : null;
