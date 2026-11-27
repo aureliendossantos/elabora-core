@@ -173,7 +173,8 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   // the farthest from the view first. A preview the author chooses from comes before the miniatures under it: when every place is
   // held in the view, the last miniature in reading order gives it its place, and takes it back once the preview goes.
   function pump(): void {
-    if (closed) return;
+    // A hidden tab draws nothing (a page serves no animation frame there, so a screen is never said shown): what waits starts when it is seen.
+    if (closed || hidden()) return;
     for (;;) {
       const waiting = [...entries].filter((entry) => entry.visible && entry.settled && !entry.slot && !entry.released && !entry.failed && entry.element.isConnected);
       if (!waiting.length) return;
@@ -189,6 +190,18 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       void start(firstOf(waiting));
     }
   }
+
+  // The tab hidden, then seen again: what failed while it was hidden is tried again, what changed is drawn, what waited starts.
+  const hidden = (): boolean => typeof document !== 'undefined' && document.visibilityState === 'hidden';
+  const seenAgain = (): void => {
+    if (hidden() || closed) return;
+    for (const entry of entries) {
+      if (entry.failed || entry.retry) { if (entry.retry) clearTimeout(entry.retry); entry.retry = null; entry.failed = false; entry.tries = 0; entry.settled = entry.visible; }
+      else if (entry.stale && entry.slot && entry.visible) { entry.stale = false; refresh(entry); }
+    }
+    pumpSoon();
+  };
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', seenAgain);
 
   // What is in the view. Without an observer (an old engine of a test), everything shown is.
   const observer = typeof IntersectionObserver === 'function' ? new IntersectionObserver((changes) => {
@@ -285,6 +298,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
       // It left the view before it was drawn: the frame goes, and it is asked for again when the row comes back.
       if (!shown && !entry.visible) { entry.settled = false; drop(entry); pumpSoon(); return; }
       // In the view and not drawn in time: the frame goes and is made again a while later; after the last try its place is freed.
+      if (!shown && hidden()) { entry.settled = false; freeFrame(entry); return; }
       if (!shown) {
         const wait = RETRY_MS[entry.tries++];
         entry.settled = false;
@@ -335,7 +349,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
   // the editor's screen first, and only when the render's version is not the one drawn.
   function refresh(entry: Entry): void {
     if (entry.released || !entry.host || !entry.slot || !entry.version) return;
-    if (!entry.visible) { entry.stale = true; return; }
+    if (!entry.visible || hidden()) { entry.stale = true; return; }
     if (entry.redrawing) { entry.again = true; return; }
     if (entry.refreshTimer || refreshQueue.includes(entry)) return;
     const wait = refreshMs - (performance.now() - entry.drawnAt);
@@ -347,7 +361,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     while (refreshing < refreshParallel && refreshQueue.length) {
       const entry = firstOf(refreshQueue);
       refreshQueue.splice(refreshQueue.indexOf(entry), 1);
-      if (!entry.visible) { entry.stale = true; continue; }
+      if (!entry.visible || hidden()) { entry.stale = true; continue; }
       void redraw(entry);
     }
   }
@@ -487,6 +501,7 @@ export function createThumbs({ canvasOrigin, relayPort, source, limit = THUMB_LI
     close() {
       closed = true;
       if (pumpTimer) clearTimeout(pumpTimer);
+      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', seenAgain);
       observer?.disconnect();
       byElement.clear();
       for (const entry of [...entries]) { entry.released = true; if (entry.settle) clearTimeout(entry.settle); if (entry.retry) clearTimeout(entry.retry); drop(entry); entry.finish(false); }

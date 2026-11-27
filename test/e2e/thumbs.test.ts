@@ -336,6 +336,23 @@ for (const name of wanted) {
     });
   });
 
+  test(`thumbnails (${name}): in a hidden tab nothing is drawn: a refresh waits, and the tab seen again draws what changed and what waited`, PATIENT, async (t) => {
+    await withThumbs(name, t, 'rows=12&width=1000&height=880&row=192&limit=8&refresh=0', async (page) => {
+      await untilDrawn(page, 8);
+      // The tab hidden, as the browser says it (a headless page is never hidden by itself).
+      const hide = (state: 'hidden' | 'visible') => page.evaluate((state) => { Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state }); document.dispatchEvent(new Event('visibilitychange')); }, state);
+      await hide('hidden');
+      const calls = () => page.evaluate(() => (window as unknown as Win).thumbsApp.calls.length);
+      const before = await calls();
+      await page.evaluate(() => { const app = (window as unknown as Win).thumbsApp; app.bump('simulation'); app.bump('accueil'); app.refresh(0); app.release(1); });
+      await page.waitForTimeout(800);
+      assert.equal(await calls(), before, 'nothing asked while the tab is hidden: neither the refresh nor the place freed');
+      await hide('visible');
+      await page.waitForFunction((count) => (window as unknown as Win).thumbsApp.calls.length >= count + 2, before, { timeout: 15000 });
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.drawn.get(8) === true, null, { timeout: 30000 });
+    });
+  });
+
   test(`thumbnails (${name}): a view of more miniatures than places draws them in reading order, and a place freed goes to the next`, PATIENT, async (t) => {
     // A grid of five columns and four lines, all in the view (a Planche, a Storyboard).
     await withThumbs(name, t, 'rows=20&width=1000&height=880&row=192&limit=8', async (page) => {
