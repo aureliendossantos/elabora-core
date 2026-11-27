@@ -192,6 +192,8 @@ export async function keptCopies(): Promise<KeptCopy[]> {
   for (const name of (await databases()).filter((each) => !each.startsWith(MEDIA_PREFIX)).sort()) {
     const key = name.slice(DB_PREFIX.length);
     const db = await result(indexedDB.open(name));
+    // An erasing meanwhile (forgetCopies) never waits for this reading.
+    db.onversionchange = () => db.close();
     try {
       if (!STORES.every((store) => db.objectStoreNames.contains(store))) continue;
       const tx = db.transaction(['meta', 'confirmed', 'journal']);
@@ -215,7 +217,9 @@ export async function forgetCopies(): Promise<{ erased: string[]; failed: { name
   const erased: string[] = [];
   const failed: { name: string; message: string }[] = [];
   const said = (error: unknown) => (error instanceof Error ? error.message : String(error));
-  for (const name of await databases()) {
+  // All at once: a database another page still holds waits for it to let go (its erasing goes on past
+  // the wait, once it does), and the whole waits BLOCKED_WAIT_MS at most.
+  await Promise.all((await databases()).map(async (name) => {
     try {
       await new Promise<void>((resolve, reject) => {
         const request = indexedDB.deleteDatabase(name);
@@ -227,7 +231,7 @@ export async function forgetCopies(): Promise<{ erased: string[]; failed: { name
     } catch (error) {
       failed.push({ name, message: said(error) });
     }
-  }
+  }));
   const root = await navigator.storage.getDirectory().catch(() => null);
   if (root) {
     for (const name of (await names(root)).filter((each) => each.startsWith(DB_PREFIX) || WORK.has(each))) {

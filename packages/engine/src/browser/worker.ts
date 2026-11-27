@@ -172,8 +172,10 @@ async function open(request: WorkerOpen): Promise<void> {
     if (request.newCourse) await opened.run('create_course', request.newCourse);
     scope.postMessage({ kind: 'opened', taken });
     for (const { message, ports, attachments } of waiting.splice(0)) void opened.handle(message, ports, attachments).then(answer);
-    // Held until the session closes.
-    await new Promise<void>((resolve) => opened.subscribe(({ event }) => { if (event.type === 'closed') resolve(); }));
-    store.close();
+    // Held until the session closes. Its storage is let go as it closes, before its answer to close goes:
+    // the window ends the Worker on that answer, and a database an ended Worker did not close stays held
+    // (by Firefox, for seconds), which an erasing would wait for.
+    const kept = store;
+    await new Promise<void>((resolve) => opened.subscribe(({ event }) => { if (event.type === 'closed') { kept.close(); resolve(); } }));
   });
 }
