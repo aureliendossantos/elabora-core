@@ -45,14 +45,25 @@ const result = <T>(request: IDBRequest<T>): Promise<T> => new Promise((resolve, 
   request.onerror = () => reject(request.error);
 });
 
+const copyDatabase = (key: string): Promise<IDBDatabase> => {
+  const open = indexedDB.open(DB_PREFIX + key, 1);
+  open.onupgradeneeded = () => { for (const store of STORES) open.result.createObjectStore(store); };
+  return result(open);
+};
+
 // Opens the copy kept under key; seed: the copy as the room gives it, kept when there is none yet.
 // Null: nothing kept, and no seed. erased: what ends the copy's use when another page or Worker of the
 // origin erases it (forgetCopies, as the person signs out); its database is let go once that ends, a
 // few seconds at most, so that the erasing goes on.
 export async function openIdbCopy(key: string, { seed, remote, source, membership, onError, erased }: { seed?: { link: CopyLink; confirmed: Files }; remote?: RemoteMedia; source?: MediaSource; membership?: () => Promise<'member' | 'removed' | 'deleted' | 'unknown'>; onError?: (error: unknown) => void; erased?: () => Promise<unknown> } = {}): Promise<IdbCopy | null> {
-  const open = indexedDB.open(DB_PREFIX + key, 1);
-  open.onupgradeneeded = () => { for (const store of STORES) open.result.createObjectStore(store); };
-  const db = await result(open);
+  let db = await copyDatabase(key);
+  // A database without the copy's stores (made empty by a reading as it was erased, before this was
+  // fixed): erased, then made again.
+  if (!STORES.every((store) => db.objectStoreNames.contains(store))) {
+    db.close();
+    await done(indexedDB.deleteDatabase(DB_PREFIX + key));
+    db = await copyDatabase(key);
+  }
   let ending: Promise<void> | null = null;
   db.onversionchange = () => {
     ending ??= Promise.race([Promise.resolve().then(() => erased?.()), new Promise((resolve) => setTimeout(resolve, ERASED_WAIT_MS))]).catch(() => {}).then(() => { db.close(); });
@@ -191,7 +202,12 @@ export async function keptCopies(): Promise<KeptCopy[]> {
   const kept: KeptCopy[] = [];
   for (const name of (await databases()).filter((each) => !each.startsWith(MEDIA_PREFIX)).sort()) {
     const key = name.slice(DB_PREFIX.length);
-    const db = await result(indexedDB.open(name));
+    // Read only if it is still there: opening a database erased since it was listed would make it again,
+    // empty (an erasing meanwhile), so its making is undone.
+    const opening = indexedDB.open(name);
+    opening.onupgradeneeded = () => opening.transaction?.abort();
+    const db = await result(opening).catch(() => null);
+    if (!db) continue;
     // An erasing meanwhile (forgetCopies) never waits for this reading.
     db.onversionchange = () => db.close();
     try {

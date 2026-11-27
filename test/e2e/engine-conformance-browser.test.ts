@@ -360,6 +360,14 @@ test('a copy this browser keeps opens only as its own project\'s and for its acc
   assert.equal(failure(again.first), 'E_COPY_NOT_THIS_PROJECT');
   await again.end();
 
+  // An empty database under a copy's name (a reading that made it again as it was erased, in Firefox): not listed, and
+  // a copy opened there is made again.
+  await page.evaluate(() => new Promise((resolve, reject) => { const open = indexedDB.open('elabora-copy-tm_test.emptied', 1); open.onsuccess = () => { open.result.close(); resolve(null); }; open.onerror = () => reject(open.error); }));
+  const emptied = await worker({ kind: 'open', team: 'tm_test', project: 'emptied', seed: seedOf('basic', 'emptied'), api: 'http://localhost:1', offline: true });
+  assert.equal(emptied.first.kind, 'opened', JSON.stringify(emptied.first));
+  await ask(emptied, 'close', {});
+  await emptied.end();
+
   const kept = await copiesIn((copies) => copies.keptCopies());
   assert.deepEqual(kept.find((copy) => copy.key === 'tm_test.mine'), { key: 'tm_test.mine', team: 'tm_test', project: 'mine', account: 'acc_ada', unsent: 1 });
   assert.deepEqual(kept.find((copy) => copy.key === 'tm_test.elsewhere'), { key: 'tm_test.elsewhere', team: 'tm_test', project: 'mine', account: 'acc_ada', unsent: 0 }, 'read as its link says');
