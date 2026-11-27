@@ -146,6 +146,30 @@ test('relay: the engine\'s end of a port answers each request from its source, r
   }
 });
 
+test('relay: relay/done from the page ends the engine\'s end of its port: what runs is stopped, done is called, no bye follows', async () => {
+  const { port1: relay, port2: engine } = new MessageChannel();
+  const log: string[] = [];
+  let done = 0;
+  const end = serveRelayPort(engine, source({ 'a.txt': 'hello' }, log), 'canvas', () => { done++; });
+  const heard: EnginePortMessage[] = [];
+  relay.onmessage = (event) => { heard.push(event.data as EnginePortMessage); };
+  try {
+    relay.postMessage({ type: 'relay/request', id: 1, request: { kind: 'file', path: 'slow' } });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    relay.postMessage({ type: 'relay/done' });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(done, 1);
+    assert.ok(log.includes('aborted'), 'what ran is stopped');
+    relay.postMessage({ type: 'relay/request', id: 2, request: { kind: 'file', path: 'a.txt' } });
+    end();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.deepEqual(heard, [], 'nothing answered after done, and no bye');
+    assert.equal(done, 1);
+  } finally {
+    relay.close();
+  }
+});
+
 test('relay: the frames host\'s port answers what an object\'s frame asks, not the module\'s other files; what a relay page says is data', async () => {
   assert.equal(hostMayAsk('canvas', { kind: 'file', path: 'assets/a.png' }), true);
   assert.equal(hostMayAsk('canvas', { kind: 'object-code', object: 'lab' }), false, 'the canvas page asks files only');

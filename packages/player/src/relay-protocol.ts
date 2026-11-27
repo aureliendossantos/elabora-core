@@ -123,7 +123,9 @@ export const RELAY_FAULT_STAGES: readonly RelayFaultStage[] = ['holder', 'ask', 
 export type RelayPortMessage =
   | { type: 'relay/request'; id: number; request: RelayRequest }
   // The browser stopped waiting (a medium seeked away from): the engine may stop reading.
-  | { type: 'relay/cancel'; id: number };
+  | { type: 'relay/cancel'; id: number }
+  // The page closed the route (relay/close, or another port for it): the engine forgets this port.
+  | { type: 'relay/done' };
 
 export type EnginePortMessage =
   | { type: 'relay/answer'; id: number; answer: RelayAnswer }
@@ -310,7 +312,8 @@ export function hostMayAsk(host: RelayHost, request: RelayRequest): boolean {
 // relay says the browser stopped waiting), and answered; a request that is not one, or that the port's host
 // may not ask (hostMayAsk), is answered `refused`. `host`: the relay page the port was given to; the app makes
 // one port per page, so the frames host's gets the narrower answers. Returns what ends it: it says
-// `relay/bye` and closes the port.
+// `relay/bye` and closes the port. `relay/done` from the page ends it too, with no bye, and calls `done`: the
+// engine keeps no port of a route that is closed.
 // A message port as far as it is used here (a browser's MessagePort, or Node's).
 export interface RelayPort {
   // (Declared so that both a browser's port and Node's are taken: their handlers take their own event types.)
@@ -319,10 +322,18 @@ export interface RelayPort {
   close(): void;
 }
 
-export function serveRelayPort(port: RelayPort, source: RelaySource, host: RelayHost = 'canvas'): () => void {
+export function serveRelayPort(port: RelayPort, source: RelaySource, host: RelayHost = 'canvas', done?: () => void): () => void {
   const running = new Map<number, AbortController>();
+  let ended = false;
+  const stop = () => {
+    ended = true;
+    for (const control of running.values()) control.abort();
+    running.clear();
+    port.onmessage = null;
+  };
   port.onmessage = (event) => {
     const message = event.data;
+    if (isRecord(message) && message.type === 'relay/done') { stop(); port.close(); done?.(); return; }
     if (!isRecord(message) || !isCount(message.id)) return;
     const id = message.id;
     if (message.type === 'relay/cancel') { running.get(id)?.abort(); running.delete(id); return; }
@@ -339,8 +350,8 @@ export function serveRelayPort(port: RelayPort, source: RelaySource, host: Relay
     );
   };
   return () => {
-    for (const control of running.values()) control.abort();
-    running.clear();
+    if (ended) return;
+    stop();
     port.postMessage({ type: 'relay/bye' } satisfies EnginePortMessage);
     port.close();
   };

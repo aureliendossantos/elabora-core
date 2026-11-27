@@ -117,7 +117,8 @@ export class BrowserSession {
   readonly #known: ReadonlyMap<string, KnownMedium>;
   #closing: Promise<{ version: string | null }> | null = null;
   readonly #objects: (() => Promise<ObjectCompiler>) | undefined;
-  // The relay's ports served (relayPort), each ended with relay/bye as the session closes.
+  // The relay's ports served (relayPort): each forgotten when its page closes the route (relay/done), the others
+  // ended with relay/bye as the session closes.
   readonly #relays = new Set<() => void>();
 
   constructor(options: CopyOptions) {
@@ -414,7 +415,7 @@ export class BrowserSession {
     if (host !== 'canvas' && host !== 'frames') throw new EngineError('bad-request', 'relayPort takes host: canvas or frames');
     if (!port) throw new EngineError('bad-request', 'relayPort takes the port transferred with its message');
     const store = this.#store;
-    const end = serveRelayPort(port, relaySource(host, { files: () => this.#state.files, project: () => this.#state.project, medium: (hash) => store.medium(hash), named: () => this.#named, ...(store.mediumPart ? { part: (hash: string, start: number, end: number) => store.mediumPart!(hash, start, end) } : {}), ...(this.#objects ? { objects: this.#objects } : {}) }), host);
+    const end = serveRelayPort(port, relaySource(host, { files: () => this.#state.files, project: () => this.#state.project, medium: (hash) => store.medium(hash), named: () => this.#named, ...(store.mediumPart ? { part: (hash: string, start: number, end: number) => store.mediumPart!(hash, start, end) } : {}), ...(this.#objects ? { objects: this.#objects } : {}) }), host, () => { this.#relays.delete(end); });
     this.#relays.add(end);
     return {};
   }

@@ -104,9 +104,13 @@ async function relay(session: Awaited<ReturnType<typeof openCopy>>, host: 'canva
   await ask(session, 'relayPort', { host }, [port1]);
   let next = 0;
   const waiting = new Map<number, (answer: RelayAnswer) => void>();
-  port2.onmessage = ({ data }: MessageEvent<EnginePortMessage>) => { if (data.type === 'relay/answer') waiting.get(data.id)?.(data.answer); };
+  const heard: EnginePortMessage['type'][] = [];
+  port2.onmessage = ({ data }: MessageEvent<EnginePortMessage>) => { heard.push(data.type); if (data.type === 'relay/answer') waiting.get(data.id)?.(data.answer); };
   return {
     get: (request: RelayRequest) => new Promise<RelayAnswer>((resolve) => { const id = ++next; waiting.set(id, resolve); port2.postMessage({ type: 'relay/request', id, request }); }),
+    // The page closes the route: the engine forgets the port.
+    done: () => port2.postMessage({ type: 'relay/done' }),
+    heard,
     close: () => port2.close()
   };
 }
@@ -151,6 +155,30 @@ test('browser relay: the canvas gets the files its renders named and the narrati
   } finally {
     canvas.close();
     frames.close();
+  }
+});
+
+test('browser relay: a route its page closes is forgotten by the engine, which says bye at its close to the routes still open only', async () => {
+  const session = await copyOf('network', { services: ['canvas'] });
+  const closed = await relay(session, 'canvas');
+  const open = await relay(session, 'canvas');
+  try {
+    assert.equal((await closed.get({ kind: 'file', path: 'assets/absent.png' })).status, 'not-found');
+    closed.done();
+    // Two channels keep no order between them: the engine is given the time to read it.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    // A request after the route closed is not answered; the one of the open route is.
+    let late = false;
+    void closed.get({ kind: 'file', path: 'assets/absent.png' }).then(() => { late = true; });
+    assert.equal((await open.get({ kind: 'file', path: 'assets/absent.png' })).status, 'not-found');
+    await session.close();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.equal(late, false, 'the closed route\'s port is no longer answered');
+    assert.deepEqual(closed.heard, ['relay/answer'], 'no bye to a route its page closed');
+    assert.deepEqual(open.heard, ['relay/answer', 'relay/bye']);
+  } finally {
+    closed.close();
+    open.close();
   }
 });
 
