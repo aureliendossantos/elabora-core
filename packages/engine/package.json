@@ -1,7 +1,7 @@
 {
   "name": "@elabora/engine",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Elabora editing session for the desktop app: project in memory, commands as journaled changes, incremental validation, file watching, batches and undo, media jobs, backups schedule, and a transport-neutral message protocol.",
   "type": "module",
   "license": "Apache-2.0",

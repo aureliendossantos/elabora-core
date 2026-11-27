@@ -1,7 +1,7 @@
 {
   "name": "@elabora/fonts",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vetted free fonts for Elabora courses: WOFF2 files of the latin subset with their licences, and their catalogue as data.",
   "type": "module",
   "license": "Apache-2.0 AND OFL-1.1",
