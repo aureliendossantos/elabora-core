@@ -59,6 +59,8 @@ const versions = new Map<string, number>();
 const renders = new Map<string, unknown>();
 const ends: Array<() => void> = [];
 let ports = 0;
+// Ports the pages let go (relay/done): their route closed.
+let portsDone = 0;
 let current: string | null = params.get('current') === 'accueil' ? 'accueil' : null;
 const source: ThumbSource = {
   async render<Name extends ThumbRequestName>(name: Name, request: ThumbRequests[Name]['params']): Promise<ThumbRequests[Name]['result']> {
@@ -74,7 +76,7 @@ const source: ThumbSource = {
 const relayPort = async (host: RelayHost, port: MessagePort): Promise<void> => {
   ports++;
   if (ENGINE) { await engine('relayPort', { host }, [port]); return; }
-  ends.push(serveRelayPort(port, files, host));
+  ends.push(serveRelayPort(port, files, host, () => { portsDone++; }));
 };
 
 // How long a frame's answer is waited for (a frame that never answers: a few ms).
@@ -128,6 +130,7 @@ const blocks: Array<{ element: HTMLElement; one: ThumbShown }> = [];
 const api = {
   calls, versions, drawn, rows, seen, drawnAt,
   get ports() { return ports; },
+  get portsDone() { return portsDone; },
   get loads() { return loads; },
   get live() { return thumbs.live; },
   frames: () => [...list.querySelectorAll('iframe')].map((frame) => ({ src: frame.src, sandbox: frame.getAttribute('sandbox'), inert: frame.hasAttribute('inert'), ariaHidden: frame.getAttribute('aria-hidden'), parent: (frame.parentElement?.parentElement as HTMLElement | null)?.dataset.index ?? null })),

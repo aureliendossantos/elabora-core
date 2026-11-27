@@ -22,6 +22,7 @@ interface ThumbsApp {
   calls: Array<{ name: string; screen?: string; at: number }>;
   drawn: Map<number, boolean>;
   ports: number;
+  portsDone: number;
   loads: number;
   rows: HTMLElement[];
   live: number;
@@ -206,10 +207,13 @@ for (const name of wanted) {
     });
   });
 
-  test(`thumbnails (${name}): a released thumbnail's frame goes, and its place is free`, PATIENT, async (t) => {
+  test(`thumbnails (${name}): a released thumbnail's frame goes once its route is closed, the engine lets the route's port go, and its place is free`, PATIENT, async (t) => {
     await withThumbs(name, t, 'rows=4&limit=4', async (page) => {
       await untilDrawn(page, 4);
+      assert.equal(await page.evaluate(() => (window as unknown as Win).thumbsApp.portsDone), 0);
       await page.evaluate(() => (window as unknown as Win).thumbsApp.release(1));
+      // The page reads the close before its frame goes, and says relay/done: the engine keeps no port of a closed route.
+      await page.waitForFunction(() => (window as unknown as Win).thumbsApp.portsDone === 1, null, { timeout: 15000 });
       await page.waitForFunction(() => (window as unknown as Win).thumbsApp.frames().length === 3 && (window as unknown as Win).thumbsApp.live === 3, null, { timeout: 15000 });
       assert.deepEqual((await page.evaluate(() => (window as unknown as Win).thumbsApp.frames())).map((frame) => frame.parent).sort(), ['0', '2', '3']);
     });
