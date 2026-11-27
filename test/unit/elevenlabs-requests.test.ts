@@ -24,7 +24,7 @@ test('ElevenLabs requests: the list builds what the desktop sends, and refuses a
   // No escape (a browser would read %2e%2e as a dot segment), query or fragment in the bucket's path.
   for (const rest of ['%2e%2e/other/a.mp3', 'voices/%2E%2E/a.mp3', 'voices/a.mp3?x=1', 'voices/a.mp3#f', 'voices/./a.mp3', '.hidden', 'voices//a.mp3', 'voices/a b.mp3']) refused('preview', { url: `https://storage.googleapis.com/eleven-public-prod/${rest}` });
   // The API's preview route, which takes no key: the main host or a region's, its payload only.
-  for (const url of ['https://api.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio', 'https://api.us.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20ifQ%3D%3D', 'https://api.eu.residency.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio', 'https://api.sg.residency.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio']) {
+  for (const url of ['https://api.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio', 'https://api.us.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20ifQ%3D%3D', 'https://api.eu.residency.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio', 'https://api.in.residency.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio', 'https://api.sg.residency.elevenlabs.io/v1/voices/FvmvwvObRqIHojkEGh5N/previews/audio']) {
     assert.deepEqual(elevenLabsRequest('preview', { url }), { method: 'GET', path: url, answer: 'bytes', keyed: false });
   }
   for (const url of ['http://api.elevenlabs.io/v1/voices/abc/previews/audio', 'https://api.elevenlabs.io.example.com/v1/voices/abc/previews/audio', 'https://evil.com/api.elevenlabs.io/v1/voices/abc/previews/audio',

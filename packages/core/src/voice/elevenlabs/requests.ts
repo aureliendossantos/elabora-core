@@ -21,9 +21,9 @@ export interface ElevenRequest {
 
 // A voice's sample: a file of ElevenLabs' public bucket, or its API's own preview route, which takes no
 // key (about one library voice in five): on the main host, the one seen for the US (api.us, 22 Oct 2026),
-// or a data residency's (EU, India: ElevenLabs' documentation, 27 Nov 2026).
+// or a data residency's (EU, India, Singapore: ElevenLabs' documentation, read 27 Nov 2026).
 export const PREVIEWS = 'https://storage.googleapis.com/eleven-public-prod/';
-export const PREVIEW_HOSTS = ['api.elevenlabs.io', 'api.us.elevenlabs.io', 'api.eu.residency.elevenlabs.io', 'api.sg.residency.elevenlabs.io'] as const;
+export const PREVIEW_HOSTS = ['api.elevenlabs.io', 'api.us.elevenlabs.io', 'api.eu.residency.elevenlabs.io', 'api.in.residency.elevenlabs.io', 'api.sg.residency.elevenlabs.io'] as const;
 // The whole address, so no user, port, other host, query or dot segment can pass.
 const PREVIEW_ROUTE = new RegExp(`^https://(?:${PREVIEW_HOSTS.map((host) => host.replace(/\./g, '\\.')).join('|')})/v1/voices/[A-Za-z0-9]{1,64}/previews/[a-z]{1,20}(?:\\?payload=[A-Za-z0-9%_=-]{1,400})?$`);
 // A file of the bucket: its path in plain characters, each part starting with no dot (so no dot segment),

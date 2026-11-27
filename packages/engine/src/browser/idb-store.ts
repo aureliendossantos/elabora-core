@@ -157,8 +157,9 @@ export async function openIdbCopy(key: string, { seed, remote, source, membershi
 const ERASED_WAIT_MS = 3_000;
 // How long an erasing waits for a database another page holds, before it says it was not erased.
 const BLOCKED_WAIT_MS = 8_000;
-// The takes of every copy (voices/takes.ts): the person's own recordings, erased with the copies.
-const TAKES = 'elabora-takes';
+// What the copies' work leaves in the private file system, erased with them: the takes of every copy
+// (voices/takes.ts), the person's own recordings, and the media Worker's jobs (media/worker.ts).
+const WORK = new Set(['elabora-takes', 'media-work']);
 
 // Removes what a copy kept (its database and its media, wherever they are).
 export async function forgetIdbCopy(key: string): Promise<void> {
@@ -193,8 +194,10 @@ export async function keptCopies(): Promise<KeptCopy[]> {
     const db = await result(indexedDB.open(name));
     try {
       if (!STORES.every((store) => db.objectStoreNames.contains(store))) continue;
-      const tx = db.transaction(['meta', 'journal']);
-      const [link, entries] = await Promise.all([result(tx.objectStore('meta').get('link')) as Promise<CopyLink | undefined>, result(tx.objectStore('journal').getAll()) as Promise<JournalEntry[]>]);
+      const tx = db.transaction(['meta', 'confirmed', 'journal']);
+      const [link, entries, files] = await Promise.all([result(tx.objectStore('meta').get('link')) as Promise<CopyLink | undefined>, result(tx.objectStore('journal').getAll()) as Promise<JournalEntry[]>, result(tx.objectStore('confirmed').count())]);
+      // An empty database (an opening that found nothing kept, offline): no copy.
+      if (!link && !files && !entries.length) continue;
       const [team = key, project = ''] = link ? [link.team, link.project] : key.split(/\.(.*)/s);
       kept.push({ key, team, project, account: link?.person.id ?? null, unsent: link ? link.waiting.length + entries.filter((entry) => entry.type !== 'mark' && entry.seq > link.journal).length : null });
     } finally {
@@ -204,8 +207,8 @@ export async function keptCopies(): Promise<KeptCopy[]> {
   return kept;
 }
 
-// Erases every copy this browser keeps, of every team and account: their databases, their media and
-// the takes recorded in them (the local models, which are no one's, stay). A copy open in another tab
+// Erases every copy this browser keeps, of every team and account: their databases, their media, the
+// takes recorded in them and the media jobs (the local models, which are no one's, stay). A copy open in another tab
 // or Worker ends first (openIdbCopy's erased). What could not be erased (a database another page still
 // holds after a few seconds, a file being written) is named in failed; the rest is gone.
 export async function forgetCopies(): Promise<{ erased: string[]; failed: { name: string; message: string }[] }> {
@@ -227,7 +230,7 @@ export async function forgetCopies(): Promise<{ erased: string[]; failed: { name
   }
   const root = await navigator.storage.getDirectory().catch(() => null);
   if (root) {
-    for (const name of (await names(root)).filter((each) => each.startsWith(DB_PREFIX) || each === TAKES)) {
+    for (const name of (await names(root)).filter((each) => each.startsWith(DB_PREFIX) || WORK.has(each))) {
       try {
         await root.removeEntry(name, { recursive: true });
         erased.push(name);
