@@ -631,7 +631,8 @@ export type EngineEvent =
   // changes made here wait for the room, and who is there (each copy connected, this one included:
   // client says which is this one's).
   // held: why the room keeps the copy out for now (elabora-cloud C80, C83); protocol: the room's, for an app older than it.
-  | { type: 'cloudStatus'; online: boolean; head: number; pending: number; client: string; peers: Presence[]; held?: 'outdated' | 'storage-newer' | 'full'; protocol?: string }
+  // signed-out: the session ended (4009, C121): not tried again, the changes kept, until the person signs in again.
+  | { type: 'cloudStatus'; online: boolean; head: number; pending: number; client: string; peers: Presence[]; held?: 'outdated' | 'storage-newer' | 'full' | 'signed-out'; protocol?: string }
   // A change made here that the room placed with operations left out or values overwritten, or refused.
   | { type: 'cloudOutcome'; outcome: Outcome }
   // Someone else's change, placed by the room, replaced values a change of this copy had written

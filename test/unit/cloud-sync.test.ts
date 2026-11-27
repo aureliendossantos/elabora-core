@@ -521,6 +521,33 @@ test('a room that does not say the role in welcome: the copy writes as before, a
   await until(() => screen(A, 'chemin').title === before, 'the refused change left the module');
 });
 
+test('a session that ended (4009: signed out, the device revoked) keeps its changes and its link, and does not try again, even when asked (C121)', async () => {
+  const A = copyExample();
+  const room = new Room(readProjectFiles(A).files);
+  const a = await linked(room, A);
+  await settled(room, a);
+  const statuses = eventsOf(a, 'cloudStatus');
+  const ended = eventsOf(a, 'cloudEnded');
+  room.hold = true;
+  await a.run('update_screen', { id: 'chemin', title: 'Pas encore envoyé' }, { kind: 'human' });
+  await until(() => a.cloud?.pending === 1, 'the change waits');
+  // Closed by the room as the session ends, and refused at its hello should it come again.
+  room.refuseHello = { code: 4009, reason: 'session ended' };
+  room.end(a.cloud!.client, 4009);
+  await until(() => a.cloud?.held === 'signed-out', 'kept out: signed out');
+  const hellos = room.hellos;
+  a.cloudRetry();
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  assert.equal(room.hellos, hellos, 'not tried again, even when asked');
+  assert.equal(room.sockets.size, 0, 'no reconnection');
+  assert.equal(a.cloud?.online, false);
+  assert.equal(a.cloud?.pending, 1, 'its change kept');
+  assert.ok(statuses.some((status) => status.held === 'signed-out'), 'the window is told');
+  assert.equal(ended.length, 0, 'the copy does not end');
+  assert.ok(fs.existsSync(linkFile(A)), 'still linked');
+  assert.equal(screen(A, 'chemin').title, 'Pas encore envoyé');
+});
+
 test('an app older than the room (4005): the copy keeps its changes and does not try again, even when asked; the room\'s protocol is said (C80)', async () => {
   const A = copyExample();
   const room = new Room(readProjectFiles(A).files);

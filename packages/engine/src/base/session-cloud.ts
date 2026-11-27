@@ -40,7 +40,9 @@ export type CloudEnd = 'removed' | 'deleted';
 // Why the room keeps a copy out for now (elabora-cloud C80, C83), its changes kept here: an app older
 // than the room (4005: not tried again, Elabora is to be updated), the room's storage newer than the
 // server's code (4006), or the project's connections all taken (4007): tried again later, or when asked.
-export type CloudHeld = 'outdated' | 'storage-newer' | 'full';
+// Or the session ended (4009, elabora-cloud C121: signed out, the device revoked, the session expired): not
+// tried again, its changes kept here and the copy still linked, until the person signs in again.
+export type CloudHeld = 'outdated' | 'storage-newer' | 'full' | 'signed-out';
 
 export interface CloudOptions {
   api: string;
@@ -73,7 +75,9 @@ const OPEN = 1;
 // The room's close codes (elabora-cloud C37): the person's membership ended, the project was deleted.
 // 4008, the room just restored to an earlier time (elabora-cloud C84), is any other drop: connect again.
 const CLOSED: Record<number, CloudEnd> = { 4003: 'removed', 4004: 'deleted' };
-const HELD: Record<number, CloudHeld> = { 4005: 'outdated', 4006: 'storage-newer', 4007: 'full' };
+const HELD: Record<number, CloudHeld> = { 4005: 'outdated', 4006: 'storage-newer', 4007: 'full', 4009: 'signed-out' };
+// What is not tried again on its own nor when asked: an app to update, a session to open again.
+const FOR_GOOD: ReadonlySet<CloudHeld> = new Set(['outdated', 'signed-out']);
 // About a minute, as the room's Retry-After says for its storage (60 s).
 const LATER = 60_000;
 // How often a copy the room keeps out asks whether its person still reaches the project.
@@ -293,8 +297,9 @@ export class SessionCloud {
       this.#peers = [];
       this.#client.disconnected();
       this.#status();
-      // An app older than the room is not tried again: Elabora is to be updated first.
-      if (this.#stopped || this.#held?.reason === 'outdated') return;
+      // An app older than the room is not tried again (Elabora is to be updated first), nor a session that ended
+      // (it would be refused again, 401, every few seconds).
+      if (this.#stopped || (this.#held && FOR_GOOD.has(this.#held.reason))) return;
       const waits = this.#options.backoff ?? [500, 1000, 2000, 5000, 10000];
       this.#timer = unref(setTimeout(() => this.#connect(), this.#held ? this.#options.later ?? LATER : waits[Math.min(this.#attempt++, waits.length - 1)]));
       // Kept out before a welcome: the person may have left the team while the module was closed.
@@ -337,7 +342,7 @@ export class SessionCloud {
 
   // Tried again now, at the author's word: a copy the room kept out for its storage or its connections.
   retry(): void {
-    if (this.#stopped || this.#ws || !this.#held || this.#held.reason === 'outdated') return;
+    if (this.#stopped || this.#ws || !this.#held || FOR_GOOD.has(this.#held.reason)) return;
     if (this.#timer) clearTimeout(this.#timer);
     this.#timer = null;
     this.#connect();
