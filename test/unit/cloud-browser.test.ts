@@ -173,3 +173,32 @@ test('a new module made by a browser\'s copy, taken by a desktop\'s folder: a fi
   await settled(room, folder, copy);
   assert.deepEqual([room.head, room.log[1]!.ops.map((op) => op.file), await title(copy, 'intro')], [2, ['screens/intro.json'], 'À la main']);
 });
+
+test('a browser\'s copy held as its session ended is tried again once someone signed in, without reloading: held again for another account, synced for its own (cloudRestart)', async () => {
+  const room = new Room(readProjectFiles(copyExample()).files);
+  const copy = await browser(room);
+  const held: (string | null)[] = [];
+  copy.subscribe((message) => { if (message.kind === 'event' && message.event.type === 'cloudStatus') held.push(message.event.held ?? null); });
+  await waitFor(() => !!copy.cloud?.online);
+  assert.deepEqual(await ask(copy, 'cloudRestart', {}), { restarted: false }, 'not held: nothing to try again');
+  room.hold = true;
+  await ask(copy, 'run', { command: 'update_screen', args: { id: 'chemin', title: 'Avant la déconnexion' } });
+  await waitFor(() => copy.cloud?.pending === 1);
+  // The session ends (a sign-out elsewhere): the room closes it and would refuse its hello.
+  room.refuseHello = { code: 4009, reason: 'session ended' };
+  room.end('cbrowser', 4009);
+  await waitFor(() => held.at(-1) === 'signed-out');
+  // Someone else signs in, in the same tab: held again, nothing sent under their session.
+  const hellos = room.hellos;
+  assert.deepEqual(await ask(copy, 'cloudRestart', { account: 'acc_ada' }), { restarted: true });
+  await waitFor(() => held.at(-1) === 'other-account');
+  assert.equal(room.hellos, hellos, 'never connected for another account');
+  // The copy's own account signs in again: it syncs, and its change goes.
+  room.refuseHello = null;
+  room.hold = false;
+  assert.deepEqual(await ask(copy, 'cloudRestart', { account: 'acc_bea' }), { restarted: true });
+  await waitFor(() => !!copy.cloud?.online && copy.cloud.pending === 0);
+  assert.equal(await title(copy, 'chemin'), 'Avant la déconnexion');
+  assert.ok(room.log.some((change) => JSON.stringify(change).includes('Avant la déconnexion')), 'placed by the room');
+  await assert.rejects(ask(copy, 'cloudRestart', { account: 42 }), (error: { kind?: string }) => error.kind === 'bad-request');
+});

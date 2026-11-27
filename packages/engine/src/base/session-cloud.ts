@@ -244,7 +244,8 @@ export class SessionCloud {
 
   #connect(): void {
     if (this.#stopped) return;
-    if (this.#options.account && !this.#accountChecked) { this.#checkAccount(this.#options.account); return; }
+    const account = this.#account ?? this.#options.account;
+    if (account && !this.#accountChecked) { this.#checkAccount(account); return; }
     const url = roomUrl(this.#options.api, this.#link.team, this.#link.project);
     const ws = (this.#options.connect ?? webSocket)(url, this.#options.token);
     this.#ws = ws;
@@ -331,6 +332,23 @@ export class SessionCloud {
 
   // The session's account against the link's person, once; asked again later if the hosting cannot be reached.
   #accountChecked = false;
+  #account: (() => Promise<string>) | null = null;
+
+  // A copy held because its session ended or because it is linked for another account, tried again with who the
+  // session is now (a browser's, whose cookie is the new sign-in's): it syncs when that account is the link's,
+  // and is held again otherwise. false: it was not held so.
+  resume(account: () => Promise<string>): boolean {
+    if (this.#stopped || this.#ws || (this.#held?.reason !== 'signed-out' && this.#held?.reason !== 'other-account')) return false;
+    if (this.#timer) clearTimeout(this.#timer);
+    this.#timer = null;
+    this.#account = account;
+    this.#accountChecked = false;
+    this.#held = null;
+    this.#attempt = 0;
+    this.#status();
+    this.#connect();
+    return true;
+  }
   #checkAccount(account: () => Promise<string>): void {
     account().then((id) => {
       if (this.#stopped) return;

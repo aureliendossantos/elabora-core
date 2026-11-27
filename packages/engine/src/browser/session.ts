@@ -35,6 +35,7 @@ import { SessionCloud, type RoomSocket } from '../base/session-cloud.ts';
 import { CopyChanges, newId, touched } from './copy-changes.ts';
 import type { BrowserStore } from './store.ts';
 import { relaySource, type ObjectCompiler } from './relay.ts';
+import { roomAccount } from './room.ts';
 import { serveRelayPort } from '@elabora/player/relay-protocol';
 import type {
   ChangeSource, EndTurnParams, EndTurnResult, EngineEvent, EventMessage, FormatMigrationView, MarkResult, RequestMessage, RequestResult, RequestType, ResponseMessage, RunResult, Service, UndoView
@@ -95,6 +96,7 @@ export class BrowserSession {
   readonly id: string;
   readonly author: Author;
   readonly #store: BrowserStore;
+  readonly #api: string;
   readonly #state: ProjectState;
   readonly #queue = new WriteQueue();
   readonly #listeners = new Set<(message: EventMessage) => void>();
@@ -124,6 +126,7 @@ export class BrowserSession {
   constructor(options: CopyOptions) {
     this.id = options.id;
     this.#store = options.store;
+    this.#api = options.api;
     this.#known = readKnownMedia(options.store.link.media);
     this.author = options.author ?? { kind: 'human' };
     this.#services = new Set((options.services ?? []).filter((service) => PROVIDED.has(service) && (service !== 'media' || options.media) && (service !== 'align' || (options.media && options.models)) && (service !== 'voices' || (options.media && options.models && options.voices))));
@@ -292,6 +295,7 @@ export class BrowserSession {
       case 'migrate': return this.migrate();
       case 'close': return this.close();
       case 'relayPort': return this.relayPort(request.params?.host, ports[0]);
+      case 'cloudRestart': return this.cloudRestart(request.params?.account);
       case 'importMedia': this.#assertOpen(); return this.#media!.importMedia(request.params, attachments, this.#stamp(this.author));
       case 'mediaJobs': this.#assertOpen(); return this.#media!.jobs();
       case 'cancelMediaJob': this.#assertOpen(); return this.#media!.cancel(request.params.id);
@@ -408,6 +412,16 @@ export class BrowserSession {
     const migration = this.#state.project.migration;
     if (!migration) return null;
     throw new EngineError('refused', `This course is in format ${migration.from}, older than the one this Elabora writes (${migration.to}): a copy in the browser does not migrate it yet.`, { code: 'I_FORMAT_OUTDATED' });
+  }
+
+  // Its copy tried again once someone signed in (the protocol's cloudRestart): who the session is, said by the
+  // window or asked of the hosting with the cookie, against the link's person.
+  cloudRestart(account: unknown): { restarted: boolean } {
+    this.#assertOpen();
+    if (account !== undefined && (typeof account !== 'string' || !account || account.length > 200)) throw new EngineError('bad-request', 'cloudRestart takes account: the id of the account signed in');
+    const api = this.#api;
+    const who = typeof account === 'string' ? async () => account : () => roomAccount({ api });
+    return { restarted: this.#cloud?.resume(who) ?? false };
   }
 
   // A relay host's port (D118, D105): the module's files served to it until the session closes.

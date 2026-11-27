@@ -590,6 +590,8 @@ export class Session {
       case 'relayPort':
         if (!ports[0]) throw new EngineError('bad-request', 'relayPort takes the port transferred with its message');
         throw new EngineError('not-available', 'This session serves the module\'s files from its local server', { code: 'E_NOT_HERE' });
+      // The desktop's host restarts a held copy with the new session's token (cloudRestart, a method of its own).
+      case 'cloudRestart': throw new EngineError('not-available', 'This session is restarted by its host, with the new session\'s token', { code: 'E_NOT_HERE' });
       // The desktop holds the ElevenLabs key itself (setVoiceKey): no page holds it for this session.
       case 'voiceKeyPort':
         if (!ports[0]) throw new EngineError('bad-request', 'voiceKeyPort takes the port transferred with its message');

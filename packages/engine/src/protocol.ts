@@ -587,6 +587,12 @@ export interface Requests {
   relayPort: { params: { host: 'canvas' | 'frames' }; result: Record<string, never> };
   // A browser's session: the port to the page that holds the ElevenLabs key, transferred with the message.
   voiceKeyPort: { params: Record<string, never>; result: Record<string, never> };
+  // A browser's session: its copy, held signed-out or other-account, tried again once someone signed in (without
+  // reloading). account: the id of the account signed in, as the window read it; without it, the hosting is asked
+  // (its cookie). It syncs when that account is the link's, and is held again otherwise. restarted: false when the
+  // copy was not held so. A desktop session answers not-available (E_NOT_HERE): its host restarts it with the new
+  // session's token (Session.cloudRestart).
+  cloudRestart: { params: { account?: string }; result: { restarted: boolean } };
 }
 
 export type RequestType = keyof Requests;

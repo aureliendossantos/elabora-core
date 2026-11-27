@@ -63,7 +63,7 @@ const REQUESTS: Record<RequestType, true> = {
   backups: true, createBackup: true, restoreBackup: true, renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, thumbRender: true, momentRender: true, blockPreviewRender: true, measureRender: true, migrate: true, voices: true,
   installVoices: true, setSpeakerVoice: true, setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true,
   courseSounds: true, soundEstimate: true, generateSound: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
-  alignNarration: true, build: true, packageWeights: true, close: true, relayPort: true, voiceKeyPort: true, readMedium: true
+  alignNarration: true, build: true, packageWeights: true, close: true, relayPort: true, voiceKeyPort: true, cloudRestart: true, readMedium: true
 };
 
 // A wait in a test is bounded for failures only.
@@ -186,6 +186,10 @@ export function engineConformance(target: ConformanceTarget): void {
     await assert.rejects(client.request('relayPort', { host: 'canvas' }), refused('bad-request'));
     // The key's page's port too, where the session has its voices (without them, not here).
     await assert.rejects(client.request('voiceKeyPort', {}), refused(services.has('voices') ? 'bad-request' : 'not-available'));
+    // A copy tried again once someone signed in: one not held (here, no room) is not restarted; a desktop's host
+    // restarts it with a new token, not by a request.
+    const restart = await client.request('cloudRestart', {}).then((answer) => answer, (error: unknown) => error);
+    assert.ok((restart as { restarted?: unknown }).restarted === false || refused('not-available')(restart), JSON.stringify(restart));
   });
 
   it('what the events of a screen can name: its blocks, steps and layers, the course\'s screens and variables', async () => {
