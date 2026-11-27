@@ -130,10 +130,22 @@ window.addEventListener('message', (event) => {
     close(message.route);
     declare();
     tell({ type: 'relay/closed', protocol: RELAY_PROTOCOL, route: message.route });
+  } else if (message.type === 'relay/forget') {
+    tell({ type: 'relay/forgotten', protocol: RELAY_PROTOCOL, emptied: forget() });
   } else {
     void update();
   }
 });
+
+// What the player keeps on this origin, emptied (a sign-out): its local and session storage, which name modules (display settings,
+// a preview's progress). The relay's own files (its cache) stay: they are the player's code, the same for everyone.
+function forget(): boolean {
+  let emptied = true;
+  for (const storage of [() => localStorage, () => sessionStorage]) {
+    try { const kept = storage(); kept.clear(); emptied &&= kept.length === 0; } catch { emptied = false; }
+  }
+  return emptied;
+}
 
 // A newer script is on its way (found by the browser at a load of a page, or by `update`): waits until it has taken the
 // pages over, and asks it again to skip waiting while it has not. The browser stops the running script to activate the

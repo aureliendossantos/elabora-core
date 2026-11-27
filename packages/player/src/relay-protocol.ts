@@ -94,7 +94,10 @@ export interface RelaySource {
 export type AppToRelay =
   | { type: 'relay/open'; protocol: string; route: string }
   | { type: 'relay/close'; protocol: string; route: string }
-  | { type: 'relay/update'; protocol: string };
+  | { type: 'relay/update'; protocol: string }
+  // What the player keeps on this origin (its local and session storage: display settings, a preview's progress, which name the
+  // modules) emptied, as the person signs out (relay-forget.ts). The relay's own files stay.
+  | { type: 'relay/forget'; protocol: string };
 
 // Relay page → app (its parent), posted at the app's origin.
 export type RelayToApp =
@@ -112,7 +115,9 @@ export type RelayToApp =
   | { type: 'relay/error'; protocol: string; message: string }
   // A request of the module's files the service worker answered 503 (or another refusal it made itself), and why: the
   // file's path, where it failed, and what was caught. For the app to show or log, never for a module's frame.
-  | { type: 'relay/fault'; protocol: string; path: string; stage: RelayFaultStage; message: string };
+  | { type: 'relay/fault'; protocol: string; path: string; stage: RelayFaultStage; message: string }
+  // Asked to forget (relay/forget): whether the origin's local and session storage are empty now.
+  | { type: 'relay/forgotten'; protocol: string; emptied: boolean };
 
 // Where a request failed: no page held its route, the page could not be asked, the answer was refused or could not be
 // made into a response.
@@ -275,9 +280,9 @@ export function parseRelayAnswer(value: unknown): RelayAnswer | null {
 // What the relay page of a relay host takes from the app's page.
 export function parseAppToRelay(value: unknown): AppToRelay | 'protocol' | 'route' | null {
   if (!isRecord(value) || typeof value.type !== 'string' || !value.type.startsWith('relay/')) return null;
-  if (value.type !== 'relay/open' && value.type !== 'relay/close' && value.type !== 'relay/update') return null;
+  if (value.type !== 'relay/open' && value.type !== 'relay/close' && value.type !== 'relay/update' && value.type !== 'relay/forget') return null;
   if (value.protocol !== RELAY_PROTOCOL) return 'protocol';
-  if (value.type === 'relay/update') return { type: 'relay/update', protocol: RELAY_PROTOCOL };
+  if (value.type === 'relay/update' || value.type === 'relay/forget') return { type: value.type, protocol: RELAY_PROTOCOL };
   if (!isRoute(value.route)) return 'route';
   return { type: value.type, protocol: RELAY_PROTOCOL, route: value.route };
 }
@@ -292,6 +297,7 @@ export function parseRelayToApp(value: unknown): RelayToApp | null {
   if ((type === 'relay/opened' || type === 'relay/closed') && isRoute(value.route)) return { type, protocol: RELAY_PROTOCOL, route: value.route };
   if (type === 'relay/refused' && (value.reason === 'protocol' || value.reason === 'route' || value.reason === 'port')) return { type, protocol: RELAY_PROTOCOL, reason: value.reason, ...(isRoute(value.route) ? { route: value.route } : {}) };
   if (type === 'relay/updated' && typeof value.version === 'string' && value.version.length <= 100) return { type, protocol: RELAY_PROTOCOL, version: value.version };
+  if (type === 'relay/forgotten' && typeof value.emptied === 'boolean') return { type, protocol: RELAY_PROTOCOL, emptied: value.emptied };
   if (type === 'relay/error' && typeof value.message === 'string') return { type, protocol: RELAY_PROTOCOL, message: value.message.slice(0, 500) };
   if (type === 'relay/fault' && typeof value.path === 'string' && typeof value.message === 'string' && RELAY_FAULT_STAGES.some((stage) => stage === value.stage)) return { type, protocol: RELAY_PROTOCOL, path: value.path.slice(0, 300), stage: value.stage as RelayFaultStage, message: value.message.slice(0, 500) };
   return null;

@@ -5,6 +5,7 @@ import { RELAY_PROTOCOL, serveRelayPort } from '@elabora/player/relay-protocol';
 import type { RelayAnswer, RelayRequest, RelaySource } from '@elabora/player/relay-protocol';
 import { objectFrameHtml } from '@elabora/core/objects/bundle';
 import { createPageCanvasHost } from '@elabora/player/canvas-page-host';
+import { forgetHostStorage } from '@elabora/player/relay-forget';
 import type { CanvasMessage } from '@elabora/player/canvas-protocol';
 
 // What the test's address says is taken from closed lists and checked shapes, never put in an address as it is.
@@ -148,6 +149,8 @@ const api = {
     late.contentWindow!.postMessage({ type: 'relay/close', protocol: RELAY_PROTOCOL, route }, CANVAS);
   },
   lateDone: () => lateDone,
+  // What the player keeps on both hosts, emptied as at a sign-out.
+  forget: () => forgetHostStorage({ origins: [CANVAS, FRAMES] }),
   // The engine's Worker, opened on a project's files (the seed), offline; services: those it is given (the canvas: its renders
   // go to the view's host as the window gives them).
   async startEngine(seed: unknown, services?: string[], mediaWorker?: string) {
